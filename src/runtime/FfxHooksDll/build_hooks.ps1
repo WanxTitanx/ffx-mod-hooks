@@ -108,11 +108,7 @@ if ($WithPolyHook) {
         "`"$here\hooks\InGameMenuDashboard.cpp`"",
         "`"$here\hooks\UnXBoosterHook.cpp`"",
         "`"$here\hooks\DialogSkipHook.cpp`"",
-        "`"$here\shared\Config.cpp`"",
-        "`"$here\vcpkg_installed\x86-windows-static\include\minhook\hook.c`"",
-        "`"$here\vcpkg_installed\x86-windows-static\include\minhook\buffer.c`"",
-        "`"$here\vcpkg_installed\x86-windows-static\include\minhook\trampoline.c`"",
-        "`"$here\vcpkg_installed\x86-windows-static\include\minhook\hde\hde32.c`""
+        "`"$here\shared\Config.cpp`""
     ) -join " "
 
     # Compile version resource (optional) and embed via cl.exe
@@ -129,7 +125,7 @@ if ($WithPolyHook) {
         " /Fe:`"$outDir\ffx-hooks.dll`"" +
         " /Fo`"$objDir\\`"" +
         " /link /LIBPATH:`"$vcpkgLib`"" +
-        " PolyHook_2.lib Zydis.lib Zycore.lib asmjit.lib asmtk.lib kernel32.lib user32.lib gdi32.lib d3d11.lib dxgi.lib" +
+        " PolyHook_2.lib Zydis.lib Zycore.lib asmjit.lib asmtk.lib minhook.lib kernel32.lib user32.lib gdi32.lib d3d11.lib dxgi.lib" +
         " /VERSION:0.1"
     )
 
