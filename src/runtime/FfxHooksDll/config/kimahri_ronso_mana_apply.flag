@@ -1,0 +1,2 @@
+# With kimahri_ronso_mana.flag: apply partial OD pool (drain cost, pool max 255, G1/G3 behavior).
+# Env: FFXHOOKS_RONSO_MANA_APPLY=1, FFXHOOKS_RONSO_DRAIN_COST, FFXHOOKS_RONSO_POOL_MAX

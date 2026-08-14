@@ -1,0 +1,20 @@
+{
+  "name": "ffx-hooks-dll",
+  "version": "0.1.0",
+  "builtin-baseline": "10ceb139a610ebf3c6aa49cdc4a4b7f3db5d3f2b",
+  "description": "FFX engine hook layer (C++, x86, MSVC) — thiscall/vtable hooks for music swap, custom elements, sphere grid mutex",
+  "dependencies": [
+    {
+      "name": "polyhook2",
+      "platform": "windows"
+    },
+    {
+      "name": "zydis",
+      "platform": "windows"
+    },
+    {
+      "name": "minhook",
+      "platform": "windows"
+    }
+  ]
+}

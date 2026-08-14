@@ -1,0 +1,2 @@
+# Save slot 0..6 when last-save RE is unknown. -1 or omit = newest ffx_NNN by file mtime.
+0

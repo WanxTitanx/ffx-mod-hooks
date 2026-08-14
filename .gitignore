@@ -1,0 +1,26 @@
+# Build artifacts
+bin/
+obj/
+.vs/
+*.user
+vcpkg_installed/
+*.dll
+*.exe
+*.pdb
+*.obj
+*.lib
+*.exp
+*.ilk
+*.log
+
+# Tooling
+.idea/
+.vscode/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# dotnet
+*.nupkg
+artifacts/

@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FFX Hooks DLL â€” Visual Studio 2022, x86 only (game is 32-bit).
+  Requires:
+    - vcpkg with polyhook2:x86-windows + zydis:x86-windows installed
+    - OR run build_hooks.ps1 (handles both Fase 0 cl.exe and Fase 1+ vcpkg modes)
+  To build in VS: set vcpkg integration (vcpkg integrate install) then open this project.
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{3F8C1A72-5D9E-4B2A-8E6F-C0D7A1234567}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>FfxHooksDll</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <!-- vcpkg manifest mode: picks up polyhook2 + zydis from vcpkg.json -->
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgTriplet>x86-windows-static</VcpkgTriplet>
+    <VcpkgUseManifest>true</VcpkgUseManifest>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+            Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+            Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props"
+            Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')"
+            Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <FFXHooksEnablePolyHook Condition="'$(FFXHooksEnablePolyHook)'==''">true</FFXHooksEnablePolyHook>
+    <FFXHooksPolyHookDefinition Condition="'$(FFXHooksEnablePolyHook)'=='true'">FFXHOOKS_HAVE_POLYHOOK</FFXHooksPolyHookDefinition>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\</IntDir>
+    <TargetName>ffx-hooks</TargetName>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\</IntDir>
+    <TargetName>ffx-hooks</TargetName>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;FFXHOOKS_EXPORTS;$(FFXHooksPolyHookDefinition);_WINDOWS;_USRDLL;$(AdditionalPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x86-windows-static\debug\lib;$(ProjectDir)vcpkg_installed\x86-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;kernel32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">kernel32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;FFXHOOKS_EXPORTS;_CRT_SECURE_NO_WARNINGS;$(FFXHooksPolyHookDefinition);_WINDOWS;_USRDLL;$(AdditionalPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x86-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;kernel32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">kernel32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="shared\ffx_hooks_block.h" />
+    <ClInclude Include="shared\ffx_addresses.h" />
+    <ClInclude Include="hooks\MusicHook.h" />
+    <ClInclude Include="hooks\NovaSuperDamageHook.h" />
+    <ClInclude Include="hooks\RonsoManaHook.h" />
+    <ClInclude Include="hooks\ElementHook.h" />
+    <ClInclude Include="hooks\ResolverLogHook.h" />
+    <ClInclude Include="hooks\ArenaProgressSidecar.h" />
+    <ClInclude Include="hooks\ItemStackCapHook.h" />
+    <ClInclude Include="hooks\DoubleTripleDropHook.h" />
+    <ClInclude Include="hooks\BattleEndHook.h" />
+    <ClInclude Include="hooks\BootSkipHook.h" />
+    <ClInclude Include="hooks\ArenaPlusComposePick.h" />
+    <ClInclude Include="hooks\InGameMenuDashboard.h" />
+    <ClInclude Include="hooks\UnXBoosterHook.h" />
+    <ClInclude Include="hooks\DialogSkipHook.h" />
+    <ClInclude Include="hooks\FieldProbeHook.h" />
+    <ClInclude Include="hooks\FieldScoutHook.h" />
+    <ClInclude Include="hooks\SinCurseHook.h" />
+    <ClInclude Include="hooks\PhaseTurnEdgeHook.h" />
+    <ClInclude Include="hooks\PhaseTurnEdgeSidecar.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="hooks\MusicHook.cpp" />
+    <ClCompile Include="hooks\NovaSuperDamageHook.cpp" />
+    <ClCompile Include="hooks\RonsoManaHook.cpp" />
+    <ClCompile Include="hooks\ElementHook.cpp" />
+    <ClCompile Include="hooks\ResolverLogHook.cpp" />
+    <ClCompile Include="hooks\ArenaProgressSidecar.cpp" />
+    <ClCompile Include="hooks\ItemStackCapHook.cpp" />
+    <ClCompile Include="hooks\DoubleTripleDropHook.cpp" />
+    <ClCompile Include="hooks\BattleEndHook.cpp" />
+    <ClCompile Include="hooks\BootSkipHook.cpp" />
+    <ClCompile Include="hooks\F7InLive.cpp" />
+    <ClCompile Include="hooks\F7AiSwap.cpp" />
+    <ClCompile Include="hooks\ArenaPlusComposePick.cpp" />
+    <ClCompile Include="hooks\InGameMenuDashboard.cpp" />
+    <ClCompile Include="hooks\UnXBoosterHook.cpp" />
+    <ClCompile Include="shared\Config.cpp" />
+    <ClCompile Include="hooks\DialogSkipHook.cpp" />
+    <ClCompile Include="hooks\FieldProbeHook.cpp" />
+    <ClCompile Include="hooks\FieldScoutHook.cpp" />
+    <ClCompile Include="hooks\SinCurseHook.cpp" />
+    <ClCompile Include="hooks\NulWardHook.cpp" />
+    <ClCompile Include="hooks\AbilitySfxHook.cpp" />
+    <ClCompile Include="hooks\GridTeachHook.cpp" />
+    <ClCompile Include="hooks\KimahriLancetDualGrantHook.cpp" />
+    <ClCompile Include="hooks\NulWardTeachHook.cpp" />
+    <ClCompile Include="hooks\PhaseTurnEdgeHook.cpp" />
+    <ClCompile Include="hooks\PhaseTurnEdgeSidecar.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

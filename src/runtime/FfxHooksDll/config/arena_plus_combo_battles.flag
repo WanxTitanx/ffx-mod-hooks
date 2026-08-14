@@ -1,0 +1,2 @@
+# Enable F7 combo rows (Duo/Trio/Quartet/Penta/Specials) after Penance.
+# Launch: ForceBattleDirect field=601 group=22 formation=240..244 -> zzzz00_240..244

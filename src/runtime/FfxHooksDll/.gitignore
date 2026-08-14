@@ -1,0 +1,11 @@
+# build artifacts (source-only is tracked)
+*.dll
+*.exe
+*.obj
+*.lib
+*.exp
+*.pdb
+*.log
+bin/
+obj/
+vcpkg_installed/

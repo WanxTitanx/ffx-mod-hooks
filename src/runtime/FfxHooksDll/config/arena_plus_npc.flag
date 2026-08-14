@@ -1,0 +1,2 @@
+# Enable Arena+ row in Monster Arena owner dialog ("Now what?" via Common.013B string 0x4A).
+# Requires: arena_plus.flag + native_menu.flag + usual direct_request / charge_gil / music flags.

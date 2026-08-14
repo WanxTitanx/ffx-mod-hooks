@@ -1,0 +1,3 @@
+# Rename to fast_boot_skip.flag to arm (requires WIRE-ME in dllmain.cpp uncommented).
+# Default mode: observe-only (FFXHOOKS_FAST_BOOT_OBSERVE_ONLY=1 or omit FFXHOOKS_FAST_BOOT_SKIP_APPLY).
+# Do NOT deploy alongside native_menu.flag or field_scout* during titl00 boot.

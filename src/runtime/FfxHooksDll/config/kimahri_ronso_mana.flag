@@ -1,0 +1,8 @@
+# RETIRED 2026-06-16: this flag is INERT. InstallRonsoManaHook no-ops by default.
+#   Clean rebuild spec: docs/ai/GPT_AGENT_PROMPT_KIMAHRI_RONSO_MANA_CLEAN_BUILD.md
+#   To run the old lab anyway: set env FFXHOOKS_RONSO_MANA_FORCE=1.
+# Presence arms Ronso Mana LAB (G1 gate + G3 greyout detours + G2 drain hook).
+# Log-only unless kimahri_ronso_mana_apply.flag is also present.
+# Design (hudSafe=10): Kimahri pool max 255; OD/Ronso menu when charge>100; per-skill costs in submenu.
+# Override: FFXHOOKS_RONSO_POOL_MAX / FFXHOOKS_RONSO_GATE_MIN / FFXHOOKS_RONSO_DRAIN_COST
+# See docs/reverse/FFX_RONSO_MANA_HOOK_IDA_2026-06-15.md

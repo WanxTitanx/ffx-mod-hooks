@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>SinCoreLib</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Xe.BinaryMapper" Version="1.5.2" />
+  </ItemGroup>
+</Project>

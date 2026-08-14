@@ -1,0 +1,14 @@
+{
+  "wd": { "total": 0, "parsed": 0, "noedit_roundtrip": 0 },
+  "grp": { "total": 18, "text_valid": 18 },
+  "vgr": { "total": 2, "text_valid": 2 },
+  "fp": { "total": 11, "text_valid": 11 },
+  "omd": { "total": 237, "header_ok": 237 },
+  "rsd": { "total": 230, "grammar": 230, "noedit_roundtrip": 230 },
+  "ply": { "total": 230, "grammar": 230, "noedit_roundtrip": 230 },
+  "ma2": { "total": 230, "grammar": 230, "noedit_roundtrip": 230 },
+  "spheregrid": { "kernel_files": 20, "layout_pairs": 4, "rt0_passed": 24, "rt0_total": 24, "rt1_passed": 24, "rt1_total": 24 },
+  "shop": { "files": 4, "rt0_passed": 4, "rt1_local": 4 },
+  "wname": { "files": 10, "header_ok": 10, "offsets_ok": 10, "rt0_passed": 10 },
+  "failures": 0
+}

@@ -1,0 +1,44 @@
+# NOTICE — credits and attributions
+
+This project is the official release face for **ffx-mod-hooks**, the runtime
+engine hook layer for FINAL FANTASY X/X-2 HD Remaster. The binaries are built
+from source maintained in a private repo during beta.
+
+## Libraries linked in the binaries
+
+- **PolyHook2** — Stephen Eckels (stevemk14ebr) — https://github.com/stevemk14ebr/PolyHook_2_0
+  - License: MIT
+  - x86 detour engine used across the hook layer.
+- **MinHook** — Tsuda Kageyu — https://github.com/TsudaKageyu/minhook
+  - License: BSD-2-Clause
+  - Used by F7InLive for read-only battle hooks.
+- **Zydis / Zycore** — zyantific — https://github.com/zyantific/zydis
+  - License: MIT
+  - Static dependency of PolyHook2.
+- **asmjit / asmtk** — https://github.com/asmjit/asmjit
+  - License: zlib
+  - Static dependency of PolyHook2.
+- **Xe.BinaryMapper** — Luciano Ciccariello (Xeeynamo) — https://github.com/xeeynamo/Xe.BinaryMapper
+  - License: MIT
+  - Binary struct mapper used by the SIN injector tooling.
+
+## Community techniques
+
+- **FFX module loader / DINPUT8 proxy** (`dinput8.dll` → `modules\*.dll`) — ffgriever
+  - https://github.com/ffgriever — the standard FFX HD modding loading path.
+- **DINPUT8 main-thread seam** (`IDirectInputDevice8::GetDeviceState` vtable
+  slot 9) — discovered and proven in-house by the FFX Mod Studio project
+  (2026-06-03) as the race-free main-thread bridge.
+
+## Our own code
+
+- All hook implementations, the probe, the SIN injector, the menu shell and
+  the photo mode actions were developed by the FFX Mod Studio project.
+- The RVA address ledger (`ffx_addresses.h`) was built from our own IDA Pro
+  reverse engineering.
+
+## Disclaimer
+
+FINAL FANTASY X/X-2 HD Remaster is a trademark and copyright of Square Enix.
+This project is fan-made tooling. It does not distribute game assets or
+executable code. All trademarks are property of their respective owners.

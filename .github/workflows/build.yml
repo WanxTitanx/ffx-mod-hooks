@@ -1,0 +1,54 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-hooks:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgGitCommitId: '10ceb139a610ebf3c6aa49cdc4a4b7f3db5d3f2b'
+
+      - name: Install vcpkg deps (x86 static)
+        run: |
+          cd $env:VCPKG_ROOT
+          ./vcpkg install --triplet x86-windows-static polyhook2 zydis minhook
+        shell: pwsh
+
+      - name: Copy vcpkg_installed into project (expected location)
+        run: |
+          $vcpkgInstalled = Join-Path $env:VCPKG_ROOT 'installed'
+          $dest = 'src/runtime/FfxHooksDll/vcpkg_installed'
+          if (-not (Test-Path $dest)) { New-Item -ItemType Directory -Force $dest | Out-Null }
+          Copy-Item (Join-Path $vcpkgInstalled 'x86-windows-static') $dest -Recurse -Force
+
+      - name: Build ffx-hooks.dll (PolyHook, Release)
+        run: ./src/runtime/FfxHooksDll/build_hooks.ps1 -WithPolyHook -Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffx-hooks-dll
+          path: src/runtime/FfxHooksDll/bin/Release/ffx-hooks.dll
+          if-no-files-found: error
+
+  build-sin:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build SinScaleInject
+        run: dotnet build src/sin/SinScaleInject/SinScaleInject.csproj -c Release

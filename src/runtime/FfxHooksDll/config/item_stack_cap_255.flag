@@ -1,0 +1,2 @@
+# Presence arms ItemStackCapHook: per-slot inventory cap 99 -> 255 (byte ceiling).
+# See docs/reverse/FFX_ITEM_STACK_CAP_99_RESEARCH_2026-06-16.md
