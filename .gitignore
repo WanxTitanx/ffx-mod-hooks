@@ -21,6 +21,9 @@ vcpkg_installed/
 Thumbs.db
 Desktop.ini
 
+# Working state (never versioned)
+work/
+
 # dotnet
 *.nupkg
 artifacts/
