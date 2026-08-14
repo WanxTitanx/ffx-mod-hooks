@@ -2,6 +2,8 @@
 
 <div align="center">
 
+![ffx-mod-hooks logo](assets/logo.png)
+
 **Runtime engine hook layer for FINAL FANTASY X / X-2 HD Remaster (Steam, PC)**
 
 Part of the **FFX Mod Studio** ecosystem
