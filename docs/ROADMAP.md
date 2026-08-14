@@ -63,7 +63,7 @@ The dashboard has 6 tabs and 30 items. Here is every single one.
 |---|---|---|---|
 | Entire Party Earns AP | OFF | **Wired, RT2 needed** | 30Hz timer writes participation=2 + earn=1 at 0x1F10EA0/0x1F10EC4 |
 | Permanent Sensor | OFF | **Wired, RT2 needed** | Debug byte 0xD2A8F8+0x15 = 1 at 30Hz |
-| Playable Seymour | OFF | **RE pending** | Party struct NOT validated in IDA. Apply removed. Stays OFF — no guessing |
+| Playable Seymour | OFF | **Wired, RT2 needed** | Party struct VALIDATED 2026-08-14 (base RVA 0xD32088, 18 slots x 148B, Seymour slot 7, in_party bit0). Wired in UnXBoosterHook (30Hz) |
 | Speed Hack (F2 hold) | OFF | **RE pending** | Needs RE of game tick seam. Not implemented |
 
 ### Tab 3: Cheats (6 items)
@@ -112,7 +112,7 @@ The dashboard has 6 tabs and 30 items. Here is every single one.
 
 - [ ] K-10: Never passed a full RT2 — run_f8_rt2.ps1 exists but was never run
 - [ ] K-11: Flicker risk — same Present-hook + force-subsystem pattern as F7
-- [ ] K-12: Playable Seymour — stays OFF until party struct validated in IDA
+- [ ] K-12: Playable Seymour — party struct validated + wired (2026-08-14); RT2 pending
 - [ ] K-13: Speed Hack — needs RE of game tick seam before implementation
 - [ ] ffx-probe toggle — dashboard item should rename .RT2OFF file to activate
 - [ ] Key arbitration stress test — verify F7 and F8 never fight over same key
@@ -228,9 +228,9 @@ The dashboard has 6 tabs and 30 items. Here is every single one.
 
 | Status | Count |
 |---|---|
-| Wired + RT2 needed | ~25 |
+| Wired + RT2 needed | ~26 |
 | Toggle only (UI exists, no effect) | 5 |
-| RE pending (no guessing) | 3 |
+| RE pending (no guessing) | 2 |
 | Display only (informational) | 3 |
 | Never port | 5+ |
 | Lab / experimental | 12 |
@@ -238,5 +238,6 @@ The dashboard has 6 tabs and 30 items. Here is every single one.
 | Reserved / not implemented | 4 |
 
 **Bottom line:** F7 is functional but needs RT2. F8 is implemented but disabled
-and needs a full RT2 pass. Three items need RE (Playable Seymour, Speed Hack,
-probe thiscall). SIN has 4 of 8 UNI presets. The probe is proven but off in deploy.
+and needs a full RT2 pass. Two items need RE (Speed Hack, probe thiscall);
+Playable Seymour is now wired (RE 2026-08-14, RT2 pending). SIN has 4 of 8 UNI
+presets. The probe is proven but off in deploy.

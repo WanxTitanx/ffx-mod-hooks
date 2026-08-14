@@ -12,7 +12,7 @@ Part of the **FFX Mod Studio** ecosystem
 
 [![Version](https://img.shields.io/badge/version-0.1.0--beta.1-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases)
 [![Status](https://img.shields.io/badge/status-BETA-red)](#status-beta)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20x86-lightgrey)]()
 [![Game](https://img.shields.io/badge/game-FFX%2FFFX--2%20HD%20Remaster%20(Steam)-green)]()
 
@@ -93,15 +93,17 @@ See the release notes of each release for the full known-bugs list. Highlights:
 | Launcher | `ffx-mod-launcher` | Private |
 | Launcher releases | `ffx-mod-launcher-releases` | Public |
 | Website | `ffx-mod-website` | Private |
-| Hooks (source) | `ffx-hooks` | Private (during beta) |
-| **Hooks (releases)** | **`ffx-mod-hooks`** | **Public** |
+| Hooks (development) | `ffx-hooks` | Private |
+| **Hooks (source + releases)** | **`ffx-mod-hooks`** | **Public** |
 | Magic RE | `ffx-magic-re` | Public |
 
 ## Source
 
-Source code lives in a private repo (`WanxTitanx/ffx-hooks`) during beta. It
-will be published when the project stabilizes. Build instructions are included
-in the release notes.
+This is an open-source project — the source code lives in this repository under
+`src/` (GPL-3.0, see [LICENSE](LICENSE)). The private repo
+(`WanxTitanx/ffx-hooks`) is the internal development workspace; releases here
+are cut from reviewed, stable snapshots of it. Build instructions:
+[docs/INSTALL.md](docs/INSTALL.md).
 
 ## Credits
 
@@ -124,7 +126,7 @@ features planned through September 2026. Your support keeps it all moving.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). FINAL FANTASY X/X-2 HD Remaster is property of
+GPL-3.0 — see [LICENSE](LICENSE). FINAL FANTASY X/X-2 HD Remaster is property of
 Square Enix. This is a fan-made tooling layer — no game assets or executable
 code are distributed.
 
