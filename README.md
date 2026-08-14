@@ -23,17 +23,13 @@ Part of the **FFX Mod Studio** ecosystem
 > **This project just left alpha.** Expect bugs, rough edges, and mod
 > incompatibilities. Use a disposable save. All hooks are OFF by default.
 
-## Downloads
+## Downloads & install
 
 Grab the latest release from the
 [Releases page](https://github.com/WanxTitanx/ffx-mod-hooks/releases).
 
-Each release includes:
-- `ffx-hooks.dll` — engine hook layer (PolyHook2 / MinHook)
-- `ffx-probe.dll` — main-thread DINPUT8 probe
-- `SinScaleInject.exe` + deps — offline .bin injector for the SIN system
-- `ffx-hooks.ini` — config file
-- `INSTALL.md` — install instructions
+**Full install guide:** [docs/INSTALL.md](docs/INSTALL.md) — covers installing
+from a release zip, building from source, uninstalling, and troubleshooting.
 
 ## What works (beta)
 
