@@ -1,4 +1,4 @@
-# ffx-hooks-releases
+# ffx-mod-hooks
 
 Official release face for **ffx-hooks** — the runtime engine hook layer for
 FINAL FANTASY X/X-2 HD Remaster (Steam, PC).
@@ -10,7 +10,7 @@ Use a disposable save. All hooks are OFF by default.
 
 ## Downloads
 
-Grab the latest release from the [Releases page](https://github.com/WanxTitanx/ffx-hooks-releases/releases).
+Grab the latest release from the [Releases page](https://github.com/WanxTitanx/ffx-mod-hooks/releases).
 
 ## What works
 
