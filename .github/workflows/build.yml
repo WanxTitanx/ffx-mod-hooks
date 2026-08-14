@@ -23,7 +23,7 @@ jobs:
       - name: Install vcpkg deps (x86 static)
         run: |
           cd $env:VCPKG_ROOT
-          ./vcpkg install --triplet x86-windows-static polyhook2 zydis minhook
+          ./vcpkg install --triplet x86-windows-static polyhook2 zydis
         shell: pwsh
 
       - name: Copy vcpkg_installed into project (expected location)
