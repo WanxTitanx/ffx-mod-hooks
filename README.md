@@ -115,6 +115,11 @@ supporting:
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wandersonwpires%40hotmail.com&currency_code=USD)
 
+**Any amount helps.** Even $2 is enough to kick off project maintenance — and
+this project is bigger than just the hooks. The FFX Mod Studio ecosystem
+includes the editor, a launcher, a website with download links, and many more
+features planned through September 2026. Your support keeps it all moving.
+
 ## License
 
 MIT — see [LICENSE](LICENSE). FINAL FANTASY X/X-2 HD Remaster is property of
