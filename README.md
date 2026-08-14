@@ -57,14 +57,8 @@ Arm with `modules\config\f7_inlive.flag` or env `FFXHOOKS_ENABLE_F7=1`.
 
 ## Roadmap
 
-1. **F8 Dashboard** — implemented (56 rows, 6 tabs, clean key arbitration),
-   disabled by default. Next release candidate. Replaces legacy UnX with
-   safe, gated ports.
-2. **ffx-probe Tier 2** — probe back in deploy + editor wiring via MMF.
-3. **Safe UnX-style ports** — dialog skip (done), debug cheats, boosters.
-   Playable Seymour stays OFF until party struct is validated in IDA.
-4. **FFX Mod Studio integration** — editor / launcher / site as front-ends.
-5. **SIN expansion** — more UNI presets and area rosters.
+See the complete, honest status of every feature in [docs/ROADMAP.md](docs/ROADMAP.md) —
+all F8 dashboard items, what's wired, what's toggle-only, what needs RE, what's never ported.
 
 ## Known bugs
 
