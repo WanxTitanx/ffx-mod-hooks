@@ -113,7 +113,7 @@ the DINPUT8 proxy concept (ffgriever).
 🇧🇷 This project is made by a Brazilian developer. If it helps you, consider
 supporting:
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-blue)](https://www.paypal.com/paypalme/wandersonwpires)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wandersonwpires%40hotmail.com&currency_code=USD)
 
 ## License
 
