@@ -109,10 +109,10 @@ if ($WithPolyHook) {
         "`"$here\hooks\UnXBoosterHook.cpp`"",
         "`"$here\hooks\DialogSkipHook.cpp`"",
         "`"$here\shared\Config.cpp`"",
-        "`"$here\third_party\minhook\hook.c`"",
-        "`"$here\third_party\minhook\buffer.c`"",
-        "`"$here\third_party\minhook\trampoline.c`"",
-        "`"$here\third_party\minhook\hde\hde32.c`""
+        "`"$here\third_party\minhook\src\hook.c`"",
+        "`"$here\third_party\minhook\src\buffer.c`"",
+        "`"$here\third_party\minhook\src\trampoline.c`"",
+        "`"$here\third_party\minhook\src\hde\hde32.c`""
     ) -join " "
 
     # Compile version resource (optional) and embed via cl.exe
@@ -123,7 +123,7 @@ if ($WithPolyHook) {
     $clCmd = (
         "cl /nologo /LD /O2 /MT /W3 /EHsc /std:c++17" +
         " /D_WINDOWS /D_USRDLL /DFFXHOOKS_EXPORTS /DFFXHOOKS_HAVE_POLYHOOK" +
-        " /I`"$here`" /I`"$here\third_party\minhook`" /I`"$vcpkgInclude`"" +
+        " /I`"$here`" /I`"$here\third_party\minhook\include`" /I`"$vcpkgInclude`"" +
         " $sources" +
         " $resArg" +
         " /Fe:`"$outDir\ffx-hooks.dll`"" +

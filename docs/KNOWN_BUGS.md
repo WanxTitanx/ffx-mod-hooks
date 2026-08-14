@@ -21,7 +21,7 @@ notes of every public release. Items move out only after a passing RT2 session.
 | K-10 | Never passed a full RT2 | High | The dashboard has not been tested in-game with the editor closed (`run_f8_rt2.ps1` exists but is pending). |
 | K-11 | Flicker risk | Medium | The F7 menu had a flicker bug (force-gate `0x13407E4` staying on after confirm). The dashboard uses the same Present-hook + force-subsystem pattern and must be checked for the same failure mode. |
 | K-12 | Playable Seymour wired (RT2 pending) | Info | Party struct validated 2026-08-14 (RVA 0xD32088, 18x148B, slot 7, bit0). Wired in UnXBoosterHook; OFF by default. |
-| K-13 | Speed hack unimplemented | Info | Requires RE of the game tick seam first; not ported. |
+| K-13 | Speed hack wired (RT2 pending) | Info | Game tick seam validated 2026-08-14 (FFXField+0x24 delta, hook FFX_Field_UpdateAndRender). F2-hold, OFF by default. |
 
 ## General / cross-cutting
 
