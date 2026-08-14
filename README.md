@@ -108,6 +108,13 @@ This project builds on open source and community work — full list in
 Zydis/Zycore (zyantific), asmjit/asmtk, Xe.BinaryMapper (Xeeynamo),
 the DINPUT8 proxy concept (ffgriever).
 
+## Support
+
+🇧🇷 This project is made by a Brazilian developer. If it helps you, consider
+supporting:
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue)](https://www.paypal.com/paypalme/wandersonwpires)
+
 ## License
 
 MIT — see [LICENSE](LICENSE). FINAL FANTASY X/X-2 HD Remaster is property of
