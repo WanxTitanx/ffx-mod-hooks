@@ -6,6 +6,8 @@
 
 Part of the **FFX Mod Studio** ecosystem
 
+🇧🇷 **Made by a Brazilian developer** — WanxTitanx (FFX Mod Studio)
+
 [![Version](https://img.shields.io/badge/version-0.1.0--beta.1-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases)
 [![Status](https://img.shields.io/badge/status-BETA-red)](#status-beta)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
