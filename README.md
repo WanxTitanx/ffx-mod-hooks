@@ -28,8 +28,12 @@ Part of the **FFX Mod Studio** ecosystem
 Grab the latest release from the
 [Releases page](https://github.com/WanxTitanx/ffx-mod-hooks/releases).
 
-**Full install guide:** [docs/INSTALL.md](docs/INSTALL.md) — covers installing
-from a release zip, building from source, uninstalling, and troubleshooting.
+**Install guides:**
+- 🇬🇧 English: [docs/INSTALL.md](docs/INSTALL.md)
+- 🇧🇷 Português: [docs/INSTALACAO_PT-BR.md](docs/INSTALACAO_PT-BR.md)
+
+Both cover installing from a release zip, building from source, uninstalling,
+and troubleshooting.
 
 ## What works (beta)
 
