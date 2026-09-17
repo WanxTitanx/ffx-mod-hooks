@@ -55,40 +55,90 @@ is hidden. If it says "not ready", it's not ready.
 - [ ] K-07: Revalidate Difficulty preset Apply (admission/status split, fixed in dev) and the
       Backspace footer hint in the next authorized RT2 after release.
 
-## F8 Dashboard (In-game shell; per-row runtime effects RT2 pending)
+## F8 Dashboard (shell + LIVE rows In-game; known gaps listed)
 
 The native FLAGS catalog has six tabs — Plugins, Boosters, Cheats, Scout, Arena+, Input — and
 29 rows: 14 LIVE, 8 RESTART REQUIRED, 7 NOT WIRED. The tracked and built-in templates set
 `[dashboard] enabled=1`, but all 14 LIVE targets default false. Config-load failure is still OFF.
-The dashboard shell, tab navigation, and bulk actions were observed in-game on 2026-09-16.
+The dashboard shell, tab navigation, LIVE row effects, and bulk actions were observed in-game
+on 2026-09-16.
 
-| Tab | LIVE | RESTART REQUIRED | NOT WIRED |
-|---|---:|---:|---:|
-| Plugins | 0 | 0 | 4 |
-| Boosters | 4 | 0 | 0 |
-| Cheats | 8 | 0 | 0 |
-| Scout | 0 | 4 | 0 |
-| Arena+ | 1 | 4 | 0 |
-| Input | 1 | 0 | 3 |
-| **Total** | **14** | **8** | **7** |
+### Tab 1: Plugins (4 items — none wired)
 
-The LIVE contract is 11 `RuntimeAcknowledged` rows plus three `ConfigPolled` rows: Speed Hack
-(armed by `boosters.speed_hack`; Ctrl+Shift+K cycles 1x/2x/4x/8x), Arena+ Compose F7, and Dialog
-Skip. Native 2x/4x is reported only as ARMED, not as scene-specific application. Custom 8x targets
-the reviewed field-scene service tick and reports APPLIED only after matching callback telemetry;
-dialogue and rendered-scene coverage remains an RT2 observation, and pre-rendered FMV remains
-unsupported. The
-corrected Debug base is RVA `0x00D2A8F8`, with one-byte owned fields. AP participation and
-AP-earned are exactly seven-byte arrays at RVAs
-`0x01F10EA0` and `0x01F10EC4`. The party structure is RVA `0x00D32060`, with slot-zero
-`in_party` at `0x00D32088` and a 148-byte stride.
+| Item | Default | Status | Detail |
+|---|---|---|---|
+| dinput8 - hook proxy | ON | **Not wired — display only** | The proxy loads our DLLs; the menu cannot load it |
+| dxgi - Special K | OFF | **Not wired — display only** | Special K removed from deploy (INC-002 crash); no runtime effect |
+| unx - UnX loader | OFF | **Not wired — display only** | UnX removed from deploy (crashed with probe); safe concepts reimplemented |
+| ffx-probe | OFF | **Not wired — display only** | Probe deployed as `.RT2OFF`; toggle is not wired to file ops |
 
+### Tab 2: Boosters (4 items — LIVE)
+
+| Item | Default | Status | Detail |
+|---|---|---|---|
+| Permanent Sensor | OFF | **In-game** | Debug byte `0xD2A8F8+0x15` — enemy details without Sensor gear |
+| Playable Seymour | OFF | **In-game (experimental)** | Party struct `0x00D32060`, slot 7, `in_party` bit0; Sphere Grid unsupported; selection/switch/exit cleanup still needs strict RT2 |
+| Speed Hack | OFF | **In-game** | `boosters.speed_hack` arms native 2x/4x; custom 8x on reviewed field-scene tick (Ctrl+Shift+K cycles); dialogue/rendered-scene coverage RT2-pending; FMV unsupported |
+| Entire Party Earns AP | OFF | **In-game** | Participation `0x01F10EA0` + earned `0x01F10EC4` (seven-byte arrays) |
+
+### Tab 3: Cheats (8 items — LIVE)
+
+| Item | Default | Status | Detail |
+|---|---|---|---|
+| Invincible Party | OFF | **In-game** | Debug-byte family — party HP hold |
+| Invincible Enemies | OFF | **In-game** | Enemy HP hold |
+| Always Overdrive | OFF | **In-game** | Overdrive gauges held full in battle |
+| Always Critical | OFF | **In-game** | Eligible attacks forced critical |
+| Damage 99999 | OFF | **In-game** | Supported damage set to 99999 |
+| Always Rare Drop | OFF | **In-game** | Rare drops forced where supported |
+| AP Multiplier | OFF (rate 100x) | **In-game** | Scalar `cheats.ap_multiplier` 1-100 — supported AP rewards multiplied by configured rate |
+| Gil Multiplier | OFF (rate 100x) | **In-game** | Scalar `cheats.gil_multiplier` 1-100 — supported Gil rewards multiplied by configured rate |
+
+### Tab 4: Scout (4 items — RESTART REQUIRED)
+
+| Item | Default | Status | Detail |
+|---|---|---|---|
+| FieldScout Master | OFF | **Wired — arms next launch; RT2 needed** | Basic field capture; gates `field_scout.flag` / env |
+| FieldScout Heavy | OFF | **Wired — arms next launch; RT2 needed** | Extra field details |
+| FieldScout Max | OFF | **Wired — arms next launch; RT2 needed** | Requires Heavy + Ultra |
+| FieldScout Ultra | OFF | **Wired — arms next launch; RT2 needed** | Requires Heavy |
+
+### Tab 5: Arena+ (5 items)
+
+| Item | Default | Status | Detail |
+|---|---|---|---|
+| Arena+ Master | OFF | **Wired — arms next launch; RT2 needed** | Gates `arena_plus.flag` / `FFXHOOKS_ENABLE_ARENA_PLUS` |
+| Arena+ Compose F7 | OFF | **Unavailable — quarantined** | LIVE/ConfigPolled but compose is quarantined; row reports Unavailable, no recovery |
+| Arena+ Victory Hook | OFF | **Wired — arms next launch; RT2 needed** | Victory log; rewards unchanged (scaffold/log-only) |
+| Arena+ Resolver Log | OFF | **Wired — arms next launch; RT2 needed** | Logs match choices |
+| Arena+ Music | OFF | **Wired — arms next launch; externally blocked** | `arena_plus_music.flag.off` present in the install dominates the row (`ExternalOverride`); bulk never deletes it silently |
+
+### Tab 6: Input (4 items)
+
+| Item | Default | Status | Detail |
+|---|---|---|---|
+| Block Windows Key | ON | **Not wired — display only** | Cannot block the Windows key from this menu |
+| Fix Background Input | ON | **Not wired — display only** | Background input cannot be changed here |
+| Filter IME | ON | **Not wired — display only** | IME filtering unavailable here |
+| Dialog Skip | OFF | **In-game** | LIVE/ConfigPolled — skips voiced lines when enabled |
+
+### F8 known gaps
+
+- Plugins tab (4) and three Input rows are display-only — no runtime effect exists.
+- Arena+ Compose F7 stays quarantined; Victory/Resolver log-only until RT2.
+- Arena+ Music cannot arm while `arena_plus_music.flag.off` (or `music.flag.off`) exists in
+  `modules/` — the row now reports the blocking artifact by name instead of a bare "blocked".
+- Speed Hack: dialogue/rendered-scene coverage unproven; pre-rendered FMV unsupported.
+- Playable Seymour: Sphere Grid unsupported; selection/Switch/turn/exit/next-battle cleanup
+  still need strict RT2 evidence.
+
+### Technical notes
+
+The corrected Debug base is RVA `0x00D2A8F8`, with one-byte owned fields. AP participation and
+AP-earned are exactly seven-byte arrays at RVAs `0x01F10EA0` and `0x01F10EC4`. The party
+structure is RVA `0x00D32060`, with slot-zero `in_party` at `0x00D32088` and a 148-byte stride.
 The debug/AP producer runs from Present through `UnXBoosterFrameTick()` at a 33 ms gate; there is
-no F8 window timer. Playable Seymour is LIVE only as a default-OFF, RAM-only experimental
-battle-roster consumer on the shared battle seam; Sphere Grid is explicitly unsupported, and
-selection/Switch/turn/exit/next-battle cleanup still need strict RT2 evidence. Compose
-F7 is LIVE/ConfigPolled but Task-8 evidence is gate-only. Arena+ Master, Victory, Resolver, and
-Music are RESTART REQUIRED; Victory remains scaffold/log-only.
+no F8 window timer.
 
 2026-09-16 **fixed-in-dev** updates pending release:
 
@@ -106,12 +156,6 @@ Next gate: run one separately authorized, manual RT2 case at a time through
 `run_f8_rt2.ps1 -Phase Preflight` and `-Phase Verify`. The script never launches/stops FFX or
 the editor and never deploys. Dynamic `FreeLibrary`/hot unload remains unsupported. Source,
 RT0, and build evidence are not RT2 or Production.
-
-### Deferred F8-adjacent work
-
-| Feature | Status | Detail |
-|---|---|---|
-| Configurable AP/Gil multipliers | Future | Separate from the current boolean 100x debug-byte gates; requires ownership of the native multiplier immediates plus separate RT0 and RT2 evidence. |
 
 ---
 
@@ -250,9 +294,9 @@ legacy runtime path. The offline codecs/presets below remain research assets, no
 
 | Status | Count |
 |---|---|
-| In-game (observed in a real session) | 4 surfaces (F7 shell, F8 shell + bulk, F9 UI + transport, focus-loss drain) |
+| In-game (observed in a real session) | F7/F8/F9 shells + transport, focus-loss drain, 13 F8 LIVE rows (Boosters 4, Cheats 8, Dialog Skip; Seymour experimental) |
 | Fixed in dev (awaiting release/RT2) | 4 (Backspace glyph, Difficulty admission, F8 bulk truth, direct-F8 drain) |
-| Wired + RT2 needed | ~24 |
+| Wired + RT2 needed | ~15 (F8 restart-required rows, F7 writers, lab hooks) |
 | Toggle only (UI exists, no effect) | 6 |
 | RE pending (no guessing) | 1 |
 | Display only (informational) | 3 |
@@ -261,11 +305,11 @@ legacy runtime path. The offline codecs/presets below remain research assets, no
 | Proven (RT2 passed) | 5 |
 | Reserved / not implemented | 4 |
 
-**Bottom line:** the F7/F8/F9 native menu shells and the Maechen transport are **In-game**;
-four user-reported defects are **fixed in dev** and waiting on release plus one authorized
-RT2 pass. F7 Difficulty writes and all F8 LIVE runtime effects remain RT2-pending — no Task-8
-artifact was deployed. Playable Seymour stays an experimental battle-roster LIVE row with Sphere
-Grid excluded; Speed Hack stays LIVE/ConfigPolled. BootSkip is superseded by the approved
-Fastload plan; the two Sphere Grid lab entries are retired out of scope. S.I.N. RAM is an offline
-candidate; its legacy disk writer remains quarantined. The probe has family-specific prior
-evidence but is off in deploy.
+**Bottom line:** the F7/F8/F9 native menu shells, the Maechen transport, and 13 F8 LIVE rows
+(Boosters, Cheats incl. AP/Gil multipliers, Dialog Skip; Seymour experimental) are **In-game**
+per user RT2 evidence. Four user-reported defects are **fixed in dev** awaiting release/RT2.
+F7 Difficulty writes, the 8 F8 restart-required rows (Scout/Arena+), and lab hooks remain
+RT2-pending; Arena+ Compose is quarantined and Arena+ Music is externally blocked by
+`arena_plus_music.flag.off`. BootSkip is superseded by the approved Fastload plan; the two
+Sphere Grid lab entries are retired. S.I.N. RAM is an offline candidate; its legacy disk writer
+remains quarantined. The probe has family-specific prior evidence but is off in deploy.
