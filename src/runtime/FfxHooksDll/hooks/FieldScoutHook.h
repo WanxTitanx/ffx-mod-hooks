@@ -44,6 +44,8 @@ namespace FfxHooks {
         FieldScoutLogFn log);
 
     bool RemoveFieldScoutHook(FieldScoutLogFn log);
+    // Legacy compatibility query. Installation now applies its complete owned MinHook batch
+    // synchronously; this function never touches the process-global queue.
     bool ApplyFieldScoutQueuedHooks(FieldScoutLogFn log);
     bool IsFieldScoutHookInstalled();
 

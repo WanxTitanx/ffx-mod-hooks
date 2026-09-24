@@ -9,7 +9,7 @@ is hidden. If it says "not ready", it's not ready.
 |---|---|
 | **In-game** | Ported, deployed, and observed working in a real game session (RT2 user evidence) |
 | **Wired** | Code exists and is connected — but may still need in-game testing (RT2) |
-| **Fixed in dev** | Corrected on the development branch; pending merge, deploy, and RT2 revalidation |
+| **Lane-fixed** | Corrected on branch `fastload-autosave-20260916`; pending merge, deploy, and RT2 revalidation |
 | **Toggle only** | The dashboard item exists and persists to INI, but no runtime effect yet |
 | **RE pending** | Needs reverse engineering (IDA) before it can be implemented — no guessing |
 | **Never port** | Will NOT be implemented — registered as out of scope (includes retired lab entries) |
@@ -17,17 +17,16 @@ is hidden. If it says "not ready", it's not ready.
 
 ---
 
-## F7 In-Live menu
+## F7 In-Live menu (RT0/build + isolated runtime/policy RT1; live callback RT1/RT2 pending)
 
 | Feature | Status | Detail |
 |---|---|---|
-| F7 menu shell (open, navigate, render, glyph footers) | **In-game** | Observed 2026-09-16; Back footer glyph corrected to Backspace (**fixed in dev**) |
-| Difficulty: Max/current HP/MP, Overkill, STR/DEF/MAG/MDF/AGI/LCK/EVA/ACC | **Fixed in dev, RT2 needed** | Exact-width, RAM-only transforms with transactional max/current ratios across partial failures, immutable baselines, indeterminate-write retry, and compare-before-restore. 2026-09-16: preset admission decoupled from the broad F7 master gate — the `Apply unavailable: Installed` contradiction is fixed, awaiting redeploy + RT2 |
-| Difficulty: Elemental weak/resist/absorb | **Quarantined** | Configuration-only until exact executable xrefs and widths are proved |
-| Difficulty: Auto-statuses | **Quarantined** | Configuration-only until exact executable xrefs and widths are proved |
-| Difficulty: Status immunities | **Quarantined** | Configuration-only until exact executable xrefs and widths are proved |
+| F7 menu shell (open, navigate, render, glyph footers) | **In-game** | Observed 2026-09-16; Back footer glyph corrected to Backspace (**lane-fixed**) |
+| Difficulty: Max/current HP/MP, Overkill, STR/DEF/MAG/MDF/AGI/LCK/EVA/ACC | **RT0 + isolated runtime/policy RT1; live callback RT1/RT2 needed** | Exact-width, RAM-only transforms with transactional max/current ratios across partial failures, immutable baselines, indeterminate-write retry, and compare-before-restore |
+| Difficulty: Elemental weak/resist/absorb | **Offline runtime candidate** | Exact byte masks; selected affinity supersedes competing native affinities; live acceptance pending |
+| Difficulty: Auto-statuses | **Offline runtime candidate** | Native innate words plus byte-exact native remove/apply helpers; live acceptance pending |
+| Difficulty: Status immunities | **Offline runtime candidate** | Exact 25-byte resistance table; configured values are minimums that preserve stronger native resistance; JSON editor only |
 | Difficulty: Per-area presets (N2) | **Configuration only in UI** | Bounded JSON plus runtime replacement semantics exist; no native menu editor |
-| Difficulty: Per-monster presets (N3) | **Toggle only** | Config + apply code exists, no UI in F7 menu |
 | Force Last Battle | **Wired, RT2 needed** | MsBattleEncountExe on main thread, 1-9 reps |
 | Music: Track lock | **Wired, RT2 needed** | Via FFXHooksBlock_v1 musicOverrideTrackIndex |
 | Music: Battle-entry override | **Wired, RT2 needed** | Single-consumption pending, 45s expiry |
@@ -52,13 +51,13 @@ is hidden. If it says "not ready", it's not ready.
 - [ ] K-06: Validate the observe-only lifecycle plus normal/force/death dispatch families,
       repeated-event preservation, unchanged ABI/readback, and zero mutation via the dedicated
       read-only RT2 slice; keep mutation blocked.
-- [ ] K-07: Revalidate Difficulty preset Apply (admission/status split, fixed in dev) and the
-      Backspace footer hint in the next authorized RT2 after release.
+- [ ] K-07: Revalidate Difficulty preset Apply (admission/status split, lane-fixed) and the
+      Backspace footer hint in the next authorized RT2 after lane merge/deploy.
 
 ## F8 Dashboard (shell + LIVE rows In-game; known gaps listed)
 
-The native FLAGS catalog has six tabs — Plugins, Boosters, Cheats, Scout, Arena+, Input — and
-29 rows: 14 LIVE, 8 RESTART REQUIRED, 7 NOT WIRED. The tracked and built-in templates set
+The native FLAGS catalog has eight tabs — Plugins, Boosters, Cheats, Scout, Arena+, Input, Dev, Lab — and
+36 rows: 14 LIVE, 15 RESTART REQUIRED, 7 NOT WIRED. The tracked and built-in templates set
 `[dashboard] enabled=1`, but all 14 LIVE targets default false. Config-load failure is still OFF.
 The dashboard shell, tab navigation, LIVE row effects, and bulk actions were observed in-game
 on 2026-09-16.
@@ -85,14 +84,14 @@ on 2026-09-16.
 
 | Item | Default | Status | Detail |
 |---|---|---|---|
-| Invincible Party | OFF | **In-game** | Debug-byte family — party HP hold |
+| Invincible Party | OFF | **In-game** | Debug byte `0xD2A8F8+0x04`-family — party HP hold |
 | Invincible Enemies | OFF | **In-game** | Enemy HP hold |
 | Always Overdrive | OFF | **In-game** | Overdrive gauges held full in battle |
 | Always Critical | OFF | **In-game** | Eligible attacks forced critical |
 | Damage 99999 | OFF | **In-game** | Supported damage set to 99999 |
 | Always Rare Drop | OFF | **In-game** | Rare drops forced where supported |
-| AP Multiplier | OFF (rate 100x) | **In-game** | Scalar `cheats.ap_multiplier` 1-100 — supported AP rewards multiplied by configured rate |
-| Gil Multiplier | OFF (rate 100x) | **In-game** | Scalar `cheats.gil_multiplier` 1-100 — supported Gil rewards multiplied by configured rate |
+| AP Multiplier | OFF (rate 100x) | **In-game** | Scalar `cheats.ap_multiplier` 1–100 — supported AP rewards multiplied by configured rate |
+| Gil Multiplier | OFF (rate 100x) | **In-game** | Scalar `cheats.gil_multiplier` 1–100 — supported Gil rewards multiplied by configured rate |
 
 ### Tab 4: Scout (4 items — RESTART REQUIRED)
 
@@ -111,7 +110,7 @@ on 2026-09-16.
 | Arena+ Compose F7 | OFF | **Unavailable — quarantined** | LIVE/ConfigPolled but compose is quarantined; row reports Unavailable, no recovery |
 | Arena+ Victory Hook | OFF | **Wired — arms next launch; RT2 needed** | Victory log; rewards unchanged (scaffold/log-only) |
 | Arena+ Resolver Log | OFF | **Wired — arms next launch; RT2 needed** | Logs match choices |
-| Arena+ Music | OFF | **Wired — arms next launch; externally blocked** | `arena_plus_music.flag.off` present in the install dominates the row (`ExternalOverride`); bulk never deletes it silently |
+| Arena+ Music | OFF | **Wired — arms next launch; externally blocked** | `modules/arena_plus_music.flag.off` present in the live install dominates the row (`ExternalOverride`); bulk never deletes it silently |
 
 ### Tab 6: Input (4 items)
 
@@ -122,7 +121,7 @@ on 2026-09-16.
 | Filter IME | ON | **Not wired — display only** | IME filtering unavailable here |
 | Dialog Skip | OFF | **In-game** | LIVE/ConfigPolled — skips voiced lines when enabled |
 
-### F8 known gaps
+### F8 known gaps (lacunas)
 
 - Plugins tab (4) and three Input rows are display-only — no runtime effect exists.
 - Arena+ Compose F7 stays quarantined; Victory/Resolver log-only until RT2.
@@ -140,17 +139,17 @@ structure is RVA `0x00D32060`, with slot-zero `in_party` at `0x00D32088` and a 1
 The debug/AP producer runs from Present through `UnXBoosterFrameTick()` at a 33 ms gate; there is
 no F8 window timer.
 
-2026-09-16 **fixed-in-dev** updates pending release:
+2026-09-16 **lane-fixed** updates pending merge/deploy:
 
 - Bulk actions renamed `Enable Supported` / `Disable Supported` and now classify per row:
   `Changed / Already / Unavailable / ExternalOverride / InvalidParameter / EffectiveMismatch`
   with one atomic INI write; the previous `0 changed, 3 already, 2 blocked` report conflated
   quarantine, external `.off` markers, and unsupported rows.
-- External overrides name the dominating artifact (e.g. `arena_plus_music.flag.off`).
-  Marker files are never deleted silently.
+- External overrides name the dominating artifact (e.g. `arena_plus_music.flag.off`, confirmed
+  present in the live install at `modules/`). Marker files are never deleted silently.
 - Direct-F8 menus now drain on focus loss like every other F-key surface; the close-on-focus-loss
-  behavior is a pinned safety contract, and a held F-key cannot reopen a menu on focus return
-  (fresh press required).
+  behavior the user observed is a pinned safety contract, and a held F-key cannot reopen a menu
+  on focus return (fresh press required).
 
 Next gate: run one separately authorized, manual RT2 case at a time through
 `run_f8_rt2.ps1 -Phase Preflight` and `-Phase Verify`. The script never launches/stops FFX or
@@ -165,10 +164,10 @@ RT0, and build evidence are not RT2 or Production.
 |---|---|---|
 | F9 translucent UI (title/input/answer/footer, native shell) | **In-game** | Observed 2026-09-16; layout/protocol frozen — no UI redesign is planned |
 | Transport `POST /api/maechen/game/v1` | **In-game** | Protocol v1 (`{locale, question, version}`); Production probe returned HTTP 200 with a valid bounded answer; in-game round-trip observed |
-| Answer grounding (native path) | **Fixed in dev (in progress)** | Root cause measured: `allowExternalSearch=false` also blocks the bundled guide (17 areas) and wiki runtime (~700 local articles); location questions can never reach either. Fix lands in server-side arbitration only |
-| Protocol v2 local context | **Proposed, not approved** | Opt-in (default OFF) bounded scalar digest — current location, gil, party count, save slot, effective/blocked flag digest, build id — so answers can reference the player's real client state. No save bytes, file paths, or player names |
+| Answer grounding (native path) | **Lane-fix in progress (R5)** | Root cause measured: `allowExternalSearch=false` also blocks the **bundled** guide (17 areas) and wiki runtime (~700 local articles); location questions can never reach either. Fix lands in `maechen-knowledge.ts` arbitration only |
+| Protocol v2 local context | **Proposed (Phase M, not approved)** | Opt-in (`maechen.local_context`, default OFF) bounded scalar digest — sceneId/location, gil, party count, save slot, F8 effective/blocked-flag digest, build id — so answers can reference the player's real client state. No save bytes, paths, or names |
 | Conversation memory | **Future** | Protocol v1 is stateless by design |
-| Save-file analysis | **Deferred** | Raw save parsing requires a save-format spec; only a vanilla-decoded slot-header reuse would be reconsidered |
+| Save-file analysis | **Deferred** | Raw `ffx_000` parsing requires a save-format spec; only a vanilla-decoded slot-header reuse would be reconsidered |
 
 ---
 
@@ -177,33 +176,32 @@ RT0, and build evidence are not RT2 or Production.
 - RT2 validation coverage for every LIVE row (F7 writers, Speed cycle, Dialog Skip, Seymour
   cleanup, Debug/AP, Arena+ Victory/Resolver/Music) — one authorized case at a time via
   `run_f8_rt2.ps1`.
-- Maechen native retrieval fix merge + release; protocol v2 local context pending approval.
-- Fastload Autosave implementation (approved plan: F8 Dev gate, default OFF, observe-only
-  first, newest autosave only, Shift bypass, no save-byte writes).
+- Maechen native retrieval fix (R5) merge + deploy; protocol v2 local context pending approval.
+- Fastload Autosave implementation (Tasks 0–14, approved plan, not started pending R5/R6).
 - Difficulty quarantined families (elemental, statuses, immunities) — exact xref/width proof.
-- Per-area (N2)/per-monster (N3) preset native editors; Music playlist UI; 181-track crosswalk.
+- Per-area (N2) preset native editor; Music playlist UI; 181-track name crosswalk.
 - Monster AI Swap mutation RE (corpus whitelist still empty).
 - ffx-probe reactivation in deploy, dashboard file-rename wiring, editor `FfxProbe_Service` MMF.
 - FFX Mod Studio integration (RuntimeDllManager releases, contracts consumption).
 
 ---
 
-## Lab hooks (gated OFF, not in any menu)
+## Lab hooks (default OFF; selected controls now in F8 Lab)
 
 | Hook | Gate flag | Status |
 |---|---|---|
-| NovaSuperDamage (99999) | nova_super_damage.flag | Wired, RT2 needed |
-| RonsoMana | kimahri_ronso_mana.flag | Wired, lab (log-only) |
+| NovaSuperDamage (99999) | nova_super_damage.flag | F8 Lab control lane-fixed; restart required; behavior RT2 pending |
+| RonsoMana | kimahri_ronso_mana.flag | F8 Lab control lane-fixed; restart required; behavior RT2 pending |
 | NulWard (320/321) | nul_ward.flag | Wired, lab (WARN: conflicts NovaClamp K-21) |
-| GridTeach v4.5 | grid_teach.flag | Wired, RT2 needed |
+| GridTeach v4.5 | grid_teach.flag | F8 Lab control lane-fixed; restart required; behavior RT2 pending |
 | NulWardTeach (legacy) | nul_ward_teach.flag | Wired, lab (prefer GridTeach) |
-| KimahriLancetDualGrant | kimahri_lancet_dual_grant.flag | Wired, lab (needs GridTeach) |
-| ItemStackCap (99->255) | item_stack_cap_255.flag | Wired, lab |
-| DoubleTripleDrop | (battle callers) | Wired, lab |
+| KimahriLancetDualGrant | kimahri_lancet_dual_grant.flag | F8 Lab control lane-fixed; restart required; behavior RT2 pending |
+| ItemStackCap (99->255) | item_stack_cap_255.flag | F8 Lab control lane-fixed; restart required; behavior RT2 pending |
+| DoubleTripleDrop | (battle callers) | F8 Lab control lane-fixed; restart required; behavior RT2 pending |
 | ElementHook (Scan Holy/Dark) | element_scan_dark.flag | Wired, RT2 needed |
 | SinCurseHook (legacy writer) | — | **Unavailable** — no detour, process launch, or runtime area |
 | PhaseTurnEdge | — | DISABLED in build |
-| BootSkip | fast_boot_skip.flag | **Superseded** — the commented scaffold is retired by the approved Fastload Autosave plan (default OFF, observe-only first, autosave only, Shift bypass) |
+| Fastload Autosave | development.fastload_autosave | F8 Dev; user confirmed automatic loading on 2026-09-19; see SESSION_HANDOFF for exact artifact and limits |
 
 ---
 
@@ -290,14 +288,14 @@ legacy runtime path. The offline codecs/presets below remain research assets, no
 
 ---
 
-## Summary by status
+## Repository-wide approximate status (not the F8 catalog)
 
 | Status | Count |
 |---|---|
 | In-game (observed in a real session) | F7/F8/F9 shells + transport, focus-loss drain, 13 F8 LIVE rows (Boosters 4, Cheats 8, Dialog Skip; Seymour experimental) |
-| Fixed in dev (awaiting release/RT2) | 4 (Backspace glyph, Difficulty admission, F8 bulk truth, direct-F8 drain) |
+| Lane-fixed (awaiting merge/deploy/RT2) | 4 (Backspace glyph, Difficulty admission, F8 bulk truth, direct-F8 drain) |
 | Wired + RT2 needed | ~15 (F8 restart-required rows, F7 writers, lab hooks) |
-| Toggle only (UI exists, no effect) | 6 |
+| Toggle only (UI exists, no effect) | 5 |
 | RE pending (no guessing) | 1 |
 | Display only (informational) | 3 |
 | Never port / retired | 7+ |
@@ -307,7 +305,7 @@ legacy runtime path. The offline codecs/presets below remain research assets, no
 
 **Bottom line:** the F7/F8/F9 native menu shells, the Maechen transport, and 13 F8 LIVE rows
 (Boosters, Cheats incl. AP/Gil multipliers, Dialog Skip; Seymour experimental) are **In-game**
-per user RT2 evidence. Four user-reported defects are **fixed in dev** awaiting release/RT2.
+per user RT2 evidence. Four user-reported defects are **lane-fixed** awaiting merge/deploy/RT2.
 F7 Difficulty writes, the 8 F8 restart-required rows (Scout/Arena+), and lab hooks remain
 RT2-pending; Arena+ Compose is quarantined and Arena+ Music is externally blocked by
 `arena_plus_music.flag.off`. BootSkip is superseded by the approved Fastload plan; the two

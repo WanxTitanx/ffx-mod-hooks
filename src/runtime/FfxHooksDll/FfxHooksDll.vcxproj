@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
-  FFX Hooks DLL â€” Visual Studio 2022, x86 only (game is 32-bit).
+  FFX Hooks DLL - Visual Studio 2022, x86 only (game is 32-bit).
   Requires:
     - vcpkg with polyhook2:x86-windows + zydis:x86-windows installed
-    - OR run build_hooks.ps1 (handles both Fase 0 cl.exe and Fase 1+ vcpkg modes)
+    - OR run build_hooks.ps1 (handles the Phase 0 cl.exe and Phase 1+ vcpkg modes)
   To build in VS: set vcpkg integration (vcpkg integrate install) then open this project.
 -->
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -81,7 +81,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..\..\research\equipment_workshop\include;$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -89,8 +89,8 @@
       <EnableUAC>false</EnableUAC>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x86-windows-static\debug\lib;$(ProjectDir)vcpkg_installed\x86-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;kernel32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">kernel32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -104,7 +104,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..\..\research\equipment_workshop\include;$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -114,8 +114,8 @@
       <EnableUAC>false</EnableUAC>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x86-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;kernel32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">kernel32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -123,6 +123,11 @@
     <ClInclude Include="shared\ffx_addresses.h" />
     <ClInclude Include="hooks\MusicHook.h" />
     <ClInclude Include="hooks\NovaSuperDamageHook.h" />
+    <ClInclude Include="hooks\RonsoPoolCore.h" />
+    <ClInclude Include="hooks\RonsoPoolSave.h" />
+    <ClInclude Include="hooks\RonsoPoolStore.h" />
+    <ClInclude Include="hooks\RonsoPoolRuntime.h" />
+    <ClInclude Include="hooks\RonsoPoolEvidence.h" />
     <ClInclude Include="hooks\RonsoManaHook.h" />
     <ClInclude Include="hooks\ElementHook.h" />
     <ClInclude Include="hooks\ResolverLogHook.h" />
@@ -131,12 +136,49 @@
     <ClInclude Include="hooks\DoubleTripleDropHook.h" />
     <ClInclude Include="hooks\BattleEndHook.h" />
     <ClInclude Include="hooks\BootSkipHook.h" />
+    <ClInclude Include="hooks\F7DifficultyCore.h" />
+    <ClInclude Include="hooks\CustomMixUltraCore.h" />
+    <ClInclude Include="hooks\CustomMixWindowsAdapter.h" />
+    <ClInclude Include="hooks\CustomMixRuntime.h" />
+    <ClInclude Include="hooks\SinRamScalingCore.h" />
+    <ClInclude Include="hooks\SinRamConfigCore.h" />
+    <ClInclude Include="hooks\SinTransitionPublication.h" />
+    <ClInclude Include="hooks\F7InLive.h" />
+    <ClInclude Include="hooks\SharedBattleRuntime.h" />
+    <ClInclude Include="hooks\SeymourBattleCore.h" />
+    <ClInclude Include="hooks\SeymourBattleHook.h" />
+    <ClInclude Include="hooks\ArenaComposeRestore.h" />
     <ClInclude Include="hooks\ArenaPlusComposePick.h" />
     <ClInclude Include="hooks\InGameMenuDashboard.h" />
+    <ClInclude Include="hooks\F8FlagCatalog.h" />
+    <ClInclude Include="hooks\F8RuntimeCore.h" />
+    <ClInclude Include="hooks\FieldScoutAdmissionCore.h" />
+    <ClInclude Include="hooks\MonsterAiObserverCore.h" />
+    <ClInclude Include="hooks\MonsterAiDispatchShadow.h" />
+    <ClInclude Include="hooks\MonsterAiDispatchTelemetry.h" />
+    <ClInclude Include="hooks\MinHookBatchCoordinator.h" />
     <ClInclude Include="hooks\UnXBoosterHook.h" />
+    <ClInclude Include="hooks\SpeedHackHook.h" />
     <ClInclude Include="hooks\DialogSkipHook.h" />
+    <ClInclude Include="hooks\NativePortsHook.h" />
+    <ClInclude Include="hooks\NativeGamepadHook.h" />
+    <ClInclude Include="hooks\NativeLanguageHook.h" />
+    <ClInclude Include="hooks\NativeLanguageCore.h" />
+    <ClInclude Include="hooks\SinAiCore.h" />
+    <ClInclude Include="hooks\SinAiHook.h" />
+    <ClInclude Include="hooks\FmvSpeedHook.h" />
+    <ClInclude Include="hooks\FmvSpeedCore.h" />
+    <ClInclude Include="hooks\SinAiProfiles.generated.h" />
+    <ClInclude Include="hooks\NativeSettingsUi.inl" />
+    <ClInclude Include="hooks\NativeGamepadCore.h" />
+    <ClInclude Include="hooks\NativePortsCore.h" />
+    <ClInclude Include="hooks\NativeBindingsCore.h" />
+    <ClInclude Include="hooks\MaechenCore.h" />
+    <ClInclude Include="hooks\MaechenHook.h" />
+    <ClInclude Include="hooks\F7UiCore.h" />
     <ClInclude Include="hooks\FieldProbeHook.h" />
     <ClInclude Include="hooks\FieldScoutHook.h" />
+    <ClInclude Include="hooks\F7UnsafePrototypePolicy.h" />
     <ClInclude Include="hooks\SinCurseHook.h" />
     <ClInclude Include="hooks\PhaseTurnEdgeHook.h" />
     <ClInclude Include="hooks\PhaseTurnEdgeSidecar.h" />
@@ -145,6 +187,10 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="hooks\MusicHook.cpp" />
     <ClCompile Include="hooks\NovaSuperDamageHook.cpp" />
+    <ClCompile Include="hooks\RonsoPoolCore.cpp" />
+    <ClCompile Include="hooks\RonsoPoolSave.cpp" />
+    <ClCompile Include="hooks\RonsoPoolStore.cpp" />
+    <ClCompile Include="hooks\RonsoPoolRuntime.cpp" />
     <ClCompile Include="hooks\RonsoManaHook.cpp" />
     <ClCompile Include="hooks\ElementHook.cpp" />
     <ClCompile Include="hooks\ResolverLogHook.cpp" />
@@ -153,13 +199,47 @@
     <ClCompile Include="hooks\DoubleTripleDropHook.cpp" />
     <ClCompile Include="hooks\BattleEndHook.cpp" />
     <ClCompile Include="hooks\BootSkipHook.cpp" />
+    <ClCompile Include="hooks\F7DifficultyCore.cpp" />
+    <ClCompile Include="hooks\CustomMixUltraCore.cpp" />
+    <ClCompile Include="hooks\CustomMixWindowsAdapter.cpp" />
+    <ClCompile Include="hooks\CustomMixRuntime.cpp" />
+    <ClCompile Include="hooks\ArenaMixLibrary.cpp" />
+    <ClCompile Include="hooks\ArenaBattleProgram.cpp" />
+    <ClCompile Include="hooks\SinRamScalingCore.cpp" />
+    <ClCompile Include="hooks\SinRamConfigCore.cpp" />
+    <ClCompile Include="hooks\SinTransitionPublication.cpp" />
+    <ClCompile Include="hooks\F7ConfigState.cpp" />
     <ClCompile Include="hooks\F7InLive.cpp" />
+    <ClCompile Include="hooks\SharedBattleRuntime.cpp" />
+    <ClCompile Include="hooks\SeymourBattleCore.cpp" />
+    <ClCompile Include="hooks\SeymourBattleHook.cpp" />
     <ClCompile Include="hooks\F7AiSwap.cpp" />
+    <ClCompile Include="hooks\F7UiCore.cpp" />
+    <ClCompile Include="hooks\FieldScoutAdmissionCore.cpp" />
+    <ClCompile Include="hooks\MinHookBatchCoordinator.cpp" />
+    <ClCompile Include="hooks\MonsterAiObserverCore.cpp" />
+    <ClCompile Include="hooks\MonsterAiDispatchShadow.cpp" />
+    <ClCompile Include="hooks\MonsterAiDispatchTelemetry.cpp" />
+    <ClCompile Include="hooks\ArenaComposeRestore.cpp" />
     <ClCompile Include="hooks\ArenaPlusComposePick.cpp" />
     <ClCompile Include="hooks\InGameMenuDashboard.cpp" />
+    <ClCompile Include="hooks\F8FlagCatalog.cpp" />
+    <ClCompile Include="hooks\F8RuntimeCore.cpp" />
+    <ClCompile Include="hooks\MaechenCore.cpp" />
+    <ClCompile Include="hooks\MaechenHook.cpp" />
     <ClCompile Include="hooks\UnXBoosterHook.cpp" />
+<ClCompile Include="hooks\SpeedHackHook.cpp" />
     <ClCompile Include="shared\Config.cpp" />
     <ClCompile Include="hooks\DialogSkipHook.cpp" />
+    <ClCompile Include="hooks\NativePortsHook.cpp" />
+    <ClCompile Include="hooks\NativeGamepadHook.cpp" />
+    <ClCompile Include="hooks\NativeLanguageHook.cpp" />
+    <ClCompile Include="hooks\SinAiHook.cpp" />
+    <ClCompile Include="hooks\EquipmentWorkshopRuntime.cpp" />
+    <ClCompile Include="hooks\EquipmentWorkshopStore.cpp" />
+    <ClCompile Include="..\..\..\research\equipment_workshop\src\workshop.cpp" />
+    <ClCompile Include="..\..\..\research\equipment_workshop\src\lifecycle.cpp" />
+    <ClCompile Include="hooks\FmvSpeedHook.cpp" />
     <ClCompile Include="hooks\FieldProbeHook.cpp" />
     <ClCompile Include="hooks\FieldScoutHook.cpp" />
     <ClCompile Include="hooks\SinCurseHook.cpp" />

@@ -48,8 +48,9 @@ constexpr uint8_t  kDefaultRonsoPoolMax    = 255u;
  *   the user re-priced Overdrive Jump to CostOverdrive=20 in command.bin (idx=104 cost=20 in the
  *   odSeen log), but this floor was still 40 (stale vanilla "Jump=40" assumption). That created a
  *   DEAD BAND at charge 20–39: Jump is affordable (>=20) yet the ring force is gated on >=40, so the
- *   Overdrive submenu re-locked after draining below 40 — exactly the "uso, drena, depois não
- *   consigo mais usar" report. Lowering to 20 closes the band so per-skill cost is the real gate.
+ *   Overdrive submenu re-locked after draining below 40, matching the report that it worked once
+ *   and then became unusable after spending charge. Lowering to 20 closes the band so the
+ *   per-skill cost remains the real gate.
  *   Tunable at runtime via FFXHOOKS_RONSO_GATE_MIN if cheaper skills are re-priced. */
 constexpr uint8_t  kDefaultRonsoGateMin    = 20u;
 constexpr uint8_t  kOverdriveMenuCategory  = 4u;

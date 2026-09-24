@@ -13,6 +13,18 @@ vcpkg_installed/
 *.ilk
 *.log
 
+# IDA databases (derived from game/third-party binaries — never commit)
+*.i64
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+
+# Python
+__pycache__/
+*.pyc
+
 # Tooling
 .idea/
 .vscode/
@@ -27,3 +39,6 @@ work/
 # dotnet
 *.nupkg
 artifacts/
+
+# Local context index (contains private source; never versioned)
+.ffx-context/

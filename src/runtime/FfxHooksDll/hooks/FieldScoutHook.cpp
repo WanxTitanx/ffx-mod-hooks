@@ -1,4 +1,6 @@
 #include "FieldScoutHook.h"
+#include "FieldScoutAdmissionCore.h"
+#include "MinHookBatchCoordinator.h"
 #include "../shared/ffx_addresses.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -9,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <array>
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 #include <MinHook.h>
@@ -38,7 +41,7 @@ static bool                 g_installed = false;
 static bool                 g_mapOnly = false;
 static bool                 g_heavy = false;
 static bool                 g_max = false;
-static volatile LONG        g_shuttingDown = 0;
+static FieldScoutAdmission::State g_captureAdmission{};
 static FieldScoutUltraOptions g_ultra = {};
 static FieldScoutLogFn      g_logFn = nullptr;
 static uintptr_t            g_base = 0;
@@ -57,9 +60,12 @@ static volatile LONG        g_traceStop = 0;
 static HANDLE               g_traceThread = nullptr;
 static char                 g_currentArea[32] = {};
 static char                 g_currentField[32] = {};
-static volatile LONG        g_captureQuiesced = 0;
 static volatile LONG        g_heavyActive = 0;
-static bool                 g_minhookQueued = false;
+static bool                 g_fieldScoutBatchApplied = false;
+static bool                 g_fieldScoutApplyAttempted = false;
+static bool                 g_fieldScoutRetainedInert = false;
+static bool                 g_fieldScoutRestartRequired = false;
+static bool                 g_fieldScoutCoordinatorPoisoned = false;
 
 static unsigned             g_maxUniquePaths = 250000u;
 static constexpr unsigned   kSeenEntryBytes = 384u;
@@ -85,7 +91,6 @@ static uint8_t ReadZoneByte(uintptr_t rva);
 static uint8_t ReadSceneEncounterGroupByte();
 static void StartPlayerTraceThread();
 static void WriteTraceLine(const char* jsonLine);
-static bool ApplyQueuedHooks(const char* context);
 static void CloseSessionFile();
 static void ScanActiveChrInstances();
 static bool PathAlreadySeen(const char* path);
@@ -93,6 +98,32 @@ static bool RememberPath(const char* path);
 static bool RememberPathIfNew(const char* path);
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
+enum FieldScoutTargetIndex : size_t {
+    kTextureTarget = 0u,
+    kFieldLoadTarget,
+    kActivateTarget,
+    kInstanceNameTarget,
+    kEncounterTarget,
+    kWireInstanceTarget,
+    kCommitMappingsTarget,
+    kChrSetPosTarget,
+    kTakaraLoadTarget,
+    kWarpActorTarget,
+    kSampleZoneTarget,
+    kFieldScoutTargetCount,
+};
+
+struct FieldScoutTargetState {
+    uintptr_t target = 0u;
+    const char* label = nullptr;
+    bool created = false;
+    bool queueEnable = false;
+    bool applyAttempted = false;
+    bool mayHaveRun = false;
+    bool isEnabled = false;
+};
+
+static std::array<FieldScoutTargetState, kFieldScoutTargetCount> g_fieldScoutTargets{};
 static BuildTextureSlotFn         g_textureTrampoline = nullptr;
 static GraphicFieldMapLoadFn      g_fieldLoadTrampoline = nullptr;
 static LoadAndActivateDriverFn    g_activateTrampoline = nullptr;
@@ -299,17 +330,30 @@ static bool PathLooksLikeBattleLoad(const char* path) {
 
 static void NoteBattleTransitionFromPath(const char* path) {
     if (PathLooksLikeBattleLoad(path)) {
-        InterlockedExchange(&g_captureQuiesced, 1);
+        (void)FieldScoutAdmission::ApplyPathTransition(
+            &g_captureAdmission,
+            FieldScoutAdmission::PathTransition::QuiesceBattle,
+            false);
     } else if (path && (strstr(path, "/map/") != nullptr || strstr(path, "map/") != nullptr)) {
-        if (!ReadBattleActiveFlag()) {
-            InterlockedExchange(&g_captureQuiesced, 0);
-        }
+        (void)FieldScoutAdmission::ApplyPathTransition(
+            &g_captureAdmission,
+            FieldScoutAdmission::PathTransition::ResumeField,
+            ReadBattleActiveFlag());
     }
 }
 
 static bool ShouldSkipFieldScoutCapture() {
-    if (InterlockedCompareExchange(&g_captureQuiesced, 0, 0) != 0) return true;
-    return ReadBattleActiveFlag();
+    // Read shutdown first so a delayed prologue entrant never touches game-owned battle state
+    // after teardown made admission process-sticky.
+    if (FieldScoutAdmission::IsShuttingDown(g_captureAdmission)) return true;
+    return FieldScoutAdmission::ShouldSkipCapture(
+        g_captureAdmission, ReadBattleActiveFlag());
+}
+
+static bool FieldScoutShimEntryAllowed(
+    FieldScoutAdmission::ShimFamily family) {
+    return FieldScoutAdmission::TryEnterAfterPrologue(
+        &g_captureAdmission, family);
 }
 
 static bool UltraActive(bool categoryEnabled) {
@@ -1139,7 +1183,7 @@ static bool SeenStoreContainsLocked(const char* path) {
 static bool RememberPathIfNew(const char* path) {
     if (!path) return false;
     EnterCriticalSection(&g_lock);
-    if (!g_seenBlob || InterlockedCompareExchange(&g_shuttingDown, 0, 0) != 0) {
+    if (!g_seenBlob || FieldScoutAdmission::IsShuttingDown(g_captureAdmission)) {
         LeaveCriticalSection(&g_lock);
         return false;
     }
@@ -1234,7 +1278,7 @@ static uint8_t ReadSceneEncounterGroupByte() {
 static void WriteJsonLineTo(FILE* file, const char* jsonLine) {
     if (!file || !jsonLine) return;
     EnterCriticalSection(&g_lock);
-    if (InterlockedCompareExchange(&g_shuttingDown, 0, 0) == 0 && file) {
+    if (!FieldScoutAdmission::IsShuttingDown(g_captureAdmission) && file) {
         fputs(jsonLine, file);
         fputc('\n', file);
         if (!g_heavy) {
@@ -1350,12 +1394,19 @@ static DWORD WINAPI PlayerTraceThreadProc(LPVOID /*param*/) {
 }
 
 static void StartPlayerTraceThread() {
-    if (!g_heavy || g_traceThread) return;
+    // Reserve thread creation against sticky close. Close waits for this short publication window,
+    // so teardown either observes the new handle and stops it or wins before CreateThread starts.
+    if (!FieldScoutAdmission::TryAcquireThreadStart(&g_captureAdmission)) return;
+    if (!g_heavy || g_traceThread) {
+        FieldScoutAdmission::ReleaseThreadStart(&g_captureAdmission);
+        return;
+    }
     InterlockedExchange(&g_traceStop, 0);
     g_traceThread = CreateThread(nullptr, 0, PlayerTraceThreadProc, nullptr, 0, nullptr);
     if (g_traceThread) {
         HookLog("[ffx-hooks] FieldScout heavy player-trace thread started");
     }
+    FieldScoutAdmission::ReleaseThreadStart(&g_captureAdmission);
 }
 
 static void StopPlayerTraceThread() {
@@ -1367,8 +1418,11 @@ static void StopPlayerTraceThread() {
         waitResult = WaitForSingleObject(g_traceThread, 5000);
     }
     if (waitResult != WAIT_OBJECT_0) {
-        HookLog("[ffx-hooks] WARN FieldScout player-trace thread exit wait=%lu — forcing close", waitResult);
+        HookLog("[ffx-hooks] WARN FieldScout player-trace thread exit wait=%lu; "
+                "closing handle only (worker detached, stop remains requested)", waitResult);
     }
+    // CloseHandle releases this process's kernel handle; it neither terminates nor joins a worker
+    // that missed the bounded wait. The sticky stop request remains the worker's only exit signal.
     CloseHandle(g_traceThread);
     g_traceThread = nullptr;
 }
@@ -1621,6 +1675,9 @@ static int __cdecl BuildTextureSlot_FieldScoutHook(
     uint32_t* a3,
     char* source,
     int a5) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::BuildTextureSlot);
+    if (!entryAllowed) return g_textureTrampoline(a0, a1, a2, a3, source, a5);
     if (source && source[0]) {
         NoteBattleTransitionFromPath(source);
     }
@@ -1644,6 +1701,12 @@ static int __cdecl BuildTextureSlot_FieldScoutHook(
 }
 
 static void __cdecl GraphicFieldMapLoad_FieldScoutHook(char* mapPath, int slot) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::GraphicFieldMapLoad);
+    if (!entryAllowed) {
+        g_fieldLoadTrampoline(mapPath, slot);
+        return;
+    }
     char area[32] = {};
     char field[32] = {};
     bool haveField = false;
@@ -1653,7 +1716,8 @@ static void __cdecl GraphicFieldMapLoad_FieldScoutHook(char* mapPath, int slot) 
         if (!ShouldSkipFieldScoutCapture()) {
             RecordManifestAsset("field_load", mapPath, slot, "slot");
         }
-        if (ExtractMapFieldLoose(mapPath, area, sizeof(area), field, sizeof(field))) {
+        if (!ShouldSkipFieldScoutCapture() &&
+            ExtractMapFieldLoose(mapPath, area, sizeof(area), field, sizeof(field))) {
             SetCurrentMapField(area, field);
             haveField = true;
         }
@@ -1661,12 +1725,10 @@ static void __cdecl GraphicFieldMapLoad_FieldScoutHook(char* mapPath, int slot) 
 
     /* g_heavyActive must be set BEFORE the trampoline fires — CommitInstanceMappings
        and WireInstanceToSceneNodes are called by the engine during the original load,
-       and they check g_heavyActive to decide whether to emit JSONL.
-       ApplyQueuedHooks was previously called here (inside the field-load hook on the
-       main thread), which caused deadlocks because MH_ApplyQueued suspends ALL threads
-       and some hold locks the field-load thread needs. The deferred apply now runs
-       exclusively on the worker thread via ApplyFieldScoutQueuedHooks() from dllmain. */
-    if (g_heavy && !IsTitleBootField(field)) {
+       and they check g_heavyActive to decide whether to emit JSONL. The complete owned
+       MinHook batch is already active before capture admission opens, so this hook only
+       controls per-field heavy logging and never mutates MinHook's global queue. */
+    if (!ShouldSkipFieldScoutCapture() && g_heavy && !IsTitleBootField(field)) {
         if (!InterlockedCompareExchange(&g_heavyActive, 1, 0)) {
             StartPlayerTraceThread();
             HookLog("[ffx-hooks] FieldScout heavy hooks active");
@@ -1687,6 +1749,12 @@ static void __fastcall LoadAndActivateDriver_FieldScoutHook(
     void* /*edx*/,
     char* assetPath,
     int mode) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::LoadAndActivateDriver);
+    if (!entryAllowed) {
+        g_activateTrampoline(self, assetPath, mode);
+        return;
+    }
     if (assetPath && assetPath[0]) {
         NoteBattleTransitionFromPath(assetPath);
     }
@@ -1702,8 +1770,10 @@ static char* __fastcall GetInstanceNameByIndex_FieldScoutHook(
     void* container,
     void* /*edx*/,
     int index) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::GetInstanceNameByIndex);
     char* name = g_instanceNameTrampoline(container, index);
-    if (ShouldSkipFieldScoutCapture() || !name || !name[0] || IsTitleBootField(g_currentField)) return name;
+    if (!entryAllowed || ShouldSkipFieldScoutCapture() || !name || !name[0] || IsTitleBootField(g_currentField)) return name;
     if (name && name[0] && (g_heavy || SceneNodeNameInteresting(name))) {
         RecordManifestAsset("scene_node", name, index, "index");
         if (g_heavy) {
@@ -1747,7 +1817,10 @@ static int __cdecl ChrSetWorldPosition_FieldScoutHook(
     float x,
     float y,
     float z) {
-    if (g_heavy && instHandle && FloatLooksSane(x) && FloatLooksSane(y) && FloatLooksSane(z)) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::ChrSetWorldPosition);
+    if (entryAllowed && !ShouldSkipFieldScoutCapture() && g_heavy && instHandle &&
+        FloatLooksSane(x) && FloatLooksSane(y) && FloatLooksSane(z)) {
         __try {
             const void* inst = reinterpret_cast<const void*>(instHandle);
             const uint16_t chrId = *reinterpret_cast<const uint16_t*>(reinterpret_cast<const char*>(inst) + FFX_CHR_INSTANCE_ID_OFFSET);
@@ -1764,29 +1837,43 @@ static int __cdecl ChrSetWorldPosition_FieldScoutHook(
 }
 
 static int __cdecl MsBattleEncountExe_QuiesceHook(int selector, int group, float walkDelta) {
-    InterlockedExchange(&g_captureQuiesced, 1);
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::BattleEncounter);
+    if (entryAllowed) {
+        (void)FieldScoutAdmission::ApplyPathTransition(
+            &g_captureAdmission,
+            FieldScoutAdmission::PathTransition::QuiesceBattle,
+            true);
+    }
     return g_encounterTrampoline(selector, group, walkDelta);
 }
 
 
 
 static void* __cdecl TakaraLoad_MaxHook(int takaraIndex) {
-    if (MaxActive(g_ultra.fieldLogic)) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::TakaraLoad);
+    if (entryAllowed && !ShouldSkipFieldScoutCapture() && MaxActive(g_ultra.fieldLogic)) {
         RecordMaxTakara(takaraIndex, "atel_takara_load");
     }
     return g_takaraLoadTrampoline(takaraIndex);
 }
 
 static int __cdecl WarpActor_MaxHook(int actor, float x, float y, float z, int snap) {
-    if (MaxActive(g_ultra.fieldLogic)) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::WarpActor);
+    if (entryAllowed && !ShouldSkipFieldScoutCapture() && MaxActive(g_ultra.fieldLogic)) {
         RecordMaxWarp(x, y, z, "warp_actor", snap);
     }
     return g_warpActorTrampoline(actor, x, y, z, snap);
 }
 
 static int __cdecl SampleZoneSlot_MaxHook(int zoneRoot, int slotIndex) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::SampleZoneSlot);
     const int groupByte = g_sampleZoneTrampoline(zoneRoot, slotIndex);
-    if (MaxActive(g_ultra.encounters) && slotIndex >= 0 && slotIndex < 8 && groupByte >= 0) {
+    if (entryAllowed && !ShouldSkipFieldScoutCapture() && MaxActive(g_ultra.encounters) &&
+        slotIndex >= 0 && slotIndex < 8 && groupByte >= 0) {
         RecordMaxZoneSlot(slotIndex, groupByte);
     }
     return groupByte;
@@ -1802,7 +1889,10 @@ static void __fastcall WireInstanceToSceneNodes_FieldScoutHook(
     void* a7,
     int a8,
     bool a9) {
-    if (!ShouldSkipFieldScoutCapture() && g_heavy && InterlockedCompareExchange(&g_heavyActive, 0, 0) && thisPtr) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::WireInstanceToSceneNodes);
+    if (entryAllowed && !ShouldSkipFieldScoutCapture() && g_heavy &&
+        InterlockedCompareExchange(&g_heavyActive, 0, 0) && thisPtr) {
         char line[256] = {};
         _snprintf_s(line, sizeof(line), _TRUNCATE,
             "{\"kind\":\"wire_instance\",\"this@%p\":\"\",\"edx@%p\":\"\",\"a3\":%d,\"a4\":%d,\"a5@%p\":\"\",\"a6@%p\":\"\"}",
@@ -1819,8 +1909,11 @@ static int __fastcall FieldMap_CommitInstanceMappings_Hook(
     int a4,
     int a5,
     void* a6) {
+    const bool entryAllowed = FieldScoutShimEntryAllowed(
+        FieldScoutAdmission::ShimFamily::CommitInstanceMappings);
     int result = 0;
-    if (!ShouldSkipFieldScoutCapture() && g_heavy && InterlockedCompareExchange(&g_heavyActive, 0, 0) && thisPtr && a6) {
+    if (entryAllowed && !ShouldSkipFieldScoutCapture() && g_heavy &&
+        InterlockedCompareExchange(&g_heavyActive, 0, 0) && thisPtr && a6) {
         char line[256] = {};
         _snprintf_s(
             line, sizeof(line), _TRUNCATE,
@@ -1838,41 +1931,193 @@ static int __fastcall FieldMap_CommitInstanceMappings_Hook(
 
 static bool InstallDetour(
     uintptr_t targetVa,
+    FieldScoutTargetState* state,
     uint64_t* trampolineOut,
     void* hookFn,
     void** origOut,
     const char* label) {
+    if (!state || !origOut || !hookFn || !label || targetVa == 0u) return false;
     /* Create hook (stores original bytes, does NOT write jmp) */
     if (MH_CreateHook(reinterpret_cast<void*>(targetVa), hookFn, reinterpret_cast<void**>(origOut)) != MH_OK) {
         HookLog("[ffx-hooks] ERROR FieldScout %s MH_CreateHook failed @0x%08X", label, static_cast<unsigned>(targetVa));
         return false;
     }
-    /* Queue for batch activation (MH_ApplyQueued suspends all threads, writes all jmps atomically) */
-    if (MH_QueueEnableHook(reinterpret_cast<void*>(targetVa)) != MH_OK) {
-        HookLog("[ffx-hooks] ERROR FieldScout %s MH_QueueEnableHook failed @0x%08X", label, static_cast<unsigned>(targetVa));
-        MH_RemoveHook(reinterpret_cast<void*>(targetVa));
-        return false;
-    }
+    state->target = targetVa;
+    state->label = label;
+    state->created = true;
     if (trampolineOut) *trampolineOut = reinterpret_cast<uint64_t>(*origOut);
-    HookLog("[ffx-hooks] FieldScout %s queued @0x%08X trampoline=0x%p", label, static_cast<unsigned>(targetVa), *origOut);
+    HookLog("[ffx-hooks] FieldScout %s created @0x%08X trampoline=0x%p",
+            label, static_cast<unsigned>(targetVa), *origOut);
     return true;
 }
 
-static void UnhookDetour() {
-    /* MinHook manages hook removal via MH_DisableHook/MH_RemoveHook during cleanup.
-       Individual unhooks are not needed since RemoveFieldScoutHook calls MH_Uninitialize. */
-}
-
-/* Apply all queued MinHook hooks — suspends all threads, writes jmps, relocates EIPs, resumes threads. */
-static bool ApplyQueuedHooks(const char* context) {
-    if (g_minhookQueued) return true;
-    if (MH_ApplyQueued() != MH_OK) {
-        HookLog("[ffx-hooks] ERROR FieldScout MH_ApplyQueued (%s) failed", context);
+template <typename Trampoline>
+static bool RemoveNeverAppliedOwnedHook(
+    FieldScoutTargetState* state, Trampoline* trampoline, uint64_t* trampolineVa) {
+    if (!state || !state->created) return true;
+    if (g_fieldScoutApplyAttempted || state->applyAttempted || state->mayHaveRun) {
+        HookLog("[ffx-hooks] ERROR FieldScout %s removal rejected after ApplyQueued boundary",
+                state->label ? state->label : "unknown");
         return false;
     }
-    g_minhookQueued = true;
-    HookLog("[ffx-hooks] FieldScout MH_ApplyQueued (%s) OK", context);
+    const MH_STATUS removed = MH_RemoveHook(reinterpret_cast<void*>(state->target));
+    if (removed != MH_OK && removed != MH_ERROR_NOT_CREATED) {
+        HookLog("[ffx-hooks] ERROR FieldScout %s MH_RemoveHook=%d",
+                state->label ? state->label : "unknown", static_cast<int>(removed));
+        return false;
+    }
+    if (trampoline) *trampoline = nullptr;
+    if (trampolineVa) *trampolineVa = 0u;
+    *state = FieldScoutTargetState{};
     return true;
+}
+
+static bool HasCreatedFieldScoutTargets() {
+    for (const FieldScoutTargetState& state : g_fieldScoutTargets) {
+        if (state.created) return true;
+    }
+    return false;
+}
+
+static size_t CollectFieldScoutTargets(
+    std::array<uintptr_t, kFieldScoutTargetCount>* targetsOut) {
+    if (!targetsOut) return 0u;
+    targetsOut->fill(0u);
+    size_t count = 0u;
+    for (const FieldScoutTargetState& state : g_fieldScoutTargets) {
+        if (state.created) (*targetsOut)[count++] = state.target;
+    }
+    return count;
+}
+
+static void RecordFieldScoutBatchReport(
+    const MinHookBatch::BatchReport& report) {
+    size_t queuedSuccesses = report.queuedEnableCount;
+    for (FieldScoutTargetState& state : g_fieldScoutTargets) {
+        if (!state.created) continue;
+        if (queuedSuccesses > 0u) {
+            state.queueEnable = true;
+            --queuedSuccesses;
+        }
+        state.applyAttempted = state.applyAttempted || report.applyAttempted;
+        state.mayHaveRun = state.mayHaveRun || report.mayHaveRun;
+        if (report.result == MinHookBatch::BatchResult::Applied) {
+            state.isEnabled = true;
+        } else if (report.exactDisabled || report.neutralized) {
+            state.isEnabled = false;
+        }
+    }
+    g_fieldScoutApplyAttempted = g_fieldScoutApplyAttempted || report.applyAttempted;
+    g_fieldScoutBatchApplied = report.result == MinHookBatch::BatchResult::Applied;
+    if (report.neutralized || report.exactDisabled) {
+        g_fieldScoutRetainedInert = true;
+    }
+    if (report.result == MinHookBatch::BatchResult::Poisoned) {
+        g_fieldScoutCoordinatorPoisoned = true;
+    }
+}
+
+static void PauseFieldScoutThreadStart(void*, uint32_t milliseconds) {
+    Sleep(milliseconds);
+}
+
+static bool CloseFieldScoutCapture(void*) {
+    const bool startsDrained = FieldScoutAdmission::CloseAndDrainThreadStarts(
+        &g_captureAdmission,
+        {nullptr, &PauseFieldScoutThreadStart, 1000u});
+    InterlockedExchange(&g_heavyActive, 0);
+    return startsDrained;
+}
+
+static bool FinishFieldScoutDisable(void*) {
+    // FieldScout detours do not free state after ApplyQueued. The second fence documents that
+    // teardown has reached its retained/inert boundary without granting capture admission.
+    return FieldScoutAdmission::IsShuttingDown(g_captureAdmission) &&
+           FieldScoutAdmission::IsQuiesced(g_captureAdmission) &&
+           FieldScoutAdmission::ActiveThreadStarts(g_captureAdmission) == 0u;
+}
+
+static MinHookBatch::NeutralizationFence FieldScoutNeutralizationFence() {
+    return {nullptr, &CloseFieldScoutCapture, &FinishFieldScoutDisable};
+}
+
+static bool RollbackNeverAppliedFieldScoutHooks() {
+    bool removed = true;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kTextureTarget], &g_textureTrampoline,
+        &g_textureTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kFieldLoadTarget], &g_fieldLoadTrampoline,
+        &g_fieldLoadTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kActivateTarget], &g_activateTrampoline,
+        &g_activateTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kInstanceNameTarget], &g_instanceNameTrampoline,
+        &g_instanceNameTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kEncounterTarget], &g_encounterTrampoline,
+        &g_encounterTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kWireInstanceTarget], &g_wireInstanceTrampoline,
+        &g_wireInstanceTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kCommitMappingsTarget], &g_commitMappingsTrampoline,
+        &g_commitMappingsTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kChrSetPosTarget], &g_chrSetPosTrampoline,
+        &g_chrSetPosTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kTakaraLoadTarget], &g_takaraLoadTrampoline,
+        &g_takaraLoadTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kWarpActorTarget], &g_warpActorTrampoline,
+        &g_warpActorTrampolineVa) && removed;
+    removed = RemoveNeverAppliedOwnedHook(
+        &g_fieldScoutTargets[kSampleZoneTarget], &g_sampleZoneTrampoline,
+        &g_sampleZoneTrampolineVa) && removed;
+    return removed;
+}
+
+static void ResetFieldScoutOwnership() {
+    if (HasCreatedFieldScoutTargets()) {
+        // Trampolines and target metadata are a process-lifetime safety boundary after ApplyQueued.
+        // Callers must never erase them merely to make a reinstall appear possible.
+        return;
+    }
+    g_fieldScoutTargets.fill(FieldScoutTargetState{});
+    g_fieldScoutBatchApplied = false;
+    g_fieldScoutApplyAttempted = false;
+    g_fieldScoutRetainedInert = false;
+    g_fieldScoutRestartRequired = false;
+    g_fieldScoutCoordinatorPoisoned = false;
+}
+
+static void ResetFieldScoutPreHookContext() {
+    // These failures happen before MH_CreateHook, so no delayed detour entrant can reference the
+    // session or dedupe allocation. Releasing them here also prevents a later mode with a larger
+    // dedupe limit from reusing an undersized allocation.
+    FILE* sessionToClose = nullptr;
+    FILE* traceToClose = nullptr;
+    EnterCriticalSection(&g_lock);
+    sessionToClose = g_session;
+    traceToClose = g_traceSession;
+    g_session = nullptr;
+    g_traceSession = nullptr;
+    LeaveCriticalSection(&g_lock);
+
+    if (traceToClose) fclose(traceToClose);
+    if (sessionToClose) fclose(sessionToClose);
+    FreeSeenStore();
+    g_sessionPath[0] = '\0';
+    g_tracePath[0] = '\0';
+    g_mapOnly = false;
+    g_heavy = false;
+    g_max = false;
+    g_ultra = FieldScoutUltraOptions{};
+    g_base = 0u;
+    g_module = nullptr;
+    g_logFn = nullptr;
 }
 
 
@@ -1892,6 +2137,18 @@ FieldScoutInstallResult InstallFieldScoutHook(
     bool maxMode,
     FieldScoutLogFn log) {
     FieldScoutInstallResult result = {};
+    EnsureLock();
+
+#ifdef FFXHOOKS_HAVE_POLYHOOK
+    // Any target that crossed ApplyQueued retains its trampoline and old module context until
+    // process exit. Refuse hot reinstall before publishing a new base over that ownership.
+    if (g_installed || g_fieldScoutRestartRequired || HasCreatedFieldScoutTargets()) {
+        if (log) log("[ffx-hooks] ERROR FieldScout reinstall blocked; restart required");
+        return result;
+    }
+    ResetFieldScoutOwnership();
+#endif
+
     g_base = moduleBase;
     g_module = moduleHandle;
     g_logFn = log;
@@ -1915,70 +2172,81 @@ FieldScoutInstallResult InstallFieldScoutHook(
     g_tracePath[0] = '\0';
     g_traceSession = nullptr;
 
-    EnsureLock();
-
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-    if (g_installed)
-        RemoveFieldScoutHook(log);
-
-    InterlockedExchange(&g_shuttingDown, 0);
+    // Capture admission opens only after the coordinator applies this complete owned batch.
+    FieldScoutAdmission::InitializeClosed(&g_captureAdmission);
     InterlockedExchange(&g_heavyActive, 0);
-    InterlockedExchange(&g_captureQuiesced, 0);
+
+    const MinHookBatch::InitializationResult minHookInitialization =
+        MinHookBatch::EnsureProcessInitialized();
+    if (minHookInitialization != MinHookBatch::InitializationResult::Ready) {
+        HookLog("[ffx-hooks] ERROR FieldScout shared MinHook initialization=%u",
+                static_cast<unsigned>(minHookInitialization));
+        ResetFieldScoutPreHookContext();
+        return result;
+    }
 
     if (!EnsureSeenStore()) {
         if (log) log("[ffx-hooks] FieldScout failed to allocate dedupe store");
+        ResetFieldScoutPreHookContext();
         return result;
     }
 
     if (!OpenSessionFile()) {
         if (log) log("[ffx-hooks] FieldScout failed to open session file");
-        return result;
-    }
-
-    /* Initialize MinHook (must be before any MH_CreateHook) */
-    g_minhookQueued = false;
-    if (MH_Initialize() != MH_OK) {
-        if (log) log("[ffx-hooks] ERROR FieldScout MH_Initialize failed");
-        if (g_session) { fclose(g_session); g_session = nullptr; }
+        ResetFieldScoutPreHookContext();
         return result;
     }
 
     unsigned hooked = 0;
+    bool allCreated = true;
 
     if (InstallDetour(
             moduleBase + RVA_FFX_PSDATA_BUILD_TEXTURE_SLOT_LOADTIME,
+            &g_fieldScoutTargets[kTextureTarget],
             &g_textureTrampolineVa,
             reinterpret_cast<void*>(&BuildTextureSlot_FieldScoutHook),
             reinterpret_cast<void**>(&g_textureTrampoline),
                 "BuildTextureSlotLoadTime"))
         ++hooked;
+    else
+        allCreated = false;
 
     if (InstallDetour(
             moduleBase + RVA_FFX_FIELDMAP_LOAD_ENTRY_GRAPHIC_FIELDMAP,
+            &g_fieldScoutTargets[kFieldLoadTarget],
             &g_fieldLoadTrampolineVa,
             reinterpret_cast<void*>(&GraphicFieldMapLoad_FieldScoutHook),
             reinterpret_cast<void**>(&g_fieldLoadTrampoline),
                 "GraphicFieldMapLoad"))
         ++hooked;
+    else
+        allCreated = false;
 
     if (InstallDetour(
             moduleBase + RVA_FFX_FIELDMAP_LOAD_AND_ACTIVATE_DRIVER,
+            &g_fieldScoutTargets[kActivateTarget],
             &g_activateTrampolineVa,
             reinterpret_cast<void*>(&LoadAndActivateDriver_FieldScoutHook),
             reinterpret_cast<void**>(&g_activateTrampoline),
                 "LoadAndActivateDriver"))
         ++hooked;
+    else
+        allCreated = false;
 
     if (InstallDetour(
             moduleBase + RVA_FFX_PHYRE_GET_INSTANCE_NAME_BY_INDEX,
+            &g_fieldScoutTargets[kInstanceNameTarget],
             &g_instanceNameTrampolineVa,
             reinterpret_cast<void*>(&GetInstanceNameByIndex_FieldScoutHook),
             reinterpret_cast<void**>(&g_instanceNameTrampoline),
                 "GetInstanceNameByIndex"))
         ++hooked;
+    else
+        allCreated = false;
 
-    /* Heavy hooks — created at boot (MH_CreateHook is safe, no jmp written yet).
-       Enabled via MH_ApplyQueued on first field load (suspends all threads, writes jmps atomically).
+    /* Heavy hooks are created before the owned coordinator batch is applied. Capture admission
+       remains closed throughout creation and opens only after the complete batch succeeds.
 
        ComposeWorldMatrix (RVA 0x1067C0): per-frame scene-graph compose.
        Uses __declspec(naked) + jmp tail-call because the original uses retn 4
@@ -1998,38 +2266,50 @@ FieldScoutInstallResult InstallFieldScoutHook(
     if (g_heavy) {
         if (InstallDetour(
                 moduleBase + RVA_FFX_BATTLE_ENCOUNTER_EXE,
+                &g_fieldScoutTargets[kEncounterTarget],
                 &g_encounterTrampolineVa,
                 reinterpret_cast<void*>(&MsBattleEncountExe_QuiesceHook),
                 reinterpret_cast<void**>(&g_encounterTrampoline),
                 "MsBattleEncountExeQuiesce"))
             ++hooked;
+        else
+            allCreated = false;
 
         if (InstallDetour(
                 moduleBase + RVA_FFX_FIELDMAP_WIRE_INSTANCE_TO_SCENE_NODES,
+                &g_fieldScoutTargets[kWireInstanceTarget],
                 &g_wireInstanceTrampolineVa,
                 reinterpret_cast<void*>(&WireInstanceToSceneNodes_FieldScoutHook),
                 reinterpret_cast<void**>(&g_wireInstanceTrampoline),
                 "WireInstanceToSceneNodes"))
             ++hooked;
+        else
+            allCreated = false;
 
         if (InstallDetour(
                 moduleBase + RVA_FFX_FIELDMAP_COMMIT_INSTANCE_MAPPINGS,
+                &g_fieldScoutTargets[kCommitMappingsTarget],
                 &g_commitMappingsTrampolineVa,
                 reinterpret_cast<void*>(&FieldMap_CommitInstanceMappings_Hook),
                 reinterpret_cast<void**>(&g_commitMappingsTrampoline),
                 "CommitInstanceMappings"))
             ++hooked;
+        else
+            allCreated = false;
 
         /* ChrSetWorldPosition: captures CHR spawns (party/NPC/monster placement).
            ABI FIXED (W1): original is __cdecl retn 0 (NOT __thiscall).
            Oracle-validated: int __cdecl(int instHandle, float x, float y, float z) @ 0x82B500. */
         if (InstallDetour(
                 moduleBase + RVA_FFX_CHR_SET_WORLD_POSITION,
+                &g_fieldScoutTargets[kChrSetPosTarget],
                 &g_chrSetPosTrampolineVa,
                 reinterpret_cast<void*>(&ChrSetWorldPosition_FieldScoutHook),
                 reinterpret_cast<void**>(&g_chrSetPosTrampoline),
                 "ChrSetWorldPosition"))
             ++hooked;
+        else
+            allCreated = false;
     }
 
     /* MAX-mode hooks: ATEL treasure load, actor warp, encounter zone slot.
@@ -2039,42 +2319,68 @@ FieldScoutInstallResult InstallFieldScoutHook(
         if (MaxActive(g_ultra.fieldLogic)) {
             if (InstallDetour(
                     moduleBase + RVA_FFX_ATEL_LOAD_TAKARA_ROW,
+                    &g_fieldScoutTargets[kTakaraLoadTarget],
                     &g_takaraLoadTrampolineVa,
                     reinterpret_cast<void*>(&TakaraLoad_MaxHook),
                     reinterpret_cast<void**>(&g_takaraLoadTrampoline),
                 "AtelLoadTakaraRow"))
                 ++hooked;
+            else
+                allCreated = false;
 
             if (InstallDetour(
                     moduleBase + RVA_FFX_FIELD_WARP_ACTOR_TO_POSITION,
+                    &g_fieldScoutTargets[kWarpActorTarget],
                     &g_warpActorTrampolineVa,
                     reinterpret_cast<void*>(&WarpActor_MaxHook),
                     reinterpret_cast<void**>(&g_warpActorTrampoline),
                 "FieldWarpActorToPosition"))
                 ++hooked;
+            else
+                allCreated = false;
         }
 
         if (MaxActive(g_ultra.encounters)) {
             if (InstallDetour(
                     moduleBase + RVA_FFX_FIELD_SAMPLE_ENCOUNTER_ZONE_SLOT,
+                    &g_fieldScoutTargets[kSampleZoneTarget],
                     &g_sampleZoneTrampolineVa,
                     reinterpret_cast<void*>(&SampleZoneSlot_MaxHook),
                     reinterpret_cast<void**>(&g_sampleZoneTrampoline),
                 "FieldSampleEncounterZoneSlot"))
                 ++hooked;
+            else
+                allCreated = false;
         }
     }
 
-    /* Apply is deferred — MH_ApplyQueued at boot causes deadlocks (MinHook suspends all threads;
-       some hold locks our init thread needs). The dllmain HooksWorkerThread calls InstallFieldScoutHook,
-       then arms heavy hooks from a timer. We let that same thread do ApplyQueued after boot settles. */
+    if (!allCreated || hooked == 0u) {
+        HookLog("[ffx-hooks] ERROR FieldScout incomplete create batch hooks=%u; rolling back",
+                hooked);
+        (void)RemoveFieldScoutHook(log);
+        return result;
+    }
 
-    if (hooked > 0) {
+    // Queue and apply every requested mode in one process-global owned transaction. Capture stays
+    // closed until this returns Applied; a failure is neutralized inside the same coordinator
+    // lease so Monster AI can never accidentally activate FieldScout's pending hooks.
+    std::array<uintptr_t, kFieldScoutTargetCount> batchTargets{};
+    const size_t batchTargetCount = CollectFieldScoutTargets(&batchTargets);
+    const MinHookBatch::BatchReport batchReport = MinHookBatch::EnableBatch(
+        &MinHookBatch::ProcessCoordinator(), MinHookBatch::RuntimeBatchIo(),
+        MinHookBatch::Owner::FieldScout, batchTargets.data(), batchTargetCount,
+        FieldScoutNeutralizationFence());
+    RecordFieldScoutBatchReport(batchReport);
+
+    const bool admissionOpened =
+        batchReport.result == MinHookBatch::BatchResult::Applied &&
+        FieldScoutAdmission::Open(&g_captureAdmission);
+    if (admissionOpened) {
         g_installed = true;
         result.ok = true;
         _snprintf_s(result.sessionPath, sizeof(result.sessionPath), _TRUNCATE, "%s", g_sessionPath);
         result.uniqueAssets = 0;
-        HookLog("[ffx-hooks] FieldScout armed session=%s mapOnly=%d heavy=%d ultra=%d max=%d hooks=%u dedupe=%u "
+        HookLog("[ffx-hooks] FieldScout active session=%s mapOnly=%d heavy=%d ultra=%d max=%d hooks=%u dedupe=%u "
                   "ultra(fl=%d col=%d enc=%d env=%d pipe=%d)",
             g_sessionPath,
             mapTexturesOnly ? 1 : 0,
@@ -2088,10 +2394,23 @@ FieldScoutInstallResult InstallFieldScoutHook(
             g_ultra.encounters ? 1 : 0,
             g_ultra.sceneEnv ? 1 : 0,
             g_ultra.pipelineHints ? 1 : 0);
-    } else if (g_session) {
-        if (g_traceSession) { fclose(g_traceSession); g_traceSession = nullptr; }
-        fclose(g_session);
-        g_session = nullptr;
+    } else {
+        g_fieldScoutRestartRequired =
+            batchReport.applyAttempted || batchReport.queuedEnableCount != 0u ||
+            batchReport.result == MinHookBatch::BatchResult::Poisoned;
+        if (batchReport.result == MinHookBatch::BatchResult::Applied) {
+            g_fieldScoutRestartRequired = true;
+            HookLog("[ffx-hooks] ERROR FieldScout admission remained closed after batch apply; "
+                    "restart required");
+        } else {
+            HookLog("[ffx-hooks] ERROR FieldScout batch activation=%u primary=%u neutralize=%u "
+                    "restartRequired=%d",
+                    static_cast<unsigned>(batchReport.result),
+                    static_cast<unsigned>(batchReport.primaryFailure),
+                    static_cast<unsigned>(batchReport.neutralizationFailure),
+                    g_fieldScoutRestartRequired ? 1 : 0);
+        }
+        (void)RemoveFieldScoutHook(log);
     }
 #else
     if (log) log("[ffx-hooks] WARN FieldScout requires FFXHOOKS_HAVE_POLYHOOK");
@@ -2101,33 +2420,80 @@ FieldScoutInstallResult InstallFieldScoutHook(
 
 bool ApplyFieldScoutQueuedHooks(FieldScoutLogFn log) {
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-    return ApplyQueuedHooks("worker");
+    if (log) {
+        log("[ffx-hooks] FieldScout queued-apply compatibility call ignored; "
+            "the owned batch is applied during install");
+    }
+    return g_installed && g_fieldScoutBatchApplied;
 #else
     return false;
 #endif
 }
 
 bool RemoveFieldScoutHook(FieldScoutLogFn log) {
+    EnsureLock();
+    bool hooksNeutralized = true;
+    bool retainRuntimeContext = false;
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-    InterlockedExchange(&g_shuttingDown, 1);
+    const bool threadStartsDrained = CloseFieldScoutCapture(nullptr);
     InterlockedExchange(&g_heavyActive, 0);
-    g_minhookQueued = false;
-    StopPlayerTraceThread();
-    /* MinHook: MH_Uninitialize disables ALL hooks and frees resources atomically */
-    MH_Uninitialize();
-    /* Reset trampoline pointers (MinHook nulls them on Uninitialize, but be safe) */
-    g_textureTrampoline = nullptr;
-    g_fieldLoadTrampoline = nullptr;
-    g_activateTrampoline = nullptr;
-    g_instanceNameTrampoline = nullptr;
-    g_encounterTrampoline = nullptr;
-    g_chrSetPosTrampoline = nullptr;
-    g_takaraLoadTrampoline = nullptr;
-    g_warpActorTrampoline = nullptr;
-    g_sampleZoneTrampoline = nullptr;
-    g_wireInstanceTrampoline = nullptr;
-    g_commitMappingsTrampoline = nullptr;
+    if (threadStartsDrained) {
+        StopPlayerTraceThread();
+    } else {
+        hooksNeutralized = false;
+        if (log) {
+            log("[ffx-hooks] ERROR FieldScout trace-thread start did not drain; "
+                "runtime context retained until restart");
+        }
+    }
+
+    if (HasCreatedFieldScoutTargets()) {
+        if (!g_fieldScoutApplyAttempted && !g_fieldScoutRestartRequired &&
+            !g_fieldScoutCoordinatorPoisoned) {
+            // A create-only failure never entered MinHook's global queue and is the sole state in
+            // which freeing FieldScout trampolines is safe.
+            hooksNeutralized = RollbackNeverAppliedFieldScoutHooks() && hooksNeutralized;
+            if (hooksNeutralized) ResetFieldScoutOwnership();
+        } else if (g_fieldScoutCoordinatorPoisoned) {
+            hooksNeutralized = false;
+        } else if (g_fieldScoutRetainedInert) {
+            // Enable-failure recovery already completed the exact disable sequence. Keep every
+            // trampoline and target record alive so a delayed machine-prologue entrant is safe.
+        } else {
+            std::array<uintptr_t, kFieldScoutTargetCount> batchTargets{};
+            const size_t batchTargetCount = CollectFieldScoutTargets(&batchTargets);
+            const MinHookBatch::BatchReport batchReport = MinHookBatch::NeutralizeBatch(
+                &MinHookBatch::ProcessCoordinator(), MinHookBatch::RuntimeBatchIo(),
+                MinHookBatch::Owner::FieldScout, batchTargets.data(), batchTargetCount,
+                FieldScoutNeutralizationFence());
+            RecordFieldScoutBatchReport(batchReport);
+            hooksNeutralized =
+                batchReport.result == MinHookBatch::BatchResult::Neutralized &&
+                hooksNeutralized;
+            if (hooksNeutralized) {
+                g_fieldScoutRetainedInert = true;
+                g_fieldScoutRestartRequired = true;
+            } else if (batchReport.result == MinHookBatch::BatchResult::Poisoned) {
+                g_fieldScoutCoordinatorPoisoned = true;
+                g_fieldScoutRestartRequired = true;
+            }
+        }
+        retainRuntimeContext = HasCreatedFieldScoutTargets();
+    }
 #endif
+
+    g_installed = false;
+    if (retainRuntimeContext) {
+        // No callback counter covers FieldScout's eleven legacy shims. A thread that crossed the
+        // target jump before disable may still be using the session, dedupe store, module base, or
+        // trampoline. Retain that complete context until process exit; hot unload is unsupported.
+        if (log && hooksNeutralized) {
+            log("[ffx-hooks] FieldScout INERT; hooks and runtime context retained until restart");
+        } else if (log) {
+            log("[ffx-hooks] ERROR FieldScout teardown unresolved; runtime context retained and restart required");
+        }
+        return hooksNeutralized;
+    }
 
     Sleep(50);
 
@@ -2176,8 +2542,14 @@ bool RemoveFieldScoutHook(FieldScoutLogFn log) {
     }
 
     FreeSeenStore();
-    g_installed = false;
-    return true;
+    g_mapOnly = false;
+    g_heavy = false;
+    g_max = false;
+    g_ultra = FieldScoutUltraOptions{};
+    g_base = 0u;
+    g_module = nullptr;
+    g_logFn = nullptr;
+    return hooksNeutralized;
 }
 
 bool IsFieldScoutHookInstalled() {

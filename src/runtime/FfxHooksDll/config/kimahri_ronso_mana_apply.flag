@@ -1,2 +1,2 @@
-# With kimahri_ronso_mana.flag: apply partial OD pool (drain cost, pool max 255, G1/G3 behavior).
-# Env: FFXHOOKS_RONSO_MANA_APPLY=1, FFXHOOKS_RONSO_DRAIN_COST, FFXHOOKS_RONSO_POOL_MAX
+# RETIRED: ignored by the current runtime. No separate Apply switch is needed.
+# Enable Ronso Mana in F8 or use labs.kimahri_ronso_mana instead.

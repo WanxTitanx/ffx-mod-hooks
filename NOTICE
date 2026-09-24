@@ -1,44 +1,57 @@
-# NOTICE — credits and attributions
+# NOTICE — third-party and external credits
 
-This project is the official release face for **ffx-mod-hooks**, the runtime
-engine hook layer for FINAL FANTASY X/X-2 HD Remaster. The binaries are built
-from source maintained in a private repo during beta.
+This project links and builds upon the following open-source and community
+work. Each entry lists the license of the original work. Nothing here is
+presented as our own.
 
-## Libraries linked in the binaries
+## Libraries (runtime)
 
 - **PolyHook2** — Stephen Eckels (stevemk14ebr) — https://github.com/stevemk14ebr/PolyHook_2_0
   - License: MIT
-  - x86 detour engine used across the hook layer.
+  - Used for x86 detours (PLH::x86Detour) across the hook layer.
 - **MinHook** — Tsuda Kageyu — https://github.com/TsudaKageyu/minhook
-  - License: BSD-2-Clause
+  - License: BSD-2-Clause (with prohibition of commercial use without permission)
   - Used by F7InLive for read-only battle hooks.
 - **Zydis / Zycore** — zyantific — https://github.com/zyantific/zydis
   - License: MIT
   - Static dependency of PolyHook2.
-- **asmjit / asmtk** — https://github.com/asmjit/asmjit
+- **asmjit / asmtk** — kobalicek / asmtk contributors — https://github.com/asmjit/asmjit
   - License: zlib
   - Static dependency of PolyHook2.
+
+## Libraries (SIN tooling, .NET)
+
 - **Xe.BinaryMapper** — Luciano Ciccariello (Xeeynamo) — https://github.com/xeeynamo/Xe.BinaryMapper
   - License: MIT
-  - Binary struct mapper used by the SIN injector tooling.
+  - Binary struct mapper used by SinCoreLib.
 
 ## Community techniques
 
-- **FFX module loader / DINPUT8 proxy** (`dinput8.dll` → `modules\*.dll`) — ffgriever
-  - https://github.com/ffgriever — the standard FFX HD modding loading path.
-- **DINPUT8 main-thread seam** (`IDirectInputDevice8::GetDeviceState` vtable
-  slot 9) — discovered and proven in-house by the FFX Mod Studio project
-  (2026-06-03) as the race-free main-thread bridge.
+- **FFX module loader / DINPUT8 proxy** (`dinput8.dll` → `modules\*.dll`) — ffgriever's
+  ff10-file-loader concept — https://github.com/ffgriever
+  - The DINPUT8 proxy seam is the standard FFX HD modding loading path.
+- **DINPUT8 main-thread seam** (`IDirectInputDevice8::GetDeviceState` vtable slot 9) —
+  discovered and proven in-house (2026-06-03, FFX Mod Studio) as the race-free main-thread
+  bridge; the `CreateRemoteThread` approach it replaces is a well-known unstable pattern.
+- **UnX (Untitled Project X)** — Andon M. Coleman — https://github.com/Kaldaien/UnX
+  - The repository-root `LICENSE` is MIT. The reviewed `UnX/cheat.cpp`, `UnX/input.h`, and
+    `UnX/config.cpp` file headers state GPLv3-or-later; review used commit
+    `faae4359bc5f39872536654fda0f4562dd8b7d36` on 2026-08-22.
+  - Origin evidence was limited to behavior and address observations, including timing and
+    audio-skip behavior at RVAs `0x00420C00` and `0x0030AEC0`. This project does not ship UnX or
+    Special K, and no upstream implementation code or text was copied or adapted. Jarvis-HOOK's
+    implementation, packed route, lifecycle, UI, diagnostics, and tests are clean-room work.
 
-## Our own code
+## Provenance of our own code
 
-- All hook implementations, the probe, the SIN injector, the menu shell and
-  the photo mode actions were developed by the FFX Mod Studio project.
-- The RVA address ledger (`ffx_addresses.h`) was built from our own IDA Pro
-  reverse engineering.
+- `SinCoreLib` (ATEL bytecode, monster structs, encodings) was extracted from the
+  FFX Mod Studio editor codebase (`FFXProjectEditor/FfxLib`) — our own code.
+- `ffx_addresses.h` — the RVA ledger — was built from our own IDA Pro reverse engineering;
+  each entry documents its evidence doc.
+- `NativeMenuShell.h` / `BattlePhotoMode` — header-only references developed in the
+  FFX Mod Studio project (Aurora/arena lanes).
 
 ## Disclaimer
 
-FINAL FANTASY X/X-2 HD Remaster is a trademark and copyright of Square Enix.
-This project is fan-made tooling. It does not distribute game assets or
-executable code. All trademarks are property of their respective owners.
+FINAL FANTASY X/X-2 HD Remaster is a trademark/copyright of Square Enix. This project is
+fan-made tooling; it does not distribute game assets or executable code.

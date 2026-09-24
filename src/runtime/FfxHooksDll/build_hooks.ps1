@@ -1,18 +1,18 @@
 # Builds ffx-hooks.dll and optionally deploys to the game modules\ directory.
 #
-#   .\build_hooks.ps1                # Fase 0: simple cl.exe build (no PolyHook2)
+#   .\build_hooks.ps1                # Phase 0: simple cl.exe build (no PolyHook2)
 #   .\build_hooks.ps1 -Release       # Release config instead of Debug
 #   .\build_hooks.ps1 -WithMSBuildNoPolyHook # comparator: MSBuild path, no PolyHook link
-#   .\build_hooks.ps1 -WithPolyHook  # Fase 1+: cl.exe + vcpkg static libs (PolyHook2 required)
+#   .\build_hooks.ps1 -WithPolyHook  # Phase 1+: cl.exe + vcpkg static libs (PolyHook2 required)
 #   .\build_hooks.ps1 -Deploy        # also copy ffx-hooks.dll to game modules\
 #   .\build_hooks.ps1 -WithPolyHook -Release -Deploy -LabDeploy -GameRoot <copy>
 #
-# Prerequisites (Fase 0):
+# Prerequisites (Phase 0):
 #   - Visual Studio 2022 Build Tools with "Desktop development with C++"
 #   - winget install Microsoft.VisualStudio.2022.BuildTools
 #       --override '--add Microsoft.VisualStudio.Workload.VCTools'
 #
-# Additional prerequisites (Fase 1+ / -WithPolyHook):
+# Additional prerequisites (Phase 1+ / -WithPolyHook):
 #   - vcpkg installed (https://github.com/microsoft/vcpkg)
 #   - vcpkg install --triplet x86-windows-static
 #   - vcpkg integrate install (adds MSBuild props globally)
@@ -39,7 +39,7 @@ if ($WithPolyHook -and $WithMSBuildNoPolyHook) {
     throw "Use either -WithPolyHook or -WithMSBuildNoPolyHook, not both."
 }
 if ($Deploy -and $WithPolyHook -and -not $LabDeploy) {
-    throw "Refusing to deploy PolyHook lab build without -LabDeploy. Keep the installed game on Fase 0, or pass -LabDeploy -GameRoot <disposable copy>."
+    throw "Refusing to deploy a PolyHook lab build without -LabDeploy. Keep the installed game on the Phase 0 stub, or pass -LabDeploy -GameRoot <disposable copy>."
 }
 
 $processMusicFlag = [Environment]::GetEnvironmentVariable("FFXHOOKS_ENABLE_MUSIC", "Process")
@@ -68,8 +68,8 @@ Remove-Item -LiteralPath "$outDir\ffx-hooks.lib" -Force -ErrorAction SilentlyCon
 Remove-Item -LiteralPath "$outDir\ffx-hooks.exp" -Force -ErrorAction SilentlyContinue
 
 if ($WithPolyHook) {
-    # Fase 1+: direct cl.exe build + vcpkg static PolyHook libs
-    # Keep this close to the known-good Fase 0 PE shape. The MSBuild artifact
+    # Phase 1+: direct cl.exe build + vcpkg static PolyHook libraries.
+    # Keep this close to the known-good Phase 0 PE shape. The MSBuild artifact
     # crashes under the FFX module loader before our DllMain log.
     Write-Host "Building with PolyHook2 (direct cl.exe + vcpkg x86-windows-static)..."
 
@@ -84,6 +84,10 @@ if ($WithPolyHook) {
         "`"$here\dllmain.cpp`"",
         "`"$here\hooks\MusicHook.cpp`"",
         "`"$here\hooks\NovaSuperDamageHook.cpp`"",
+        "`"$here\hooks\RonsoPoolCore.cpp`"",
+        "`"$here\hooks\RonsoPoolSave.cpp`"",
+        "`"$here\hooks\RonsoPoolStore.cpp`"",
+        "`"$here\hooks\RonsoPoolRuntime.cpp`"",
         "`"$here\hooks\RonsoManaHook.cpp`"",
         "`"$here\hooks\NulWardHook.cpp`"",
         "`"$here\hooks\NulWardTeachHook.cpp`"",
@@ -98,17 +102,51 @@ if ($WithPolyHook) {
         "`"$here\hooks\ArenaProgressSidecar.cpp`"",
         "`"$here\hooks\ItemStackCapHook.cpp`"",
         "`"$here\hooks\DoubleTripleDropHook.cpp`"",
+        "`"$here\hooks\ArenaComposeRestore.cpp`"",
         "`"$here\hooks\ArenaPlusComposePick.cpp`"",
         "`"$here\hooks\BattleEndHook.cpp`"",
         "`"$here\hooks\PhaseTurnEdgeHook.cpp`"",
         "`"$here\hooks\PhaseTurnEdgeSidecar.cpp`"",
         "`"$here\hooks\BootSkipHook.cpp`"",
+        "`"$here\hooks\F7DifficultyCore.cpp`"",
+        "`"$here\hooks\CustomMixUltraCore.cpp`"",
+        "`"$here\hooks\CustomMixWindowsAdapter.cpp`"",
+        "`"$here\hooks\CustomMixRuntime.cpp`"",
+        "`"$here\hooks\ArenaMixLibrary.cpp`"",
+        "`"$here\hooks\ArenaBattleProgram.cpp`"",
+        "`"$here\hooks\SinRamScalingCore.cpp`"",
+        "`"$here\hooks\SinRamConfigCore.cpp`"",
+        "`"$here\hooks\SinTransitionPublication.cpp`"",
+        "`"$here\hooks\F7ConfigState.cpp`"",
         "`"$here\hooks\F7InLive.cpp`"",
+        "`"$here\hooks\SharedBattleRuntime.cpp`"",
+        "`"$here\hooks\SeymourBattleCore.cpp`"",
+        "`"$here\hooks\SeymourBattleHook.cpp`"",
         "`"$here\hooks\F7AiSwap.cpp`"",
+        "`"$here\hooks\F7UiCore.cpp`"",
+        "`"$here\hooks\FieldScoutAdmissionCore.cpp`"",
+        "`"$here\hooks\MinHookBatchCoordinator.cpp`"",
+        "`"$here\hooks\MonsterAiObserverCore.cpp`"",
+        "`"$here\hooks\MonsterAiDispatchShadow.cpp`"",
+        "`"$here\hooks\MonsterAiDispatchTelemetry.cpp`"",
         "`"$here\hooks\InGameMenuDashboard.cpp`"",
         "`"$here\hooks\UnXBoosterHook.cpp`"",
+        "`"$here\hooks\SpeedHackHook.cpp`"",
         "`"$here\hooks\DialogSkipHook.cpp`"",
+        "`"$here\hooks\NativePortsHook.cpp`"",
+        "`"$here\hooks\NativeGamepadHook.cpp`"",
+        "`"$here\hooks\NativeLanguageHook.cpp`"",
+        "`"$here\hooks\SinAiHook.cpp`"",
+        "`"$here\hooks\EquipmentWorkshopRuntime.cpp`"",
+        "`"$here\hooks\EquipmentWorkshopStore.cpp`"",
+        "`"$here\..\..\..\research\equipment_workshop\src\workshop.cpp`"",
+        "`"$here\..\..\..\research\equipment_workshop\src\lifecycle.cpp`"",
+        "`"$here\hooks\FmvSpeedHook.cpp`"",
         "`"$here\shared\Config.cpp`"",
+        "`"$here\hooks\F8FlagCatalog.cpp`"",
+        "`"$here\hooks\F8RuntimeCore.cpp`"",
+        "`"$here\hooks\MaechenCore.cpp`"",
+        "`"$here\hooks\MaechenHook.cpp`"",
         "`"$here\third_party\minhook\src\hook.c`"",
         "`"$here\third_party\minhook\src\buffer.c`"",
         "`"$here\third_party\minhook\src\trampoline.c`"",
@@ -123,17 +161,29 @@ if ($WithPolyHook) {
     $clCmd = (
         "cl /nologo /LD /O2 /MT /W3 /EHsc /std:c++17" +
         " /D_WINDOWS /D_USRDLL /DFFXHOOKS_EXPORTS /DFFXHOOKS_HAVE_POLYHOOK" +
-        " /I`"$here`" /I`"$here\third_party\minhook\include`" /I`"$vcpkgInclude`"" +
+        " /I`"$here`" /I`"$here\third_party\minhook\include`" /I`"$vcpkgInclude`" /I`"$here\..\..\..\research\equipment_workshop\include`"" +
         " $sources" +
         " $resArg" +
         " /Fe:`"$outDir\ffx-hooks.dll`"" +
         " /Fo`"$objDir\\`"" +
         " /link /LIBPATH:`"$vcpkgLib`"" +
-        " PolyHook_2.lib Zydis.lib Zycore.lib asmjit.lib asmtk.lib kernel32.lib user32.lib gdi32.lib d3d11.lib dxgi.lib" +
+        " PolyHook_2.lib Zydis.lib Zycore.lib asmjit.lib asmtk.lib kernel32.lib user32.lib gdi32.lib d3d11.lib dxgi.lib winhttp.lib bcrypt.lib" +
         " /VERSION:0.1"
     )
 
-    cmd /c "`"$vcvars`" x86 >nul 2>&1 && $clCmd"
+    $maechenHeaders = @(
+        (Join-Path $here "hooks\MaechenCore.h"),
+        (Join-Path $here "hooks\MaechenHook.h")
+    )
+    foreach ($header in $maechenHeaders) {
+        if (-not (Test-Path -LiteralPath $header)) { throw "Maechen build header missing: $header" }
+    }
+
+    # Full source paths exceed cmd.exe's8191-character limit as native modules
+    # grow. Keep exactly the same compiler/linker arguments in a response file.
+    $response = Join-Path $objDir "ffx-hooks-build.rsp"
+    [IO.File]::WriteAllText($response, $clCmd.Substring(3), [Text.Encoding]::Unicode)
+    cmd /c "`"$vcvars`" x86 >nul 2>&1 && cl @`"$response`""
     if ($LASTEXITCODE -ne 0) { throw "cl.exe PolyHook build failed (exit $LASTEXITCODE)" }
 } elseif ($WithMSBuildNoPolyHook) {
     # Comparator: MSBuild path without PolyHook linkage
@@ -150,8 +200,8 @@ if ($WithPolyHook) {
         /nologo /verbosity:minimal
     if ($LASTEXITCODE -ne 0) { throw "MSBuild failed (exit $LASTEXITCODE)" }
 } else {
-    # Fase 0: simple cl.exe build (no PolyHook2 needed)
-    Write-Host "Building Fase 0 skeleton (cl.exe, x86, no PolyHook2)..."
+    # Phase 0: simple cl.exe compatibility build (no PolyHook2 needed).
+    Write-Host "Building Phase 0 compatibility stub (cl.exe, x86, no PolyHook2)..."
 
     $sources = @(
         "`"$here\fase0_stub.cpp`""
@@ -169,7 +219,7 @@ if ($WithPolyHook) {
 
     # Run cl via vcvarsall to get the x86 environment
     cmd /c "`"$vcvars`" x86 >nul 2>&1 && $clCmd"
-    if ($LASTEXITCODE -ne 0) { throw "cl.exe Fase 0 build failed (exit $LASTEXITCODE)" }
+    if ($LASTEXITCODE -ne 0) { throw "cl.exe Phase 0 build failed (exit $LASTEXITCODE)" }
 }
 
 if (-not (Test-Path $dll)) {
@@ -226,7 +276,7 @@ if ($Deploy) {
         Write-Host "  [ffx-hooks] MusicHook compiled/validated but not installed (default safe gate)"
         Write-Host "  Optional unsafe lab arm: set FFXHOOKS_ENABLE_MUSIC=1 before launching FFX"
     } else {
-        Write-Host "  [ffx-hooks] Fase 0 safe stub log opened"
-        Write-Host "  [ffx-hooks] Fase 0 skeleton loaded - no active hooks"
+        Write-Host "  [ffx-hooks] Phase 0 compatibility stub log opened"
+        Write-Host "  [ffx-hooks] Phase 0 compatibility build loaded - no active detours"
     }
 }

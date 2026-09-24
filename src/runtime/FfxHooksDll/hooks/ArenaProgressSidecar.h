@@ -1,4 +1,4 @@
-// Arena+ progress sidecar (Fase 6).
+// Arena+ progress sidecar (Phase 6).
 // Persistent JSON file at mods/Spira Reforge/arena/progress/spira-arena-progress.json
 // tracking which Arena+ ladder rows the player has cleared on this profile, separate
 // from the vanilla save. Used by FfxHooksDll to compute tier-lock UI state

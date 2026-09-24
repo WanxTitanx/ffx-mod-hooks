@@ -14,13 +14,13 @@ typedef struct FFXHooksBlock {
     uint32_t magic;    /* FFXHOOKS_MAGIC once DLL attached */
     uint32_t version;  /* FFXHOOKS_VERSION */
 
-    /* ── Music override (Fase 1) ────────────────────────────────────────── */
+    /* Music override (Phase 1). */
     /* Editor sets musicOverrideTrackIndex (0..N) and increments musicSeq.  */
     /* Hook intercepts next PlayTrackByIndex call and substitutes the index. */
     volatile int32_t  musicOverrideTrackIndex; /* -1 = no override */
     volatile uint32_t musicSeq;                /* editor increments to apply */
 
-    /* ── Element flags extension (Fase 2) ──────────────────────────────── */
+    /* Element-flags extension (Phase 2). */
     /* bits: 0x20=Earth  0x40=Wind  0x80=Dark                               */
     volatile uint8_t  elementFlagsExt;
 

@@ -1,4 +1,4 @@
-// ResolverLogHook — Arena+ Multi Dark Aeon custom token resolver spike (Fase 4).
+// ResolverLogHook - Arena+ Multi Dark Aeon custom-token resolver spike (Phase 4).
 //
 // Two-mode detour on FFX_Field_ResolveEncounterToken@0x7828B0 (PE RVA 0x3828B0):
 //
@@ -19,7 +19,7 @@
 //   arena_plus_custom_token_resolver.flag  (file or env FFXHOOKS_ENABLE_ARENA_PLUS_CUSTOM_TOKEN_RESOLVER=1)
 //   FFXHOOKS_ARENAPLUS_RESOLVER_LOG_MAX    (env int, default 256; cap on logged calls)
 //
-// Plan: .cursor/plans/arena_plus_multi_dark_aeon_*.plan.md  (Fase 4 spike)
+// Plan: .cursor/plans/arena_plus_multi_dark_aeon_*.plan.md (Phase 4 spike).
 // RE doc: docs/reverse/FFX_ARENA_PLUS_CUSTOM_TOKEN_RESOLVER_HOOK_SPIKE.md
 //
 // Redirect safety: if the alias token resolves to a vanilla row, downstream paths

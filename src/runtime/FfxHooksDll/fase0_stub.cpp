@@ -1,4 +1,4 @@
-/* ffx-hooks.dll Fase 0 safe stub.
+/* ffx-hooks.dll Phase 0 compatibility stub.
  *
  * This file intentionally avoids the C/C++ runtime. It is the deploy-safe
  * module-loader smoke artifact: create the shared block, write a tiny log, and
@@ -14,11 +14,11 @@ static HANDLE g_mmf = NULL;
 static FFXHooksBlock* g_block = NULL;
 
 extern "C" __declspec(dllexport) const char* FF10HgetName(void) {
-    return "ffx-hooks (Jarvis Fase 0 safe stub)";
+    return "ffx-hooks (Jarvis Phase 0 compatibility stub)";
 }
 
 extern "C" __declspec(dllexport) const char* FF10HgetVer(void) {
-    return "0.2-fase0-safe";
+    return "0.2.0-phase0-compat";
 }
 
 static void AppendLogLiteral(const char* text) {
@@ -78,7 +78,7 @@ static void OpenLog(void) {
         NULL);
 
     if (g_log != INVALID_HANDLE_VALUE) {
-        AppendLogLiteral("[ffx-hooks] Fase 0 safe stub log opened\n");
+        AppendLogLiteral("[ffx-hooks] Phase 0 compatibility stub log opened\n");
     }
 }
 
@@ -91,7 +91,7 @@ static void CreateBlock(void) {
         sizeof(FFXHooksBlock),
         FFXHOOKS_MMF_NAME);
     if (!g_mmf) {
-        AppendLogLiteral("[ffx-hooks] WARN Fase 0 failed CreateFileMappingA err=");
+        AppendLogLiteral("[ffx-hooks] WARN Phase 0 failed CreateFileMappingA err=");
         AppendHex32(GetLastError());
         AppendLogLiteral("\n");
         return;
@@ -100,7 +100,7 @@ static void CreateBlock(void) {
     g_block = static_cast<FFXHooksBlock*>(
         MapViewOfFile(g_mmf, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(FFXHooksBlock)));
     if (!g_block) {
-        AppendLogLiteral("[ffx-hooks] WARN Fase 0 failed MapViewOfFile err=");
+        AppendLogLiteral("[ffx-hooks] WARN Phase 0 failed MapViewOfFile err=");
         AppendHex32(GetLastError());
         AppendLogLiteral("\n");
         CloseHandle(g_mmf);
@@ -135,7 +135,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD reason, LPVOID reserved
         OpenLog();
         AppendLogLiteral("[ffx-hooks] DLL_PROCESS_ATTACH enter\n");
         CreateBlock();
-        AppendLogLiteral("[ffx-hooks] Fase 0 skeleton loaded - no active hooks\n");
+        AppendLogLiteral("[ffx-hooks] Phase 0 compatibility build loaded - no active detours\n");
     } else if (reason == DLL_PROCESS_DETACH) {
         AppendLogLiteral("[ffx-hooks] DLL_PROCESS_DETACH enter\n");
         DestroyBlock();

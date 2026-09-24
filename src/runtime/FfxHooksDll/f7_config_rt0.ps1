@@ -28,6 +28,7 @@ $sample = @'
   "diff_elemAbsorb": 0,
   "diff_statusResist": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   "areas": [],
+  "sinRam":{"enabled":false,"threatLevel":0},
   "music_lock": 16,
   "music_battle": -1,
   "music_randomizer": false,
@@ -47,9 +48,12 @@ $required = @('diff_enabled','diff_hpMul','diff_strMul','diff_defMul','diff_magM
               'diff_agiMul','diff_accMul','diff_evaMul','diff_lckMul','diff_autoStatus',
               'diff_elemWeak','diff_elemResist','diff_elemAbsorb','diff_statusResist',
               'music_lock','music_battle','music_randomizer','music_fade','music_playlist',
-              'force_lastField','force_lastGroup','force_hasLast','force_repeat','diffByArea')
+              'force_lastField','force_lastGroup','force_hasLast','force_repeat','diffByArea','sinRam')
 foreach ($k in $required) { if ($null -eq $cfg.$k) { Fail "chave ausente: $k" } }
 if ($cfg.diff_statusResist.Count -ne 25) { Fail "statusResist deve ter 25 entries (tem $($cfg.diff_statusResist.Count))" }
+if ($cfg.sinRam.enabled -ne $false -or $cfg.sinRam.threatLevel -ne 0) {
+  Fail 'sinRam default deve ser exatamente OFF/T0'
+}
 
 # ── 3. Ranges (clamps do F7InLive/F7_BASE_MAX) ──
 $ranges = @{
@@ -71,6 +75,28 @@ $rt = $cfg | ConvertTo-Json -Depth 6 | ConvertFrom-Json
 foreach ($k in @('diff_hpMul','diff_autoStatus','music_lock','music_fade','force_repeat','force_lastField')) {
   if ("$($rt.$k)" -ne "$($cfg.$k)") { Fail "round-trip divergiu em $k" }
 }
+if ($rt.sinRam.enabled -ne $false -or $rt.sinRam.threatLevel -ne 0) {
+  Fail 'round-trip divergiu em sinRam'
+}
 
-if ($fail -eq 0) { Write-Host "F7 CONFIG RT0: PASS (24 chaves, ranges, masks, round-trip)" ; exit 0 }
+# ── 5. Invalid S.I.N. isolation and production integration ──
+$invalidSin = '{"diff_enabled":true,"music_lock":16,"force_repeat":3,"sinRam":{"enabled":true,"threatLevel":3}}' |
+  ConvertFrom-Json
+if ($invalidSin.diff_enabled -ne $true -or $invalidSin.music_lock -ne 16 -or
+    $invalidSin.force_repeat -ne 3) {
+  Fail 'invalid S.I.N. semantics cannot discard valid Difficulty/music/force members'
+}
+
+$f7Source = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'hooks\F7InLive.cpp')
+if (-not $f7Source.Contains('SinRamConfig::ParseDocument(json')) {
+  Fail 'F7_LoadConfig must invoke the independent S.I.N. parser'
+}
+if (-not $f7Source.Contains('SinRamConfig::SerializeValue')) {
+  Fail 'F7_SaveConfig must invoke the canonical S.I.N. serializer'
+}
+if (-not $f7Source.Contains('\"sinRam\":%s')) {
+  Fail 'F7_SaveConfig must emit the exact canonical sinRam root member without a second saver'
+}
+
+if ($fail -eq 0) { Write-Host "F7 CONFIG RT0: PASS (25 root members, ranges, masks, independent S.I.N., round-trip)" ; exit 0 }
 Write-Host "F7 CONFIG RT0: FAIL"; exit 1

@@ -1,12 +1,10 @@
 #pragma once
-// SinCurseHook — runtime SIN curse application on field zone transitions.
-// V1: field transition logging + infection selection + scale on monster spawn.
+// Legacy S.I.N. writer containment boundary.
 //
-// Flags:
-//   sin_curse.flag              — enable SIN curse runtime
-//   sin_f7_intensity.flag       — percentage 10..100 (e.g. "60")
-//
-// Log: %TEMP%\ffx-hooks.log (via FfxHooks logger)
+// The old implementation launched an external disk materializer from a field hook. This adapter
+// remains deliberately unavailable on every profile so old call sites stay source-compatible
+// without retaining disk or RAM write authority. Production S.I.N. is separately wired through
+// SinRamScalingCore and F7Difficulty's sole RAM writer; it never falls back through this API.
 
 #include <cstdint>
 
@@ -15,13 +13,14 @@ namespace FfxHooks {
     struct SinCurseInstallResult {
         bool ok;
         unsigned hookedCount;
+        const char* reason;
     };
 
     SinCurseInstallResult InstallSinCurseHook(uintptr_t moduleBase, void* logFn);
     bool RemoveSinCurseHook();
     bool IsSinCurseHookInstalled();
 
-    // Runtime state accessors (for F7 SIN submenu)
+    // Compatibility accessors remain neutral while the legacy writer is inert.
     const char* GetCurrentRegion();
     int GetCurrentThreatCap();
     const char* GetCurrentField();

@@ -22,6 +22,10 @@
  */
 #define RVA_FMOD_PLAY_TRACK       0x003097E0u
 #define RVA_FMOD_SWITCH_CROSSFADE 0x003089F0u
+// Exact 78CE3439 PE: int __thiscall(self, runtimeId, loadEvent). The direct
+// reader avoids SwitchCrossfade's current-track and prepared-slot shortcuts.
+#define RVA_FMOD_READ_EVENT_BY_RUNTIME_ID 0x00309170u
+#define RVA_FMOD_EVENT_LOAD_DISABLED     0x008EC164u
 
 /* ── Ability / battle streaming SFX (magic DLL SeSep → FMOD) ────────────────
  * Evidence: docs/reverse/FFX_ABILITY_SFX_FMOD_STREAMING_INFERNO_2026-06-15.md
@@ -57,6 +61,7 @@
  * IMPORTANT: runtime hooks use PE RVAs from GetModuleHandle — NOT IDA+0x400000.
  */
 #define RVA_FFX_BATTLE_COMPUTE_HIT_DAMAGE        0x0038E680u
+#define RVA_FFX_BATTLE_DAMAGE_CAP_CLAMP_CMP      0x0038EDD3u  /* safe entry before upper clamp; preserves incoming writeback edge */
 #define RVA_FFX_BATTLE_DAMAGE_CAP_CLAMP_JLE      0x0038EDD5u  /* jle before mov eax,ebx */
 #define RVA_FFX_BATTLE_DAMAGE_WRITEBACK          0x0038EDD9u  /* mov [esi], eax */
 #define RVA_FFX_BATTLE_DAMAGE_POST_WRITEBACK     0x0038EDDBu  /* add [ecx+650h], eax */
@@ -162,7 +167,7 @@
 #define RVA_FFX_CONTROLLED_CHR_INSTANCE_PTR        0x00F00740u  /* g_FFX_ControlledChrInstance @ 0x1300740 */
 #define RVA_FFX_SCENE_STATE_OBJECT                 0x00D2CA90u  /* g_FFX_SceneStateObject @ 0x112CA90 */
 #define FFX_CHR_INSTANCE_WORLD_X_OFFSET            0x0Cu        /* float X/Y/Z @ +0x0C/+0x10/+0x14 */
-#define FFX_SCENE_STATE_SCENE_ID_OFFSET            0x0u         /* dword sceneId @ +0 */
+#define FFX_SCENE_STATE_SCENE_ID_OFFSET            0x0u         /* uint16 sceneId @ +0; adjacent WORD is separate state (78CE..., RE 2026-09-19) */
 #define FFX_SCENE_STATE_MAP_TOKEN_OFFSET           0x4u         /* dword map token @ +4 */
 
 /* Field Scout geometry — scene load chain (docs/reverse/FFX_PHYRE_SCENELOAD_MATERIAL_RE_2026-06-06.md) */
@@ -438,26 +443,97 @@
 #define RVA_FFX_MENU_SUBSYSTEM_ACTIVE_FLAG        0x00F407E4u  /* IDA 0x13407E4: g_FFX_MenuSubsystemActive — field 3D skip gate */
 #define RVA_FFX_MENU_SUBSYSTEM_ALT_FLAG           0x00F407E8u  /* IDA 0x13407E8: alt menu gate (820860 path) */
 
-/* F8 dashboard / UnXBoosterHook (Operacao Demonio 2026-08-02): debug flags UnX-style.
- * Absoluto 0xD2A8F8 (mesma area do F7_LeverApply / F7InLive) -> RVA. Byte layout:
- * +0x00 Invincible Enemies +0x01 Invincible Party +0x04 Always Overdrive +0x05 Always
- * Critical +0x06 Damage 1 +0x07 Damage 10000 +0x08 Damage 99999 +0x09 Rare Drop
- * +0x0A AP 100x +0x0B Gil 100x +0x15 Permanent Sensor. */
-#define RVA_FFX_DEBUG_FLAGS                       0x0092A8F8u  /* 0xD2A8F8 - 0x400000 */
-#define RVA_FFX_PERMANENT_SENSOR                  0x0092A90Du  /* debug flags +0x15 */
-/* UnX legado: FFX_BattleParticipation 0x1F10EA0 / FFX_AP_Earn 0x1F10EC4 (absolutos). */
-#define RVA_FFX_BATTLE_PARTICIPATION              0x01B10EA0u
-#define RVA_FFX_AP_EARN                           0x01B10EC4u
-/* DialogSkipHook (Onda 3, Operacao Demonio 2026-08-02): FFX_FmodVoice_ReadEventData
- * (absoluto 0x70B040; alvo do patch ret 8 do UnX legado — porte seguro por hook). */
-#define RVA_FFX_FMODVOICE_READ_EVENT_DATA         0x0030B040u
+// F8 runtime ledger values are PE RVAs added exactly once to the loaded FFX HMODULE.
+// Never subtract the 0x00400000 preferred base from them again.
+// Profile source: docs/ai/F8_RUNTIME_GOVERNANCE_DESIGN_2026-08-19.md sections 3.2-3.3;
+// PE32/I386, timestamp 0x55D2F3CC, SizeOfImage 0x0237D000.
+#define FFX_PREFERRED_IMAGE_BASE                  0x00400000u
+#define RVA_FFX_DEBUG_FLAGS                       0x00D2A8F8u  /* preferred VA 0x0112A8F8 */
+#define FFX_DEBUG_STRUCT_SIZE                     0x20u
+#define FFX_DEBUG_INVINCIBLE_ENEMIES_OFFSET       0x00u
+#define FFX_DEBUG_INVINCIBLE_PARTY_OFFSET         0x01u
+#define FFX_DEBUG_ALWAYS_OVERDRIVE_OFFSET         0x14u
+#define FFX_DEBUG_ALWAYS_CRITICAL_OFFSET          0x15u
+#define FFX_DEBUG_ALWAYS_DEAL_1_OFFSET            0x16u
+#define FFX_DEBUG_ALWAYS_DEAL_10000_OFFSET        0x17u
+#define FFX_DEBUG_ALWAYS_DEAL_99999_OFFSET        0x18u
+#define FFX_DEBUG_ALWAYS_RARE_REWARD_OFFSET       0x19u
+#define FFX_DEBUG_AP_100X_OFFSET                  0x1Au
+#define FFX_DEBUG_GIL_100X_OFFSET                 0x1Bu
+#define FFX_DEBUG_PERMANENT_SENSOR_OFFSET         0x1Du
+
+// Reward multiplier sites are offline evidence from the supported SHA-256
+// 78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED only.
+// The complete eight-byte signatures own the adjacent JZ plus original IMUL/store; the runtime
+// overwrites only the proven six-byte IMUL/store and resumes immediately after it.
+#define RVA_FFX_AP_MULTIPLIER_SIGNATURE           0x00399121u  /* VA 0x00799121 */
+#define RVA_FFX_AP_MULTIPLIER_SITE                0x00399123u  /* 6B C0 64 89 45 FC */
+#define RVA_FFX_AP_MULTIPLIER_IMMEDIATE           0x00399125u  /* signed imm8 0x64 */
+#define RVA_FFX_AP_MULTIPLIER_RESUME              0x00399129u
+#define RVA_FFX_GIL_MULTIPLIER_SIGNATURE          0x0039913Cu  /* VA 0x0079913C */
+#define RVA_FFX_GIL_MULTIPLIER_SITE               0x0039913Eu  /* 6B C0 64 89 45 F8 */
+#define RVA_FFX_GIL_MULTIPLIER_IMMEDIATE          0x00399140u  /* signed imm8 0x64 */
+#define RVA_FFX_GIL_MULTIPLIER_RESUME             0x00399144u
+
+// Participation and AP-earned arrays contain one byte for each AP slot, exactly slots 0..6.
+#define RVA_FFX_BATTLE_PARTICIPATION              0x01F10EA0u  /* preferred VA 0x02310EA0; 7 bytes */
+#define RVA_FFX_AP_EARN                           0x01F10EC4u  /* preferred VA 0x02310EC4; 7 bytes */
+/* FFX_FmodVoice_ReadEventData entry verified in the supported executable and the official
+ * UnX 0.9.1.9 source (preferred VA 0x70AEC0). The stale 0x30B040 value was an address inside
+ * this function, in the middle of an indirect CALL instruction, and must never be detoured. */
+#define RVA_FFX_FMODVOICE_READ_EVENT_DATA         0x0030AEC0u
 #define RVA_FFX_MENU_LAYER_SUPPRESS_FLAG          0x00F407E0u  /* IDA 0x13407E0: suppress DrawAllLayers when set */
 #define RVA_FFX_RENDER_SKIP_SUBMIT_790            0x00EFB790u  /* IDA 0x12FB790: g_Render_SkipSubmit_790 — 2D enqueue kill */
 #define RVA_FFX_RENDER_DISABLED_798               0x00EFB798u  /* IDA 0x12FB798: GPU batch upload skip */
 #define RVA_FFX_RENDER_ENGINE_MODE_NOTIFY         0x00486DE0u  /* IDA 0x886DE0: void __cdecl(int) — 8E27E0 calls 0x80000001 */
 #define RVA_FFX_MENU2D_CAPTURE_CTX_PTR            0x00CCC838u  /* IDA 0xCCC838: g_Menu2D_CaptureCtx; +4 capture phase */
 #define RVA_FFX_MENU2D_BATCH_MASTER_PTR           0x00CCC81Cu  /* IDA 0xCCC81C: g_Menu2D_BatchMaster BSS struct (NOT a pointer); sub_684E70 this; batch objs @+136..+184 */
-#define RVA_FFX_SCENE_FIELD_SERVICE_TICK          0x00420C00u  /* IDA 0x820C00: int __cdecl(float dt) */
+#define RVA_FFX_SCENE_FIELD_SERVICE_TICK          0x00420C00u  /* preferred VA 0x820C00: scene-service tick with float dt on stack */
+
+// Jarvis-HOOK Fastload, 2026-09-16 static RE, high confidence (runtime trace pending).
+// FFX.exe SHA-256 78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED;
+// PE32/I386, timestamp 0x55D2F3CC, SizeOfImage 0x0237D000, preferred base 0x00400000.
+// Evidence: plan sections 2.3-2.5 and docs/reverse/FASTLOAD_NATIVE_REQUEST_2026-09-19.md.
+// These entries are profile/signature gated; only the inner tick and opening loader are detoured.
+#define RVA_FFX_FASTLOAD_SCENE_TICK       0x00420090u // VA 0x00820090; cdecl void(); 16-byte prefix
+#define RVA_FFX_FASTLOAD_OPENING_LOADER   0x00257B60u // VA 0x00657B60; thiscall void; wait byte proves readiness; 16-byte prefix
+#define RVA_FFX_FASTLOAD_OPENING_FINISH   0x002525B0u // VA 0x006525B0; cdecl void(); 8-byte body, called only in apply mode
+#define RVA_FFX_FASTLOAD_OPENING_WAIT     0x008CB9C2u // VA 0x00CCB9C2; uint8
+#define RVA_FFX_FASTLOAD_SECURITY_COOKIE  0x008613D8u // VA 0x00C613D8; uint32 relocated absolute operand
+#define RVA_FFX_FASTLOAD_UI_INITIALIZER   0x00248910u // VA 0x00648910; code entry
+#define RVA_FFX_FASTLOAD_UI_FSM           0x002F0A90u // VA 0x006F0A90; code entry
+#define RVA_FFX_FASTLOAD_SCANNER          0x002F0BB0u // VA 0x006F0BB0; code entry; slots 0..199
+#define RVA_FFX_FASTLOAD_SORTER           0x002F10F0u // VA 0x006F10F0; code entry; starts at index 1
+#define RVA_FFX_FASTLOAD_SELECTED_READ    0x002F01B0u // VA 0x006F01B0; code entry
+#define RVA_FFX_FASTLOAD_CHECKSUM         0x00247F20u // VA 0x00647F20; code entry
+#define RVA_FFX_FASTLOAD_HYDRATE          0x004B4E70u // VA 0x008B4E70; code entry; never called by observer
+#define RVA_FFX_FASTLOAD_UI_STATE         0x008E72D8u // VA 0x00CE72D8; int32
+#define RVA_FFX_FASTLOAD_SLOT_RECORDS     0x008E7308u // VA 0x00CE7308; first int32 slot record only
+#define RVA_FFX_FASTLOAD_SELECTED_PAGE    0x008E72DCu // VA 0x00CE72DC; int32
+#define RVA_FFX_FASTLOAD_SELECTED_ROW     0x008E72E0u // VA 0x00CE72E0; int32
+#define RVA_FFX_FASTLOAD_SCREEN_STATE     0x008CB994u // VA 0x00CCB994; int32
+#define RVA_FFX_FASTLOAD_DIALOG_STATE     0x008CB998u // VA 0x00CCB998; int32
+#define RVA_FFX_FASTLOAD_DIRECTION        0x008CB99Cu // VA 0x00CCB99C; int32 (0=load)
+#define RVA_FFX_FASTLOAD_PENDING_MENU     0x00EFBBF4u // VA 0x012FBBF4; int32
+#define RVA_FFX_FASTLOAD_SELECT_LOAD      0x00EFB878u // VA 0x012FB878; int32
+#define RVA_FFX_FASTLOAD_LOAD_COMMAND     0x00421870u // VA 0x00821870; cdecl(uint32), return ignored; full 127-byte body
+#define RVA_FFX_FASTLOAD_LOAD_IDLE        0x002482B0u // VA 0x006482B0; screen==0; 12-byte body
+#define RVA_FFX_FASTLOAD_SCREEN_SETTER    0x00248890u // VA 0x00648890; cdecl(int32); 35-byte body
+#define RVA_FFX_FASTLOAD_REQUEST_RESET    0x004B5570u // VA 0x008B5570; cdecl void; 11-byte body
+#define RVA_FFX_FASTLOAD_DIRECTION_SETTER 0x00248860u // VA 0x00648860; cdecl(int32); 13-byte body
+#define RVA_FFX_FASTLOAD_REQUEST_FLAG     0x01466384u // VA 0x01866384; uint32 cleared by native load request
+#define RVA_FFX_FASTLOAD_TICK_CALLER      0x00420D71u // VA 0x00820D71; unchanged direct call into our inner tick
+#define RVA_FFX_FASTLOAD_FIELD_LOAD_GATE  0x00420DFCu // VA 0x00820DFC; active Load skips normal field work
+#define RVA_FFX_FASTLOAD_ACTIVE_SCENE     0x00EFBBF8u // VA 0x012FBBF8; DWORD owned by the field loader, separate from saved scene
+#define RVA_FFX_FASTLOAD_MESSAGE_BANK     0x00F26B42u // VA 0x01326B42; signed byte; field messages use bank 0
+#define RVA_FFX_FASTLOAD_TITLE_CHOICE_STATE 0x00F26D9Cu // window 2, bank 0: WORD +0x14, active=2
+#define RVA_FFX_FASTLOAD_TITLE_CHOICE_FLAGS 0x00F26DA5u // same window: byte +0x1D, awaiting choice=0x20
+#define RVA_FFX_FASTLOAD_WINDOW2_REGISTRY  0x014676B8u // native window2 pointer; two fixed, signature-checked banks
+#define RVA_FFX_FASTLOAD_ANSWER2_REGISTRY  0x01468A58u // native choice-response pointer for window2
+#define RVA_FFX_FASTLOAD_WINDOW2_PRIMARY  0x01466610u
+#define RVA_FFX_FASTLOAD_WINDOW2_SECONDARY 0x01466F90u
+#define RVA_FFX_FASTLOAD_ANSWER2_PRIMARY  0x01467940u // aligned 8-byte header; result byte at+18
+#define RVA_FFX_FASTLOAD_ANSWER2_SECONDARY 0x01468300u
 
 /* Boot fast-skip lab (docs/reverse/FFX_BOOT_FAST_SKIP_RE_2026-06-22.md) */
 #define RVA_FFX_MENU_SUBSYSTEM_ACTIVE             0x00F407E4u  /* g_FFX_MenuSubsystemActive @ 0x13407E4 */
@@ -495,6 +571,29 @@
 #define RVA_FFX_BTL_KERNEL_INIT_LO               0x003817D0u  /* sub_7817D0 — battle-only caller of PrepareSave (~0x381C20) */
 #define RVA_FFX_BTL_KERNEL_INIT_HI               0x00382800u  /* return-addr gate hi (generous .text window) */
 #define RVA_FFX_PARTY_WIDE_COMMAND_BANK          0x00D307FCu  /* g_PartyWideCommandBank (IDA 0x11307FC); word=((id-96)&0xFFF)/16, bit=(id-96)&0xF */
+// Party ledger: slot-zero in_party is at structure offset 0x28 with a 148-byte stride.
+// AP covers slots 0..6; Seymour is slot 7 and belongs only to the RT0-only bundle below.
+#define RVA_FFX_PARTY_STRUCT_BASE                0x00D32060u  /* preferred VA 0x01132060 */
+#define FFX_PARTY_IN_PARTY_OFFSET                0x28u
+#define RVA_FFX_PARTY_IN_PARTY_BASE              0x00D32088u  /* preferred VA 0x01132088 */
+#define FFX_PARTY_SLOT_STRIDE                    148u
+#define FFX_PARTY_SLOT_COUNT                     7u
+#define FFX_PARTY_SEYMOUR_SLOT                   7u
+#define RVA_FFX_SEYMOUR_PATCH_PAGE               0x004A8000u
+#define RVA_FFX_SEYMOUR_PATCH_SITE1              0x004A8F47u
+#define RVA_FFX_SEYMOUR_PATCH_SITE2              0x004A8F9Au
+#define FFX_SEYMOUR_PATCH_SPAN_LENGTH            0x57u
+#define RVA_FFX_PARTY_SEYMOUR_IN_PARTY           0x00D32494u  /* offline-only transaction evidence */
+#define FFX_PARTY_SEYMOUR_MASK                    0x11u
+// Speed-hack provenance: the SPEED_HACK_GAME_TICK_RE note under research/f8_recovery.
+// The per-frame float delta is FFXField+0x24. FFX_Field_UpdateAndRender reads it for both
+// FFX_Scene_FieldMainLoop and FFX_Field_AccumulateElapsedTime.
+#define RVA_FFX_FIELD_UPDATE_AND_RENDER          0x0002F600u  /* VA 0x42F600; __thiscall(this) */
+#define FFX_FIELD_DELTA_TIME_OFF                 0x24u        /* float - historical outer-field delta; current Speed path leaves it untouched */
+/* FFX native SpeedBooster uses DWORD states 1/2 for its 2x/4x modes. The adjacent byte reports
+ * engine-owned booster availability; it is read-only and does not classify the current scene. */
+#define RVA_FFX_NATIVE_SPEED_BOOSTER             0x008E82A4u  /* preferred VA 0x00CE82A4; DWORD */
+#define RVA_FFX_NATIVE_SPEED_BOOSTER_AVAILABILITY 0x008E82ACu /* preferred VA 0x00CE82AC; byte, read-only */
 /* IDA: sub_7B0C30 reads encoded tokens @ entry+8 (u16 array); +4 overwritten by sub_7B0A40 */
 #define FFX_BATTLE_ACTION_ENCODED_CMD_OFF        0x08u
 #define FFX_BATTLE_ACTION_ENCODED_CMD_LEGACY_OFF 0x04u /* fallback only */

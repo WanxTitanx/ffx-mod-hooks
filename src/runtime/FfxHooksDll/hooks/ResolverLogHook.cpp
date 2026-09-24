@@ -1,4 +1,4 @@
-// ResolverLogHook — Arena+ Multi Dark Aeon spike (Fase 4): read-only logger detour
+// ResolverLogHook - Arena+ Multi Dark Aeon spike (Phase 4): read-only logger detour.
 // on FFX_Field_ResolveEncounterToken@0x7828B0. See ResolverLogHook.h for behavior and
 // docs/reverse/FFX_ARENA_PLUS_CUSTOM_TOKEN_RESOLVER_HOOK_SPIKE.md for the RE.
 //

@@ -8,6 +8,7 @@
 #include <exception>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #endif
 
 namespace FfxHooks {
@@ -36,6 +37,7 @@ static volatile LONG   g_minFadeFrames = 0;
 static volatile LONG   g_arenaBattleMusicPending = -1;
 static volatile LONG   g_arenaBattleMusicFadeFrames = 90;
 static volatile LONG   g_arenaBattleMusicPendingExpireTick = 0;
+static volatile LONG   g_arenaBattleMusicPreloadQueued = 0;
 static ArenaBattleMusicSoundCmdFn g_arenaSoundCmdFn = nullptr;
 
 typedef int (__thiscall *FmodPlayTrack_t)(void* self, unsigned int trackIndex);
@@ -46,6 +48,43 @@ typedef int (__thiscall *FmodSwitchCrossfade_t)(
     int context);
 typedef int (__cdecl *MusicPrepBattleTrack_t)(int trackIndex);
 typedef int (__cdecl *MusicPlayTrackWithPreload_t)(unsigned int trackIndex);
+typedef int (__thiscall *FmodReadEvent_t)(void* self, unsigned int trackIndex, int loadEvent);
+static FmodReadEvent_t g_readEvent = nullptr;
+
+static FmodReadEvent_t ResolveMusicEventReader(uintptr_t base) {
+    if (!base) return nullptr;
+    // Direct call on the existing audio callback thread, not a new detour.
+    static const unsigned char signature[] = {
+        0x55,0x8B,0xEC,0x53,0x8B,0x5D,0x08,0x57,0x8B,0xF9,
+        0x81,0xFB,0xB5,0x00,0x00,0x00,0x0F,0x87,0x03,0x01,0x00,0x00,
+        0x8B,0x47,0x10
+    };
+    const auto address = base + RVA_FMOD_READ_EVENT_BY_RUNTIME_ID;
+    __try {
+        if (memcmp(reinterpret_cast<const void*>(address), signature, sizeof(signature)) != 0)
+            return nullptr;
+    } __except (EXCEPTION_EXECUTE_HANDLER) { return nullptr; }
+    return reinterpret_cast<FmodReadEvent_t>(address);
+}
+
+struct MusicEventState {
+    uint32_t currentTrack, slotFlag, active, event, bank, loadDisabled;
+};
+
+static bool ReadMusicEventState(void* self, unsigned int track, MusicEventState* state) {
+    if (!self || !state || track > 181u) return false;
+    __try {
+        const auto* system = static_cast<const uint32_t*>(self);
+        const auto* slots = reinterpret_cast<const uint32_t*>(system[0x10 / 4]);
+        if (!slots) return false;
+        const auto* slot = slots + track * (0x3Cu / 4u);
+        state->currentTrack = system[0x18 / 4];
+        state->bank = system[0x2C / 4] == 1 ? system[1] : system[0];
+        state->event = slot[0]; state->slotFlag = slot[1]; state->active = slot[0x20 / 4];
+        state->loadDisabled = g_base ? *reinterpret_cast<const uint32_t*>(g_base + RVA_FMOD_EVENT_LOAD_DISABLED) : 0;
+        return true;
+    } __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
+}
 
 static void HookLog(MusicHookLogFn log, const char* fmt, ...) {
     if (!log) return;
@@ -145,6 +184,7 @@ static bool IsArenaBattleMusicPendingExpired() {
 }
 
 void SetArenaBattleMusicPending(int trackIndex, int fadeFrames) {
+    InterlockedExchange(&g_arenaBattleMusicPreloadQueued, 0);
     if (trackIndex < 0 || trackIndex > 0xB5) {
         InterlockedExchange(&g_arenaBattleMusicPending, -1);
         InterlockedExchange(&g_arenaBattleMusicPendingExpireTick, 0);
@@ -176,6 +216,7 @@ ArenaBattleMusicSoundCmdFn GetArenaBattleMusicSoundCmdFn() {
 void ClearArenaBattleMusicPending() {
     InterlockedExchange(&g_arenaBattleMusicPending, -1);
     InterlockedExchange(&g_arenaBattleMusicPendingExpireTick, 0);
+    InterlockedExchange(&g_arenaBattleMusicPreloadQueued, 0);
 }
 
 static bool IsAmbientFieldMusicTrack(unsigned int trackIndex) {
@@ -183,8 +224,9 @@ static bool IsAmbientFieldMusicTrack(unsigned int trackIndex) {
     return trackIndex == 21u;
 }
 
-static bool TryPeekArenaBattleMusic(unsigned int requestedTrack, unsigned int* outTrack) {
-    if (!outTrack || IsAmbientFieldMusicTrack(requestedTrack)) {
+static bool TryPeekArenaBattleMusic(unsigned int requestedTrack, unsigned int* outTrack,
+    bool playbackConsumer = false) {
+    if (!outTrack) {
         return false;
     }
     if (IsArenaBattleMusicPendingExpired()) {
@@ -193,6 +235,18 @@ static bool TryPeekArenaBattleMusic(unsigned int requestedTrack, unsigned int* o
     }
     const LONG pending = InterlockedCompareExchange(&g_arenaBattleMusicPending, -1, -1);
     if (pending < 0) {
+        return false;
+    }
+    const bool queued = InterlockedCompareExchange(&g_arenaBattleMusicPreloadQueued, 0, 0) != 0;
+    // Commands already ahead of this battle in the audio queue must not consume
+    // its load intent. The preload has submitted the selected runtime ID.
+    if (playbackConsumer && queued && requestedTrack != static_cast<unsigned int>(pending)) {
+        return false;
+    }
+    // Track 21 is normally field music, but it is also a valid Ultra selection.
+    // Only a matching battle preload may admit it at the audio consumer.
+    if (IsAmbientFieldMusicTrack(requestedTrack) &&
+        !(playbackConsumer && queued && requestedTrack == static_cast<unsigned int>(pending))) {
         return false;
     }
     *outTrack = static_cast<unsigned int>(pending);
@@ -280,7 +334,7 @@ static int __cdecl MusicPlayWithPreload_Shim(unsigned int trackIndex) {
     unsigned int arenaTrack = trackIndex;
     if (TryPeekArenaBattleMusic(trackIndex, &arenaTrack)) {
         if (g_arenaSoundCmdFn) {
-            // Caminho lab (soundcmd disponivel): recipe + suprime a vanilla (a faixa sobe via soundcmd).
+            // The lab recipe starts the selected track through soundcmd.
             HookLog(g_log,
                 "[ffx-hooks] MusicHook Arena+ battle-entry PlayTrackWithPreload(%u) -> lab override=%u (suppress vanilla)",
                 trackIndex,
@@ -289,14 +343,15 @@ static int __cdecl MusicPlayWithPreload_Shim(unsigned int trackIndex) {
             ConsumeArenaBattleMusicPending();
             return 0;
         }
-        // No soundcmd (probe heartbeat off): replaces track, plays vanilla — no silence
-        // e sem vazar o override para a proxima PlayTrack (fix 2026-08-02).
+        // Native preload enqueues opcode 39 for the audio consumer. Retain the
+        // load intent across that queue, even though its numeric ID is replaced
+        // here; PlayTrackByIndex cannot play an event that was never loaded.
         HookLog(g_log,
-            "[ffx-hooks] MusicHook Arena+ battle-entry PlayTrackWithPreload(%u) -> track=%u (sem soundcmd, vanilla substituida)",
+            "[ffx-hooks] MusicHook Arena+ battle-entry PlayTrackWithPreload(%u) -> track=%u (no soundcmd; vanilla track replaced)",
             trackIndex,
             arenaTrack);
         trackIndex = arenaTrack;
-        ConsumeArenaBattleMusicPending();
+        InterlockedExchange(&g_arenaBattleMusicPreloadQueued, 1);
     }
 
     ConsumeOverride("PlayTrackWithPreload", &trackIndex);
@@ -312,32 +367,39 @@ static int __fastcall MusicHook_Shim(void* self, void* /*edx*/, unsigned int tra
     LogMusicStackTrace("PlayTrack", callNo, trackIndex);
     const unsigned int originalTrack = trackIndex;
     unsigned int arenaTrack = trackIndex;
-    if (TryPeekArenaBattleMusic(trackIndex, &arenaTrack)) {
+    const bool arenaSwap = TryPeekArenaBattleMusic(trackIndex, &arenaTrack, true);
+    const bool sharedSwap = ConsumeOverride("PlayTrack", &trackIndex);
+    if (arenaSwap) {
         trackIndex = arenaTrack;
         HookLog(g_log,
             "[ffx-hooks] MusicHook Arena+ PlayTrack(%u) -> track=%u",
             originalTrack,
             trackIndex);
         ConsumeArenaBattleMusicPending();
-    } else {
-        ConsumeOverride("PlayTrack", &trackIndex);
     }
 
-    /* FIX 2026-08-05 (root cause): PlayTrackWithPreload apenas seta o event_index no
-     * sub-struct engine (FmodMusic_SetTrackAndPlay) mas NAO popula tracks_array[track].event_ptr.
-     * PlayTrackByIndex checa tracks_array[track].event_ptr != 0 e skipa se for 0 → silencio.
-     *
-     * Caminho correto (decifrado via IDA): SwitchCrossfade(self, track, fade, load_flag) faz:
-     *   1. ReadEventByRuntimeId(self, track, load_flag) → MapRuntimeIdToFevIndex(track) →
-     *      EventSystem->GetEvent(fev_index) → popula tracks_array[track].event_ptr
-     *   2. PlayTrackByIndex(self, track) → toca via FMOD::Event::start
-     *
-     * Track 145 ("Challenge") mapeia pra FEV index 72 (dword_B4F1C8[145]=0x48), valido.
-     * unk_CEC164=0 (load gate nao bloqueia). IsValidTrackIndex(145)=true (145<=181).
-     *
-     * Chamamos SwitchCrossfade com fade=0 (sem crossfade, so carrega+toc) e load_flag=1
-     * (forca ReadEventByRuntimeId a carregar o event FMOD). */
-    if (trackIndex != originalTrack) {
+    // An upstream preload may already have replaced the numeric ID. The
+    // override intent, not numeric inequality, determines whether to load it.
+    if (arenaSwap || sharedSwap) {
+        if (g_readEvent) {
+            MusicEventState before{}, loaded{}, after{};
+            const bool beforeOk = g_log && ReadMusicEventState(self, trackIndex, &before);
+            // Native SwitchCrossfade can return before loading an already-current
+            // ID or a flagged empty slot. Call its verified load and play steps.
+            const int loadResult = g_readEvent(self, trackIndex, 1);
+            const bool loadedOk = g_log && ReadMusicEventState(self, trackIndex, &loaded);
+            HookLog(g_log,
+                "[ffx-hooks] MusicHook native load track=%u state=%d/%d current=%u slotFlag=%u bank=0x%08X disabled=%u event=0x%08X->0x%08X ret=%d",
+                trackIndex, beforeOk ? 1 : 0, loadedOk ? 1 : 0, before.currentTrack,
+                before.slotFlag, before.bank, before.loadDisabled, before.event, loaded.event, loadResult);
+            const int playResult = ((FmodPlayTrack_t)g_trampolinePlay)(self, trackIndex);
+            const bool afterOk = g_log && ReadMusicEventState(self, trackIndex, &after);
+            HookLog(g_log,
+                "[ffx-hooks] MusicHook native play track=%u state=%d event=0x%08X active=%u ret=%d",
+                trackIndex, afterOk ? 1 : 0, after.event, after.active, playResult);
+            return playResult;
+        }
+        // Legacy non-Arena modes do not require the signature-gated reader.
         if (g_trampolineSwitch) {
             HookLog(g_log,
                 "[ffx-hooks] MusicHook SwitchCrossfade(%u) override fade=0 load_flag=1 (load+play)",
@@ -377,7 +439,8 @@ static int __fastcall MusicSwitch_Shim(
     LogMusicStackTrace("SwitchCrossfade", callNo, trackIndex);
     const unsigned int originalTrack = trackIndex;
     unsigned int arenaTrack = trackIndex;
-    const bool arenaSwap = TryPeekArenaBattleMusic(trackIndex, &arenaTrack);
+    const bool arenaSwap = TryPeekArenaBattleMusic(trackIndex, &arenaTrack, true);
+    const bool sharedSwap = ConsumeOverride("SwitchCrossfade", &trackIndex);
     if (arenaSwap) {
         trackIndex = arenaTrack;
         HookLog(g_log,
@@ -386,7 +449,7 @@ static int __fastcall MusicSwitch_Shim(
             trackIndex);
         ConsumeArenaBattleMusicPending();
     }
-    const bool consumed = arenaSwap || ConsumeOverride("SwitchCrossfade", &trackIndex);
+    const bool consumed = arenaSwap || sharedSwap;
     if (consumed) {
         const LONG minFade = InterlockedCompareExchange(&g_minFadeFrames, 0, 0);
         if (minFade > 0 && fadeFrames < minFade) {
@@ -473,7 +536,13 @@ MusicHookInstallResult InstallMusicHookArenaBattle(
     MusicHookLogFn log) {
     MusicHookInstallResult result = { false, 0 };
     if (g_detourPlay || g_detourSwitch || g_detourPrep || g_detourPreload) {
-        result.ok = g_hookedPreload && g_hookedSwitch;
+        result.ok = g_hookedPreload && g_hookedSwitch && g_hookedPlay && g_readEvent;
+        return result;
+    }
+
+    g_readEvent = ResolveMusicEventReader(base);
+    if (!g_readEvent) {
+        HookLog(log, "[ffx-hooks] MusicHook Arena install rejected: native event reader signature mismatch");
         return result;
     }
 
@@ -514,13 +583,13 @@ MusicHookInstallResult InstallMusicHookArenaBattle(
         &g_trampolinePlay,
         &g_hookedPlay);
 
-    result.ok = preloadResult.ok && switchResult.ok;
+    result.ok = preloadResult.ok && switchResult.ok && playResult.ok;
     result.trampoline = g_trampolinePreload ? g_trampolinePreload : g_trampolineSwitch;
     if (!result.ok) {
         RemoveMusicHook(log);
     } else {
         HookLog(log,
-            "[ffx-hooks] MusicHook Arena battle install ok PlayTrackWithPreload+SwitchCrossfade (Prep=%d PlayTrack fallback=%d)\n",
+            "[ffx-hooks] MusicHook Arena battle install ok PlayTrackWithPreload+SwitchCrossfade+PlayTrack+NativeReadEvent (Prep=%d PlayTrack=%d)\n",
             prepResult.ok ? 1 : 0,
             playResult.ok ? 1 : 0);
     }
@@ -645,6 +714,7 @@ bool RemoveMusicHook(MusicHookLogFn log) {
     g_block = nullptr;
     g_log = nullptr;
     g_base = 0;
+    g_readEvent = nullptr;
     g_traceStack = false;
     g_hookedPlay = false;
     g_hookedSwitch = false;

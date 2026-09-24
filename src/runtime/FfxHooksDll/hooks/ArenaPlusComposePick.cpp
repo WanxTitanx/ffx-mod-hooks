@@ -1,7 +1,9 @@
 /* Arena+ Custom Mix Phase 2 â€” F7 boss checklist + subprocess --compose before launch. */
 #define WIN32_LEAN_AND_MEAN
 #include "ArenaPlusComposePick.h"
+#include "ArenaComposeRestore.h"
 #include "ArenaPlusGil.h"
+#include "F8FlagCatalog.h"
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 
@@ -17,6 +19,8 @@ namespace {
 
 static ArenaPlusComposeLogFn g_log = nullptr;
 static HMODULE g_module = NULL;
+static bool g_validateOnly = false;
+static bool g_featureWasEnabled = false;
 
 static const int kCustomMixFirstCombo = 5;
 static const int kCustomMixLastCombo = 7;
@@ -97,12 +101,12 @@ static bool g_lastMixValid = false;
 static bool g_lastMixBinReady = false;
 static bool g_hasBuiltThisSession = false;  // first build of this session (reset on compose pick open)
 static int g_pendingLaunchGilCost = 0;
-/* Fase 2 â€” preview ingame: as linhas do mapa do layout (prefixo PREV| do lab). */
+/* Phase 2 in-game preview: layout-map rows emitted by the lab with the PREV| prefix. */
 static char g_previewLines[12][64] = {};
 static unsigned char g_previewBytes[12][64] = {};
 static volatile LONG g_previewCount = 0;
 static int g_previewEncoded = -1;
-/* Fase 3 â€” ajuste de layout por cenario (perfil JSON modules\arena_layout_profiles.json). */
+/* Phase 3 per-scenario layout adjustment (modules\arena_layout_profiles.json). */
 static const int kAdjCount = 7;                    /* elev, dist, spread, shift, mon dist, mon arc, mode */
 static int g_adjustMode = 0;                       /* 0 normal, 1 ajustando layout */
 static int g_adjParam = 0;                         /* 0..6 */
@@ -112,28 +116,28 @@ static const float g_adjSteps[kAdjCount] = { 0.5f, 0.05f, 0.05f, 0.5f, 5.0f, 5.0
 static const char* g_adjParamNames[kAdjCount] = { "cam elev", "cam dist", "mon spread", "mon shift", "mon dist", "mon arc", "mode" };
 // Live position edit (Part 1, 2026-08-03): editable dot map window.
 // Grid = preview map (g_previewLines), 16x8 cells.
-// As setas movem o cursor (o P do bicho ativo); L/R alterna o bicho; ENTER salva o JSON das posicoes.
-// WHY: o jogo le as posicoes dos monstros/players das AN CORAS do chunk3 do bin (pos = bin + chunk3 + 16*a5);
-// salvar o grid editado deixa o compose (o runner C#) aplicar via BattleArenaPositionWriter -> a batalha
-// inicia com o posicionamento custom.
-static int g_editPosMode = 0;       // 0 normal, 1 editando posicao
-static int g_edSel = 0;             // bicho ativo (indice em g_edPos)
-static int g_edBichos = 0;          // total de bichos (P no mapa)
-static int g_edPos[24][2] = {};     // [bicho][0]=gx [1]=gy — posicao no grid 16x8
-static int g_edPosOrig[24][2] = {}; // posicao ORIGINAL quando o E carregou (p/ o runner aplicar DELTA)
-static bool g_editCamMode = false;  // E alterna o alvo: false=posicoes (bichos), true=camera
-static int g_edCam[2] = { 8, 4 };    // camera no grid 16x8 (gx, gy) - projecao do yaw+zoom (visual)
-static int g_edCamOrig[2] = { 8, 4 }; // snapshot da camera original (p/ nao apagar o JSON se so a CAM mudou)
-static int g_camParam = 0;          // parametro ativo no modo CAM: 0=YAW, 1=PITCH, 2=ZOOM
-static int g_edCamYaw = 180;        // yaw (0-360) - direcao orbital da camera (a 3a dim eh explicita)
-static int g_edCamPitch = 12;       // pitch (-45..45) - elevacao (a 2a "outra" dimensao)
-static int g_edCamZoom = 40;        // zoom/distancia (10-80) ao centro (a 3a "outra" dimensao)
-static int g_edCamYawOrig = 180, g_edCamPitchOrig = 12, g_edCamZoomOrig = 40; // snapshot original da CAM
-static bool g_edLoaded = false;     // se o g_edPos ja foi carregado (das edicoes). Senao, NAO re-montar do preview.
-static char g_edGrid[16][8];        // o grid montado (16x8) para o desenho
-static char g_positionsPath[MAX_PATH] = {};   // path do arena_positions.json (salvo no modules)
-/* Fase 4 â€” formacoes: slots infinitos em modules\arena_formations\formation_XXX.json.
- * 1 = lista de import (janela), 2 = popup de exclusao com timer de 5s. */
+// Arrow keys move the active actor marker; L/R changes actors; ENTER saves the position JSON.
+// WHY: the game reads monster/player positions from chunk3 anchor records
+// (position = bin + chunk3 + 16*a5). Persisting the edited grid lets the C# compose runner apply
+// it through BattleArenaPositionWriter before the custom battle starts.
+static int g_editPosMode = 0;       // 0 = normal, 1 = editing positions.
+static int g_edSel = 0;             // Active actor index in g_edPos.
+static int g_edBichos = 0;          // Total actor markers in the preview map.
+static int g_edPos[24][2] = {};     // [actor][0]=gx, [actor][1]=gy in the 16x8 grid.
+static int g_edPosOrig[24][2] = {}; // Snapshot loaded by E; the runner applies its delta.
+static bool g_editCamMode = false;  // E target: false=actor positions, true=camera.
+static int g_edCam[2] = { 8, 4 };   // Camera projection in the 16x8 grid (yaw/zoom visualization).
+static int g_edCamOrig[2] = { 8, 4 }; // Original camera snapshot used to detect real edits.
+static int g_camParam = 0;          // Active camera parameter: 0=YAW, 1=PITCH, 2=ZOOM.
+static int g_edCamYaw = 180;        // Explicit orbital yaw (0..360).
+static int g_edCamPitch = 12;       // Explicit pitch (-45..45).
+static int g_edCamZoom = 40;        // Explicit distance/zoom from center (10..80).
+static int g_edCamYawOrig = 180, g_edCamPitchOrig = 12, g_edCamZoomOrig = 40; // Original camera snapshot.
+static bool g_edLoaded = false;     // Preserve edits after first load instead of rebuilding from preview.
+static char g_edGrid[16][8];        // Materialized 16x8 draw grid.
+static char g_positionsPath[MAX_PATH] = {};   // modules\arena_positions.json path.
+/* Phase 4 formation slots in modules\arena_formations\formation_XXX.json.
+ * Import mode 1 shows the list; mode 2 shows a delete confirmation with a five-second timer. */
 static const int kFormationMax = 64;
 static const int kDeleteTimerFrames = 300;   /* 5s @ 60fps */
 static char g_formationsDir[MAX_PATH * 2] = {};
@@ -141,9 +145,9 @@ static char g_formationList[kFormationMax][64] = {};
 static int g_formationCount = 0;
 static int g_importMode = 0;
 static int g_importSel = 0;
-static int g_lastFormSel = 0;              /* a formaÃ§Ã£o selecionada antes da row Excluir */
+static int g_lastFormSel = 0;              /* Formation selected before entering the Delete row. */
 static int g_confirmMode = 0;
-static int g_confirmChoice = 0;              /* 0 = excluir, 1 = cancelar */
+static int g_confirmChoice = 0;              /* 0 = delete, 1 = cancel. */
 static int g_delTimer = 0;
 static char g_delTarget[64] = {};
 
@@ -464,7 +468,7 @@ static bool ResolveLabExe(char* out, size_t outSize) {
         return true;
 
     const char* candidates[] = {
-        "..\\data\\modules\\tools\\ArenaMultiBossLab\\ArenaMultiBossLab.exe",   // padrao tools do usuario (2026-08-02)
+        "..\\data\\modules\\tools\\ArenaMultiBossLab\\ArenaMultiBossLab.exe",   // Historical user tool layout (2026-08-02).
         "tools\\ArenaMultiBossLab\\ArenaMultiBossLab.exe",
         "ArenaMultiBossLab\\ArenaMultiBossLab.exe",
         "ArenaMultiBossLab.exe",
@@ -933,9 +937,11 @@ struct ComposeJobArgs {
     char pickCsv[256];
     char scenarioKey[32];
     char vanillaRoot[MAX_PATH * 2];
-    char modRoot[MAX_PATH * 2];
+    char liveModRoot[MAX_PATH * 2];
+    char stageModRoot[MAX_PATH * 2];
     char manifestOut[MAX_PATH * 2];
     char layoutProfile[MAX_PATH * 2];
+    FfxHooks::ArenaComposeRestore::ComposeAttempt restoreAttempt;
 };
 
 static DWORD WINAPI ComposeJobThread(LPVOID param) {
@@ -949,7 +955,7 @@ static DWORD WINAPI ComposeJobThread(LPVOID param) {
     char cmdline[4096] = {};
     _snprintf_s(cmdline, sizeof(cmdline), _TRUNCATE,
         "\"%s\" --compose --pick %s --scenario %s --vanilla-root \"%s\" --mod-root \"%s\" --positions-root \"%s\" --manifest-out \"%s\" --auto-layout --layout-profile \"%s\"",
-        args->labExe, args->pickCsv, args->scenarioKey, args->vanillaRoot, args->modRoot, g_positionsPath, args->manifestOut, args->layoutProfile);
+        args->labExe, args->pickCsv, args->scenarioKey, args->vanillaRoot, args->stageModRoot, g_positionsPath, args->manifestOut, args->layoutProfile);
 
     LogLine("[ffx-hooks] ArenaPlus compose: %s\n", cmdline);
 
@@ -959,7 +965,7 @@ static DWORD WINAPI ComposeJobThread(LPVOID param) {
     char mutableCmd[4096] = {};
     lstrcpynA(mutableCmd, cmdline, static_cast<int>(sizeof(mutableCmd)));
 
-    /* Fase 2 â€” captura o stdout do lab (o mapa PREV|) via pipe. */
+    /* Phase 2 captures the lab's PREV| map from stdout through a pipe. */
     SECURITY_ATTRIBUTES sa = { sizeof(sa), nullptr, TRUE };
     HANDLE hRead = nullptr, hWrite = nullptr;
     if (CreatePipe(&hRead, &hWrite, &sa, 0) && hRead && hWrite) {
@@ -974,6 +980,22 @@ static DWORD WINAPI ComposeJobThread(LPVOID param) {
     char* workSlash = strrchr(workDir, '\\');
     if (workSlash) *(workSlash + 1) = '\0';
 
+    if (g_validateOnly || !ArenaPlusComposePick_IsEnabled()) {
+        // WHY: the flag can change after main-thread preflight. Recheck immediately before process
+        // creation so feature OFF cannot launch a new external writer from an already-queued job.
+        lstrcpynA(
+            g_jobError,
+            "compose launch cancelled: validation-only or feature OFF",
+            static_cast<int>(sizeof(g_jobError)));
+        if (hRead) CloseHandle(hRead);
+        if (hWrite) CloseHandle(hWrite);
+        HeapFree(GetProcessHeap(), 0, args);
+        InterlockedExchange(&g_jobExitCode, 1);
+        InterlockedExchange(&g_jobState, JOB_FAIL);
+        LogLine("[ffx-hooks] ArenaPlus compose: launch cancelled before CreateProcess\n");
+        return 1;
+    }
+
     const BOOL created = CreateProcessA(
         args->labExe, mutableCmd, nullptr, nullptr, TRUE, CREATE_NO_WINDOW,
         nullptr, workDir[0] ? workDir : nullptr, &si, &pi);
@@ -987,14 +1009,14 @@ static DWORD WINAPI ComposeJobThread(LPVOID param) {
             total += rd;
         CloseHandle(hRead);
         outBuf[total] = '\0';
-        /* Link log (custom positions): detect whether the runner applied the custom grid or the auto-layout. */
+        /* Detect whether the runner used the custom grid or its automatic layout. */
         if (strstr(outBuf, "[custom-positions]"))
-            LogLine("[ffx-hooks] ArenaPlus compose: CUSTOM POSITIONS aplicado pelo runner (grid do hook)");
+            LogLine("[ffx-hooks] ArenaPlus compose: runner applied CUSTOM POSITIONS (hook grid)");
         else if (strstr(outBuf, "[auto-layout]"))
-            LogLine("[ffx-hooks] ArenaPlus compose: auto-layout (sem custom positions) -> json=%s",
-                g_positionsPath[0] ? g_positionsPath : "(nenhum)");
+            LogLine("[ffx-hooks] ArenaPlus compose: auto-layout (no custom positions) -> json=%s",
+                g_positionsPath[0] ? g_positionsPath : "(none)");
 
-        /* extrai as linhas do mapa (prefixo PREV|) â€” thread do job so; render le via g_previewCount. */
+        /* Extract PREV| map rows on the job thread; render observes them through g_previewCount. */
         int n = 0;
         char* line = outBuf;
         while (line && *line && n < 12) {
@@ -1011,16 +1033,16 @@ static DWORD WINAPI ComposeJobThread(LPVOID param) {
         InterlockedExchange(&g_previewCount, n);
         g_previewEncoded = -1;
 
-        /* exporta o preview para o disco â€” o usuario/agentes leem depois (modules\compose_preview_last.txt). */
+        /* Export the legacy preview so users/agents can inspect modules\compose_preview_last.txt. */
         char previewPath[MAX_PATH * 2] = {};
         if (n > 0 && ModuleRelativePath("compose_preview_last.txt", previewPath, sizeof(previewPath))) {
             FILE* pf = nullptr;
             if (fopen_s(&pf, previewPath, "w") == 0 && pf) {
-                fprintf(pf, "# compose layout preview â€” %s @ %s\n", g_jobPickCsv, args->scenarioKey);
+                fprintf(pf, "# compose layout preview - %s @ %s\n", g_jobPickCsv, args->scenarioKey);
                 for (int i = 0; i < n; ++i)
                     fprintf(pf, "%s\n", g_previewLines[i]);
                 fclose(pf);
-                LogLine("[ffx-hooks] ArenaPlus compose: preview exportado -> %s\n", previewPath);
+                LogLine("[ffx-hooks] ArenaPlus compose: preview exported -> %s\n", previewPath);
             }
         }
     }
@@ -1040,23 +1062,76 @@ static DWORD WINAPI ComposeJobThread(LPVOID param) {
     GetExitCodeProcess(pi.hProcess, &exitCode);
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);
-    HeapFree(GetProcessHeap(), 0, args);
-
     InterlockedExchange(&g_jobExitCode, static_cast<LONG>(exitCode));
     if (exitCode == 0) {
-        InterlockedExchange(&g_jobState, JOB_OK);
-        LogLine("[ffx-hooks] ArenaPlus compose: OK picks=%s\n", g_jobPickCsv);
+        // WHY: the external lab writes only the per-attempt stage. Do not publish JOB_OK until this
+        // DLL has validated READY authority and performed the live publication itself.
+        const FfxHooks::ArenaComposeRestore::Result markerResult =
+            FfxHooks::ArenaComposeRestore::FinalizeComposeAttemptForModule(
+                g_module,
+                args->manifestOut,
+                args->liveModRoot,
+                args->restoreAttempt,
+                !g_validateOnly && ArenaPlusComposePick_IsEnabled());
+        if (markerResult == FfxHooks::ArenaComposeRestore::Result::Created ||
+            markerResult == FfxHooks::ArenaComposeRestore::Result::Updated ||
+            markerResult == FfxHooks::ArenaComposeRestore::Result::NoRestoreNeeded) {
+            InterlockedExchange(&g_jobState, JOB_OK);
+            LogLine(
+                "[ffx-hooks] ArenaPlus compose: OK picks=%s restore=%s\n",
+                g_jobPickCsv,
+                FfxHooks::ArenaComposeRestore::ResultName(markerResult));
+        } else {
+            const FfxHooks::ArenaComposeRestore::Result rollbackResult =
+                FfxHooks::ArenaComposeRestore::RollbackComposeAttemptForModule(
+                    g_module, args->liveModRoot, args->restoreAttempt);
+            FfxHooks::ArenaComposeRestore::Result offRecoveryResult =
+                FfxHooks::ArenaComposeRestore::Result::NoMarker;
+            if (markerResult == FfxHooks::ArenaComposeRestore::Result::BlockedFeatureOff) {
+                // If a future production adapter permits composition, feature OFF must route only
+                // through its exact owned teardown record; the current adapter returns QUARANTINED.
+                offRecoveryResult = FfxHooks::ArenaComposeRestore::RestorePendingForModule(
+                    g_module,
+                    args->liveModRoot,
+                    FfxHooks::ArenaComposeRestore::RestorePolicy{ false, false });
+            }
+            _snprintf_s(
+                g_jobError,
+                sizeof(g_jobError),
+                _TRUNCATE,
+                "restore ownership failed: %s rollback=%s",
+                FfxHooks::ArenaComposeRestore::ResultName(markerResult),
+                FfxHooks::ArenaComposeRestore::ResultName(rollbackResult));
+            InterlockedExchange(&g_jobState, JOB_FAIL);
+            LogLine(
+                "[ffx-hooks] ArenaPlus compose: FAILED to record restore ownership result=%s rollback=%s off_recovery=%s picks=%s\n",
+                FfxHooks::ArenaComposeRestore::ResultName(markerResult),
+                FfxHooks::ArenaComposeRestore::ResultName(rollbackResult),
+                FfxHooks::ArenaComposeRestore::ResultName(offRecoveryResult),
+                g_jobPickCsv);
+        }
     } else {
+        const FfxHooks::ArenaComposeRestore::Result rollbackResult =
+            FfxHooks::ArenaComposeRestore::RollbackComposeAttemptForModule(
+                g_module, args->liveModRoot, args->restoreAttempt);
         if (exitCode == 0x800080BAu || exitCode == 0x800080BCu) {
             _snprintf_s(g_jobError, sizeof(g_jobError), _TRUNCATE,
-                "lab missing .NET files â€” redeploy tools\\ArenaMultiBossLab\\ folder");
+                "lab missing .NET files; rollback=%s",
+                FfxHooks::ArenaComposeRestore::ResultName(rollbackResult));
         } else {
             _snprintf_s(g_jobError, sizeof(g_jobError), _TRUNCATE,
-                "compose exit code %lu (check %%TEMP%%\\ffx-hooks.log + lab output)", exitCode);
+                "compose exit code %lu rollback=%s (check %%TEMP%%\\ffx-hooks.log)",
+                exitCode,
+                FfxHooks::ArenaComposeRestore::ResultName(rollbackResult));
         }
         InterlockedExchange(&g_jobState, JOB_FAIL);
-        LogLine("[ffx-hooks] ArenaPlus compose: FAILED exit=%lu picks=%s\n", exitCode, g_jobPickCsv);
+        LogLine(
+            "[ffx-hooks] ArenaPlus compose: FAILED exit=%lu rollback=%s picks=%s\n",
+            exitCode,
+            FfxHooks::ArenaComposeRestore::ResultName(rollbackResult),
+            g_jobPickCsv);
     }
+    HeapFree(GetProcessHeap(), 0, args);
     return 0;
 }
 
@@ -1092,7 +1167,7 @@ static void LoadLayoutProfiles() {
     buf[n] = '\0';
     for (int i = 0; i < g_scenarioCount && i < kScenarioSlotMax; ++i) {
         const char* blk = strstr(buf, g_scenarioKeys[i]);
-        if (!blk) continue;   /* cenario sem bloco = default (zeros/uns) */
+        if (!blk) continue;   /* A scenario without a block uses the zero/one defaults. */
         g_scenProfile[i][0] = FindJsonNumber(blk, "cam_elev_offset_deg", 0.0f);
         g_scenProfile[i][1] = FindJsonNumber(blk, "cam_dist_scale", 1.0f);
         g_scenProfile[i][2] = FindJsonNumber(blk, "mon_spread_scale", 1.0f);
@@ -1132,13 +1207,13 @@ static void ResolvePositionsPath() {
         lstrcpynA(g_positionsPath, "", sizeof(g_positionsPath));
 }
 
-// WHY (live position edit, 2026-08-03): grava o grid editado (gx/gy de each creature) em JSON no modules.
-// The compose runner (ArenaMultiBossLab --compose --positions) reads this file and applies it
-// BattleArenaPositionWriter (C#) no bin -> a batalha inicia com o posicionamento custom.
+// WHY (live position edit, 2026-08-03): persist each actor's edited gx/gy grid coordinates in
+// modules. ArenaMultiBossLab --compose --positions reads this file and applies it to the bin via
+// BattleArenaPositionWriter before the custom-position battle begins.
 static bool SavePositions() {
     ResolvePositionsPath();
     if (g_positionsPath[0] == 0 || g_edBichos == 0) return false;
-    // LINK stale-grid (2026-08-04): if the user did NOT edit anything (delta 0 on every bicho),
+    // Stale-grid fix (2026-08-04): if every actor delta remains zero,
     // do NOT keep/overwrite a stale arena_positions.json. Otherwise the FIRST compose of a new
     // session would still apply old edits from a previous session (the "first build looks wrong").
     // When nothing changed, delete the stale JSON -> the runner falls back to the auto-layout
@@ -1158,6 +1233,7 @@ static bool SavePositions() {
     }
     FILE* f = nullptr;
     if (fopen_s(&f, g_positionsPath, "w") != 0 || !f) { if (f) fclose(f); return false; }
+    // Keep the historical "bichos" JSON key for compatibility with the existing C# runner.
     fprintf(f, "{\n  \"grid_w\": 16, \"grid_h\": 8,\n  \"bichos\": [\n");
     for (int i = 0; i < g_edBichos; ++i)
         fprintf(f, "    { \"gx\": %d, \"gy\": %d, \"ogx\": %d, \"ogy\": %d }%s\n",
@@ -1166,7 +1242,7 @@ static bool SavePositions() {
     fprintf(f, "  ],\n  \"camera\": { \"gx\": %d, \"gy\": %d, \"yaw\": %d, \"pitch\": %d, \"zoom\": %d }\n}\n",
             g_edCam[0], g_edCam[1], g_edCamYaw, g_edCamPitch, g_edCamZoom);
     fclose(f);
-    LogLine("[ffx-hooks] ArenaPlus positions saved: %s (%d bichos) camera=%d,%d\n",
+    LogLine("[ffx-hooks] ArenaPlus positions saved: %s (%d actors) camera=%d,%d\n",
         g_positionsPath, g_edBichos, g_edCam[0], g_edCam[1]);
     return true;
 }
@@ -1352,7 +1428,7 @@ static bool ApplyFormation(int index) {
 
     char scenKey[32] = {};
     bool hasProfile = FindJsonString(buf, "scenario", scenKey, sizeof(scenKey)) && scenKey[0] != 0;
-    /* o bloco do perfil da formacao (se a formacao tinha ajustes ativos) */
+    /* Formation profile block, when the saved formation included active adjustments. */
     float elev = FindJsonNumber(buf, "cam_elev_offset_deg", 0.0f);
     float dist = FindJsonNumber(buf, "cam_dist_scale", 1.0f);
     float spread = FindJsonNumber(buf, "mon_spread_scale", 1.0f);
@@ -1360,7 +1436,7 @@ static bool ApplyFormation(int index) {
 
     int scenIdx = hasProfile ? ScenarioIndexForKey(scenKey) : -1;
     if (scenIdx < 0) {
-        /* cenario da formacao nao esta no menu deste tier â€” aplica no selecionado */
+        /* A formation scenario outside this tier is applied to the currently selected scenario. */
         scenIdx = g_scenarioSelected;
     }
     g_scenProfile[scenIdx][0] = elev;
@@ -1389,6 +1465,14 @@ static bool StartComposeJob() {
         return false;
     }
 
+    if (g_validateOnly || !ArenaPlusComposePick_IsEnabled()) {
+        lstrcpynA(
+            g_jobError,
+            "compose blocked: validation-only or feature OFF",
+            static_cast<int>(sizeof(g_jobError)));
+        InterlockedExchange(&g_jobState, JOB_FAIL);
+        return false;
+    }
     char labExe[MAX_PATH] = {};
     char vanillaRoot[MAX_PATH * 2] = {};
     char modRoot[MAX_PATH * 2] = {};
@@ -1422,6 +1506,33 @@ static bool StartComposeJob() {
         return false;
     }
 
+    const char* expectedCarrier = CarrierBattleIdForCombo(g_targetCombo);
+    FfxHooks::ArenaComposeRestore::ComposeAttempt restoreAttempt = {};
+    const FfxHooks::ArenaComposeRestore::Result preflightResult =
+        FfxHooks::ArenaComposeRestore::PrepareComposeAttemptForModule(
+            g_module,
+            manifestOut,
+            modRoot,
+            vanillaRoot,
+            expectedCarrier,
+            &restoreAttempt);
+    if (preflightResult != FfxHooks::ArenaComposeRestore::Result::PreflightReady) {
+        // WHY: establish durable authority before any child can write its isolated stage. The
+        // production adapter currently fails here with QUARANTINED before creating that authority.
+        _snprintf_s(
+            g_jobError,
+            sizeof(g_jobError),
+            _TRUNCATE,
+            "restore preflight blocked: %s",
+            FfxHooks::ArenaComposeRestore::ResultName(preflightResult));
+        InterlockedExchange(&g_jobState, JOB_FAIL);
+        LogLine(
+            "[ffx-hooks] ArenaPlus compose: preflight blocked result=%s carrier=%s\n",
+            FfxHooks::ArenaComposeRestore::ResultName(preflightResult),
+            expectedCarrier ? expectedCarrier : "<none>");
+        return false;
+    }
+
     ComposeJobArgs* args = static_cast<ComposeJobArgs*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(ComposeJobArgs)));
     if (!args) {
         lstrcpynA(g_jobError, "HeapAlloc failed", static_cast<int>(sizeof(g_jobError)));
@@ -1432,13 +1543,21 @@ static bool StartComposeJob() {
     lstrcpynA(args->pickCsv, g_jobPickCsv, sizeof(args->pickCsv));
     lstrcpynA(args->scenarioKey, SelectedScenarioKey(), sizeof(args->scenarioKey));
     lstrcpynA(args->vanillaRoot, vanillaRoot, sizeof(args->vanillaRoot));
-    lstrcpynA(args->modRoot, modRoot, sizeof(args->modRoot));
+    lstrcpynA(args->liveModRoot, modRoot, sizeof(args->liveModRoot));
+    if (!FfxHooks::ArenaComposeRestore::ComposeAttemptStagingModRootAnsi(
+            restoreAttempt, args->stageModRoot, sizeof(args->stageModRoot))) {
+        HeapFree(GetProcessHeap(), 0, args);
+        lstrcpynA(g_jobError, "staging mod root conversion failed", static_cast<int>(sizeof(g_jobError)));
+        InterlockedExchange(&g_jobState, JOB_FAIL);
+        return false;
+    }
     if (ModuleRelativePath("arena_layout_profiles.json", args->layoutProfile, sizeof(args->layoutProfile))) {
-        /* ok â€” o perfil fica em modules\arena_layout_profiles.json */
+        /* The accepted profile remains in modules\arena_layout_profiles.json. */
     } else {
         lstrcpynA(args->layoutProfile, "", sizeof(args->layoutProfile));
     }
     lstrcpynA(args->manifestOut, manifestOut, sizeof(args->manifestOut));
+    args->restoreAttempt = restoreAttempt;
 
     g_jobThread = CreateThread(nullptr, 0, ComposeJobThread, args, 0, nullptr);
     if (!g_jobThread) {
@@ -1455,11 +1574,11 @@ static bool StartComposeJob() {
 
 static int __cdecl ComposePick_Draw(int obj) {
     using namespace NativeMenu;
-    // WHY (crash do compose, 2026-08-03): durante o compose (o runner externo ArenaMultiBossLab),
-    // NAO desenha o nosso menu no menu 2D do jogo. O EncodeLabel/DrawString corrompe o pool/cache
-    // de texto do jogo (cache-hit -> pool[cursor-1] sem bound check -> handle invalido) -> o
-    // UpdateWindowTitle (o jogo) crasha no DrawUITextElement com o ctx nulo (AV WRITE 0xBD, rva 0x4FB05E).
-    // Congela o menu (1-2s) enquanto o bin e composto; o draw volta normal apos o compose.
+    // WHY (compose crash, 2026-08-03): while ArenaMultiBossLab composes externally, do not draw
+    // this menu into the game's 2D text pool. EncodeLabel/DrawString can corrupt a cache-hit index
+    // (pool[cursor-1] without a bounds check), after which UpdateWindowTitle reaches
+    // DrawUITextElement with a null context (AV WRITE 0xBD at RVA 0x4FB05E). The menu therefore
+    // freezes for the short compose interval and resumes once the job finishes.
     if (InterlockedCompareExchange(&g_jobState, JOB_RUNNING, JOB_RUNNING) == JOB_RUNNING)
         return obj;
     ++g_drawCalls;
@@ -1482,12 +1601,11 @@ static int __cdecl ComposePick_Draw(int obj) {
     DrawString(s_title, NX(0.071f), NY(0.081f));
     DrawString(s_sub, NX(0.071f), NY(0.137f));
 
-    /* Fase 2 â€” painel esquerdo: o mapa do layout (bolinhas) do ultimo Build Preview.
-     * Fonte MENOR (DrawStringSub â€” scale 0.52/0.70) para caber no painel sem estourar.
-     * A lista foi empurrada p/ a direita (vLeft 0.29) p/ o quadro do preview aparecer limpo. */
+    /* Phase 2 left panel: dot-map output from the latest Build Preview. DrawStringSub keeps the
+     * map inside the panel, while vLeft=0.29 leaves a clean preview frame on the left. */
     if (g_previewCount > 0) {
-        // Final preview (approximate, 2026-08-04): mostra o C (camera) junto aos P/M. Se a celula
-        // cell already has a monster, STACKS (C on the row below, if free) - never overlaps.
+        // Final preview (approximate, 2026-08-04): show camera C with P/M. If the selected cell
+        // already contains an actor, stack C on the next free row when possible.
         // If everything is full, C wins (approximate). Uses a local copy so the
         // runner original g_previewLines is not corrupted (otherwise the grid drifts each frame).
         char local[12][64];
@@ -1515,7 +1633,7 @@ static int __cdecl ComposePick_Draw(int obj) {
             for (int i = 0; i < rows; ++i)
                 strncpy_s(local[i], sizeof(local[i]), g_previewLines[i], _TRUNCATE);
         }
-        // Camera (C), empilhada se a celula ja tem um bicho - "aproximado", sem sobrepor.
+        // Camera C stacks below an occupied cell when possible; this is an approximate preview.
         if (g_edCam[0] >= 0 && g_edCam[0] < 16 && g_edCam[1] >= 0 && g_edCam[1] < rows) {
             const int cy = g_edCam[1], cx = g_edCam[0];
             const char cur = local[cy][cx];
@@ -1523,9 +1641,9 @@ static int __cdecl ComposePick_Draw(int obj) {
                 local[cy][cx] = 'C';
             } else if (cy + 1 < rows &&
                        (local[cy + 1][cx] == '.' || local[cy + 1][cx] == ' ' || local[cy + 1][cx] == '\0')) {
-                local[cy + 1][cx] = 'C';   // empilha na linha de baixo (nao sobrepoe)
+                local[cy + 1][cx] = 'C';   // Stack on the row below without overlap.
             } else {
-                local[cy][cx] = 'C';       // tudo cheio: o C prevalece (aproximado)
+                local[cy][cx] = 'C';       // Fully occupied: camera wins in the approximate view.
             }
         }
         for (int i = 0; i < rows; ++i)
@@ -1547,15 +1665,15 @@ static int __cdecl ComposePick_Draw(int obj) {
     const float selLine = MenuBorderPx() * 0.45f;
     const float cursorOff = NW(0.020f);
 
-    /* Fase 3 â€” painel de ajuste de layout (modo ajuste): overlay escuro + painel central limpo. */
-/* Live position edit (Part 1 â€” 2026-08-03): the window "dot map" editavel. */
+    /* Phase 3 layout adjustment uses a dark overlay and isolated center panel. */
+    /* Live position edit (Part 1 - 2026-08-03): editable dot-map window. */
     if (g_editPosMode) {
         DrawSolidRect(0.0f, 0.0f, MenuPhysW(), MenuPhysH(), 0xB0000000u, 0xB0000000u);
         const float px = NX(0.230f), py = NY(0.180f), pw = NW(0.54f), ph = NH(0.62f);
         DrawMenuGlassPanel(px, py, pw, ph, F, 1);
         if (g_editCamMode) {
-            // CAM: os 3 parametros EXPLICITOS (YAW/PITCH/ZOOM) - o ativo entre [..].
-            // U/D cicla o parametro; L/R ajusta o valor. O C no grid e a projecao do yaw+zoom.
+            // Camera exposes YAW/PITCH/ZOOM explicitly, with the active parameter in brackets.
+            // U/D selects the parameter; L/R changes its value; C projects yaw/zoom onto the grid.
             char camTitle[128];
             if (g_camParam == 0)
                 _snprintf_s(camTitle, sizeof(camTitle), _TRUNCATE,
@@ -1612,14 +1730,14 @@ static int __cdecl ComposePick_Draw(int obj) {
         return obj;
     }
 
-    /* Fase 3 â€” painel de ajuste de layout (modo ajuste): overlay escuro + painel central limpo. */
+    /* Phase 3 layout-adjustment panel. */
     if (g_adjustMode) {
         DrawSolidRect(0.0f, 0.0f, MenuPhysW(), MenuPhysH(), 0xB0000000u, 0xB0000000u);
         const float ax = NX(0.270f), ay = NY(0.250f), aw = NW(0.460f), ah = NH(0.40f);
         DrawMenuGlassPanel(ax, ay, aw, ah, F, 1);
         unsigned char tmp[128];
         char tline[128];
-        _snprintf_s(tline, sizeof(tline), _TRUNCATE, "AJUSTAR LAYOUT - %s", g_scenarioLabels[g_scenarioSelected]);
+        _snprintf_s(tline, sizeof(tline), _TRUNCATE, "ADJUST LAYOUT - %s", g_scenarioLabels[g_scenarioSelected]);
         NativeMenu::EncodeLabel(tline, tmp, 128);
         DrawString(tmp, ax + NW(0.03f), ay + NH(0.035f));
         for (int p = 0; p < kAdjCount; ++p) {
@@ -1637,11 +1755,11 @@ static int __cdecl ComposePick_Draw(int obj) {
             DrawStringSub(tmp, ax + NW(0.03f), ay + NH(0.105f) + NH(0.055f) * p);
         }
         unsigned char hint[160];
-        EncodeLabel("Left/Right valor   Up/Down parametro   Enter salvar   Cancel voltar", hint, 160);
+        EncodeLabel("Left/Right value   Up/Down parameter   Enter save   Cancel back", hint, 160);
         DrawStringSub(hint, ax + NW(0.03f), ay + ah - NH(0.05f));
     }
 
-    /* Fase 4 â€” janela de import de formaÃ§Ãµes (a Ãºltima opÃ§Ã£o = Excluir selecionada). */
+    /* Phase 4 formation import window; its final row deletes the selected formation. */
     if (g_importMode) {
         const float wx = NX(0.300f), wy = NY(0.170f), ww = NW(0.460f), wh = NH(0.58f);
         DrawMenuGlassPanel(wx, wy, ww, wh, F, 1);
@@ -1656,37 +1774,37 @@ EncodeLabel("Import Formation - Enter applies", tmp, 160);
             DrawStringSub(tmp, wx + NW(0.015f), wy + NH(0.050f) + NH(0.036f) * i);
         }
         char line[96];
-        _snprintf_s(line, sizeof(line), _TRUNCATE, "%s [Excluir selecionada]",
+        _snprintf_s(line, sizeof(line), _TRUNCATE, "%s [Delete selected]",
             (g_importSel >= g_formationCount) ? ">" : "  ");
         NativeMenu::EncodeLabel(line, tmp, 160);
         DrawStringSub(tmp, wx + NW(0.015f), wy + NH(0.050f) + NH(0.036f) * (g_formationCount < 12 ? g_formationCount : 12));
-        EncodeLabel("Cancel volta ao menu", tmp, 160);
+        EncodeLabel("Cancel returns to menu", tmp, 160);
         DrawStringSub(tmp, wx + NW(0.015f), wy + wh - NH(0.042f));
     }
 
-    /* Fase 4 â€” popup "Tem certeza?" com timer de 5s no botÃ£o Excluir. */
+    /* Phase 4 delete confirmation, with a five-second enable delay. */
     if (g_confirmMode) {
         const float wx = NX(0.240f), wy = NY(0.330f), ww = NW(0.520f), wh = NH(0.26f);
         DrawMenuGlassPanel(wx, wy, ww, wh, F, 1);
         unsigned char tmp[160];
         char line[128];
-        _snprintf_s(line, sizeof(line), _TRUNCATE, "Tem certeza que quer excluir %s?", g_delTarget);
+        _snprintf_s(line, sizeof(line), _TRUNCATE, "Delete %s?", g_delTarget);
         EncodeLabel(line, tmp, 160);
         DrawStringSub(tmp, wx + NW(0.02f), wy + NH(0.045f));
         int secs = (g_delTimer + 59) / 60;
         if (g_delTimer > 0)
-            _snprintf_s(line, sizeof(line), _TRUNCATE, "%s Excluir (%ds) %s",
+            _snprintf_s(line, sizeof(line), _TRUNCATE, "%s Delete (%ds) %s",
                 (g_confirmChoice == 0) ? ">" : "  ", secs, (g_confirmChoice == 0) ? "<" : "  ");
         else
-            _snprintf_s(line, sizeof(line), _TRUNCATE, "%s Excluir %s",
+            _snprintf_s(line, sizeof(line), _TRUNCATE, "%s Delete %s",
                 (g_confirmChoice == 0) ? ">" : "  ", (g_confirmChoice == 0) ? "<" : "  ");
         NativeMenu::EncodeLabel(line, tmp, 160);
         DrawStringSub(tmp, wx + NW(0.02f), wy + NH(0.13f));
-        _snprintf_s(line, sizeof(line), _TRUNCATE, "%s Cancelar %s",
+        _snprintf_s(line, sizeof(line), _TRUNCATE, "%s Cancel %s",
             (g_confirmChoice == 1) ? ">" : "  ", (g_confirmChoice == 1) ? "<" : "  ");
         NativeMenu::EncodeLabel(line, tmp, 160);
         DrawStringSub(tmp, wx + NW(0.02f), wy + NH(0.185f));
-        EncodeLabel("Timer interno â€” 5s p/ habilitar o Excluir", tmp, 160);
+        EncodeLabel("Safety timer - wait 5s to enable Delete", tmp, 160);
         DrawStringSub(tmp, wx + NW(0.02f), wy + wh - NH(0.040f));
     }
 
@@ -1753,7 +1871,7 @@ EncodeLabel("Import Formation - Enter applies", tmp, 160);
         DrawMenuGlassPanel(bx, by, bw, bh, F, 0);
         DrawString(s_busy, NX(0.219f), NY(0.489f));
     } else {
-        /* Fase 2 â€” status do Build Preview quando o job termina (menu fica aberto). */
+        /* Phase 2 Build Preview completion status; the menu remains open. */
         static LONG s_lastJobState = JOB_IDLE;
         const LONG jobState = InterlockedCompareExchange(&g_jobState, JOB_IDLE, JOB_IDLE);
         if (jobState != s_lastJobState) {
@@ -1762,7 +1880,7 @@ EncodeLabel("Import Formation - Enter applies", tmp, 160);
                     "Preview ready - layout above. Fight Last Mix to enter.");
             } else if (jobState == JOB_FAIL) {
                 _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
-                    "Build falhou: %s", g_jobError);
+                    "Build failed: %s", g_jobError);
             }
             s_lastJobState = jobState;
         }
@@ -1783,7 +1901,7 @@ static int __cdecl ComposePick_InputCb(int obj) {
     bool l1E=(dir&0x0400)&&!pL1, r1E=(dir&0x0800)&&!pR1, l2E=(dir&0x0100)&&!pL2, r2E=(dir&0x0200)&&!pR2;
     pL1=(dir&0x0400); pR1=(dir&0x0800); pL2=(dir&0x0100); pR2=(dir&0x0200);
 
-/* Live position edit (Part 1): atalho E entra no modo de edicao do grid (monstros + players). */
+    /* Live position edit (Part 1): E enters the monster/player grid editor. */
     static bool s_ePrev = false;
     const bool eDown = (GetAsyncKeyState('E') & 0x8000) != 0;
     if ((eDown && !s_ePrev || l2E) && !g_adjustMode && !g_confirmMode) {
@@ -1807,7 +1925,7 @@ static int __cdecl ComposePick_InputCb(int obj) {
                     }
                 }
             }
-            g_edLoaded = true;   // apos carregar, mantem as edicoes (NAO re-monta do preview)
+            g_edLoaded = true;   // Preserve subsequent edits instead of rebuilding from preview.
         }
         g_edSel = 0;
         g_editPosMode = (g_edBichos > 0) ? 1 : 0;
@@ -1816,7 +1934,7 @@ static int __cdecl ComposePick_InputCb(int obj) {
                 "No preview positions - Build Preview first (E).");
         else
             _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
-                "Edit Positions: arrows move, TAB switch bicho, ENTER save.");
+                "Edit Positions: arrows move, TAB switches actor, ENTER saves.");
         NativeMenu::PlaySfx(1);
     }
     s_ePrev = eDown;
@@ -1827,7 +1945,7 @@ static int __cdecl ComposePick_InputCb(int obj) {
     const bool cancelPressed = cancelEdge && !(g_lastConfirmEdge & 0x40);
     g_lastConfirmEdge = edge & 0x60;
 
-/* Live position edit (Part 1 â€” 2026-08-03): o grid de pontos editavel (monstros + players). */
+    /* Live position edit (Part 1 - 2026-08-03): editable monster/player dot grid. */
     if (g_editPosMode) {
         // CAM mode removed (2026-08-04). Space no longer toggles.
         static bool s_eEditPrev = false;
@@ -1838,11 +1956,11 @@ static int __cdecl ComposePick_InputCb(int obj) {
             _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
                 g_editCamMode
                     ? "CAM mode: U/D param, L/R value, Space=POS/CAM, ENTER save."
-                    : "POS mode: arrows move, TAB switch bicho, Space=POS/CAM, ENTER save.");
+                    : "POS mode: arrows move, TAB switches actor, Space=POS/CAM, ENTER saves.");
         }
         s_eEditPrev = eEditDown;
         if (g_editCamMode) {
-            // CAM (3 dims explicitas): U/D cicla o parametro (YAW/PITCH/ZOOM); L/R ajusta o valor.
+            // Camera has three explicit dimensions: U/D selects YAW/PITCH/ZOOM; L/R adjusts it.
             if (dir & 0x1000) { g_camParam = (g_camParam + 2) % 3; NativeMenu::PlaySfx(1); }
             else if (dir & 0x4000) { g_camParam = (g_camParam + 1) % 3; NativeMenu::PlaySfx(1); }
             else if (dir & 0x8000) { AdjustCamParam(-1); NativeMenu::PlaySfx(1); }
@@ -1852,7 +1970,7 @@ static int __cdecl ComposePick_InputCb(int obj) {
             else if (dir & 0x4000) { if (g_edPos[g_edSel][1] < 7) ++g_edPos[g_edSel][1]; NativeMenu::PlaySfx(1); }
             else if (dir & 0x8000) { if (g_edPos[g_edSel][0] > 0) --g_edPos[g_edSel][0]; NativeMenu::PlaySfx(1); }
             else if (dir & 0x2000) { if (g_edPos[g_edSel][0] < 15) ++g_edPos[g_edSel][0]; NativeMenu::PlaySfx(1); }
-            // TAB alterna o bicho (o L/R do usuario): o cursor pula pro P do proximo bicho.
+            // TAB changes actors; the cursor jumps to the next actor marker.
             static bool s_tabPrev = false;
             const bool tabDown = (GetAsyncKeyState(VK_TAB) & 0x8000) != 0;
             if ((tabDown && !s_tabPrev) || r1E) { if (g_edBichos > 0) { g_edSel = (g_edSel + 1) % g_edBichos; NativeMenu::PlaySfx(1); } }
@@ -1873,8 +1991,8 @@ static int __cdecl ComposePick_InputCb(int obj) {
                     "Save failed (no preview?). Build Preview first.");
             }
         } else if (cancelPressed && !r2E && !(GetAsyncKeyState(VK_SPACE)&0x8000)) {
-            // WHY: o V (toggle POS/CAM) e o avancar/trocar do jogo -> gera edge de cancel no
-            // NativeMenu no mesmo frame. Sem o "&& !eEditDown", trocar o painel voltaria pro menu.
+            // WHY: the POS/CAM toggle and the game's advance action can publish Cancel in the same
+            // frame. The eEditDown exclusion prevents a panel switch from closing the editor.
             g_editPosMode = 0;
             _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
                 "Position edit cancelled (not saved).");
@@ -1882,8 +2000,7 @@ static int __cdecl ComposePick_InputCb(int obj) {
         return obj;
     }
 
-    /* Fase 3 â€” modo ajuste de layout: setas mudam o perfil do cenÃ¡rio selecionado. */
-    /* Fase 3 â€” modo ajuste de layout: setas mudam o perfil do cenÃ¡rio selecionado. */
+    /* Phase 3 adjustment mode: arrows edit the selected scenario profile. */
     if (g_adjustMode) {
         if (dir & 0x1000) g_adjParam = (g_adjParam + kAdjCount - 1) % kAdjCount;
         else if (dir & 0x4000) g_adjParam = (g_adjParam + 1) % kAdjCount;
@@ -1904,7 +2021,7 @@ else if (dir & 0x8000) g_scenProfile[g_scenarioSelected][g_adjParam] -= g_adjSte
         return obj;
     }
 
-    /* Fase 4 â€” popup de exclusÃ£o (timer 5s): "Tem certeza?" */
+    /* Phase 4 delete confirmation with a five-second safety delay. */
     if (g_confirmMode) {
         if (g_delTimer > 0) --g_delTimer;
         if (dir & (0x1000 | 0x4000)) {
@@ -1915,7 +2032,7 @@ else if (dir & 0x8000) g_scenProfile[g_scenarioSelected][g_adjParam] -= g_adjSte
             g_confirmMode = 0;
             g_importMode = 0;
             _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
-                "ExclusÃ£o negada â€” saiu dthe window.");
+                "Deletion cancelled; window closed.");
         } else if (confirmPressed) {
             if (g_confirmChoice == 0 && g_delTimer <= 0) {
                 DeleteFormation(g_lastFormSel);
@@ -1928,15 +2045,15 @@ else if (dir & 0x8000) g_scenProfile[g_scenarioSelected][g_adjParam] -= g_adjSte
                 g_confirmMode = 0;
                 g_importMode = 0;
                 _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
-                    "ExclusÃ£o negada â€” saiu dthe window.");
+                    "Deletion cancelled; window closed.");
             }
         }
         return obj;
     }
 
-    /* Fase 4 â€” janela de import de formaÃ§Ãµes. */
+    /* Phase 4 formation import window. */
     if (g_importMode) {
-        const int total = g_formationCount + 1;   /* + a row "Excluir selecionada" */
+        const int total = g_formationCount + 1;   /* Add one "Delete selected" row. */
         if (dir & 0x1000) {
             g_importSel = (g_importSel > 0) ? (g_importSel - 1) : (total - 1);
             if (g_importSel < g_formationCount) g_lastFormSel = g_importSel;
@@ -1956,12 +2073,12 @@ else if (dir & 0x8000) g_scenProfile[g_scenarioSelected][g_adjParam] -= g_adjSte
                 g_confirmChoice = 0;
                 g_delTimer = kDeleteTimerFrames;
                 _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
-                    "Tem certeza? Excluir %s (5s p/ habilitar)", g_delTarget);
+                    "Delete %s? (enabled after 5s)", g_delTarget);
             }
         } else if (cancelPressed) {
             g_importMode = 0;
             _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
-                "ImportaÃ§Ã£o cancelada.");
+                "Import cancelled.");
         }
         return obj;
     }
@@ -1995,7 +2112,7 @@ else if (dir & 0x8000) g_scenProfile[g_scenarioSelected][g_adjParam] -= g_adjSte
             if (sel >= 0 && sel < g_scenarioCount) {
                 g_scenarioSelected = sel;
                 RefreshLabels();
-                InterlockedExchange(&g_previewCount, 0);   // cenÃ¡rio mudou â€” o preview do anterior nÃ£o vale mais
+                InterlockedExchange(&g_previewCount, 0);   // Scenario changed; discard the prior preview.
                 _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
                     "Scenario: %s", g_scenarioLabels[sel]);
                 g_inputCooldown = kCooldownScenario;
@@ -2018,7 +2135,7 @@ else if (dir & 0x8000) g_scenProfile[g_scenarioSelected][g_adjParam] -= g_adjSte
                 g_inputCooldown = kCooldownAeonPick;
             } else if (sel == ComposePick_RowRelaunch()) {
                 if (dir & 0x8000) {
-                    /* L = carregar os picks do ultimo mix (sem launch). */
+                    /* L loads the last mix selection without launching it. */
                     if (!g_lastMixValid || g_lastMixPickCount <= 0) {
                         NativeMenu::PlaySfx(4);
                         _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
@@ -2051,7 +2168,7 @@ else if (dir & 0x8000) g_scenProfile[g_scenarioSelected][g_adjParam] -= g_adjSte
                 }
             } else if (sel == ComposePick_RowFormations()) {
                 if (dir & 0x8000) {
-                    /* L = importar (janela de lista). */
+                    /* L opens the formation import list. */
                     ScanFormations();
                     if (g_formationCount <= 0) {
                         NativeMenu::PlaySfx(4);
@@ -2066,14 +2183,14 @@ else if (dir & 0x8000) g_scenProfile[g_scenarioSelected][g_adjParam] -= g_adjSte
                     }
                 } else if (SaveFormation()) {
                     _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
-                        "formation saved (slot novo em modules\\arena_formations\\).");
+                        "Formation saved (new slot in modules\\arena_formations\\).");
                 } else {
                     NativeMenu::PlaySfx(4);
                     _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
                         "Nothing to save - run Build Preview first.");
                 }
             } else if (sel == ComposePick_RowBuildPreview()) {
-                /* Fase 2/3 â€” L (esquerda) = ajustar layout (perfil do cenario); Confirm = compoe sem launch. */
+                /* Phase 2/3: L adjusts the scenario layout; Confirm builds without launching. */
                 if (g_hasBuiltThisSession) {
                     NativeMenu::PlaySfx(1);
                     _snprintf_s(g_statusLine, sizeof(g_statusLine), _TRUNCATE,
@@ -2138,27 +2255,28 @@ static void CloseMenuObject() {
     g_inputCooldown = 0;
     g_lastConfirmEdge = 0;
     g_drawCalls = 0;
-    InterlockedExchange(&g_previewCount, 0);   // zera preview apos batalha/close
-    g_hasBuiltThisSession = false;              // nova sessao = fresh build
+    InterlockedExchange(&g_previewCount, 0);   // Clear preview after battle/close.
+    g_hasBuiltThisSession = false;             // A new session requires a fresh build.
 }
 
 } // namespace
 
 void ArenaPlusComposePick_SetLog(ArenaPlusComposeLogFn fn) { g_log = fn; }
 void ArenaPlusComposePick_SetModule(HMODULE module) { g_module = module; }
+void ArenaPlusComposePick_SetValidateOnly(bool validateOnly) { g_validateOnly = validateOnly; }
 
 bool ArenaPlusComposePick_IsCustomMixCombo(int combo) {
     return combo >= kCustomMixFirstCombo && combo <= kCustomMixLastCombo;
 }
 
+bool ArenaPlusComposePick_IsAvailable() {
+    return FfxHooks::ArenaComposeRestore::ProductionDiskTransactionsAvailable();
+}
+
 bool ArenaPlusComposePick_IsEnabled() {
-    if (EnvFlagEnabled("FFXHOOKS_DISABLE_ARENA_PLUS_COMPOSE_F7")) return false;
-    if (EnvFlagEnabled("FFXHOOKS_ENABLE_ARENA_PLUS_COMPOSE_F7")) return true;
-    if (ModuleFileExists("arena_plus_compose_f7.flag") ||
-        ModuleFileExists("config\\arena_plus_compose_f7.flag"))
-        return true;
-    /* Opt-in: other lanes can test legacy direct-launch DLL without the picker. */
-    return false;
+    if (!ArenaPlusComposePick_IsAvailable()) return false;
+    const FfxHooks::F8FlagSpec* flag = FfxHooks::FindF8Flag("arena_plus.compose_f7");
+    return flag && FfxHooks::ResolveF8Flag(*flag).value;
 }
 
 bool ArenaPlusComposePick_IsActive() { return g_menu.obj != 0; }
@@ -2168,14 +2286,16 @@ bool ArenaPlusComposePick_IsBusy() {
 }
 
 bool ArenaPlusComposePick_Open(int combo) {
-    if (!ArenaPlusComposePick_IsEnabled() || !ArenaPlusComposePick_IsCustomMixCombo(combo))
+    if (!ArenaPlusComposePick_IsAvailable() || g_validateOnly ||
+        !ArenaPlusComposePick_IsEnabled() ||
+        !ArenaPlusComposePick_IsCustomMixCombo(combo))
         return false;
 
     CloseMenuObject();
     ClearPickState();
     g_pendingLaunchScenarioKey[0] = '\0';
     g_targetCombo = combo;
-    g_pendingLaunchGilCost = 0;   // fresh session — cost reset on open, consumed on LaunchComboBattleFromPump
+    g_pendingLaunchGilCost = 0;   // Reset on open; consumed by LaunchComboBattleFromPump.
     g_requiredActors = RequiredActorsForCombo(combo);
     InitScenariosForCombo(combo);
     InterlockedExchange(&g_jobState, JOB_IDLE);
@@ -2192,15 +2312,15 @@ bool ArenaPlusComposePick_Open(int combo) {
     g_editPosMode = 0;
     g_adjustMode = 0;
     g_confirmMode = 0;
-    g_editCamMode = false;               // volta pro modo POS ao abrir o compose pick
-    g_edCam[0] = 8; g_edCam[1] = 4;      // camera default: centro do grid (yaw/zoom neutro)
-    g_camParam = 0;                      // parametro ativo da camera: YAW
-    g_edCamYaw = 180; g_edCamPitch = 12; g_edCamZoom = 40;  // default da camera
-    g_edCamOrig[0] = 8; g_edCamOrig[1] = 4;               // snapshot original da CAM (p/ nao apagar JSON se so CAM mudou)
+    g_editCamMode = false;               // Reopen in position-edit mode.
+    g_edCam[0] = 8; g_edCam[1] = 4;      // Neutral camera projection at grid center.
+    g_camParam = 0;                      // YAW is the initial camera parameter.
+    g_edCamYaw = 180; g_edCamPitch = 12; g_edCamZoom = 40;  // Camera defaults.
+    g_edCamOrig[0] = 8; g_edCamOrig[1] = 4;               // Original camera snapshot for edit detection.
     g_edCamYawOrig = 180; g_edCamPitchOrig = 12; g_edCamZoomOrig = 40;
     CamGridFromPolar();
-    g_edLoaded = false;                  // ao reabrir o pick, recarrega as posicoes do preview
-    InterlockedExchange(&g_previewCount, 0);   // zera preview do session anterior
+    g_edLoaded = false;                  // Reload positions from preview after reopening.
+    InterlockedExchange(&g_previewCount, 0);   // Clear the previous session preview.
     if (g_lastMixScenarioKey[0])
         g_scenarioSelected = ScenarioIndexForKey(g_lastMixScenarioKey);
     RefreshLabels();
@@ -2243,6 +2363,36 @@ int ArenaPlusComposePick_PendingGilCost() {
 }
 
 void ArenaPlusComposePick_Tick() {
+    if (!ArenaPlusComposePick_IsAvailable()) {
+        // The production adapter is quarantined. Close any stale UI state without probing paths,
+        // reading cached manifests, starting a child, or attempting feature-OFF recovery.
+        CloseMenuObject();
+        g_featureWasEnabled = false;
+        return;
+    }
+    const bool featureEnabled = !g_validateOnly && ArenaPlusComposePick_IsEnabled();
+    if (!featureEnabled) {
+        // WHY: disabling closes the UI immediately. Production compose/recovery adapters are
+        // quarantined, so this probe reports QUARANTINED and preserves any marker without disk I/O.
+        CloseMenuObject();
+        if (!g_validateOnly && g_featureWasEnabled && !ArenaPlusComposePick_IsBusy() &&
+            FfxHooks::ArenaComposeRestore::ModuleMarkerPresent(g_module)) {
+            char modBtlRoot[MAX_PATH * 2] = {};
+            const FfxHooks::ArenaComposeRestore::Result result =
+                ResolveModBtlRoot(modBtlRoot, sizeof(modBtlRoot))
+                    ? FfxHooks::ArenaComposeRestore::RestorePendingForModule(
+                          g_module,
+                          modBtlRoot,
+                          FfxHooks::ArenaComposeRestore::RestorePolicy{ false, false })
+                    : FfxHooks::ArenaComposeRestore::Result::PathRejected;
+            LogLine(
+                "[ffx-hooks] ArenaPlus compose: live-OFF owned recovery result=%s\n",
+                FfxHooks::ArenaComposeRestore::ResultName(result));
+        }
+        g_featureWasEnabled = false;
+        return;
+    }
+    g_featureWasEnabled = true;
     static volatile LONG s_lastJobState = JOB_IDLE;
     const LONG state = InterlockedCompareExchange(&g_jobState, JOB_IDLE, JOB_IDLE);
     if (state == JOB_OK && s_lastJobState != JOB_OK) {
@@ -2307,6 +2457,7 @@ bool ArenaPlusComposePick_ApplyLaunchRouteOverride(
     char* backdropBattleId,
     int backdropBattleIdCap,
     int* backdropBattlefieldId) {
+    if (!ArenaPlusComposePick_IsAvailable()) return false;
     if (backdropBattlefieldId) *backdropBattlefieldId = 0;
     const char* key = LaunchScenarioKey();
     if (ScenarioRouteForKey(combo, key, field, group, formation)) {

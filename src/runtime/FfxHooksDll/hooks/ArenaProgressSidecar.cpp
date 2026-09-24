@@ -1,6 +1,7 @@
-// Arena+ progress sidecar implementation (Fase 6). See header for contract.
+// Arena+ progress sidecar implementation (Phase 6). See the header for its contract.
 
 #include "ArenaProgressSidecar.h"
+#include "../shared/Config.h"   // Config::CheckEnabled (gate labs.arena_plus_progress)
 
 #include <Windows.h>
 #include <cstdio>
@@ -96,9 +97,7 @@ bool ModuleFlagOn(const char* relPath) {
 }
 
 bool GateOn() {
-    return EnvFlagOn("FFXHOOKS_ENABLE_ARENA_PLUS_PROGRESS") ||
-           ModuleFlagOn("arena_plus_progress.flag") ||
-           ModuleFlagOn("config\\arena_plus_progress.flag");
+    return FfxHooks::Config::CheckEnabled("labs.arena_plus_progress", "FFXHOOKS_ENABLE_ARENA_PLUS_PROGRESS", "arena_plus_progress.flag", false);
 }
 
 const char* InternString(const char* src) {

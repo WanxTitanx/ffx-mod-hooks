@@ -21,8 +21,10 @@ struct ArenaPlusComposePollResult {
 
 void ArenaPlusComposePick_SetLog(ArenaPlusComposeLogFn fn);
 void ArenaPlusComposePick_SetModule(HMODULE module);
+void ArenaPlusComposePick_SetValidateOnly(bool validateOnly);
 
 bool ArenaPlusComposePick_IsCustomMixCombo(int combo);
+bool ArenaPlusComposePick_IsAvailable();
 bool ArenaPlusComposePick_IsEnabled();
 bool ArenaPlusComposePick_IsActive();
 bool ArenaPlusComposePick_IsBusy();

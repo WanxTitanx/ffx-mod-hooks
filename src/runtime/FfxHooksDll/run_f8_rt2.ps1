@@ -1,82 +1,75 @@
-# run_f8_rt2.ps1 - Onda 4: RT2 do F8 (Operacao Demonio, 2026-08-02, Jarvis-HOOK)
-# Smoke no _isolated: F8 = dashboard, F7 = NativeMenu, sem disputa, cheats ok.
-# REGRAS (gates transversais do F7F8_RECONCILIATION_PLAN):
-#   1. FECHAR o FFXProjectEditor ANTES (softlock historico = editor aberto, nao hooks).
-#   2. Save descartavel. 3. Hash dos bins antes/depois. 4. UnX legado NAO volta ao deploy.
+[CmdletBinding()]
 param(
-    [int]$BootSeconds = 90,
-    [switch]$NoLaunch
+    [Parameter(Mandatory)]
+    [ValidateSet(
+        'permanent_sensor','seymour_battle_roster','speed_hack','entire_party_earns_ap',
+        'invincible_party','invincible_enemies','always_overdrive','always_critical',
+        'damage_99999','always_rare_drop','ap_100x','gil_100x',
+        'arena_plus_compose_f7','dialog_skip'
+    )]
+    [string]$Case,
+    [Parameter(Mandatory)]
+    [ValidateSet('Preflight','Verify')]
+    [string]$Phase,
+    [Parameter(Mandatory)][switch]$DisposableSaveConfirmed,
+    [Parameter(Mandatory)][switch]$EditorClosedConfirmed,
+    [switch]$ObservedApplied,
+    [switch]$ObservedRestored,
+    [switch]$RestoreConfigSnapshot,
+    [string]$SeymourEvidencePath,
+    [string]$EvidenceDirectory,
+    [string]$EvidenceRoot
 )
+
 $ErrorActionPreference = 'Stop'
-$game = 'D:\SteamLibrary\steamapps\common\FINAL FANTASY FFX&FFX-2 HD Remaster'
-$logPath = Join-Path $env:TEMP 'ffx-hooks.log'
-$stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
-$outDir = "work/f8_recon/fase4_rt2_$stamp"
+Set-StrictMode -Version 2.0
 
-Write-Host "=== F8 RT2 ($stamp) ==="
-
-# 1. Gates
-$editor = Get-Process -Name 'FFXProjectEditor' -ErrorAction SilentlyContinue
-if ($editor) {
-    Write-Host "[FAIL] Editor ABERTO (PID $($editor.Id)) - feche antes do RT2 (gate transversal)."
-    exit 1
-}
-$ffx = Get-Process -Name 'FFX' -ErrorAction SilentlyContinue
-if ($ffx) { Write-Host "[WARN] FFX.exe ja rodando (PID $($ffx.Id)) - fechando"; $ffx | Stop-Process -Force }
-
-# 2. Hashes antes
-New-Item -ItemType Directory -Path $outDir -Force | Out-Null
-$targets = @(
-    "$game\modules\ffx-hooks.dll",
-    "$game\data\mods\ffx_ps2\ffx\master\jppc\battle\btl"
-)
-foreach ($t in $targets) {
-    if (Test-Path $t) { Get-FileHash $t -Algorithm SHA256 | Out-File "$outDir\hash_before.txt" -Append }
+$modulePath = Join-Path $PSScriptRoot 'run_f8_rt2_lib.psm1'
+if (-not (Test-Path -LiteralPath $modulePath -PathType Leaf)) {
+    throw "F8 RT2 protocol helper is missing: $modulePath"
 }
 
-# 3. Boot
-Write-Host "[INFO] boot do FFX.exe (Steam) - $BootSeconds s..."
-if (-not $NoLaunch) { Start-Process "$game\FFX.exe" }
-Start-Sleep -Seconds $BootSeconds
-
-# 4. Log do hook
-Write-Host "=== log: %TEMP%\ffx-hooks.log (ultimas linhas) ==="
-if (Test-Path $logPath) {
-    $log = Get-Content $logPath
-    $log | Select-Object -Last 40
-    $checks = @('F8 dashboard started', 'DialogSkipHook installed', 'NativeMenu', 'UnXBoosterHook started')
-    foreach ($c in $checks) {
-        $hit = $log | Select-String -SimpleMatch $c
-        Write-Host ("[CHECK] {0} => {1}" -f $c, $(if ($hit) { 'OK' } else { 'NAO VISTO (pode ser normal se o gate nao ativou)' }))
+Import-Module -Name $modulePath -Force -ErrorAction Stop
+try {
+    $invoke = @{
+        Case = $Case
+        Phase = $Phase
+        DisposableSaveConfirmed = $DisposableSaveConfirmed
+        EditorClosedConfirmed = $EditorClosedConfirmed
+        ObservedApplied = $ObservedApplied
+        ObservedRestored = $ObservedRestored
+        RestoreConfigSnapshot = $RestoreConfigSnapshot
+        SeymourEvidencePath = $SeymourEvidencePath
+        EvidenceDirectory = $EvidenceDirectory
+        EvidenceRoot = $EvidenceRoot
+        ScriptRoot = $PSScriptRoot
     }
-    $crash = $log | Select-String -Pattern 'CRASH|ACCESS_VIOLATION|AV WRITE|exception' 
-    if ($crash) { Write-Host "[FAIL] padroes de crash no log:"; $crash | Select-Object -First 5 } else { Write-Host "[OK] sem padroes de crash no log" }
-} else {
-    Write-Host "[WARN] log nao existe (o jogo nao carregou o hook?)"
-}
+    $result = Invoke-F8Rt2Protocol @invoke
 
-# 5. Hashes depois
-foreach ($t in $targets) {
-    if (Test-Path $t) { Get-FileHash $t -Algorithm SHA256 | Out-File "$outDir\hash_after.txt" -Append }
-}
-Write-Host "=== CHECKS MANUAIS (no jogo) ==="
-Write-Host "  1. F8 -> deve abrir o DASHBOARD (tabs Plugins/Boosters/Cheats/Field/Arena+/Input)"
-Write-Host "  2. F8 de novo -> fecha; movement keys voltam"
-Write-Host "  3. F7 -> NativeMenu intacto (Difficulty/Force/Music)"
-Write-Host "  4. Cheats (tab Cheats -> Always Overdrive ON) -> batalha: overdrive sempre cheio"
-Write-Host "  5. Dialog Skip (tab Input -> ON) -> dialogo falado pula sem crash"
-Write-Host "  6. Sem disputa F7/F8 (um menu de cada vez)"
-
-# 6. Probe (Tier 2) - opcional: se o ffx-probe.dll estiver ativo no modules, o heartbeat
-#    hooked=1 deve aparecer (slot vtable[9] livre com o UnX fora do deploy - INC-002 resolvido).
-$probe = Get-ChildItem "$game\modules" -Filter 'ffx-probe.dll' -ErrorAction SilentlyContinue
-if ($probe) {
-    Write-Host "[INFO] ffx-probe.dll presente no modules - conferir heartbeat no log:"
-    if (Test-Path $logPath) {
-        $hb = Get-Content $logPath | Select-String -Pattern 'hooked=1|probe'
-        if ($hb) { $hb | Select-Object -First 4 } else { Write-Host "[WARN] sem linhas de heartbeat do probe no log" }
+    Write-Host "F8 manual protocol phase: $($result.Phase)"
+    Write-Host "Case: $($result.Case)"
+    Write-Host "Evidence directory: $($result.EvidenceDirectory)"
+    Write-Host "Snapshot: $($result.SnapshotPath)"
+    foreach ($resolution in @($result.Resolutions)) {
+        Write-Host ("Resolver {0} ({1}) = {2} via {3}" -f `
+            $resolution.Case,
+            $resolution.Canonical,
+            $(if ($resolution.Value) { 'ON' } else { 'OFF' }),
+            $resolution.Source)
     }
-} else {
-    Write-Host "[INFO] probe OFF (so .RT2OFF) - normal: Tier 2 na fase pos-F8 (plano secao 9)"
+
+    if ($Phase -ceq 'Preflight') {
+        Write-Host 'Manual steps for the selected case only:'
+        foreach ($step in @($result.ManualSteps)) { Write-Host "  - $step" }
+        Write-Host 'Preflight complete. The script did not launch/stop FFX or the editor, deploy/copy a DLL, sleep for boot, or mutate the INI.'
+        Write-Host 'This is a manual protocol boundary, not RT2 or Production evidence.'
+    } else {
+        Write-Host "Verify evidence: $($result.VerifyEvidenceDirectory)"
+        Write-Host "Vanilla-restoration verdict (hashed/snapshotted scope only): $($result.FinalVerdict)"
+        Write-Host 'Disposable-save confirmation is human attestation, not technical proof of whole-game state.'
+    }
+
+    Write-Output $result
+} finally {
+    Remove-Module -Name 'run_f8_rt2_lib' -Force -ErrorAction SilentlyContinue
 }
-Write-Host "Artefatos: $outDir"
