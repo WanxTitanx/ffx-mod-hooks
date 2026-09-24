@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Equipment Workshop · Spira Reforge</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">SPIRA REFORGE / WORKSHOP</p>
+          <h1>A piece of your own.</h1>
+          <p class="sub">
+            Refine, reshape and bring a fifth ability into play.
+          </p>
+        </div>
+        <div class="session">
+          <span class="dot"></span><span id="session">Loading workspace</span
+          ><small>Experimental copy · Original save preserved</small>
+        </div>
+      </header>
+      <div id="notice" role="status" aria-live="polite"></div>
+      <div class="layout">
+        <aside class="glass inventory">
+          <div class="section-label">
+            <h2>Your equipment</h2>
+            <span id="count"></span>
+          </div>
+          <label class="search"
+            ><span>Find a piece</span
+            ><input
+              id="search"
+              type="search"
+              placeholder="Character, weapon, ability…"
+              autocomplete="off" /></label
+          ><label class="sr" for="owner">Character</label
+          ><select id="owner">
+            <option value="">All characters</option>
+          </select>
+          <div
+            id="inventory"
+            role="list"
+            aria-label="Equipment inventory"
+          ></div>
+        </aside>
+        <section class="workbench" aria-label="Selected equipment">
+          <div id="empty" class="glass empty">Select a piece to begin.</div>
+          <div id="selected" hidden>
+            <div class="glass piece">
+              <div class="piece-heading">
+                <div>
+                  <p class="eyebrow" id="piece-owner"></p>
+                  <h2 id="piece-title"></h2>
+                  <p id="piece-sub"></p>
+                </div>
+                <div class="rank">
+                  <strong id="rank">+0</strong
+                  ><span id="rank-label">Unrefined</span>
+                </div>
+              </div>
+              <div id="abilities" class="abilities"></div>
+              <div id="piece-note" class="piece-note"></div>
+            </div>
+            <div class="glass operations">
+              <div class="section-label">
+                <h2>Make it yours</h2>
+                <span>Preview every change</span>
+              </div>
+              <div class="op-tabs" role="tablist" aria-label="Workshop actions">
+                <button role="tab" aria-selected="true" data-op="refine">
+                  Refine</button
+                ><button role="tab" aria-selected="false" data-op="fifth">
+                  Fifth ability</button
+                ><button role="tab" aria-selected="false" data-op="reshape">
+                  Reshape</button
+                ><button role="tab" aria-selected="false" data-op="fusion">
+                  Fusion
+                </button>
+              </div>
+              <div id="operation-body"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <footer>
+        <span>Spira Reforge · experimental recipes</span
+        ><span>Choose a piece → preview the cost → confirm</span
+        ><span>No keyboard shortcut assigned</span>
+      </footer>
+    </main>
+    <dialog id="confirm">
+      <form method="dialog">
+        <p class="eyebrow">REVIEW YOUR CHANGE</p>
+        <h2 id="confirm-title">Ready to refine?</h2>
+        <p id="confirm-summary"></p>
+        <div id="costs"></div>
+        <p class="receipt-note">
+          Materials are consumed only when you confirm. Cancelling keeps your
+          piece and materials.
+        </p>
+        <div class="dialog-actions">
+          <button value="cancel" class="secondary">Keep as is</button
+          ><button type="button" id="commit" class="primary">
+            Confirm change
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
