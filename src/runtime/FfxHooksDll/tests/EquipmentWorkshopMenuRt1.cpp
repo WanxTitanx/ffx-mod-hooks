@@ -7,9 +7,15 @@
 #include <cstring>
 #include <algorithm>
 #include <cmath>
+#include <array>
+#include <vector>
+#include <string>
 #include "../hooks/F7UiCore.h"
 #include "../hooks/F8FlagsUiState.h"
 #include "../hooks/EquipmentWorkshopRuntime.h"
+#include "../hooks/EquipmentWorkshopSettings.h"
+#include "../hooks/EquipmentWorkshopNativeUi.h"
+#include "../hooks/ElementHook.h"
 namespace NativeMenu {
 constexpr uintptr_t kImageBase=0x400000,POOL_VA=0x18408C0;
 constexpr int POOL_MAX=32,POOL_STRIDE=152;
@@ -30,13 +36,18 @@ void Reset(int o){std::memset(Pb(o,0),0,152);}
 void ClaimModal(int o){popup=o;}
 void ReleaseModalIfOwned(int o){if(popup==o)popup=0;}
 void CloseMenu(Menu& m){if(m.obj)WrB(m.obj,65,1);m.obj=0;}
-int PadDir(){return 0;} int PadEdge(){return 0;} void PlaySfx(int){}
+int padDirection=0,padEdge=0;
+std::vector<int> sounds;
+int PadDir(){return padDirection;} int PadEdge(){return padEdge;}
+void PlaySfx(int id){sounds.push_back(id);}
 float NX(float x){return x;}float NY(float x){return x;}float NW(float x){return x;}float NH(float x){return x;}
 float MenuBorderPx(){return .002f;}float Osc01(int,int){return .5f;}
 constexpr unsigned kMenuNeonGreenLine=1,kMenuNeonGreenLineLo=1;
 void EncodeLabel(const char* s,unsigned char* out,size_t size){strncpy_s(reinterpret_cast<char*>(out),size,s,_TRUNCATE);}
-void DrawString(const unsigned char*,float,float){++drawCalls;}
-void DrawStringSub(const unsigned char*,float,float){++drawCalls;}
+struct TextCall {std::string text;float x,y;};
+std::vector<TextCall> rendered;
+void DrawString(const unsigned char* text,float x,float y){++drawCalls;rendered.push_back({reinterpret_cast<const char*>(text),x,y});}
+void DrawStringSub(const unsigned char* text,float x,float y){DrawString(text,x,y);}
 void DrawSolidRect(float,float,float,float,unsigned,unsigned){++drawCalls;}
 void DrawCursor(float,float){++drawCalls;}
 void DrawMenuBackdrop(){++drawCalls;}void DrawMenuNeonFrame(int){}
@@ -46,19 +57,53 @@ static bool foreground=true;
 static int cursorCount=0;
 static LONG g_f7MouseWheelDelta=0;
 static bool F7IsForegroundWindow(){return foreground;}
-static void F7SeedPointerForDestination(){}
+static FfxHooks::F7Ui::PointerState pointerState{};
+static FfxHooks::F7Ui::PointerSample pointerSample{};
+static void F7SeedPointerForDestination(){FfxHooks::F7Ui::SeedPointerForDestination(pointerState,pointerSample.buttonDown);}
 static void F7AcquireCursorOwnership(){++cursorCount;}
 static void F7ReleaseCursorOwnership(){if(cursorCount)--cursorCount;}
 static bool EnvFlagEnabled(const char*){return false;}
 static void Log(const char*,...){}
-struct F7MouseInputResult {bool ownsDirectionalFrame=false,confirm=false;};
-static F7MouseInputResult F7ListMouseTick(int,float,float,float,float,float,int,int){return {};}
-namespace FfxHooks::EquipmentWorkshop {
-bool Capture(workshop::State&){return false;}
-const char* Detail(){return "Load a save to activate Equipment Workshop";}
-workshop::Error Preview(const workshop::Request&,workshop::Plan&){return workshop::Error::InvalidState;}
-bool Commit(const workshop::Request&,const workshop::Plan&){return false;}
+struct F7MouseInputResult {bool confirm=false,ownsDirectionalFrame=false;};
+struct F7PointerSnapshot {bool valid;int wheelSteps;float x,y;FfxHooks::F7Ui::PointerDecision decision;};
+static F7PointerSnapshot F7CapturePointer(){
+    const auto decision=FfxHooks::F7Ui::ObservePointer(pointerState,pointerSample);
+    const F7PointerSnapshot result{pointerSample.valid,pointerSample.wheelSteps,pointerSample.x,pointerSample.y,decision};
+    pointerSample.wheelSteps=0;return result;
 }
+// Real mouse selection/wheel helper, extracted by the runner. Only device input
+// and sound output are substituted; hover/release/arbitration use production code.
+#include "WorkshopListMouse.inc"
+namespace TestHost {
+workshop::State state{};
+bool available=false,failReadback=false,customizeUnlocked=true;
+bool nativeDetails=false,scanActive=false;
+unsigned commits=0;
+std::uint32_t gil=1000000;
+}
+namespace FfxHooks::EquipmentWorkshop {
+bool Capture(workshop::State& out){if(!TestHost::available)return false;out=TestHost::state;return true;}
+workshop::Error Access(){
+    workshop::Policy policy{};if(!TestHost::available)return workshop::Error::InvalidState;
+    if(!Settings::Read(policy))return workshop::Error::InvalidPolicy;
+    return TestHost::customizeUnlocked||policy.devIgnoreProgression?workshop::Error::Ok:workshop::Error::Locked;
+}
+const char* Detail(){return "Load a save to activate Equipment Workshop";}
+workshop::Error Preview(const workshop::Request& r,workshop::Plan& out){
+    workshop::Economy economy{};economy.gil=TestHost::gil;economy.customizeUnlocked=TestHost::customizeUnlocked?1:0;
+    if(!Settings::Read(economy.policy)||!Settings::AdmitsExpansion(r))return workshop::Error::InvalidPolicy;
+    return TestHost::available?workshop::Preview(TestHost::state,r,out,economy):workshop::Error::InvalidState;
+}
+bool Commit(const workshop::Request& r,const workshop::Plan& reviewed){
+    workshop::Plan plan{};
+    if(Preview(r,plan)!=workshop::Error::Ok||std::memcmp(&plan,&reviewed,sizeof(plan)))return false;
+    TestHost::state=plan.after;TestHost::gil-=plan.gilDebit;++TestHost::commits;
+    if(TestHost::failReadback)TestHost::available=false;
+    return true;
+}
+}
+namespace FfxHooks::EquipmentWorkshop::NativeUi {bool Active() noexcept {return TestHost::nativeDetails;}}
+namespace FfxHooks {bool IsElementHookInstalled(){return TestHost::scanActive;}}
 #pragma warning(push)
 #pragma warning(disable:4018) // Existing renderer loop signedness is outside this lifecycle regression.
 #include "../hooks/EquipmentWorkshopMenu.inl"
@@ -100,6 +145,29 @@ static void PendingCloseAndOpenPump(){
 }
 static unsigned checks=0,failures=0;
 static void Check(bool ok,const char* name){++checks;if(!ok){++failures;std::printf("FAIL %s\n",name);}}
+#include "WorkshopMenuTransactionCases.inl"
+#include "WorkshopMenuEconomyCases.inl"
+#include "WorkshopF8SettingsCases.inl"
+#include "WorkshopMenuProgressionCases.inl"
+#include "WorkshopNavigationCases.inl"
+#include "ElementColorSettingsCases.inl"
+#include "ElementVisibilityCases.inl"
+static void FullFifthPickerCases(){
+    using A=EquipmentMenu::Action;
+    for(unsigned kind=0;kind<2;++kind){
+        Check(WorkshopTestOpen(),"full fifth picker fixture opens");
+        auto& piece=TestHost::state.pieces[0];piece.fifthUnlocked=1;piece.native[5]=static_cast<unsigned char>(kind);
+        WorkshopTestChoose(A::Piece,0);WorkshopTestChoose(A::Fifth);workshop::Policy policy{};
+        for(unsigned id=0;id<131;++id){unsigned item=0,quantity=0;
+            const bool valid=workshop::FifthCost(piece,static_cast<std::uint16_t>(0x8000+id),policy,item,quantity)&&workshop::CustomizeEligibility(piece,4,static_cast<std::uint16_t>(0x8000+id))==workshop::Error::Ok;
+            Check(WorkshopTestLists(A::Value,0x8000+id)==valid,"real fifth picker exposes the complete type-filtered catalog");
+        }
+        Check(!WorkshopTestLists(A::Value,0x8014),"fifth picker never invents a native Customize recipe");
+        WorkshopTestChoose(A::Value,kind?0x8055:0x8001);
+        WorkshopTestChoose(A::Back);Check(TestHost::commits==0,"leaving the full picker confirmation spends nothing");
+    }
+    EquipmentMenu::StopReady();
+}
 int main(){
     foreground=true;g_forceSubsystem=1;
     InterlockedExchange(&EquipmentMenu::wantOpen,1);
@@ -128,5 +196,28 @@ int main(){
     InterlockedExchange(&EquipmentMenu::wantClose,1);
     for(unsigned frame=0;frame<5;++frame)EquipmentMenu::Tick();
     Check(!EquipmentMenu::Active()&&NativeMenu::popup==0&&cursorCount==0,"shortcut close is bounded and releases modal and cursor ownership");
+    WorkshopMenuTransactionCases();
+    WorkshopMenuAudioCases();
+    WorkshopMenuEconomyCases();
+    WorkshopF8SettingsCases();
+    WorkshopMenuProgressionCases();
+    WorkshopF8DevelopmentCases();
+    WorkshopNavigationCases();
+    WorkshopExpansionSettingsCases();
+    ElementColorSettingsCases();
+    ElementVisibilityCases();
+    FullFifthPickerCases();
+    TestHost::nativeDetails=false;Check(WorkshopTestOpen(),"native display status fixture opens");
+    NativeMenu::rendered.clear();EquipmentMenu::Draw(EquipmentMenu::menu.obj);
+    Check(WorkshopRendered("Native detail hook: OFF")&&WorkshopRendered("Reforge"),"Workshop explains disabled native display");
+    TestHost::nativeDetails=true;NativeMenu::rendered.clear();EquipmentMenu::Draw(EquipmentMenu::menu.obj);
+    Check(WorkshopRendered("Native detail hook: ON"),"Workshop identifies an active native detail hook");
+    TestHost::nativeDetails=false;EquipmentMenu::StopReady();
+    F8NativeSettingsReset();const int statusObj=NativeMenu::Alloc();
+    Check(statusObj!=0,"Scan status fixture allocates");
+    if(statusObj){F8NativeSettingsPush(statusObj,NativeSettingsPage::ElementScan);
+        for(bool active:{false,true}){TestHost::scanActive=active;NativeMenu::rendered.clear();F8NativeSettingsDraw(statusObj,1);
+            Check(WorkshopRendered(active?"Extra elements: ON":"Extra elements: OFF"),"Scan settings distinguish actual hook status from saved preferences");}
+        TestHost::scanActive=false;F8NativeSettingsReset();NativeMenu::Reset(statusObj);}
     std::printf("EquipmentWorkshopMenuRt1 %u/%u passed\n",checks-failures,checks);return failures?1:0;
 }

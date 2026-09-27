@@ -1,14 +1,17 @@
 #pragma once
-// ElementHook — Scan UI Holy/Dark element-affinity icons.
-// Detours FFX_BtlUI_DrawScanElementResistRow (PE RVA 0x494AB0) and appends two
-// positive-logic ball draws (Holy 0x10, Dark 0x80) sampling atlas 16128
-// (battle.dds.phyre). Gated by element_scan_dark.flag / FFXHOOKS_ELEMENT_SCAN_DARK.
-// RE: docs/reverse/FFX_SCAN_WEAKNESS_UI_RENDER_LOOP_2026-06-16.md (§14).
+// Independent Scan Expanded and Scan/Sensor extra-element presentation.
+// No authored texture, persistent width patch or new elemental gameplay.
 
 #include <stdint.h>
 
 namespace FfxHooks {
-    void InstallElementHook(uintptr_t base, void (*log)(const char* message));
+    bool StartElementHook(uintptr_t base,bool extraElements,bool expandedStats,bool validateOnly,void(*log)(const char*));
+#ifdef FFXHOOKS_TESTING
+    void ElementScanFullEnvironmentForTests(void* rotated,void* text,void* numberR,void* numberL,void* glyph);
+    void ElementScanEnvironmentForTests(void* info,void* panel,void* texture);
+#endif
+    void InstallElementHook(uintptr_t base,bool extraElements,bool expandedStats,void (*log)(const char* message));
     void RemoveElementHook();
     bool IsElementHookInstalled();
+    bool IsScanExpandedInstalled();
 }

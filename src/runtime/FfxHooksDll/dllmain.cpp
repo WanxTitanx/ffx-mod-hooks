@@ -80,6 +80,7 @@
 #include "hooks/NativeLanguageHook.h"
 #include "hooks/SinAiHook.h"
 #include "hooks/EquipmentWorkshopRuntime.h"
+#include "hooks/EquipmentWorkshopNativeUi.h"
 #include "hooks/NativeSaveEvents.h"
 #include "hooks/FmvSpeedHook.h"
 #include "hooks/SinSpreadCore.h"
@@ -850,6 +851,9 @@ static F8StartupGateSnapshot g_f8StartupGates[] = {
     { "labs.nova_super_damage", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.kimahri_ronso_mana", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.equipment_workshop", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "labs.equipment_workshop_native_ui", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "labs.scan_expanded", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "labs.element_scan_dark", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.grid_teach", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.kimahri_lancet_dual_grant", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.item_stack_cap", { false, FfxHooks::Config::BoolSource::DefaultValue } },
@@ -996,7 +1000,13 @@ static bool DoubleTripleDropLogEnabled() {
 }
 
 static bool ElementScanDarkEnabled() {
-    return FfxHooks::Config::CheckEnabled("labs.element_scan_dark", "FFXHOOKS_ELEMENT_SCAN_DARK", "element_scan_dark.flag", false);
+    return F8CatalogGateEnabled("labs.element_scan_dark");
+}
+static bool ScanExpandedEnabled() {
+    return F8CatalogGateEnabled("labs.scan_expanded");
+}
+static bool EquipmentWorkshopNativeUiEnabled() {
+    return F8CatalogGateEnabled("labs.equipment_workshop_native_ui");
 }
 
 static bool AbilitySfxFlagEnabled() {
@@ -1181,7 +1191,8 @@ static const InGameMenuFlag kInGameMenuFlags[] = {
     { "labs.item_stack_cap_log",     "Item stack cap (log)" },
     { "labs.double_triple_drop",     "Double/Triple Drop" },
     { "labs.double_triple_drop_log", "Double/Triple Drop (log)" },
-    { "labs.element_scan_dark",      "Element Scan (Holy/Dark)" },
+    { "labs.scan_expanded",          "Scan Expanded" },
+    { "labs.element_scan_dark",      "Scan Extra Elements" },
     { "labs.ability_sfx",            "Ability SFX" },
     { "labs.ability_sfx_log",        "Ability SFX (log)" },
     { "labs.field_probe_rt2",        "Field Probe RT2" },
@@ -13925,7 +13936,13 @@ static int g_f7EditDigits = 0;          // Number of digits entered.
 static int g_f7StatusTicks = 0;         // Remaining frames for the status message.
 static char g_f7StatusMsg[56] = {};     // Apply/Save/Reset/preview feedback.
 static const char* const F7_BASE_NAMES[9] = { "HP","STR","DEF","MAG","MDF","AGI","ACC","EVA","LCK" };
-static const char* const F7_ELEM_NAMES[5] = { "Fire","Ice","Thunder","Water","Holy" };
+static const char* const F7_ELEM_NAMES[7] = { "Fire","Ice","Thunder","Water","Holy","Darkness","Custom" };
+static unsigned g_f7CustomElementBit=0x20;
+static unsigned F7ElementRowMask(int row){
+    static constexpr unsigned masks[]={1,2,4,8,0x10,0x80};
+    if(row>=0&&row<6)return masks[row];
+    return row==6&&(g_f7CustomElementBit==0x20||g_f7CustomElementBit==0x40)?g_f7CustomElementBit:0;
+}
 static const int F7_BASE_MIN[9] = { 100, 100, 100, 100, 100, 100, 100, 100, 100 };
 static const int F7_BASE_MAX[9] = { 10000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000 };  // HP supports up to 10x.
 
@@ -13934,7 +13951,7 @@ static int F7DiffColRows(int col) {
         case F7DC_PRESETS: return 4;
         case F7DC_BASE:    return 9;
         case F7DC_AUTO:    return F7_STATUS_COUNT;   // 25
-        case F7DC_WEAK: case F7DC_RESIST: case F7DC_ABSORB: return 5;
+        case F7DC_WEAK: case F7DC_RESIST: case F7DC_ABSORB: return 7;
         case F7DC_ACTIONS: return 3;
         default: return 1;
     }
@@ -14005,12 +14022,17 @@ static bool F7_SaveConfigWithFeedback(const char* successMessage) {
 
 static void F7DiffToggleBit(int valIdx, int bit) {
     using namespace NativeMenu;
-    g_f7Vals[valIdx] ^= (1 << bit);   // Multi-select checkbox.
-    if (valIdx >= 11 && valIdx <= 13 && (g_f7Vals[valIdx] & (1 << bit)) != 0) {
+    if(valIdx<10||valIdx>13||bit<0||bit>=(valIdx==10?25:7))return;
+    const unsigned mask=valIdx==10?(1u<<bit):F7ElementRowMask(bit);
+    if(!mask){F7DiffSetStatus("Invalid Custom element bit; check F8 Scan settings");PlaySfx(3);return;}
+    g_f7Vals[valIdx] ^= static_cast<int>(mask);
+    if (valIdx >= 11 && valIdx <= 13 && (g_f7Vals[valIdx] & mask) != 0) {
         // One affinity per element; other elements keep their own selections.
         for (int other = 11; other <= 13; ++other)
-            if (other != valIdx) g_f7Vals[other] &= ~(1 << bit);
+            if (other != valIdx) g_f7Vals[other] &= ~static_cast<int>(mask);
     }
+    // Staged Custom edits activate only when the player selects Apply or Save.
+    g_f7DifficultyEnabled = true;
     g_f7DiffPresetIdx = -1;
     PlaySfx(1);
 }
@@ -14164,6 +14186,10 @@ static void F7_BuildRows(int kind) {
         }
         if(strcmp(tabName,"System")==0)
             g_f7Rows[g_f7RowCount++]={"Audio languages",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Languages),0,0,"Choose voice, battle sound and movie audio languages."};
+        if(strcmp(tabName,"Dev")==0)
+            g_f7Rows[g_f7RowCount++]={"Equipment Workshop",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Workshop),0,0,"Refinement A/B and explicit development-only cost and progression overrides."};
+        if(strcmp(tabName,"Reforge")==0)
+            g_f7Rows[g_f7RowCount++]={"Scan element colors",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::ElementScan),0,0,"Choose Holy, Darkness and Custom colors. Enable Scan Extra Elements and restart."};
         if (strcmp(tabName, "Input") == 0) {
             g_f7Rows[g_f7RowCount++]={"Keyboard shortcuts",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Keyboard),0,0,"Choose shortcuts for menus and existing native actions."};
             g_f7Rows[g_f7RowCount++]={"Gamepad shortcuts",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Gamepad),0,0,"Assign your own physical button combinations."};
@@ -14182,6 +14208,9 @@ static void F7_BuildRows(int kind) {
         g_f7Vals[11] = p.elemWeak;
         g_f7Vals[12] = p.elemResist;
         g_f7Vals[13] = p.elemAbsorb;
+        const auto extra=FfxHooks::Config::ReadIntExact("element_scan.extra_bit",32,64);
+        g_f7CustomElementBit=extra.state==FfxHooks::Config::IntReadState::Missing?32u:
+            extra.state==FfxHooks::Config::IntReadState::Valid&&(extra.value==32||extra.value==64)?static_cast<unsigned>(extra.value):0u;
         g_f7RowCount = 0;   // Difficulty owns its multi-column input/draw path instead of 1D rows.
         g_f7Col = F7DC_PRESETS; g_f7ColRow = 0; g_f7EditActive = 0;
     }
@@ -14469,6 +14498,16 @@ static void F8BuildSelectedStatus(int sel, char* out, size_t outSize) {
             "REQ %s / EFF %s", requested ? "ON" : "OFF",
             effective.value ? "ON" : "OFF");
     }
+    if (strcmp(flag.gate.canonicalKey, "labs.scan_expanded") == 0 ||
+        strcmp(flag.gate.canonicalKey, "labs.element_scan_dark") == 0) {
+        const bool running = strcmp(flag.gate.canonicalKey, "labs.scan_expanded") == 0
+            ? FfxHooks::IsScanExpandedInstalled() : FfxHooks::IsElementHookInstalled();
+        _snprintf_s(live, sizeof(live), _TRUNCATE, "RUN %s", running ? "ON" : "OFF");
+        const FfxHooks::F8Ui::TechnicalStatusParts parts = {requestEffective, live, "RESTART REQUIRED", nullptr};
+        if (!FfxHooks::F8Ui::BuildTechnicalStatus(parts, out, outSize))
+            _snprintf_s(out, outSize, _TRUNCATE, "%s", live);
+        return;
+    }
     if (strcmp(flag.gate.canonicalKey, "development.fastload_autosave") == 0) {
         const auto fastload = FfxHooks::Fastload::GetRuntimeSnapshot();
         _snprintf_s(live, sizeof(live), _TRUNCATE, "RUN %s",
@@ -14680,6 +14719,7 @@ static int __cdecl F7Sub_InputCb(int obj) {
                 if (v < F7_BASE_MIN[row]) v = F7_BASE_MIN[row];
                 if (v > F7_BASE_MAX[row]) v = F7_BASE_MAX[row];
                 g_f7Vals[1 + row] = v;
+                g_f7DifficultyEnabled = true;
                 g_f7DiffPresetIdx = -1;
                 g_f7EditActive = 0;
                 F7DiffSetStatus("Custom value staged; use Apply Now or Save");
@@ -15104,7 +15144,8 @@ static void F7Diff_Draw(int F) {
                 DrawStringSub(buf, cx, ry);
             } else if (c >= F7DC_AUTO && c <= F7DC_ABSORB) {
                 const int valIdx = (c == F7DC_AUTO) ? 10 : (c == F7DC_WEAK) ? 11 : (c == F7DC_RESIST) ? 12 : 13;
-                const bool on = ((g_f7Vals[valIdx] >> r) & 1) != 0;
+                const unsigned mask=c==F7DC_AUTO?(1u<<r):F7ElementRowMask(r);
+                const bool on = (g_f7Vals[valIdx] & mask) != 0;
                 const float bs = NX(0.011f);
                 const float bx = cx + NX(0.004f), by = ry + (rowH - bs) * 0.5f;
                 DrawSolidRect(bx, by, bs, bs, on ? 0xC050FF90u : 0xA0182028u, on ? 0xC028C058u : 0x90080810u);
@@ -15113,15 +15154,12 @@ static void F7Diff_Draw(int F) {
                 EncodeLabel(nm, buf, (int)sizeof(buf));
                 DrawStringSub(buf, bx + NX(0.020f), ry);
             } else {
-                // WHY: Apply needs infrastructure AND open admission. With the preset OFF
-                // the same row is the restore path when fields remain owned.
+                // Apply commits the draft first. Runtime OFF must not hide
+                // this action when the player has just staged Custom edits.
                 const bool applyReady = runtime.infrastructureInstalled &&
                     runtime.callbackAdmissionOpen;
                 const char* label = (r == 0)
-                    ? (!applyReady ? "Apply Unavailable"
-                        : runtime.difficultyBehaviorEnabled ? "Apply Now"
-                        : runtime.ownedFieldsPresent ? "Restore Stats"
-                        : "No Restore Needed")
+                    ? (!applyReady ? "Apply Unavailable" : "Apply Now")
                     : (r == 1) ? "Save" : "Back";
                 unsigned char buf[48] = {};
                 EncodeLabel(label, buf, (int)sizeof(buf));
@@ -15634,9 +15672,9 @@ static void F7_CommitValsToConfig() {
         p.magMul = g_f7Vals[4]; p.mdfMul = g_f7Vals[5];  p.agiMul = g_f7Vals[6];
         p.accMul = g_f7Vals[7]; p.evaMul = g_f7Vals[8];  p.lckMul = g_f7Vals[9];
         p.autoStatusMask = (uint32_t)g_f7Vals[10] & 0x01FFFFFFu;
-        p.elemWeak = (uint8_t)(g_f7Vals[11] & 0x1F);
-        p.elemResist = (uint8_t)(g_f7Vals[12] & 0x1F);
-        p.elemAbsorb = (uint8_t)(g_f7Vals[13] & 0x1F);
+        p.elemWeak = (uint8_t)(g_f7Vals[11] & 0xFF);
+        p.elemResist = (uint8_t)(g_f7Vals[12] & 0xFF);
+        p.elemAbsorb = (uint8_t)(g_f7Vals[13] & 0xFF);
         FfxHooks::F7_SetDifficultyGlobal(p);
     }
 }
@@ -16104,8 +16142,12 @@ static void InstallHooks() {
     } else {
         Log("[ffx-hooks] DoubleTripleDrop not armed (FFXHOOKS_ENABLE_DOUBLE_TRIPLE_DROP)\n");
     }
-    if (ElementScanDarkEnabled()) {
-        FfxHooks::InstallElementHook(g_base, LogLine);
+    const bool scanExtraElements = ElementScanDarkEnabled();
+    const bool scanExpanded = ScanExpandedEnabled();
+    LogF8CatalogGate("labs.element_scan_dark", "Scan Extra Elements");
+    LogF8CatalogGate("labs.scan_expanded", "Scan Expanded");
+    if (scanExtraElements || scanExpanded) {
+        FfxHooks::InstallElementHook(g_base, scanExtraElements, scanExpanded, LogLine);
     }
     const bool enableAbilitySfxLog = AbilitySfxLogFlagEnabled();
     if (enableAbilitySfxLog) {
@@ -16477,6 +16519,7 @@ static void RemoveHooks() {
         return;
     }
 #endif
+    FfxHooks::EquipmentWorkshop::NativeUi::Stop();
     FfxHooks::EquipmentWorkshop::RequestStop();
     FfxHooks::Fastload::RemoveFastloadHook();
     Log("[ffx-hooks] RemoveHooks enter\n");
@@ -16514,7 +16557,6 @@ static void RemoveHooks() {
     FfxHooks::RemoveResolverLogHook();
     FfxHooks::RemoveItemStackCapHook(LogLine);
     FfxHooks::RemoveDoubleTripleDropHook(LogLine);
-    /* Phase 2 placeholder: FfxHooks::RemoveElementHook(); */
     DestroyBlock();
     Log("[ffx-hooks] RemoveHooks leave\n");
 }
@@ -16612,6 +16654,12 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
     // Both keep their independent damage behavior; the save imports have one owner.
     FfxHooks::EquipmentWorkshop::Start(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),
         F8CatalogGateEnabled("labs.equipment_workshop"),EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
+    FfxHooks::EquipmentWorkshop::NativeUi::Start(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),
+        F8CatalogGateEnabled("labs.equipment_workshop")&&EquipmentWorkshopNativeUiEnabled(),
+        EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
+    LogF8CatalogGate("labs.equipment_workshop_native_ui", "native equipment presentation");
+    Log("[ffx-hooks] Workshop native UI startup active=%d (requires Workshop and native-details gates)\n",
+        FfxHooks::EquipmentWorkshop::NativeUi::Active()?1:0);
     Log("[ffx-hooks] Workshop startup: %s\n",FfxHooks::EquipmentWorkshop::Detail());
     StartupTiming("workshop-ready");
     StartFastloadEarlyIfRequested();
@@ -16659,6 +16707,8 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID) {
         // Present frame could publish 8x during the tiny interval after Dialog admission closed.
         // Full teardown still needs a normal-context owner and callback drain.
         case DLL_PROCESS_DETACH:
+            FfxHooks::EquipmentWorkshop::NativeUi::Stop();
+            FfxHooks::RemoveElementHook();
             FfxHooks::EquipmentWorkshop::RequestStop();
             FfxHooks::NativePorts::RequestStop();
             FfxHooks::NativeLanguage::RequestStop();

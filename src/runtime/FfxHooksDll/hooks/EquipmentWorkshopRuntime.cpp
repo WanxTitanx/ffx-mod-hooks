@@ -5,6 +5,7 @@
 #include "F8RuntimeCore.h"
 #include "MinHookBatchCoordinator.h"
 #include "EquipmentWorkshopEvidence.h"
+#include "EquipmentWorkshopSettings.h"
 #include "../../../../research/equipment_workshop/include/lifecycle.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -22,18 +23,22 @@
 
 namespace FfxHooks::EquipmentWorkshop {
 namespace {
-constexpr std::uintptr_t kSaveRam=0xD2CA90,kGearRam=0xD30F2C;
+constexpr std::uintptr_t kSaveRam=0xD2CA90,kGearRam=0xD30F2C,kGilRam=0xD307D8;
 enum Hook {Load,Create,Swap,Free,Equip,Field,Aggregate,Protect,Shell,Gear,Row,Contains,Damage,HookCount};
 constexpr std::uint32_t rvas[HookCount]={0x4B5450,0x3AB930,0x3ABA10,0x3ABCC0,0x3AB990,0x3861B0,0x39C610,0x38AE00,0x38AE80,0x3ABBF0,0x3AB890,0x3A0C40,0x38E680};
 void* originals[HookCount]{};
 std::uintptr_t module=0;
 std::atomic<bool> accepting{false},enabled{false},started{false};
+std::atomic<PresentationAdapter> presentationAdapter{nullptr};
 std::recursive_mutex mutex;
 workshop::State state{};
 bool ready=false,loading=false;
 unsigned ownerThread=0;
 std::atomic<RuntimeCode> code{RuntimeCode::Disabled};
 Store store;
+#ifdef FFXHOOKS_TESTING
+int failBeforeWrite=-1;
+#endif
 LogFn logFn=nullptr;
 struct Pending {Hash disk{},payload{};std::wstring path;std::uintptr_t buffer=0;};
 std::vector<Pending> pending;
@@ -68,6 +73,12 @@ bool Refresh(){
     return true;
 }
 bool OnOwner(){return accepting.load() && ready && ownerThread==GetCurrentThreadId();}
+workshop::Error ReadEconomy(workshop::Economy& economy){
+    if(!Settings::Read(economy.policy))return workshop::Error::InvalidPolicy;
+    std::uint16_t story=0;
+    if(!Copy(&economy.gil,reinterpret_cast<void*>(module+kGilRam),4)||!Copy(&story,reinterpret_cast<void*>(module+kSaveRam+0xBEC),2))return workshop::Error::InvalidState;
+    economy.customizeUnlocked=workshop::NativeCustomizeUnlocked(story)?1:0;return workshop::Error::Ok;
+}
 void ReadEvent(const wchar_t* path,const unsigned char* disk,const unsigned char* loaded,std::size_t size) noexcept {
     if(!accepting.load() || !path || size!=kSaveBytes)return;
     try{
@@ -192,6 +203,7 @@ int __cdecl AggregateShim(unsigned owner){return Produce(owner,Aggregate);}
 const unsigned char* __cdecl GearShim(unsigned id,void* unknown){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
     const auto* native=reinterpret_cast<const unsigned char*(__cdecl*)(unsigned,void*)>(originals[Gear])(id,unknown);
+    if(const auto adapter=presentationAdapter.load()){const auto* shown=adapter(caller,native);if(shown!=native)return shown;}
     if(caller!=0x38677B && caller!=0x39C782)return native;
     GearView* entry=nullptr;
     if(view && view->count<2)entry=&view->gear[view->count++];
@@ -223,7 +235,7 @@ const unsigned char* __cdecl RowShim(unsigned id,const void* table,void* unknown
         if(!entry.managed || !enabled.load() || !accepting.load())return native;
         auto* copy=view->rows[view->nextGear][index];if(!Copy(copy,native,108))return native;
         const auto& p=entry.piece;const unsigned rank=p.mode==1?p.rank:p.mode==2?p.ranks[index]:0;
-        if(id>=98&&id<=121)copy[0x55]=static_cast<unsigned char>((std::min)(255u,unsigned(copy[0x55])+rank));
+        workshop::RefineAbilityRow(static_cast<std::uint16_t>(word),rank,copy);
         return copy;
     }
     return native;
@@ -321,14 +333,39 @@ RuntimeStatus Status(){std::lock_guard<std::recursive_mutex> lock(mutex);return 
 const char* Detail(){switch(Status().code){case RuntimeCode::Disabled:return "Enable Equipment Workshop and restart";case RuntimeCode::WaitingForSave:return "Load a save to activate Equipment Workshop";case RuntimeCode::Ready:return "Equipment Workshop ready";case RuntimeCode::Unsupported:return "Unsupported game profile";case RuntimeCode::Conflict:return "Inventory changed outside the supported path; reload your save";case RuntimeCode::StorageError:return "Equipment extension storage unavailable";case RuntimeCode::Stopped:return "Equipment Workshop stopped";}return "Unavailable";}
 bool Capture(workshop::State& out){
     std::lock_guard<std::recursive_mutex> lock(mutex);
-    unsigned battle=1;if(!OnOwner()||!enabled.load()||!Copy(&battle,reinterpret_cast<void*>(module+0xD2A8E0),4)||battle||!Refresh())return false;
+    // 78CE... VA7816F1/782744 clear only this BYTE on battle exit.
+    // Adjacent state is independent and may remain nonzero in the field.
+    std::uint8_t battle=1;if(!OnOwner()||!enabled.load()||!Copy(&battle,reinterpret_cast<void*>(module+0xD2A8E0),sizeof(battle))||battle||!Refresh())return false;
     out=state;return true;
 }
-workshop::Error Preview(const workshop::Request& request,workshop::Plan& plan){workshop::State current{};if(!Capture(current))return workshop::Error::InvalidState;return workshop::Preview(current,request,plan);}
+void SetPresentationAdapter(PresentationAdapter adapter){presentationAdapter.store(adapter);}
+bool ReadPresentation(const void* native,workshop::Piece& out){
+    std::lock_guard<std::recursive_mutex> lock(mutex);
+    if(!OnOwner()||!enabled.load())return false;
+    const unsigned slot=GearSlot(native);if(slot>=200)return false;
+    unsigned char actual[22]{};const auto& piece=state.pieces[slot];
+    if(!piece.id||!Copy(actual,native,22)||std::memcmp(actual,piece.native,22))return false;
+    out=piece;return true;
+}
+workshop::Error Access(){
+    std::lock_guard<std::recursive_mutex> lock(mutex);workshop::State current{};
+    if(!Capture(current))return workshop::Error::InvalidState;
+    workshop::Economy economy{};const auto error=ReadEconomy(economy);if(error!=workshop::Error::Ok)return error;
+    return economy.customizeUnlocked||economy.policy.devIgnoreProgression?workshop::Error::Ok:workshop::Error::Locked;
+}
+workshop::Error Preview(const workshop::Request& request,workshop::Plan& plan){
+    std::lock_guard<std::recursive_mutex> lock(mutex);
+    if(!Settings::AdmitsExpansion(request))return workshop::Error::InvalidPolicy;
+    workshop::State current{};if(!Capture(current))return workshop::Error::InvalidState;
+    workshop::Economy economy{};const auto error=ReadEconomy(economy);
+    return error==workshop::Error::Ok?workshop::Preview(current,request,plan,economy):error;
+}
 bool Commit(const workshop::Request& request,const workshop::Plan& reviewed){
     std::lock_guard<std::recursive_mutex> lock(mutex);
+    if(!Settings::AdmitsExpansion(request))return false;
     workshop::State current{};if(!Capture(current))return false;
-    workshop::Plan plan{};if(workshop::Preview(current,request,plan)!=workshop::Error::Ok||std::memcmp(&plan,&reviewed,sizeof(plan))!=0)return false;
+    workshop::Economy economy{};if(ReadEconomy(economy)!=workshop::Error::Ok)return false;
+    workshop::Plan plan{};if(workshop::Preview(current,request,plan,economy)!=workshop::Error::Ok||std::memcmp(&plan,&reviewed,sizeof(plan))!=0)return false;
     struct Write {std::uintptr_t address;unsigned size;unsigned char before[22],after[22];};
     std::vector<Write> writes;
     for(unsigned i=0;i<200;++i)if(std::memcmp(current.pieces[i].native,plan.after.pieces[i].native,22)!=0){Write w{};w.address=module+kGearRam+i*22;w.size=22;std::memcpy(w.before,current.pieces[i].native,22);std::memcpy(w.after,plan.after.pieces[i].native,22);writes.push_back(w);}
@@ -337,8 +374,19 @@ bool Commit(const workshop::Request& request,const workshop::Plan& reviewed){
         unsigned slot=256;for(unsigned i=0;i<256;++i)if((itemIds[2*i]|(unsigned(itemIds[2*i+1])<<8))==0x2000+item){if(slot!=256)return false;slot=i;}
         if(slot==256)return false;Write w{};w.address=module+kSaveRam+0x40CC+slot;w.size=1;w.before[0]=static_cast<unsigned char>(current.items[item]);w.after[0]=static_cast<unsigned char>(plan.after.items[item]);writes.push_back(w);
     }
+    if(plan.gilDebit){
+        // Native Gil joins the same reviewed intent and rollback as inventory.
+        const std::uint32_t before=plan.gilBefore,after=before-plan.gilDebit;
+        Write w{};w.address=module+kGilRam;w.size=4;
+        std::memcpy(w.before,&before,4);std::memcpy(w.after,&after,4);writes.push_back(w);
+    }
     unsigned committed=0;bool ok=true;
-    for(const auto& w:writes){unsigned char observed[22]{};if(!Copy(observed,reinterpret_cast<void*>(w.address),w.size)||std::memcmp(observed,w.before,w.size)!=0||!Copy(reinterpret_cast<void*>(w.address),w.after,w.size)){ok=false;break;}++committed;if(!Copy(observed,reinterpret_cast<void*>(w.address),w.size)||std::memcmp(observed,w.after,w.size)!=0){ok=false;break;}}
+    for(const auto& w:writes){
+#ifdef FFXHOOKS_TESTING
+        if(failBeforeWrite==static_cast<int>(committed)){failBeforeWrite=-1;ok=false;break;}
+#endif
+        unsigned char observed[22]{};if(!Copy(observed,reinterpret_cast<void*>(w.address),w.size)||std::memcmp(observed,w.before,w.size)!=0||!Copy(reinterpret_cast<void*>(w.address),w.after,w.size)){ok=false;break;}++committed;if(!Copy(observed,reinterpret_cast<void*>(w.address),w.size)||std::memcmp(observed,w.after,w.size)!=0){ok=false;break;}
+    }
     if(!ok){while(committed){const auto& w=writes[--committed];unsigned char observed[22]{};if(Copy(observed,reinterpret_cast<void*>(w.address),w.size)&&std::memcmp(observed,w.after,w.size)==0)Copy(reinterpret_cast<void*>(w.address),w.before,w.size);}Fault(RuntimeCode::Conflict,"[ffx-hooks] Workshop: transaction readback failed; only owned bytes were rolled back\n");return false;}
     state=plan.after;Log("[ffx-hooks] Workshop: reviewed inventory transaction committed; save normally to persist\n");return true;
 }
@@ -347,5 +395,6 @@ bool StartForTests(std::uintptr_t base,bool on,const wchar_t* directory,LogFn lo
 bool LoadForTests(const wchar_t* path,const SaveImage& disk,const SaveImage& loaded){ReadEvent(path,disk.data(),loaded.data(),loaded.size());return !pending.empty();}
 bool CommitLoadForTests(const SaveImage& loaded){if(!PrepareLoad(loaded,loaded.data()))return false;if(!Copy(reinterpret_cast<void*>(module+kSaveRam),loaded.data()+64,0x68C0))return false;FinishLoad();return ready;}
 bool WriteForTests(const wchar_t* path,const SaveImage& image){WriteEvent(path,image.data(),image.size());return code!=RuntimeCode::StorageError;}
+void FailBeforeWriteForTests(unsigned index){std::lock_guard<std::recursive_mutex> lock(mutex);failBeforeWrite=static_cast<int>(index);}
 #endif
 }

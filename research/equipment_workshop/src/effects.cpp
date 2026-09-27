@@ -31,7 +31,7 @@ bool Effects::AbilityRow(unsigned slot,unsigned abilitySlot,const std::uint8_t* 
     std::copy(native,native+108,out.begin());
     // +1 percentage point per rank, not a global kernel modification. Each
     // occurrence has its own view, including two identical native IDs.
-    if(id>=0x8062 && id<=0x8079)out[0x55]=static_cast<std::uint8_t>(std::min(255u,unsigned(native[0x55])+Rank(p,abilitySlot)));
+    RefineAbilityRow(id,Rank(p,abilitySlot),out.data());
     return true;
 }
 int Effects::AfterStatus(int damage,bool applied,bool magic,unsigned weapon,unsigned armor,unsigned owner) const {

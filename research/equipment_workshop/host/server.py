@@ -8,15 +8,15 @@ from pathlib import Path
 import secrets
 import time
 
-from bridge import Core, OPS, Request, ROOT, WorkshopError, ability
-from store import Store
+from bridge import Core, OPS, Request, ROOT, WorkshopError, ability, Policy, Economy
+from store import Store, native_gil, native_story
 
 OWNERS = ["Tidus", "Yuna", "Auron", "Kimahri", "Wakka", "Lulu", "Rikku"]
-SUPPORTED = set(range(98, 122)) | {84, 85}
 
 class Workshop:
-    def __init__(self, store: Store):
+    def __init__(self, store: Store, policy: Policy | None = None):
         self.store = store
+        self.policy = policy if policy is not None else Policy()
         self.token = secrets.token_urlsafe(32)
         self.pending = None
         with (ROOT.parent / 'mod_004_refinement' / 'ability_ingredient_candidates.tsv').open() as f:
@@ -29,6 +29,7 @@ class Workshop:
         self.items.update({72:'Speed Sphere',73:'Ability Sphere',75:'Attribute Sphere',76:'Special Sphere',
                            78:'Wht Magic Sphere',79:'Blk Magic Sphere',80:'Master Sphere',81:'Lv.1 Key Sphere',
                            82:'Lv.2 Key Sphere',83:'Lv.3 Key Sphere',84:'Lv.4 Key Sphere',95:'Clear Sphere'})
+        self.items.update({int(k):v for k,v in json.loads((ROOT/'host/item_names.json').read_text()).items()})
         # Reforge destinations come from the imported snapshot, not browser bytes.
         _, _, initial, _ = self.store.load()
         self.templates = {}
@@ -49,21 +50,29 @@ class Workshop:
             abilities.append({'slot':i,'id':word,'instance':str(piece.abilities[i]),
                               'name':row['ability'] if row else 'Empty' if word==255 else f'Ability {word:04X}',
                               'rank':piece.rank if piece.mode==1 and word!=255 else piece.ranks[i],
-                              'supported':word==255 or word-0x8000 in SUPPORTED,
+                              'supported':word==255 or 0x8000 <= word <= 0x8082,
                               'available':i < n[11] or i==4})
         return {'slot':slot,'id':str(piece.id),'owner':OWNERS[n[4]] if n[4]<7 else 'Special',
                 'kind':'Weapon' if n[5]==0 else 'Armor','equipped':n[6]!=255,
                 'protected':bool(n[3]&0x0C) or n[4]>6,'capacity':n[11],
-                'mode':piece.mode,'rank':piece.rank,'total':sum(piece.ranks),
+                'mode':piece.mode,'rank':piece.rank,'total':sum(a['rank'] for a in abilities),
                 'maximum':10*sum(x['id']!=255 for x in abilities),
-                'fifth':bool(piece.fifthUnlocked),'abilities':abilities}
+                'fifth':bool(piece.fifthUnlocked),'abilities':abilities,
+                'fifth_choices':[0x8000+i for i in self.catalog if self.store.core.can_customize(piece,4,0x8000+i)]}
 
     def view(self):
-        _, _, s, identity = self.store.load()
+        raw, _, s, identity = self.store.load()
+        choices = []
+        for index in sorted(self.catalog):
+            kinds = [name for kind, name in enumerate(('Weapon', 'Armor'))
+                     if self.store.core.fifth_cost(kind, 0x8000 + index, self.policy) is not None]
+            if kinds:
+                choices.append({'id':0x8000+index,'name':self.catalog[index]['ability'],'kinds':kinds})
         return {'revision':s.revision,'identity':identity[:8], 'token':self.token,
+                'refinement_mode':self.policy.mode, 'gil':native_gil(raw),
                 'pieces':[self.piece(p,i) for i,p in enumerate(s.pieces) if p.id],
                 'materials':[{'id':i,'name':self.items.get(i,f'Item {i}'),'quantity':q} for i,q in enumerate(s.items) if q],
-                'fifth_choices':[{'id':0x8000+i,'name':self.catalog[i]['ability']} for i in sorted(SUPPORTED)],
+                'fifth_choices':choices,
                 'templates':[{'id':key,'name':f'{OWNERS[n[4]]} · {"Weapon" if n[5]==0 else "Armor"} · style {index+1}'} for index,(key,n) in enumerate(self.templates.items())],
                 'pending':False}
 
@@ -95,16 +104,20 @@ class Workshop:
             for i,part in enumerate(transfers):
                 r.fromSlots[i]=self.number(part,'from',0,4);r.to[i]=self.number(part,'to',0,4)
         if data['op']=='evolve':r.to[0]=self.number(data,'ability_slot',0,4)
-        plan=self.store.core.preview(s,r)
+        plan=self.store.core.preview(s,r,Economy(native_gil(raw),self.policy,self.store.core.customize_unlocked(native_story(raw))))
         confirmation=secrets.token_urlsafe(24)
-        self.pending=(confirmation,time.monotonic()+300,raw,meta,plan.after)
-        costs=[{'id':i,'name':self.items.get(i,f'Item {i}'),'amount':n,'have':s.items[i]} for i,n in enumerate(plan.costs) if n]
+        self.pending=(confirmation,time.monotonic()+300,raw,meta,plan.after,plan.gilDebit,bytes(self.policy))
+        random=data['op']=='refine' and plan.policy.mode==2
+        displayed=plan.requirements if random else plan.costs
+        costs=[{'id':i,'name':self.items.get(i,f'Item {i}'),'amount':n,'have':s.items[i]} for i,n in enumerate(displayed) if n]
         result={'confirmation':confirmation,'costs':costs,'operation':data['op'],
+                'development_free_materials':bool(plan.policy.devFreeMaterials),'development_free_gil':bool(plan.policy.devFreeGil),'gil_debit':plan.gilDebit,'requirements_only':random,'gil_cost':plan.gilCost,'gil_have':plan.gilBefore,
                 'before':self.piece(s.pieces[slot],slot),'after':self.piece(plan.after.pieces[slot],slot)}
-        if data['op']=='refine' and s.pieces[slot].mode==2:
+        if random:
             # A random refinement preview discloses price and eligibility, not the
             # selected winner. Cancelling never advances the stored generator.
             result['after']=None;result['random']=True
+            result['base_material']={'id':self.policy.baseItem,'amount':self.policy.baseAmount}
         return result
 
     def confirm(self, data):
@@ -112,7 +125,9 @@ class Workshop:
         if not pending or data.get('confirmation')!=pending[0] or time.monotonic()>pending[1]:
             raise WorkshopError('Preview expired; review the operation again')
         self.pending=None
-        self.store.commit(pending[2],pending[3],pending[4])
+        if bytes(self.policy)!=pending[6]:
+            raise WorkshopError('Workshop settings changed; review the operation again')
+        self.store.commit(pending[2],pending[3],pending[4],pending[5])
         return self.view()
 
 def serve(workshop: Workshop, port: int):
@@ -155,6 +170,8 @@ if __name__=='__main__':
     parser.add_argument('--workspace',required=True,type=Path)
     parser.add_argument('--import-save',type=Path)
     parser.add_argument('--port',type=int,default=8771)
+    parser.add_argument('--refinement-mode',type=int,choices=(1,2),default=2,
+                        help='Prototype policy: 2=random (default), 1=whole equipment')
     args=parser.parse_args();store=Store(args.workspace)
     if args.import_save:store.create(args.import_save)
-    serve(Workshop(store),args.port)
+    serve(Workshop(store,Policy(mode=args.refinement_mode)),args.port)

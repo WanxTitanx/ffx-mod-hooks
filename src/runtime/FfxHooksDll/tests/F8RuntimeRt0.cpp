@@ -597,7 +597,7 @@ bool ReplaceFirstSourceToken(std::string& source, const char* from, const char* 
 
 bool ValidateTask6DetachBody(const std::string& body) {
     return CompactSourceCode(body) ==
-           "caseDLL_PROCESS_DETACH:FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::NativeLanguage::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
+           "caseDLL_PROCESS_DETACH:FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::NativeLanguage::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
            "FfxHooks::F7_RequestStop();"
            "FfxHooks::F7AiSwap_RequestStop();"
            "FfxHooks::RequestSpeedHackStop();"
@@ -2053,6 +2053,16 @@ void TestTask6DllmainIntegrationContracts() {
         dllmain.body, "case DLL_PROCESS_DETACH:", "break;");
     Expect(dllmain.Valid() && !detach.empty() && ValidateTask6DetachBody(detach),
            "DLL_PROCESS_DETACH must contain only lock-free runtime stop requests");
+    std::string nativeUiSource,elementSource;
+    Expect(ReadWholeFile(RuntimeSourcePath("hooks/EquipmentWorkshopNativeUi.cpp"),nativeUiSource)&&
+           ReadWholeFile(RuntimeSourcePath("hooks/ElementHook.cpp"),elementSource),"new native drawing stop sources are readable");
+    const auto uiStop=SourceFunctionBody(nativeUiSource,"void Stop() noexcept");
+    const auto scanStop=SourceFunctionBody(elementSource,"void RemoveElementHook()");
+    Expect(uiStop.Valid()&&scanStop.Valid()&&CompactSourceCode(uiStop.body)=="active=false;"&&
+           CompactSourceCode(scanStop.body)=="active=false;"&&
+           nativeUiSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos&&
+           elementSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos,
+           "new drawing detach stops are proven atomic stores without removal or locking");
     ExpectSourceIncludes(source, "Dynamic FreeLibrary is unsupported",
                          "source must document unsupported hot unload explicitly");
     ExpectSourceIncludes(source, "Process termination discards process-owned state",
@@ -2247,6 +2257,8 @@ void TestTask6SourceValidatorMutationPressure() {
            "UnX booster source must be readable for Task 6 mutation pressure");
     const std::string validDetach =
         "case DLL_PROCESS_DETACH:\n"
+        "FfxHooks::EquipmentWorkshop::NativeUi::Stop();\n"
+        "FfxHooks::RemoveElementHook();\n"
         "FfxHooks::EquipmentWorkshop::RequestStop();\n"
         "FfxHooks::NativePorts::RequestStop();\n"
         "FfxHooks::NativeLanguage::RequestStop();\n"
@@ -4146,13 +4158,16 @@ void TestCatalogMetadataAndInvariants() {
         {"Reforge", "Nova Super Damage", "labs.nova_super_damage", "f8_authority.lab_nova_super_damage", nullptr, "FFXHOOKS_ENABLE_NOVA_SUPER_DAMAGE", "nova_super_damage.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Ronso Mana", "labs.kimahri_ronso_mana", "f8_authority.lab_kimahri_ronso_mana", nullptr, "FFXHOOKS_ENABLE_RONSO_MANA", "kimahri_ronso_mana.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Equipment Workshop", "labs.equipment_workshop", "f8_authority.equipment_workshop", nullptr, "FFXHOOKS_EQUIPMENT_WORKSHOP", "equipment_workshop.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
+        {"Reforge", "Native equipment details", "labs.equipment_workshop_native_ui", "f8_authority.equipment_workshop_native_ui", nullptr, "FFXHOOKS_WORKSHOP_NATIVE_UI", "equipment_workshop_native_ui.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
+        {"Reforge", "Scan Expanded", "labs.scan_expanded", "f8_authority.scan_expanded", nullptr, "FFXHOOKS_SCAN_EXPANDED", "scan_expanded.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
+        {"Reforge", "Scan Extra Elements", "labs.element_scan_dark", "f8_authority.element_scan_dark", nullptr, "FFXHOOKS_ELEMENT_SCAN_DARK", "element_scan_dark.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Grid Teach", "labs.grid_teach", "f8_authority.lab_grid_teach", nullptr, "FFXHOOKS_GRID_TEACH", "grid_teach.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Lancet Dual Grant", "labs.kimahri_lancet_dual_grant", "f8_authority.lab_kimahri_lancet_dual_grant", nullptr, "FFXHOOKS_KIMAHRI_LANCET_DUAL_GRANT", "kimahri_lancet_dual_grant.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Item Stack Cap", "labs.item_stack_cap", "f8_authority.lab_item_stack_cap", nullptr, "FFXHOOKS_ENABLE_ITEM_STACK_CAP", "item_stack_cap_255.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Double/Triple Drop", "labs.double_triple_drop", "f8_authority.lab_double_triple_drop", nullptr, "FFXHOOKS_ENABLE_DOUBLE_TRIPLE_DROP", "double_triple_drop.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
     };
     const char* expectedTabs[] = {"System", "Boosters", "Cheats", "Arena+", "Input", "Dev", "Reforge"};
-    const size_t expectedTabCounts[] = {10, 5, 8, 6, 4, 5, 7};
+    const size_t expectedTabCounts[] = {10, 5, 8, 6, 4, 5, 10};
 
     std::string speedHackSource;
     std::string dllmainSource;
@@ -4355,7 +4370,7 @@ void TestCatalogMetadataAndInvariants() {
                trackedIniSource.find("max_speed = 8.0") != std::string::npos,
            "Speed Hack defaults must document the fixed cycle, legacy keys, and 8x safety cap");
 
-    Expect(FfxHooks::F8FlagCount() == 45, "catalog must expose exactly 45 rows");
+    Expect(FfxHooks::F8FlagCount() == 48, "catalog must expose exactly 48 rows");
     Expect(FfxHooks::F8FlagCount() == sizeof(expected) / sizeof(expected[0]),
            "catalog row count must match the hand-derived fixture");
     Expect(FfxHooks::F8TabCount() == 7, "catalog must expose exactly seven tabs");
@@ -4404,12 +4419,12 @@ void TestCatalogMetadataAndInvariants() {
         Expect(strcmp(FfxHooks::F8TabName(tab), expectedTabs[tab]) == 0,
                "tab names must use the hand-derived stable order");
         Expect(tabCounts[tab] == expectedTabCounts[tab],
-               "tab row counts must be 10/5/8/6/4/5/7");
+               "tab row counts must be 10/5/8/6/4/5/10");
     }
     Expect(activationCounts[static_cast<size_t>(F8Activation::Live)] == 24,
            "catalog must contain 24 LIVE rows");
-    Expect(activationCounts[static_cast<size_t>(F8Activation::RestartRequired)] == 17,
-           "catalog must contain 17 RESTART REQUIRED rows");
+    Expect(activationCounts[static_cast<size_t>(F8Activation::RestartRequired)] == 20,
+           "catalog must contain 20 RESTART REQUIRED rows");
     Expect(activationCounts[static_cast<size_t>(F8Activation::NotWired)] == 0,
            "catalog must contain no unresolved NOT WIRED rows");
     Expect(activationCounts[static_cast<size_t>(F8Activation::ReadOnly)] == 4,
@@ -5311,9 +5326,11 @@ void TestF7DifficultyTruthfulUiContracts() {
                commit.body.find("p.enabled = g_f7Vals[0]") == std::string::npos,
            "saving a custom preset must not derive enabled state from its preset ID");
     Expect(preset.body.find("g_f7DifficultyEnabled = preset != 0") != std::string::npos &&
-               toggle.body.find("g_f7DifficultyEnabled") == std::string::npos &&
+               toggle.body.find("g_f7DifficultyEnabled = true") != std::string::npos &&
+               toggle.body.find("F7_CommitValsToConfig") == std::string::npos &&
+               toggle.body.find("F7_DifficultyApplyNow") == std::string::npos &&
                input.body.find("g_f7Vals[0] = 0") == std::string::npos,
-           "preset selection may change enabled state, while manual edits must preserve it");
+           "manual edits stage enabled Custom without applying; explicit Off remains a separate preset");
     Expect(draw.body.find("F7_DifficultyStatus()") != std::string::npos &&
                draw.body.find("F7_DifficultyResultName") != std::string::npos &&
                draw.body.find("CFG %s | INFRA %s | ADMISSION %s | LAST %s") !=
@@ -5321,9 +5338,10 @@ void TestF7DifficultyTruthfulUiContracts() {
            "Difficulty must render config, infrastructure, admission, and last outcome "
            "as independent truths — the gate enum is not an installed-state word");
     Expect(draw.body.find("Apply Unavailable") != std::string::npos &&
-               draw.body.find("Restore Stats") != std::string::npos &&
-               draw.body.find("No Restore Needed") != std::string::npos,
-           "unavailable apply stays explicit and the Off preset exposes its restore path");
+               draw.body.find("Apply Now") != std::string::npos &&
+               draw.body.find("runtime.difficultyBehaviorEnabled ?") == std::string::npos &&
+               draw.body.find("No Restore Needed") == std::string::npos,
+           "Apply remains available for an enabled Custom draft even while the prior runtime configuration is Off");
     Expect(draw.body.find("\"STATS\"") != std::string::npos &&
                draw.body.find("CONFIG ONLY") == std::string::npos &&
                source.find("status/elements config-only") == std::string::npos,
@@ -5521,17 +5539,33 @@ void TestFastloadDevelopmentGate() {
 }
 
 void TestLabCatalogAndRestartControls() {
+    const auto* expanded=FfxHooks::FindF8Flag("labs.scan_expanded");
+    const auto* elements=FfxHooks::FindF8Flag("labs.element_scan_dark");
+    Expect(expanded!=nullptr&&elements!=nullptr,"Scan Expanded and extra elements have independent F8 controls");
+    if(expanded&&elements){
+        FakeState state;Configure(state,"[labs]\n");
+        Expect(!FfxHooks::ResolveF8Flag(*expanded).value&&!FfxHooks::ResolveF8Flag(*elements).value,"both Scan features default OFF independently");
+        FfxHooks::SetF8FlagValue(*expanded,true);
+        Expect(FfxHooks::ResolveF8Flag(*expanded).value&&!FfxHooks::ResolveF8Flag(*elements).value,"Scan Expanded does not enable extra affinities");
+        FfxHooks::SetF8FlagValue(*elements,true);FfxHooks::SetF8FlagValue(*expanded,false);
+        Expect(!FfxHooks::ResolveF8Flag(*expanded).value&&FfxHooks::ResolveF8Flag(*elements).value,"extra affinities remain enabled after disabling Scan Expanded");
+        const auto persisted=state.persistedText;Configure(state,persisted.c_str());
+        Expect(!FfxHooks::ResolveF8Flag(*expanded).value&&FfxHooks::ResolveF8Flag(*elements).value,"independent Scan choices survive a configuration reload");
+    }
     struct LabRow {const char* key;const char* authority;const char* env;const char* flag;const char* reader;};
     const LabRow rows[]={
         {"labs.nova_super_damage","f8_authority.lab_nova_super_damage","FFXHOOKS_ENABLE_NOVA_SUPER_DAMAGE","nova_super_damage.flag","NovaSuperDamageFlagEnabled"},
         {"labs.kimahri_ronso_mana","f8_authority.lab_kimahri_ronso_mana","FFXHOOKS_ENABLE_RONSO_MANA","kimahri_ronso_mana.flag","RonsoManaFlagEnabled"},
+        {"labs.equipment_workshop_native_ui","f8_authority.equipment_workshop_native_ui","FFXHOOKS_WORKSHOP_NATIVE_UI","equipment_workshop_native_ui.flag","EquipmentWorkshopNativeUiEnabled"},
+        {"labs.element_scan_dark","f8_authority.element_scan_dark","FFXHOOKS_ELEMENT_SCAN_DARK","element_scan_dark.flag","ElementScanDarkEnabled"},
+        {"labs.scan_expanded","f8_authority.scan_expanded","FFXHOOKS_SCAN_EXPANDED","scan_expanded.flag","ScanExpandedEnabled"},
         {"labs.grid_teach","f8_authority.lab_grid_teach","FFXHOOKS_GRID_TEACH","grid_teach.flag","GridTeachEnabled"},
         {"labs.kimahri_lancet_dual_grant","f8_authority.lab_kimahri_lancet_dual_grant","FFXHOOKS_KIMAHRI_LANCET_DUAL_GRANT","kimahri_lancet_dual_grant.flag","KimahriLancetDualGrantEnabled"},
         {"labs.item_stack_cap","f8_authority.lab_item_stack_cap","FFXHOOKS_ENABLE_ITEM_STACK_CAP","item_stack_cap_255.flag","ItemStackCapFlagEnabled"},
         {"labs.double_triple_drop","f8_authority.lab_double_triple_drop","FFXHOOKS_ENABLE_DOUBLE_TRIPLE_DROP","double_triple_drop.flag","DoubleTripleDropEnabled"},
     };
-    Expect(FfxHooks::F8FlagCount()==45&&FfxHooks::F8TabCount()==7&&
-               strcmp(FfxHooks::F8TabName(6),"Reforge")==0,"Lab has six rows after Dev without replacing Fastload");
+    Expect(FfxHooks::F8FlagCount()==48&&FfxHooks::F8TabCount()==7&&
+               strcmp(FfxHooks::F8TabName(6),"Reforge")==0,"Reforge retains existing rows and adds both optional drawing gates");
     std::string source;
     Expect(ReadWholeFile(RuntimeSourcePath("dllmain.cpp"),source),"Lab install source readable");
     const auto capture=SourceBlockAfterToken(source,"static F8StartupGateSnapshot g_f8StartupGates[]").body;
@@ -5596,9 +5630,9 @@ void TestLabCatalogAndRestartControls() {
         for(const auto& row:rows)bulk.flags[row.flag]=BoolSource::LegacyFlagRoot;
         bulk.flags["equipment_workshop.flag"]=BoolSource::LegacyFlagRoot;
         const auto disabled=FfxHooks::SetF8TabValues("Reforge",false);
-        Expect(disabled.eligible==7&&disabled.changed==7&&bulk.persistCalls==1,"Lab bulk OFF resolves seven stale flags in one atomic write");
+        Expect(disabled.eligible==10&&disabled.changed==10&&bulk.persistCalls==1,"Reforge bulk OFF resolves ten stale flags in one atomic write");
         const auto enabled=FfxHooks::SetF8TabValues("Reforge",true);
-        Expect(enabled.eligible==7&&enabled.changed==7&&bulk.persistCalls==2,"Lab bulk ON persists all seven independent rows once");
+        Expect(enabled.eligible==10&&enabled.changed==10&&bulk.persistCalls==2,"Reforge bulk ON persists all ten independent rows once");
         for(const auto& row:rows)Expect(FfxHooks::ResolveF8Flag(*FfxHooks::FindF8Flag(row.key)).value,"every bulk-enabled Lab gate resolves ON");
     }
     Expect(!FfxHooks::FindF8Flag("labs.kimahri_ronso_mana_apply")&&
@@ -5665,7 +5699,7 @@ void TestMultiplierCatalogAndTransactions() {
     const FfxHooks::F8FlagSpec* ap = FfxHooks::FindF8Flag("cheats.ap_100x");
     const FfxHooks::F8FlagSpec* gil = FfxHooks::FindF8Flag("cheats.gil_100x");
     Expect(ap && gil, "AP and Gil legacy boolean rows must remain in the catalog");
-    Expect(FfxHooks::F8FlagCount() == 45,
+    Expect(FfxHooks::F8FlagCount() == 48,
            "scalar metadata must not add boolean catalog rows");
     Expect(ap && ap->scalar && strcmp(ap->scalar->canonicalKey, "cheats.ap_multiplier") == 0 &&
                ap->scalar->defaultValue == 100 && ap->scalar->minimum == 1 &&

@@ -1,16 +1,24 @@
 # Equipment Workshop — Jarvis-HOOK experimental implementation
 
-**Current main integration:** the shared core now has a native DLL adapter and
-independent in-game menu. See
-[main integration evidence](../../docs/reverse/MAIN_WORKSHOP_SIN_2026_09_24.md)
-for activation, save ownership, supported effects and remaining RT2 limits.
-The sections below describe the earlier isolated prototype and its evidence.
+## Current economy and comparison work (2026-09-25)
 
-Concrete MOD-004/MOD-005 prototype on `codex/mod-ideas-precode-20260923`.
-This is a C++ model, recoverable per-save host, dedicated interactive menu and
-isolated native-consumer/producer adapter. **It is not installed in the Hooks DLL
-and does not connect to a running game.** No F7/F8/F9 item or default key was added.
-F10 already has two developer handlers in `dllmain.cpp`; the Workshop is unbound.
+The source implements default random B, F8 > Dev selection of A/B,
+all-outcome prerequisites, progressive Customize ingredients, priced fusion
+(Gil + recipe fraction), and target/candidate comparison. The native DLL
+adapter is in `src/runtime/FfxHooksDll/hooks/EquipmentWorkshopRuntime.cpp`;
+the shared model is in `src/workshop.cpp`.
+
+The native Equipment and Customize views and fifth-slot sidecar are part of
+v0.5.0-beta. Their current validation is RT0/RT1; player-run visual and
+gameplay acceptance is still pending. The sections below describe the earlier
+isolated prototype and its evidence.
+
+## Historical prototype (2026-09-23)
+
+The original MOD-004/MOD-005 prototype on `codex/mod-ideas-precode-20260923`
+was a C++ model, recoverable per-save host, dedicated interactive menu, and
+isolated native-consumer/producer adapter. At that stage it was not installed
+in the Hooks DLL and the Workshop shortcut was unbound.
 
 The menu at `http://127.0.0.1:8771/` runs real previews/transactions against the
 same C++ model that the native harness uses. It imports a private save copy;
@@ -41,9 +49,11 @@ claim that a missing effect works.
 
 ## Safety and wire contract
 
-`include/workshop.h` defines a packed little-endian v1 bridge shared by ctypes and
-the x86/native tests: Piece80 bytes, State16260, Request62, Plan16492. This is a
-**mod sidecar format**, never a native equipment/save format. `Validate` checks
+`include/workshop.h` preserves v1 Piece80/State16260 and Request62. The transient
+economy Plan is now16752 bytes (ABI2), never written to the sidecar. Updated hosts
+check `ws_plan_abi()==2` and use `ws_plan_economy`; legacy `ws_plan` refuses to
+write into an old smaller buffer. This is a **mod sidecar format**, never a native
+equipment/save format. `Validate` checks
 versions, bounds, unique IDs, ranks, mode invariants and overflow. Aligned local
 copies are used before passing packed IDs to STL reference-taking APIs.
 
@@ -117,10 +127,9 @@ Current validation:165 C++ assertions on Linux/ASan/UBSan and Windows x86;
 UI exercised in the Codex browser: import, search, keyboard tabs, cancellation,
 fifth unlock/selection, removal, A refinement, receipt and restart/readback.
 
-[Native evidence](../../docs/reverse/EQUIPMENT_WORKSHOP_NATIVE_2026_09_24.md) explains
-which original instructions execute and which harness bridges are artificial.
-[Editor handoff](../../docs/ai/EQUIPMENT_WORKSHOP_EDITOR_HANDOFF_2026_09_24.md)
-separates mod extension data from native formats.
+The [native harness](../../src/runtime/FfxHooksDll/tests/EquipmentWorkshopRuntimeRt1.cpp)
+exercises the adapter boundary. The [sidecar contract](include/workshop.h)
+separates mod extension data from native equipment and save formats.
 
 Remaining gates: complete native save/load association and all inventory producer
 coverage; in-game standalone menu/focus integration; all affected preview, name,

@@ -236,6 +236,7 @@
     <ClCompile Include="hooks\NativeLanguageHook.cpp" />
     <ClCompile Include="hooks\SinAiHook.cpp" />
     <ClCompile Include="hooks\EquipmentWorkshopRuntime.cpp" />
+    <ClCompile Include="hooks\EquipmentWorkshopNativeUi.cpp" />
     <ClCompile Include="hooks\EquipmentWorkshopStore.cpp" />
     <ClCompile Include="..\..\..\research\equipment_workshop\src\workshop.cpp" />
     <ClCompile Include="..\..\..\research\equipment_workshop\src\lifecycle.cpp" />

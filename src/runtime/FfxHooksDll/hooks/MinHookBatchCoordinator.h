@@ -20,6 +20,8 @@ enum class Owner : uint8_t {
     NovaSuperDamage,
     ArenaPositions,
     EquipmentWorkshop,
+    EquipmentWorkshopUi,
+    ElementScan,
 };
 
 enum class State : uint8_t {

@@ -13,7 +13,7 @@ constexpr int32_t kMultiplierMinimum = 100;
 constexpr int32_t kVitalMultiplierMaximum = 10000;
 constexpr int32_t kStatMultiplierMaximum = 5000;
 constexpr uint32_t kStatusMaskMaximum = 0x01FFFFFFu;
-constexpr uint8_t kElementMaskMaximum = 0x1Fu;
+constexpr uint8_t kElementMaskMaximum = 0xFFu;
 constexpr size_t kMaximumJsonDepth = 8;
 
 enum PresetField : uint8_t {
@@ -893,9 +893,9 @@ std::array<uint32_t, kRuntimeFieldCount> DesiredValues(
     }
     // Native damage uses four independent masks. A selected affinity must also
     // clear a competing native immunity; unselected elements retain vanilla.
-    const uint32_t absorb = preset.elemAbsorb & 0x1Fu;
-    const uint32_t resist = preset.elemResist & ~absorb & 0x1Fu;
-    const uint32_t weak = preset.elemWeak & ~(absorb | resist) & 0x1Fu;
+    const uint32_t absorb = preset.elemAbsorb & 0xFFu;
+    const uint32_t resist = preset.elemResist & ~absorb & 0xFFu;
+    const uint32_t weak = preset.elemWeak & ~(absorb | resist) & 0xFFu;
     const uint32_t selected = absorb | resist | weak;
     desired[kElementAbsorbField] = (baseline[kElementAbsorbField] & ~selected) | absorb;
     desired[kElementIgnoreField] = baseline[kElementIgnoreField] & ~selected;

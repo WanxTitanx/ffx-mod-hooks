@@ -133,84 +133,122 @@ inline constexpr const char* abilities[]={
  "Double Drop",
  "Triple Drop",
 };
-inline const char* Item(unsigned id){switch(id){
-case 0:return "Potion";
-case 2:return "X-Potion";
-case 6:return "Phoenix Down";
-case 7:return "Mega Phoneix";
-case 8:return "Elixir";
-case 14:return "Holy Water";
-case 15:return "Remedy";
-case 16:return "Power Distiller";
-case 17:return "Mana Distiller";
-case 18:return "Speed Distiller";
-case 19:return "Ability Distiller";
-case 21:return "Healing Water";
-case 23:return "Antartic Wind";
-case 24:return "Artic Wind";
-case 25:return "Ice Gem";
-case 26:return "Bomb Fragment";
-case 27:return "Bomb Core";
-case 28:return "Fire Gem";
-case 29:return "Electro Marble";
-case 30:return "Lightning Marble";
-case 31:return "Lightning Gem";
-case 32:return "Fish Scale";
-case 33:return "Dragon Scale";
-case 34:return "Water Gem";
-case 38:return "Dream Powder";
-case 39:return "Silence Grenade";
-case 40:return "Smoke Bomb";
-case 45:return "Poison Fang";
-case 46:return "Silver Hourglass";
-case 47:return "Gold Hourglass";
-case 49:return "Petrify Grenade";
-case 50:return "Farplane Shadow";
-case 51:return "Farplane Wind";
-case 52:return "Designer Waller";
-case 53:return "Dark Matter";
-case 54:return "Chocobo Feather";
-case 55:return "Chocobo Wing";
-case 56:return "Lunar Curtain";
-case 57:return "Light Curtain";
-case 58:return "Star Curtain";
-case 59:return "Healing Spring";
-case 60:return "Mana Spring";
-case 63:return "Purifying Salt";
-case 66:return "Twin Stars";
-case 69:return "Three Stars";
-case 70:return "Power Sphere";
-case 71:return "Mana Sphere";
-case 72:return "Speed Sphere";
-case 73:return "Ability Sphere";
-case 74:return "Fortune Sphere";
-case 75:return "Attribute Sphere";
-case 76:return "Special Sphere";
-case 78:return "Wht Magic Sphere";
-case 79:return "Blk Magic Sphere";
-case 80:return "Master Sphere";
-case 81:return "Lv.1 Key Sphere";
-case 82:return "Lv.2 Key Sphere";
-case 83:return "Lv.3 Key Sphere";
-case 84:return "Lv.4 Key Sphere";
-case 85:return "HP Sphere";
-case 86:return "MP Sphere";
-case 87:return "Strength Sphere";
-case 88:return "Defense Sphere";
-case 89:return "Magic Sphere";
-case 90:return "Magic Def Sphere";
-case 92:return "Evasion Sphere";
-case 95:return "Clear Sphere";
-case 100:return "Map";
-case 102:return "Musk";
-case 103:return "Hypello Potion";
-case 105:return "Pendulum";
-case 106:return "Amulet";
-case 107:return "Door to Tomorrow";
-case 108:return "Wings to Discovery";
-case 109:return "Gambler's Spirit";
-case 111:return "Winning Formula";
-default:return "Material";}}
+// Item IDs/names from the existing project dictionary; Customize recipes are separate.
+inline constexpr const char* items[]={
+ "Potion",
+ "Hi-Potion",
+ "X-Potion",
+ "Mega-Potion",
+ "Ether",
+ "Turbo Ether",
+ "Phoenix Down",
+ "Mega Phoneix",
+ "Elixir",
+ "Mega Elixir",
+ "Antidote",
+ "Soft",
+ "Eye Drops",
+ "Echo Screen",
+ "Holy Water",
+ "Remedy",
+ "Power Distiller",
+ "Mana Distiller",
+ "Speed Distiller",
+ "Ability Distiller",
+ "Al Bhed Potion",
+ "Healing Water",
+ "Tetra Elemental",
+ "Antartic Wind",
+ "Artic Wind",
+ "Ice Gem",
+ "Bomb Fragment",
+ "Bomb Core",
+ "Fire Gem",
+ "Electro Marble",
+ "Lightning Marble",
+ "Lightning Gem",
+ "Fish Scale",
+ "Dragon Scale",
+ "Water Gem",
+ "Grenade",
+ "Frag Grenade",
+ "Sleeping Powder",
+ "Dream Powder",
+ "Silence Grenade",
+ "Smoke Bomb",
+ "Shadow Gem",
+ "Shining Gem",
+ "Blessed Gem",
+ "Supreme Gem",
+ "Poison Fang",
+ "Silver Hourglass",
+ "Gold Hourglass",
+ "Candle of Life",
+ "Petrify Grenade",
+ "Farplane Shadow",
+ "Farplane Wind",
+ "Designer Waller",
+ "Dark Matter",
+ "Chocobo Feather",
+ "Chocobo Wing",
+ "Lunar Curtain",
+ "Light Curtain",
+ "Star Curtain",
+ "Healing Spring",
+ "Mana Spring",
+ "Stamina Spring",
+ "Soul Spring",
+ "Purifying Salt",
+ "Stamina Tablet",
+ "Mana Tablet",
+ "Twin Stars",
+ "Stamina Tonic",
+ "Mana Tonic",
+ "Three Stars",
+ "Power Sphere",
+ "Mana Sphere",
+ "Speed Sphere",
+ "Ability Sphere",
+ "Fortune Sphere",
+ "Attribute Sphere",
+ "Special Sphere",
+ "Skill Sphere",
+ "Wht Magic Sphere",
+ "Blk Magic Sphere",
+ "Master Sphere",
+ "Lv.1 Key Sphere",
+ "Lv.2 Key Sphere",
+ "Lv.3 Key Sphere",
+ "Lv.4 Key Sphere",
+ "HP Sphere",
+ "MP Sphere",
+ "Strength Sphere",
+ "Defense Sphere",
+ "Magic Sphere",
+ "Magic Def Sphere",
+ "Agility Sphere",
+ "Evasion Sphere",
+ "Accuracy Sphere",
+ "Luck Sphere",
+ "Clear Sphere",
+ "Return Sphere",
+ "Friend Sphere",
+ "Teleport Sphere",
+ "Warp Sphere",
+ "Map",
+ "Rename Card",
+ "Musk",
+ "Hypello Potion",
+ "Shining Thorn",
+ "Pendulum",
+ "Amulet",
+ "Door to Tomorrow",
+ "Wings to Discovery",
+ "Gambler's Spirit",
+ "Underdog's Secret",
+ "Winning Formula",
+};
+inline const char* Item(unsigned id){return id<112?items[id]:"Unknown material";}
 inline const char* Ability(unsigned word){return word>=0x8000&&word<0x8083?abilities[word-0x8000]:"Empty";}
 inline constexpr const char* owners[]={"Tidus","Yuna","Auron","Kimahri","Wakka","Lulu","Rikku"};
 }
