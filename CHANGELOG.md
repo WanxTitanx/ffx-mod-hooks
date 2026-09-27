@@ -7,6 +7,28 @@ that do not change behavior.
 
 ## [Unreleased]
 
+## [0.5.0-beta] — 2026-09-27
+
+- Integrated the Equipment Workshop's native equipment and Customize views,
+  inventory refresh, sound feedback, priced fusion/refinement, comparison
+  panels, and recoverable fifth-ability sidecar. Native equipment records keep
+  their original four ability slots.
+- Completed bounded Customize eligibility, material costs, fifth-ability
+  ordering, and the 131-entry ability catalog (125 native recipes and six
+  disclosed mod recipes). Development shortcuts remain separate and OFF by
+  default.
+- Added independent F8 controls for Scan Expanded and extra Scan elements.
+  Scan Expanded includes eight stats, native MP when present, and attribute
+  backgrounds; the extra-element path covers Holy, Darkness, and Custom.
+- Fixed post-battle F10 list recovery and native Scan state handling. The
+  expanded affinity rows now follow the game's state.
+- Release binary is the Windows x86 MSVC/PolyHook candidate built from private
+  source commit `2979ca577a284d7e8aeb816cc1b6a74a37f72569`. Windows and
+  Proton harnesses and loader checks passed. These results are RT0/RT1;
+  the new Workshop/Scan visuals still need player-run RT2 acceptance.
+
+## Historical development notes
+
 ### 0.2.0 RT2 candidate
 
 - **F8 Speed cycle**: Ctrl+Shift+K now cycles 1x -> 2x -> 4x -> 8x -> 1x after the

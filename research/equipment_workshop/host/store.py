@@ -19,6 +19,8 @@ import uuid
 from bridge import Core, State, WorkshopError
 
 SAVE_SIZE, GEAR_BASE, ID_BASE, QTY_BASE = 0x6900, 0x44DC, 0x3F0C, 0x410C
+GIL_BASE = 0x3D88
+STORY_BASE = 0xC2C
 MAX_DOCUMENT = 256_000
 
 def sha(data: bytes) -> str:
@@ -62,9 +64,24 @@ def inventory(raw: bytes):
             items[item] = qty
     return raw[GEAR_BASE:GEAR_BASE + 4400], items, positions
 
-def render_copy(raw: bytes, state: State) -> bytes:
+def native_story(raw: bytes) -> int:
+    if len(raw) != SAVE_SIZE:
+        raise WorkshopError("Invalid native story source")
+    return struct.unpack_from("<H", raw, STORY_BASE)[0]
+
+def native_gil(raw: bytes) -> int:
+    if len(raw) != SAVE_SIZE:
+        raise WorkshopError("Invalid native Gil source")
+    return struct.unpack_from('<I', raw, GIL_BASE)[0]
+
+def render_copy(raw: bytes, state: State, gil_cost: int = 0) -> bytes:
     _, before, positions = inventory(raw)
     result = bytearray(raw)
+    gil = native_gil(raw)
+    if type(gil_cost) is not int or not 0 <= gil_cost <= gil:
+        raise WorkshopError("Invalid or unaffordable Workshop Gil debit")
+    if gil_cost:
+        struct.pack_into('<I', result, GIL_BASE, gil - gil_cost)
     for slot, piece in enumerate(state.pieces):
         result[GEAR_BASE + slot * 22:GEAR_BASE + (slot + 1) * 22] = bytes(piece.native)
     for item, qty in enumerate(state.items):
@@ -185,7 +202,7 @@ class Store:
             state, save_id = self.pair(raw, meta)
             return raw, meta, state, save_id
 
-    def commit(self, expected_raw: bytes, expected_meta: bytes, state: State):
+    def commit(self, expected_raw: bytes, expected_meta: bytes, state: State, gil_cost: int = 0):
         with self.locked():
             self.recover()
             before = self.read("native.bin"), self.read("sidecar.json")
@@ -195,7 +212,7 @@ class Store:
             if state.revision != old.revision + 1:
                 raise WorkshopError("Invalid transaction revision")
             self.core.decode(bytes(state))
-            new_raw = render_copy(before[0], state)
+            new_raw = render_copy(before[0], state, gil_cost)
             after = new_raw, self.sidecar(new_raw, state, save_id)
             self.pair(*after)
             journal = {"schema": 1, "workspace_key": self.key}

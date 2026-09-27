@@ -193,6 +193,21 @@ const F8FlagSpec kFlags[] = {
       "FFXHOOKS_EQUIPMENT_WORKSHOP", "equipment_workshop.flag", nullptr, nullptr, nullptr, false, true},
      "RESTART REQUIRED - Workshop; set its shortcut in Input.",
      F8Activation::RestartRequired, F8ApplyMode::None},
+    {"Reforge", "Native equipment details",
+     {"labs.equipment_workshop_native_ui", "f8_authority.equipment_workshop_native_ui", nullptr,
+      "FFXHOOKS_WORKSHOP_NATIVE_UI", "equipment_workshop_native_ui.flag", nullptr, nullptr, nullptr, false, true},
+     "RESTART REQUIRED - Fifth slot/ranks; requires Workshop.",
+     F8Activation::RestartRequired, F8ApplyMode::None},
+    {"Reforge", "Scan Expanded",
+     {"labs.scan_expanded", "f8_authority.scan_expanded", nullptr,
+      "FFXHOOKS_SCAN_EXPANDED", "scan_expanded.flag", nullptr, nullptr, nullptr, false, true},
+     "RESTART REQUIRED - Eight stats + MP; separate from elements.",
+     F8Activation::RestartRequired, F8ApplyMode::None},
+    {"Reforge", "Scan Extra Elements",
+     {"labs.element_scan_dark", "f8_authority.element_scan_dark", nullptr,
+      "FFXHOOKS_ELEMENT_SCAN_DARK", "element_scan_dark.flag", nullptr, nullptr, nullptr, false, true},
+     "RESTART REQUIRED - Holy/Dark/Custom; separate from stats.",
+     F8Activation::RestartRequired, F8ApplyMode::None},
     {"Reforge", "Grid Teach",
      {"labs.grid_teach", "f8_authority.lab_grid_teach", nullptr,
       "FFXHOOKS_GRID_TEACH", "grid_teach.flag", nullptr, nullptr, nullptr, false, true},
@@ -219,7 +234,7 @@ constexpr size_t kFlagCount = sizeof(kFlags) / sizeof(kFlags[0]);
 constexpr size_t kTabCount = sizeof(kTabNames) / sizeof(kTabNames[0]);
 constexpr size_t kInvalidIndex = static_cast<size_t>(-1);
 
-static_assert(kFlagCount == 45, "F8 catalog must contain exactly 45 rows");
+static_assert(kFlagCount == 48, "F8 catalog must contain exactly 48 rows");
 static_assert(kFlagCount <= kF8BulkRowResultMax,
               "bulk row results must hold every catalog row");
 static_assert(kTabCount == 7, "F8 catalog must contain exactly seven tabs");

@@ -1,0 +1,132 @@
+ability_id	ability	family	base_item_id	base_item	milestone_item_id	milestone_item	effect_gate	status
+0	Sensor	SENSOR	100	Map	75	Attribute Sphere	FIELD_UI	PROPOSAL
+1	First Strike	OPENING_CTB	54	Chocobo Feather	55	Chocobo Wing	CTB	PROPOSAL
+2	Initiative	OPENING_CTB	54	Chocobo Feather	55	Chocobo Wing	CTB	PROPOSAL
+3	Counterattack	COUNTER	88	Defense Sphere	75	Attribute Sphere	COUNTER_EVENT	PROPOSAL
+4	Evade & Counter	COUNTER	92	Evasion Sphere	75	Attribute Sphere	COUNTER_EVENT	PROPOSAL
+5	Magic Counter	COUNTER	90	Magic Def Sphere	75	Attribute Sphere	COUNTER_EVENT	PROPOSAL
+6	Magic Booster	MAGIC_BOOST	60	Mana Spring	69	Three Stars	DAMAGE_MP	PROPOSAL
+7	Alchemy	ALCHEMY	21	Healing Water	75	Attribute Sphere	ITEM_RESULT	PROPOSAL
+8	Auto-Potion	AUTO_ITEM	0	Potion	2	X-Potion	AUTO_ITEM_RESULT	PROPOSAL
+9	Auto-Med	AUTO_ITEM	15	Remedy	63	Purifying Salt	AUTO_ITEM_RESULT	PROPOSAL
+10	Auto-Phoenix	AUTO_ITEM	6	Phoenix Down	7	Mega Phoneix	AUTO_ITEM_RESULT	PROPOSAL
+11	Piercing	PIERCING	87	Strength Sphere	53	Dark Matter	ARMOR_DAMAGE	PROPOSAL
+12	Half MP Cost	MP_ECONOMY	66	Twin Stars	69	Three Stars	MP_COST	PROPOSAL
+13	One MP Cost	MP_ECONOMY	69	Three Stars	69	Three Stars	MP_COST	PROPOSAL
+14	Double Overdrive	OVERDRIVE	107	Door to Tomorrow	111	Winning Formula	OD_AWARD	PROPOSAL
+15	Triple Overdrive	OVERDRIVE	111	Winning Formula	111	Winning Formula	OD_AWARD	PROPOSAL
+16	SOS Overdrive	OVERDRIVE	107	Door to Tomorrow	111	Winning Formula	OD_AWARD	PROPOSAL
+17	Overdrive to AP	OVERDRIVE_TO_AP	107	Door to Tomorrow	111	Winning Formula	AP_AWARD	PROPOSAL
+18	Double AP	AP_ECONOMY	74	Fortune Sphere	111	Winning Formula	AP_AWARD	PROPOSAL
+19	Triple AP	AP_ECONOMY	111	Winning Formula	111	Winning Formula	AP_AWARD	PROPOSAL
+20	No AP	UNRESOLVED					SPEC_REQUIRED	UNRESOLVED
+21	Pickpocket	STEAL	105	Pendulum	106	Amulet	STEAL_ROLL	PROPOSAL
+22	Master Thief	STEAL	106	Amulet	106	Amulet	STEAL_ROLL	PROPOSAL
+23	Break HP Limit	BREAK_LIMIT	85	HP Sphere	108	Wings to Discovery	MAX_HP	PROPOSAL
+24	Break MP Limit	BREAK_LIMIT	86	MP Sphere	69	Three Stars	MAX_MP	PROPOSAL
+25	Break Damage Limit	BREAK_LIMIT	87	Strength Sphere	53	Dark Matter	DAMAGE_CAP	PROPOSAL
+26	Gillionaire	GIL	52	Designer Waller	111	Winning Formula	GIL_AWARD	PROPOSAL
+27	HP Stroll	FIELD_REGEN	59	Healing Spring	21	Healing Water	FIELD_HP	PROPOSAL
+28	MP Stroll	FIELD_REGEN	60	Mana Spring	8	Elixir	FIELD_MP	PROPOSAL
+29	No Encounters	UNRESOLVED					SPEC_REQUIRED	UNRESOLVED
+30	Firestrike	ELEMENT_STRIKE	26	Bomb Fragment	28	Fire Gem	ELEMENT_RESULT	PROPOSAL
+31	Fire Ward	ELEMENT_WARD	26	Bomb Fragment	27	Bomb Core	ELEMENT_RESULT	PROPOSAL
+32	Fireproof	ELEMENT_PROOF	27	Bomb Core	28	Fire Gem	ELEMENT_RESULT	PROPOSAL
+33	Fire Eater	ELEMENT_EATER	27	Bomb Core	28	Fire Gem	ELEMENT_RESULT	PROPOSAL
+34	Icestrike	ELEMENT_STRIKE	23	Antartic Wind	25	Ice Gem	ELEMENT_RESULT	PROPOSAL
+35	Ice Ward	ELEMENT_WARD	23	Antartic Wind	24	Artic Wind	ELEMENT_RESULT	PROPOSAL
+36	Iceproof	ELEMENT_PROOF	24	Artic Wind	25	Ice Gem	ELEMENT_RESULT	PROPOSAL
+37	Ice Eater	ELEMENT_EATER	24	Artic Wind	25	Ice Gem	ELEMENT_RESULT	PROPOSAL
+38	Lightningstrike	ELEMENT_STRIKE	29	Electro Marble	31	Lightning Gem	ELEMENT_RESULT	PROPOSAL
+39	Lightning Ward	ELEMENT_WARD	29	Electro Marble	30	Lightning Marble	ELEMENT_RESULT	PROPOSAL
+40	Lightningproof	ELEMENT_PROOF	30	Lightning Marble	31	Lightning Gem	ELEMENT_RESULT	PROPOSAL
+41	Lightning Eater	ELEMENT_EATER	30	Lightning Marble	31	Lightning Gem	ELEMENT_RESULT	PROPOSAL
+42	Waterstrike	ELEMENT_STRIKE	32	Fish Scale	34	Water Gem	ELEMENT_RESULT	PROPOSAL
+43	Water Ward	ELEMENT_WARD	32	Fish Scale	33	Dragon Scale	ELEMENT_RESULT	PROPOSAL
+44	Waterproof	ELEMENT_PROOF	33	Dragon Scale	34	Water Gem	ELEMENT_RESULT	PROPOSAL
+45	Water Eater	ELEMENT_EATER	33	Dragon Scale	34	Water Gem	ELEMENT_RESULT	PROPOSAL
+46	Deathstrike	STATUS_STRIKE	50	Farplane Shadow	51	Farplane Wind	STATUS_RESULT	PROPOSAL
+47	Deathtouch	STATUS_TOUCH	50	Farplane Shadow	51	Farplane Wind	STATUS_RESULT	PROPOSAL
+48	Deathproof	STATUS_PROOF	50	Farplane Shadow	51	Farplane Wind	STATUS_RESULT	PROPOSAL
+49	Death Ward	STATUS_WARD	50	Farplane Shadow	51	Farplane Wind	STATUS_RESULT	PROPOSAL
+50	Zombiestrike	STATUS_STRIKE	14	Holy Water	63	Purifying Salt	STATUS_RESULT	PROPOSAL
+51	Zombietouch	STATUS_TOUCH	14	Holy Water	63	Purifying Salt	STATUS_RESULT	PROPOSAL
+52	Zombieproof	STATUS_PROOF	14	Holy Water	63	Purifying Salt	STATUS_RESULT	PROPOSAL
+53	Zombie Ward	STATUS_WARD	14	Holy Water	63	Purifying Salt	STATUS_RESULT	PROPOSAL
+54	Stonestrike	STATUS_STRIKE	49	Petrify Grenade	53	Dark Matter	STATUS_RESULT	PROPOSAL
+55	Stonetouch	STATUS_TOUCH	49	Petrify Grenade	53	Dark Matter	STATUS_RESULT	PROPOSAL
+56	Stoneproof	STATUS_PROOF	49	Petrify Grenade	53	Dark Matter	STATUS_RESULT	PROPOSAL
+57	Stone Ward	STATUS_WARD	49	Petrify Grenade	53	Dark Matter	STATUS_RESULT	PROPOSAL
+58	Poisonstrike	STATUS_STRIKE	45	Poison Fang	15	Remedy	STATUS_RESULT	PROPOSAL
+59	Poisontouch	STATUS_TOUCH	45	Poison Fang	15	Remedy	STATUS_RESULT	PROPOSAL
+60	Poisonproof	STATUS_PROOF	45	Poison Fang	15	Remedy	STATUS_RESULT	PROPOSAL
+61	Poison Ward	STATUS_WARD	45	Poison Fang	15	Remedy	STATUS_RESULT	PROPOSAL
+62	Sleepstrike	STATUS_STRIKE	38	Dream Powder	38	Dream Powder	STATUS_RESULT	PROPOSAL
+63	Sleeptouch	STATUS_TOUCH	38	Dream Powder	38	Dream Powder	STATUS_RESULT	PROPOSAL
+64	Sleepproof	STATUS_PROOF	38	Dream Powder	38	Dream Powder	STATUS_RESULT	PROPOSAL
+65	Sleep Ward	STATUS_WARD	38	Dream Powder	38	Dream Powder	STATUS_RESULT	PROPOSAL
+66	Silencestrike	STATUS_STRIKE	39	Silence Grenade	39	Silence Grenade	STATUS_RESULT	PROPOSAL
+67	Silencetouch	STATUS_TOUCH	39	Silence Grenade	39	Silence Grenade	STATUS_RESULT	PROPOSAL
+68	Silenceproof	STATUS_PROOF	39	Silence Grenade	39	Silence Grenade	STATUS_RESULT	PROPOSAL
+69	Silence Ward	STATUS_WARD	39	Silence Grenade	39	Silence Grenade	STATUS_RESULT	PROPOSAL
+70	Darkstrike	STATUS_STRIKE	40	Smoke Bomb	40	Smoke Bomb	STATUS_RESULT	PROPOSAL
+71	Darktouch	STATUS_TOUCH	40	Smoke Bomb	40	Smoke Bomb	STATUS_RESULT	PROPOSAL
+72	Darkproof	STATUS_PROOF	40	Smoke Bomb	40	Smoke Bomb	STATUS_RESULT	PROPOSAL
+73	Dark Ward	STATUS_WARD	40	Smoke Bomb	40	Smoke Bomb	STATUS_RESULT	PROPOSAL
+74	Slowstrike	STATUS_STRIKE	46	Silver Hourglass	47	Gold Hourglass	STATUS_RESULT	PROPOSAL
+75	Slowtouch	STATUS_TOUCH	46	Silver Hourglass	47	Gold Hourglass	STATUS_RESULT	PROPOSAL
+76	Slowproof	STATUS_PROOF	46	Silver Hourglass	47	Gold Hourglass	STATUS_RESULT	PROPOSAL
+77	Slow Ward	STATUS_WARD	46	Silver Hourglass	47	Gold Hourglass	STATUS_RESULT	PROPOSAL
+78	Confuseproof	STATUS_PROOF	102	Musk	102	Musk	STATUS_RESULT	PROPOSAL
+79	Confuse Ward	STATUS_WARD	102	Musk	102	Musk	STATUS_RESULT	PROPOSAL
+80	Beserkproof	STATUS_PROOF	103	Hypello Potion	103	Hypello Potion	STATUS_RESULT	PROPOSAL
+81	Beserk Ward	STATUS_WARD	103	Hypello Potion	103	Hypello Potion	STATUS_RESULT	PROPOSAL
+82	Curseproof	STATUS_PROOF	63	Purifying Salt	63	Purifying Salt	STATUS_RESULT	PROPOSAL
+83	Curse Ward	STATUS_WARD	63	Purifying Salt	63	Purifying Salt	STATUS_RESULT	PROPOSAL
+84	Auto-Shell	AUTO_STATUS	56	Lunar Curtain	56	Lunar Curtain	STATUS_SCALAR	PROPOSAL
+85	Auto-Protect	AUTO_STATUS	57	Light Curtain	57	Light Curtain	STATUS_SCALAR	PROPOSAL
+86	Auto-Haste	AUTO_STATUS	54	Chocobo Feather	55	Chocobo Wing	STATUS_SCALAR	PROPOSAL
+87	Auto-Regen	AUTO_STATUS	59	Healing Spring	21	Healing Water	STATUS_SCALAR	PROPOSAL
+88	Auto-Reflect	AUTO_STATUS	58	Star Curtain	58	Star Curtain	STATUS_SCALAR	PROPOSAL
+89	SOS Shell	SOS_STATUS	56	Lunar Curtain	56	Lunar Curtain	STATUS_SCALAR	PROPOSAL
+90	SOS Protect	SOS_STATUS	57	Light Curtain	57	Light Curtain	STATUS_SCALAR	PROPOSAL
+91	SOS Haste	SOS_STATUS	54	Chocobo Feather	55	Chocobo Wing	STATUS_SCALAR	PROPOSAL
+92	SOS Regen	SOS_STATUS	59	Healing Spring	21	Healing Water	STATUS_SCALAR	PROPOSAL
+93	SOS Reflect	SOS_STATUS	58	Star Curtain	58	Star Curtain	STATUS_SCALAR	PROPOSAL
+94	SOS NulTide	SOS_NUL	32	Fish Scale	34	Water Gem	ELEMENT_RESULT	PROPOSAL
+95	SOS NulFrost	SOS_NUL	23	Antartic Wind	25	Ice Gem	ELEMENT_RESULT	PROPOSAL
+96	SOS NulShock	SOS_NUL	29	Electro Marble	31	Lightning Gem	ELEMENT_RESULT	PROPOSAL
+97	SOS NulBlaze	SOS_NUL	26	Bomb Fragment	28	Fire Gem	ELEMENT_RESULT	PROPOSAL
+98	Strength +3%	STAT_PERCENT	87	Strength Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+99	Strength +5%	STAT_PERCENT	87	Strength Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+100	Strength +10%	STAT_PERCENT	87	Strength Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+101	Strength +20%	STAT_PERCENT	87	Strength Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+102	Magic +3%	STAT_PERCENT	89	Magic Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+103	Magic +5%	STAT_PERCENT	89	Magic Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+104	Magic +10%	STAT_PERCENT	89	Magic Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+105	Magic +20%	STAT_PERCENT	89	Magic Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+106	Defense +3%	STAT_PERCENT	88	Defense Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+107	Defense +5%	STAT_PERCENT	88	Defense Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+108	Defense +10%	STAT_PERCENT	88	Defense Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+109	Defense +20%	STAT_PERCENT	88	Defense Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+110	Magic Def +3%	STAT_PERCENT	90	Magic Def Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+111	Magic Def +5%	STAT_PERCENT	90	Magic Def Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+112	Magic Def +10%	STAT_PERCENT	90	Magic Def Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+113	Magic Def +20%	STAT_PERCENT	90	Magic Def Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+114	HP +5%	STAT_PERCENT	85	HP Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+115	HP +10%	STAT_PERCENT	85	HP Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+116	HP +20%	STAT_PERCENT	85	HP Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+117	HP +30%	STAT_PERCENT	85	HP Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+118	MP +5%	STAT_PERCENT	86	MP Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+119	MP +10%	STAT_PERCENT	86	MP Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+120	MP +20%	STAT_PERCENT	86	MP Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+121	MP +30%	STAT_PERCENT	86	MP Sphere	75	Attribute Sphere	STAT_RECALC	PROPOSAL
+122	Capture	CAPTURE	73	Ability Sphere	109	Gambler's Spirit	CAPTURE_REWARD	PROPOSAL
+123	Aeon Immunities	UNRESOLVED					SPEC_REQUIRED	UNRESOLVED
+124	Distill Power	DISTILL	16	Power Distiller	70	Power Sphere	DROP_REWARD	PROPOSAL
+125	Distill Mana	DISTILL	17	Mana Distiller	71	Mana Sphere	DROP_REWARD	PROPOSAL
+126	Distill Speed	DISTILL	18	Speed Distiller	72	Speed Sphere	DROP_REWARD	PROPOSAL
+127	Distill Ability	DISTILL	19	Ability Distiller	73	Ability Sphere	DROP_REWARD	PROPOSAL
+128	Ribbon	RIBBON	15	Remedy	53	Dark Matter	STATUS_DAMAGE	PROPOSAL
+129	Double Drop	DROP	106	Amulet	108	Wings to Discovery	DROP_REWARD	PROPOSAL
+130	Triple Drop	DROP	106	Amulet	108	Wings to Discovery	DROP_REWARD	PROPOSAL

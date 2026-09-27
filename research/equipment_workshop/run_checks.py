@@ -25,9 +25,19 @@ def local(args):
     print(run([str(BUILD/'core_tests')]),end='')
     run(['c++',*common,'-fsanitize=address,undefined','-fno-omit-frame-pointer','-g','tests/test_workshop.cpp','-o',str(BUILD/'core_sanitized')])
     print(run([str(BUILD/'core_sanitized')],env=dict(os.environ,ASAN_OPTIONS='detect_leaks=1',UBSAN_OPTIONS='halt_on_error=1')),end='')
+    run(['c++',*common,'tests/test_economy.cpp','-o',str(BUILD/'economy_tests')])
+    print(run([str(BUILD/'economy_tests')]),end='')
+    run(['c++',*common,'-fsanitize=address,undefined','-fno-omit-frame-pointer','-g','tests/test_economy.cpp','-o',str(BUILD/'economy_sanitized')])
+    print(run([str(BUILD/'economy_sanitized')],env=dict(os.environ,ASAN_OPTIONS='detect_leaks=1',UBSAN_OPTIONS='halt_on_error=1')),end='')
+    for name in ('progression','fifth_order','fifth_catalog','customize_limits'):
+        for suffix,flags in [('tests',[]),('sanitized',['-fsanitize=address,undefined','-fno-omit-frame-pointer','-g'])]:
+            executable=str(BUILD/(name+'_'+suffix))
+            run(['c++',*common,*flags,'tests/test_'+name+'.cpp','-o',executable])
+            print(run([executable],env=dict(os.environ,ASAN_OPTIONS='detect_leaks=1',UBSAN_OPTIONS='halt_on_error=1')),end='')
     run(['c++',*common,'-shared','-fPIC','-o',str(BUILD/'libworkshop.so')])
     environment=dict(os.environ)
     if args.save:environment['WORKSHOP_SAVE_FIXTURE']=str(args.save.resolve())
+    if args.pe:environment['WORKSHOP_NATIVE_PE_FIXTURE']=str(args.pe.resolve())
     print(run(['python3','-m','unittest','discover','-s','tests','-p','test_*.py','-v'],env=environment),end='')
     run(['i686-w64-mingw32-g++',*common,'-static','-O2','tests/native_effects.cpp','-ladvapi32','-o',str(BUILD/'native_effects.exe')])
 
@@ -42,6 +52,8 @@ def windows(args):
     quote=lambda text:"'"+str(text).replace("'","''")+"'"
     ps(host,'New-Item -ItemType Directory -Path '+quote(folder)+' | Out-Null')
     inputs={'workshop.h':ROOT/'include/workshop.h','effects.h':ROOT/'include/effects.h','lifecycle.h':ROOT/'include/lifecycle.h',
+            'customize_recipes.h':ROOT/'include/customize_recipes.h',
+            'customize_constraints.h':ROOT/'include/customize_constraints.h',
             'workshop.cpp':ROOT/'src/workshop.cpp','effects.cpp':ROOT/'src/effects.cpp','lifecycle.cpp':ROOT/'src/lifecycle.cpp',
             'test_workshop.cpp':ROOT/'tests/test_workshop.cpp','native_effects.cpp':ROOT/'tests/native_effects.cpp',
             'image.bin':args.pe,'a_ability.bin':args.kernel}

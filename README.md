@@ -10,7 +10,7 @@ Part of the **FFX Mod Studio** ecosystem
 
 🇧🇷 **Made by a Brazilian developer** — WanxTitanx (FFX Mod Studio)
 
-[![Version](https://img.shields.io/badge/version-0.4.0--beta-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases)
+[![Version](https://img.shields.io/badge/version-0.5.0--beta-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases)
 [![Status](https://img.shields.io/badge/status-BETA-red)](#status-beta)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20x86-lightgrey)]()
@@ -39,6 +39,13 @@ Part of the **FFX Mod Studio** ecosystem
   [docs/KNOWN_BUGS.md](docs/KNOWN_BUGS.md).
 
 ## Downloads & install
+
+The v0.5.0 beta bundles the latest Equipment Workshop and Scan changes. The
+Workshop now has native equipment and Customize views, priced refinement and
+fusion, and a reversible fifth-ability sidecar. Scan Expanded has its own F8
+control and adds eight stats while retaining the native MP presentation;
+extra element controls remain separate. These new views have Windows and
+Proton harness coverage, with in-game visual acceptance still pending.
 
 Grab the latest release from the
 [Releases page](https://github.com/WanxTitanx/ffx-mod-hooks/releases).

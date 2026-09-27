@@ -8,6 +8,7 @@
 #include "../hooks/RonsoPoolRuntime.h"
 #include "../hooks/RonsoPoolSave.h"
 #include "PrivatePeFixture.h"
+#include "WorkshopEconomyFixture.h"
 #include <cstdio>
 #include <cstring>
 #include <fstream>
@@ -73,6 +74,7 @@ int main(int argc,char** argv){
     Patch(base+0x2F0228,returnAfterCall,sizeof(returnAfterCall));Patch(base+0x2F06C5,returnAfterCall,sizeof(returnAfterCall));
     const unsigned char postLoadReturn[]={0x31,0xC0,0xC3,0x90,0x90};Patch(base+0x4B546B,postLoadReturn,sizeof(postLoadReturn));
     SaveImage disk{},loaded{};std::ifstream f(argv[2],std::ios::binary);if(!f.read(reinterpret_cast<char*>(disk.data()),disk.size()))return 2;
+    WorkshopEconomyFixture::Seed(disk);WorkshopEconomyFixture::Mode(1);
     const auto path=root+L"\\ffx_093";
     Check(Put(path,disk)&&Read(path,loaded),"real native fread reaches the production observer");
     workshop::State state{};
@@ -84,21 +86,64 @@ int main(int argc,char** argv){
     Check(EquipmentWorkshop::Capture(state),"actual load detour admits the native post-checksum image");
     Check(loaded==unmodifiedSource,"admission does not rewrite the game's load buffer");
     if(!EquipmentWorkshop::Capture(state)){std::printf("EquipmentWorkshopSaveFlowRt1 %u/%u passed\n",checks-failures,checks);return 1;}
-    unsigned slot=200;for(unsigned i=0;i<200;++i)if(state.pieces[i].id&&state.pieces[i].native[6]==255&&!(state.pieces[i].native[3]&12)&&state.pieces[i].native[4]<7){slot=i;break;}if(slot==200)return 2;
+    unsigned char mixed[22]{};mixed[2]=1;mixed[6]=255;mixed[11]=4;
+    const unsigned words[]={0,100,98,99};
+    for(unsigned i=0;i<4;++i){mixed[14+2*i]=static_cast<unsigned char>(words[i]);mixed[15+2*i]=0x80;}
+    const auto created=reinterpret_cast<unsigned(__cdecl*)(const void*)>(base+0x3AB930)(mixed);
+    Check(created>=0x5000&&created<0x50C8&&EquipmentWorkshop::Capture(state),
+          "private native producer creates a mixed generic/numeric refinement fixture");
+    if(created<0x5000||created>=0x50C8||!EquipmentWorkshop::Capture(state))return 2;
+    const unsigned slot=created&0xFFF;
     const auto identity=state.pieces[slot].id;
     workshop::Request request{};request.op=workshop::Op::Mode;request.slot=static_cast<uint16_t>(slot);request.pieceId=identity;request.revision=state.revision;request.value=1;
     workshop::Plan plan{};
     Check(EquipmentWorkshop::Preview(request,plan)==workshop::Error::Ok&&EquipmentWorkshop::Commit(request,plan),"the admitted native inventory supports a reviewed Workshop transaction");
+    Check(EquipmentWorkshop::Capture(state)&&state.pieces[slot].rank==0,"mode selection spends no refinement rank");
+    request.op=workshop::Op::Refine;request.revision=state.revision;request.value=0;
+    const auto spheres=state.items[73];
+    const auto refinementGil=WorkshopEconomyFixture::Gil(base);
+    Check(EquipmentWorkshop::Preview(request,plan)==workshop::Error::Ok&&EquipmentWorkshop::Commit(request,plan)&&
+          EquipmentWorkshop::Capture(state)&&workshop::AbilityRank(state.pieces[slot],0)==1&&state.items[73]+1==spheres,
+          "actual generic refinement commits one rank and its material debit");
+    Check(refinementGil-WorkshopEconomyFixture::Gil(base)==10000,"four initial A ranks charge sequential native Gil prices");
+    Check(!EquipmentWorkshop::Commit(request,plan),"native flow cannot confirm the same refinement twice");
+    const auto donor=reinterpret_cast<unsigned(__cdecl*)(const void*)>(base+0x3AB930)(mixed);
+    Check(donor>=0x5000&&donor<0x50C8&&EquipmentWorkshop::Capture(state),"native save-flow fixture adds a distinct fusion donor");
+    if(donor<0x5000||donor>=0x50C8||!EquipmentWorkshop::Capture(state))return 2;
+    const unsigned donorSlot=donor&0xFFF;
+    workshop::Request mode{};mode.op=workshop::Op::Mode;mode.slot=static_cast<uint16_t>(donorSlot);
+    mode.pieceId=state.pieces[donorSlot].id;mode.revision=state.revision;mode.value=1;
+    Check(EquipmentWorkshop::Preview(mode,plan)==workshop::Error::Ok&&EquipmentWorkshop::Commit(mode,plan)&&EquipmentWorkshop::Capture(state),"save-flow donor uses the same mode as its target");
+    const auto unfusedPath=root+L"\\ffx_092";
+    SaveImage unfused=disk;std::memcpy(unfused.data()+64,reinterpret_cast<void*>(base+0xD2CA90),0x68C0);RonsoPool::SealSave(unfused);
+    Check(Write(unfusedPath,unfused),"native write keeps an independent pre-fusion save and sidecar");
+    const auto donorIdentity=state.pieces[donorSlot].id;
+    workshop::Request fusion{};fusion.op=workshop::Op::Fuse;fusion.slot=static_cast<uint16_t>(slot);
+    fusion.pieceId=identity;fusion.other=static_cast<uint16_t>(donorSlot);fusion.otherId=donorIdentity;
+    fusion.revision=state.revision;fusion.count=2;fusion.from[1]=fusion.to[1]=1;
+    const auto gilBeforeFusion=WorkshopEconomyFixture::Gil(base);
+    Check(EquipmentWorkshop::Preview(fusion,plan)==workshop::Error::Ok&&EquipmentWorkshop::Commit(fusion,plan)&&EquipmentWorkshop::Capture(state),"native save flow commits two-ability fusion");
+    Check(!state.pieces[donorSlot].id&&*reinterpret_cast<unsigned char*>(base+0xD30F2C+22*donorSlot+2)==0,"donor occupancy is removed before native save serialization");
+    const auto afterFusionSpheres=state.items[73];
+    const auto gilAfterFusion=WorkshopEconomyFixture::Gil(base);
+    Check(gilBeforeFusion-gilAfterFusion==20000,"fusion debits actual native Gil in the same transaction");
     SaveImage saved=disk;std::memcpy(saved.data()+64,reinterpret_cast<void*>(base+0xD2CA90),0x68C0);RonsoPool::SealSave(saved);
     Check(Write(path,saved),"actual native fwrite persists the matching extension");
     Check(Read(path,loaded),"actual read reopens the saved version");ChecksumAndClear(loaded);Apply(loaded);
-    Check(EquipmentWorkshop::Capture(state)&&state.pieces[slot].id==identity&&state.pieces[slot].mode==1,"native read/checksum/apply roundtrip restores the same extension identity");
+    Check(EquipmentWorkshop::Capture(state)&&state.pieces[slot].id==identity&&state.pieces[slot].mode==2&&workshop::AbilityRank(state.pieces[slot],2)==1&&state.items[73]==afterFusionSpheres&&WorkshopEconomyFixture::Gil(base)==gilAfterFusion,"native read/checksum/apply roundtrip restores the same extension identity and native Gil");
+    Check(!state.pieces[donorSlot].id&&!state.pieces[donorSlot].native[2],"native reload preserves donor consumption");
+    fusion.revision=state.revision;
+    Check(EquipmentWorkshop::Preview(fusion,plan)==workshop::Error::Stale,"reloading cannot make a consumed donor reusable");
+    Check(Read(unfusedPath,loaded),"independent pre-fusion save is observed");ChecksumAndClear(loaded);Apply(loaded);
+    Check(EquipmentWorkshop::Capture(state)&&state.pieces[donorSlot].id==donorIdentity&&state.pieces[donorSlot].native[2]&&WorkshopEconomyFixture::Gil(base)==gilBeforeFusion,"fusion in one save does not consume donor or Gil in another save");
+    Check(Read(path,loaded),"fused save is observed again");ChecksumAndClear(loaded);Apply(loaded);
+    Check(EquipmentWorkshop::Capture(state)&&!state.pieces[donorSlot].id&&state.items[73]==afterFusionSpheres,"returning to fused save restores consumption and its exact material debit");
     const auto alternate=root+L"\\ffx_094";
     Check(Put(alternate,saved)&&Read(alternate,loaded),"another slot can contain identical native bytes in the reused read buffer");
     ChecksumAndClear(loaded);Apply(loaded);
     Check(EquipmentWorkshop::Capture(state)&&state.pieces[slot].mode==0,"reused buffer binds the latest completed file, not another slot's extension");
     Check(Read(path,loaded),"the original slot is observed again");ChecksumAndClear(loaded);Apply(loaded);
-    Check(EquipmentWorkshop::Capture(state)&&state.pieces[slot].id==identity&&state.pieces[slot].mode==1,"returning to the original slot restores its own extension");
+    Check(EquipmentWorkshop::Capture(state)&&state.pieces[slot].id==identity&&state.pieces[slot].mode==2&&workshop::AbilityRank(state.pieces[slot],2)==1&&WorkshopEconomyFixture::Gil(base)==gilAfterFusion,"returning to the original slot restores its own extension and native Gil");
     Check(Read(path,loaded),"fresh file observation precedes the negative load case");ChecksumAndClear(loaded);loaded[0x44DC+22*slot]^=1;
     Apply(loaded);Check(!EquipmentWorkshop::Capture(state),"a non-checksum payload change cannot borrow the observed save's identity");
     Check(Read(path,loaded),"fresh observation precedes a change outside the CRC-covered region");ChecksumAndClear(loaded);loaded.back()^=1;

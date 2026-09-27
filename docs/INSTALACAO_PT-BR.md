@@ -27,14 +27,14 @@ mas este guia de instalação está em português para facilitar.
 ### Passo 1 — Baixar
 
 Vá na [página de Releases](https://github.com/WanxTitanx/ffx-mod-hooks/releases)
-e baixe o zip da versão mais recente (ex: `ffx-hooks-release-v0.1.0-beta.1.zip`).
+e baixe o zip da versão mais recente (ex: `ffx-hooks-release-v0.5.0-beta.zip`).
 
 ### Passo 2 — Achar o diretório do jogo
 
 O jogo costuma estar em:
 
 ```
-D:\SteamLibrary\steamapps\common\FINAL FANTASY X&FFX-2 HD Remaster\
+D:\SteamLibrary\steamapps\common\FINAL FANTASY FFX&FFX-2 HD Remaster\
 ```
 
 Ou onde sua biblioteca Steam estiver. A pasta tem que ter `FFX.exe` e uma
@@ -45,39 +45,35 @@ subpasta `modules\`.
 Antes de mexer em nada, faça backup da pasta `modules\`:
 
 ```powershell
-Copy-Item "D:\SteamLibrary\steamapps\common\FINAL FANTASY X&FFX-2 HD Remaster\modules" `
-          "D:\SteamLibrary\steamapps\common\FINAL FANTASY X&FFX-2 HD Remaster\modules.backup_$(Get-Date -Format yyyyMMdd)" `
+Copy-Item "D:\SteamLibrary\steamapps\common\FINAL FANTASY FFX&FFX-2 HD Remaster\modules" `
+          "D:\SteamLibrary\steamapps\common\FINAL FANTASY FFX&FFX-2 HD Remaster\modules.backup_$(Get-Date -Format yyyyMMdd)" `
           -Recurse -Force
 ```
 
 ### Passo 4 — Extrair e copiar
 
-Abra o zip. Você vai ver:
+Abra o zip. Este release da DLL contém:
 
 ```
 ffx-hooks.dll          -> copiar para <jogo>\modules\
-ffx-probe.dll          -> copiar para <jogo>\modules\
-ffx-hooks.ini          -> copiar para <jogo>\ (AO LADO do FFX.exe, não em modules\)
-SinScaleInject\        -> copiar para <jogo>\modules\tools\SinScaleInject\
-INSTALL.md             -> referência (não precisa copiar)
+LICENSE, NOTICE        -> licença e créditos de terceiros
+SOURCE.md              -> origem exata do código e da DLL
+CHECKSUMS.sha256       -> checksums dos arquivos acima
 ```
 
-Depois de copiar, a pasta do jogo deve ficar assim:
+Só substitua `ffx-hooks.dll` depois de fazer backup. Preserve o
+`ffx-hooks.ini`, probe e ferramentas SIN que já tiver: eles não estão neste
+zip. Há um modelo de INI no repositório de código em
+`src/runtime/FfxHooksDll/ffx-hooks.ini`. Não sobrescreva sua configuração.
+
+Depois de copiar, os arquivos relevantes do jogo devem ficar assim:
 
 ```
 <jogo>\
   FFX.exe
   dinput8.dll              (o proxy loader — já deve existir)
-  ffx-hooks.ini            (nossa config)
   modules\
     ffx-hooks.dll          (nossa camada de hooks)
-    ffx-probe.dll          (nosso probe — desligado por padrão)
-    tools\
-      SinScaleInject\
-        SinScaleInject.exe
-        SinCoreLib.dll
-        Xe.BinaryMapper.dll
-        ...
 ```
 
 ### Passo 5 — Ligar uma feature (jogo FECHADO)

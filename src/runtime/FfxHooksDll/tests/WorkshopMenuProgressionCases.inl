@@ -1,0 +1,65 @@
+static void WorkshopMenuProgressionCases(){
+    using A=EquipmentMenu::Action;using P=EquipmentMenu::Page;
+    Check(WorkshopTestOpen(),"story-admission fixture opens");EquipmentMenu::StopReady();
+    TestHost::customizeUnlocked=false;Check(EquipmentMenu::Open(),"locked Workshop still offers a closeable information page");
+    Check(EquipmentMenu::page==P::Info&&!WorkshopTestLists(A::Piece,0),"native Customize lock prevents browsing Workshop actions");
+    EquipmentMenu::StopReady();
+    FfxHooks::Config::LoadTextForTests("[equipment_workshop]\ndev_ignore_progression=1\n","C:\\private-workshop.ini");
+    Check(EquipmentMenu::Open()&&EquipmentMenu::page==P::Inventory,"explicit development flag admits Workshop before Customize");
+    EquipmentMenu::StopReady();
+    Check(WorkshopTestOpen(),"development-fee fixture opens");
+    for(auto& n:TestHost::state.items)n=1;
+    for(unsigned i=0;i<4;++i)TestHost::state.pieces[0].ranks[i]=9;
+    TestHost::gil=0;
+    FfxHooks::Config::LoadTextForTests("[equipment_workshop]\ndev_free_materials=1\ndev_free_gil=1\n","C:\\private-workshop.ini");
+    WorkshopTestChoose(A::Piece,0);WorkshopTestChoose(A::Refine);
+    NativeMenu::rendered.clear();EquipmentMenu::Draw(EquipmentMenu::menu.obj);
+    Check(EquipmentMenu::page==P::Confirm&&WorkshopTestLists(A::Confirm,0)&&WorkshopRendered("DEV"),"development confirmation explicitly labels waived full prices");
+    const auto before=TestHost::state;WorkshopTestChoose(A::Confirm);
+    Check(TestHost::commits==1&&TestHost::gil==0&&std::memcmp(before.items,TestHost::state.items,sizeof(before.items))==0,"development UI performs one real improvement without resource debit");
+    Check(WorkshopTestOpen(),"fifth selection fixture opens");
+    auto& target=TestHost::state.pieces[0];target.fifthUnlocked=1;
+    WorkshopTestChoose(A::Piece,0);WorkshopTestChoose(A::Fifth);
+    Check(WorkshopTestLists(A::Value,0x8065)&&!WorkshopTestLists(A::Value,0x8055),"weapon fifth picker excludes native armor-only recipes and existing duplicates");
+    WorkshopTestChoose(A::Back);WorkshopTestChoose(A::Fuse);WorkshopTestChoose(A::Value,1);
+    WorkshopTestChoose(A::Value,0);
+    Check(!WorkshopTestLists(A::Value,4),"fusion destination never offers an unlocked fifth slot");
+    Check(WorkshopTestOpen(),"bound equipment model fixture opens");
+    TestHost::state.pieces[0].fifthUnlocked=1;TestHost::state.pieces[1].native[4]=1;
+    WorkshopTestChoose(A::Piece,0);NativeMenu::rendered.clear();EquipmentMenu::Draw(EquipmentMenu::menu.obj);
+    Check(WorkshopRendered("Bound"),"unlocked equipment visibly reports its owner binding");
+    WorkshopTestChoose(A::Reforge);
+    Check(!WorkshopTestLists(A::Value,1),"bound equipment cannot select another owner's model");
+    EquipmentMenu::StopReady();TestHost::available=false;
+}
+static void WorkshopF8DevelopmentCases(){
+    namespace C=FfxHooks::Config;namespace S=FfxHooks::EquipmentWorkshop::Settings;
+    C::ResetForTests();C::LoadTextForTests("[core]\nlog_level=1\n","C:\\private-workshop-dev.ini");
+    f8Writes=0;f8AllowWrite=true;C::SetProvidersForTests({nullptr,nullptr,nullptr,WorkshopF8Persist});
+    F8NativeSettingsReset();NativeMenu::padEdge=NativeMenu::padDirection=0;
+    const int obj=NativeMenu::Alloc();Check(obj!=0,"Workshop development page has a private menu object");if(!obj)return;
+    NativeMenu::WrW(obj,NativeMenu::O_SELECTED,6);NativeMenu::WrW(obj,NativeMenu::O_TOP,2);
+    F8NativeSettingsPush(obj,NativeSettingsPage::Workshop);
+    const bool root=F8NativeSettingsPage()==NativeSettingsPage::Workshop&&NativeMenu::RdW(obj,NativeMenu::O_COUNT)==6;
+    Check(root,"F8 Dev opens a dedicated Workshop settings root");
+    if(!root){F8NativeSettingsReset();NativeMenu::Reset(obj);C::ResetForTests();return;}
+    NativeMenu::rendered.clear();F8NativeSettingsDraw(obj,1);
+    Check(WorkshopRendered("Free materials")&&WorkshopRendered("Free Gil")&&WorkshopRendered("Customize"),"Workshop root shows all independent development flags");
+    F8NativeSettingsActivate(obj,0);
+    Check(F8NativeSettingsPage()==NativeSettingsPage::WorkshopRefinement,"refinement choices are nested inside the Workshop page");
+    F8NativeSettingsActivate(obj,2);
+    Check(F8NativeSettingsPage()==NativeSettingsPage::Workshop,"A/B Back returns to Workshop rather than losing its parent");
+    NativeMenu::WrW(obj,NativeMenu::O_SELECTED,1);g_f7ConfirmTimer=0;g_nativeSettingsLastEdge=0;NativeMenu::padEdge=0x20;
+    for(unsigned i=0;i<20;++i)F8NativeSettingsInput(obj);
+    NativeMenu::padEdge=0;workshop::Policy policy{};
+    Check(S::Read(policy)&&policy.devFreeMaterials==1&&f8Writes==1,"held confirmation toggles a development flag only once");
+    F8NativeSettingsActivate(obj,2);F8NativeSettingsActivate(obj,3);
+    Check(S::Read(policy)&&policy.devFreeGil==1&&policy.devIgnoreProgression==1,"other development flags persist independently");
+    f8AllowWrite=false;F8NativeSettingsActivate(obj,1);
+    Check(S::Read(policy)&&policy.devFreeMaterials==1&&std::strstr(g_nativeSettingsNotice,"Unable"),"failed development persistence preserves the selected policy");
+    f8AllowWrite=true;const auto saved=f8Saved;C::LoadTextForTests(saved.c_str(),"C:\\private-workshop-dev.ini");
+    Check(S::Read(policy)&&policy.devFreeMaterials&&policy.devFreeGil&&policy.devIgnoreProgression,"development flags survive configuration reload");
+    F8NativeSettingsActivate(obj,5);
+    Check(!F8NativeSettingsActive()&&NativeMenu::RdW(obj,NativeMenu::O_SELECTED)==6&&NativeMenu::RdW(obj,NativeMenu::O_TOP)==2,"Workshop Back restores the original F8 row and scroll");
+    F8NativeSettingsReset();NativeMenu::Reset(obj);C::ResetForTests();
+}

@@ -138,6 +138,7 @@ if ($WithPolyHook) {
         "`"$here\hooks\NativeLanguageHook.cpp`"",
         "`"$here\hooks\SinAiHook.cpp`"",
         "`"$here\hooks\EquipmentWorkshopRuntime.cpp`"",
+        "`"$here\hooks\EquipmentWorkshopNativeUi.cpp`"",
         "`"$here\hooks\EquipmentWorkshopStore.cpp`"",
         "`"$here\..\..\..\research\equipment_workshop\src\workshop.cpp`"",
         "`"$here\..\..\..\research\equipment_workshop\src\lifecycle.cpp`"",

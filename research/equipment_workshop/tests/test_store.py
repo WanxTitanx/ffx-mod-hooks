@@ -7,8 +7,8 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "host"))
-from bridge import Core, Request, OPS, WorkshopError
-from store import Store, SAVE_SIZE, GEAR_BASE, ID_BASE, QTY_BASE, sha
+from bridge import Core, Request, OPS, WorkshopError, Economy
+from store import Store, SAVE_SIZE, GEAR_BASE, ID_BASE, QTY_BASE, GIL_BASE, STORY_BASE, native_gil, native_story, sha
 
 def synthetic():
     data = bytearray([0xCC] * SAVE_SIZE)
@@ -20,6 +20,8 @@ def synthetic():
         p=GEAR_BASE+slot*22
         data[p+2]=1;data[p+6]=255;data[p+11]=4
         for i in range(4):struct.pack_into("<H",data,p+14+2*i,0x8064)
+    struct.pack_into("<I",data,GIL_BASE,1000000)
+    struct.pack_into("<H",data,STORY_BASE,0x448)
     return bytes(data)
 
 class StoreTests(unittest.TestCase):
@@ -30,14 +32,15 @@ class StoreTests(unittest.TestCase):
     def tearDown(self):self.temp.cleanup()
     def plan(self, op='mode', value=1):
         raw,meta,state,_=self.store.load();r=Request();r.op=OPS[op];r.revision=state.revision;r.pieceId=state.pieces[0].id;r.value=value
-        return raw,meta,self.core.preview(state,r).after
+        plan=self.core.preview(state,r,Economy(native_gil(raw),customize_unlocked=self.core.customize_unlocked(native_story(raw))))
+        return raw,meta,plan.after,plan.gilDebit
     def test_roundtrip(self):
         original=self.source.read_bytes();self.store.commit(*self.plan())
         self.store.commit(*self.plan('refine'))
-        raw,_,state,_=self.store.load();self.assertEqual(state.pieces[0].rank,1)
-        self.assertEqual(state.items[87],95);self.assertEqual(self.source.read_bytes(),original)
+        raw,_,state,_=self.store.load();self.assertEqual(sum(state.pieces[0].ranks),1)
+        self.assertEqual(state.items[70],98);self.assertEqual(state.items[77],98);self.assertEqual(self.source.read_bytes(),original)
         changed={i for i,(a,b) in enumerate(zip(original,raw)) if a!=b}
-        self.assertEqual(changed,{QTY_BASE+87})
+        self.assertEqual(changed,{QTY_BASE+70,QTY_BASE+77,GIL_BASE,GIL_BASE+1})
     def test_stale_preview(self):
         plan=self.plan();self.store.commit(*plan)
         with self.assertRaises(WorkshopError):self.store.commit(*plan)
@@ -47,7 +50,7 @@ class StoreTests(unittest.TestCase):
             with self.subTest(phase=phase):
                 store=Store(self.root/phase,self.core);store.create(self.source,123)
                 raw,meta,s,_=store.load();r=Request();r.op=OPS['mode'];r.value=1;r.pieceId=s.pieces[0].id
-                state=self.core.preview(s,r).after
+                state=self.core.preview(s,r,Economy(native_gil(raw),customize_unlocked=True)).after
                 def fault(at):
                     if at==phase:raise OSError('injected interruption')
                 store.fault=fault
@@ -63,8 +66,8 @@ class StoreTests(unittest.TestCase):
             if at=='native_written':raise OSError('power loss')
         self.store.fault=fault
         with self.assertRaises(OSError):self.store.commit(*plan)
-        state=self.store.load()[2];self.assertEqual(state.items[87],95);self.assertEqual(state.pieces[0].rank,1)
-        self.assertEqual(self.store.load()[2].items[87],95)
+        state=self.store.load()[2];self.assertEqual(state.items[70],98);self.assertEqual(state.items[77],98);self.assertEqual(sum(state.pieces[0].ranks),1)
+        self.assertEqual(self.store.load()[2].items[77],98)
     def test_foreign_write_is_preserved(self):
         self.store.commit(*self.plan());plan=self.plan('refine')
         def fault(at):

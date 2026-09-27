@@ -147,6 +147,25 @@ int main(int argc,char** argv){
             Check(Numeric(index)==100+int(row[0x55])+int(rank),"all numeric abilities and ranks execute native arithmetic");
         }
     }
+    // Exercise every provisional fallback through the original field arithmetic.
+    // Generic abilities stay in original slots; fifth creation remains restricted.
+    const auto originalKernel=kernel;
+    for(unsigned id=0;id<131;++id){
+        if((id>=98 && id<=121)||id==84||id==85)continue;
+        for(unsigned rank=0;rank<=10;++rank){
+            state=Fixture(0x8064,rank);
+            state.pieces[0].fifth=Empty;state.pieces[0].abilities[4]=0;
+            state.pieces[0].native[14]=static_cast<unsigned char>(id);
+            state.pieces[0].native[15]=0x80;
+            state.pieces[0].abilities[0]=state.nextId++;
+            Check(effects.Begin(true,true,state)&&effects.Gear(0,state.pieces[0].native,gear),
+                  "generic stock ability has an admitted private original-slot view");
+            Check(Numeric(10)==100+int(rank),"generic strength reaches native percent arithmetic");
+            Check(Numeric(11)==100+int(rank),"generic magic reaches native percent arithmetic");
+            Check(Numeric(12)==100,"generic refinement does not alter defense");
+        }
+    }
+    Check(kernel==originalKernel,"all generic native checks preserve the global kernel bytes");
     state=Fixture(0x8055,10);effects.Begin(true,true,state);
     std::array<unsigned char,0xF90> actor{};
     Put32(image+0xD334CC,static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(actor.data())));
@@ -172,6 +191,22 @@ int main(int argc,char** argv){
     auto shell=reinterpret_cast<int(__cdecl*)(const void*,unsigned*,int*,const void*,int)>(image+0x38AE80);
     const auto magic=shell(command.data(),&flags,&divisor,statuses.data(),1000);
     Check(magic==500 && (flags&0x20)!=0 && effects.AfterStatus(magic,true,true,0,200,0)==450,"native Shell and its rank ten reduction compose once");
+    // Compare native-slot and fifth-slot aggregation for the complete catalog.
+    for(unsigned id=0;id<131;++id){
+        state=Fixture(static_cast<std::uint16_t>(0x8000+id),0);
+        state.pieces[0].fifth=Empty;state.pieces[0].abilities[4]=0;
+        state.pieces[0].native[14]=static_cast<unsigned char>(id);state.pieces[0].native[15]=128;
+        state.pieces[0].abilities[0]=state.nextId++;
+        Check(effects.Begin(true,true,state),"native catalog control is admitted");
+        actor.fill(0);cursor=0;reinterpret_cast<int(__cdecl*)(int)>(image+0x39C610)(0);
+        const auto expected=actor;
+        state=Fixture(static_cast<std::uint16_t>(0x8000+id),0);
+        Check(effects.Begin(true,true,state),"full fifth catalog is admitted by the effect adapter");
+        actor.fill(0);cursor=0;reinterpret_cast<int(__cdecl*)(int)>(image+0x39C610)(0);
+        Check(actor==expected,"every stock fifth ability has the same native aggregate effect as a native slot");
+    }
+    Check(kernel==originalKernel,"full fifth catalog does not rewrite shared ability definitions");
+    state=Fixture(0x8054,10);effects.Begin(true,true,state);
     std::array<unsigned char,24> foreign{};bool foreignOk=true;
     std::thread thread([&]{foreignOk=effects.Gear(0,state.pieces[0].native,foreign);effects.End();});thread.join();
     Check(!foreignOk && effects.Gear(0,state.pieces[0].native,gear),"foreign thread cannot read or retire owner views");

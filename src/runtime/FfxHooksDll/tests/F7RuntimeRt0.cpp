@@ -125,10 +125,10 @@ void TestRangesUnknownKeysAndInputCap() {
            config.global.strMul == 5000 && config.global.defMul == 100,
            "multiplier clamps must use the documented HP/MP/overkill and stat ranges");
 
-    const char invalidMask[] = "{\"diff_elemWeak\":32}";
+    const char invalidMask[] = "{\"diff_elemWeak\":256}";
     result = ParseConfig(invalidMask, sizeof(invalidMask) - 1, &config);
     Expect(result.code == ConfigCode::OutOfRange,
-           "element masks with unknown high bits must fail validation");
+           "element masks wider than the native BYTE must fail validation");
 
     std::string tooLarge(kMaxJsonBytes + 1, ' ');
     result = ParseConfig(tooLarge.data(), tooLarge.size(), &config);
@@ -3144,6 +3144,8 @@ void TestStatusAndElementApplyEditRestore() {
            "OFF restores owned affinity/resistance fields and preserves actor canaries");
 }
 
+#include "F7ExtraElementCases.inl"
+
 void TestEveryAutoStatusMapsToItsNativeWord() {
     for (unsigned bit = 0; bit < 25; ++bit) {
         MemorySpy spy{};
@@ -3235,6 +3237,7 @@ int main() {
     TestAutoStatusAdmissionAndFaults();
     TestAutoStatusBodyAdmission();
     TestStatusAndElementApplyEditRestore();
+    TestExtendedElementApplyRestore();
     TestEveryAutoStatusMapsToItsNativeWord();
     TestNeutralDefaults();
     TestStrictBooleanAndMalformedInput();

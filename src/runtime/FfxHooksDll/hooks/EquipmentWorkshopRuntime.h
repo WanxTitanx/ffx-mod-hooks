@@ -14,6 +14,11 @@ RuntimeStatus Status();
 const char* Detail();
 // Menu calls run on the native pump owner; operations never write a game file.
 bool Capture(workshop::State& state);
+// Read-only UI association also works in battle; it grants no mutation access.
+bool ReadPresentation(const void* native,workshop::Piece& piece);
+using PresentationAdapter=const unsigned char*(*)(std::uintptr_t,const unsigned char*);
+void SetPresentationAdapter(PresentationAdapter adapter);
+workshop::Error Access();
 workshop::Error Preview(const workshop::Request&,workshop::Plan&);
 bool Commit(const workshop::Request& expected,const workshop::Plan&);
 bool Requested();
@@ -22,5 +27,6 @@ bool StartForTests(std::uintptr_t base,bool enabled,const wchar_t* directory,Log
 bool LoadForTests(const wchar_t* path,const SaveImage& disk,const SaveImage& loaded);
 bool CommitLoadForTests(const SaveImage& loaded);
 bool WriteForTests(const wchar_t* path,const SaveImage& image);
+void FailBeforeWriteForTests(unsigned index);
 #endif
 }

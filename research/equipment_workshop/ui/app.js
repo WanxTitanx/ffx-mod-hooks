@@ -154,7 +154,7 @@ async function preview(op, extra = {}) {
       ? "Refine one eligible ability?"
       : "Confirm " + op.replaceAll("_", " ") + "?";
     $("#confirm-summary").textContent = result.random
-      ? "One occupied ability below +10 will gain a rank. The material cost is the same for every possible result."
+      ? "Every eligible result must be affordable. Only the base sphere and the rolled ability ingredient are consumed."
       : `${p.owner} · ${p.kind} · Piece ${p.id}`;
     const costs = $("#costs");
     costs.replaceChildren();
@@ -162,11 +162,12 @@ async function preview(op, extra = {}) {
       const row = text("div", "", "cost-row");
       row.append(
         text("span", c.name),
-        text("strong", `−${c.amount} / ${c.have} owned`),
+        text("strong", result.requirements_only ? `${c.have} owned / ${c.amount} required` : `−${c.amount} / ${c.have} owned`),
       );
       costs.append(row);
     }
     if (!result.costs.length) costs.append(text("p", "No materials required."));
+    if (result.gil_cost) costs.append(text("p", `Gil: −${result.gil_cost} / ${result.gil_have} owned`));
     if (result.after) {
       const a = result.after,
         b = result.before,
@@ -175,12 +176,6 @@ async function preview(op, extra = {}) {
         changes.push(`${b.owner} ${b.kind} → ${a.owner} ${a.kind}`);
       if (a.capacity !== b.capacity)
         changes.push(`${b.capacity} → ${a.capacity} original slots`);
-      if (a.mode !== b.mode)
-        changes.push(
-          a.mode === 1
-            ? "Path A · whole-piece refinement"
-            : "Path B · one ability per attempt",
-        );
       if (a.rank !== b.rank) changes.push(`Piece rank +${b.rank} → +${a.rank}`);
       for (const next of a.abilities) {
         const old = b.abilities.find((x) => x.slot === next.slot);
@@ -209,44 +204,10 @@ function operation() {
     b.tabIndex = b.dataset.op === tab ? 0 : -1;
   });
   if (tab === "refine") {
-    if (!p.mode) {
-      body.append(
-        text(
-          "p",
-          "Choose one path for this piece. This choice stays with the piece, even when it moves in your inventory.",
-          "description",
-        ),
-      );
-      const grid = text("div", "", "mode-grid");
-      for (const [value, title, copy] of [
-        [
-          1,
-          "A · Refine the whole piece",
-          "One rank improves every occupied ability. Each contributes to the material cost. Maximum +10.",
-        ],
-        [
-          2,
-          "B · Refine one ability",
-          "Each attempt improves one eligible ability. Owner catalyst + Ability Sphere. Up to +50 with five abilities.",
-        ],
-      ]) {
-        const b = button("", () => preview("mode", { value }), "mode-card");
-        b.append(text("strong", title), text("small", copy));
-        grid.append(b);
-      }
-      body.append(grid);
-    } else {
-      body.append(
-        text(
-          "p",
-          p.mode === 1
-            ? "Every occupied ability will gain one rank. Adding an ability later includes its catch-up material cost."
-            : "One occupied ability below +10 gains a rank. Fully refined abilities leave the pool; a cancelled attempt changes nothing.",
-          "description",
-        ),
-      );
-      body.append(button("Preview refinement", () => preview("refine")));
-    }
+    body.append(text("p", model.refinement_mode === 1
+      ? "A: every non-maxed ability gains one rank; all its recipe costs are charged."
+      : "B: one eligible ability gains one rank. Have every possible ingredient; only the winning recipe is charged.", "description"));
+    body.append(button("Preview refinement", () => preview("refine")));
   } else if (tab === "fifth") {
     body.append(
       text(
@@ -259,16 +220,18 @@ function operation() {
       body.append(
         text(
           "p",
-          "Requires four original slots · Lv.4 Key Sphere ×1",
+          "Requires four open original slots · 10 owner-specific Spheres; Master Spheres substitute 1:1.",
           "inline-note",
         ),
       );
       body.append(
         button("Preview fifth-slot unlock", () => preview("unlock_fifth")),
       );
+    } else if (p.abilities.slice(0, 4).some((a) => a.id === 255)) {
+      body.append(text("p", "Fill all four native abilities before customizing the fifth.", "inline-note"));
     } else {
       body.append(
-        select("Choose an ability", model.fifth_choices, "fifth-choice"),
+        select("Choose an ability", model.fifth_choices.filter((a) => a.kinds.includes(p.kind) && p.fifth_choices.includes(a.id)), "fifth-choice"),
       );
       body.append(
         button("Preview ability", () =>
@@ -367,19 +330,19 @@ function operation() {
     body.append(
       text(
         "p",
-        "Choose a donor and transfer up to two ability instances into this piece. The donor is consumed. Both pieces must use the same refinement path.",
+        "Transfer up to two abilities. The donor is destroyed; each transfer costs Gil and a rounded fraction of its Customize recipe.",
         "description",
       ),
     );
     const donors = model.pieces.filter(
       (x) =>
-        x.slot !== p.slot && !x.equipped && !x.protected && x.mode === p.mode,
+        x.slot !== p.slot && !x.equipped && !x.protected,
     );
     if (!donors.length) {
       body.append(
         text(
           "p",
-          "No eligible donor with the same refinement path.",
+          "No eligible unequipped donor.",
           "inline-note",
         ),
       );

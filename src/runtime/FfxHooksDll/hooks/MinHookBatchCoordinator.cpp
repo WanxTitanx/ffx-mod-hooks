@@ -24,7 +24,9 @@ bool ValidTargets(Owner owner, const uintptr_t* targets, size_t targetCount) {
                             owner == Owner::SeymourBattle ||
                             owner == Owner::NovaSuperDamage ||
                             owner == Owner::ArenaPositions ||
-                            owner == Owner::EquipmentWorkshop;
+                            owner == Owner::EquipmentWorkshop ||
+                            owner == Owner::EquipmentWorkshopUi ||
+                            owner == Owner::ElementScan;
     if (!knownOwner || !targets || targetCount == 0u ||
         targetCount > kMaximumTargets) {
         return false;
