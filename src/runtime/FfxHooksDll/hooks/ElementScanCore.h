@@ -4,21 +4,33 @@
 #include <cmath>
 #include <cstdint>
 namespace FfxHooks::ElementScan {
+inline constexpr unsigned ExtraColumns=4;
 struct Settings {
-    std::uint32_t rgb[3]={0xFFE080u,0xA35CEFu,0x5FCF7Eu};unsigned extraBit=0x20;
+    std::uint32_t rgb[ExtraColumns]={0xFFE080u,0xA35CEFu,0x5FCF7Eu,0x6FB5FFu};unsigned extraBit=0x20;
     // Preferences do not enable the default-OFF master hook.
-    unsigned enabled[3]={1,1,1};
+    // Preserve the legacy selected Custom column; its complementary native bit
+    // gets a separate, initially hidden column without changing gameplay masks.
+    unsigned enabled[ExtraColumns]={1,1,1,0};
 };
 inline constexpr float PanelWidth=560.f,RowWidth=540.f;
 struct Orb {float x=0,y=4,size=32.7f;unsigned bit=0;std::uint32_t rgb=0;bool active=false;};
-inline bool Valid(const Settings& v){return (v.extraBit==0x20||v.extraBit==0x40)&&v.rgb[0]<=0xFFFFFF&&v.rgb[1]<=0xFFFFFF&&v.rgb[2]<=0xFFFFFF&&v.enabled[0]<=1&&v.enabled[1]<=1&&v.enabled[2]<=1;}
-inline unsigned VisibleCount(const Settings& v){return Valid(v)?v.enabled[0]+v.enabled[1]+v.enabled[2]:0;}
-inline float PanelWidthFor(const Settings& v){const unsigned n=VisibleCount(v);return n?PanelWidth-63.f*(3-n):385.f;}
-inline std::array<Orb,3> Orbs(unsigned mask,const Settings& settings){
-    std::array<Orb,3> out{};if(!Valid(settings)||mask>255)return out;
-    const unsigned bits[]={0x10,0x80,settings.extraBit};
+inline bool Valid(const Settings& v){
+    if(v.extraBit!=0x20&&v.extraBit!=0x40)return false;
+    for(unsigned i=0;i<ExtraColumns;++i)if(v.rgb[i]>0xFFFFFF||v.enabled[i]>1)return false;
+    return true;
+}
+inline unsigned VisibleCount(const Settings& v){
+    if(!Valid(v))return 0;
+    unsigned count=0;
+    for(unsigned i=0;i<ExtraColumns;++i)count+=v.enabled[i];
+    return count;
+}
+inline float PanelWidthFor(const Settings& v){const unsigned n=VisibleCount(v);return n?371.f+63.f*n:385.f;}
+inline std::array<Orb,ExtraColumns> Orbs(unsigned mask,const Settings& settings){
+    std::array<Orb,ExtraColumns> out{};if(!Valid(settings)||mask>255)return out;
+    const unsigned bits[]={0x10,0x80,settings.extraBit,0x60u^settings.extraBit};
     unsigned column=0;
-    for(unsigned i=0;i<3;++i)if(settings.enabled[i]){
+    for(unsigned i=0;i<ExtraColumns;++i)if(settings.enabled[i]){
         out[column]={379.f+63.f*column,4.f,32.7f,bits[i],settings.rgb[i],(mask&bits[i])!=0};++column;
     }
     return out;

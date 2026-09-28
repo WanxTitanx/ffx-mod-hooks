@@ -10,7 +10,7 @@ $mh=Join-Path $here 'third_party\minhook'
 $c=@('hook.c','buffer.c','trampoline.c','hde\hde32.c') | ForEach-Object {'"'+(Join-Path "$mh\src" $_)+'"'}
 $compileC='call "{0}" x86 >nul && cl /nologo /TC /O2 /MT /W3 /I"{1}\include" /c {2}' -f $vcvars,$mh,($c -join ' ')
 $exe=Join-Path $obj 'NativePresentationRt1.exe'
-$source=@('tests\NativePresentationRt1.cpp','hooks\EquipmentWorkshopRuntime.cpp','hooks\EquipmentWorkshopNativeUi.cpp','hooks\ElementHook.cpp','shared\Config.cpp','hooks\EquipmentWorkshopStore.cpp','hooks\RonsoPoolStore.cpp','hooks\RonsoPoolSave.cpp','hooks\F8RuntimeCore.cpp','hooks\MinHookBatchCoordinator.cpp') | ForEach-Object {'"'+(Join-Path $here $_)+'"'}
+$source=@('tests\NativePresentationRt1.cpp','hooks\ArcanaCore.cpp','hooks\ArcanaUiCore.cpp','hooks\ArcanaAcquisition.cpp','hooks\ArcanaNativeUi.cpp','hooks\EquipmentWorkshopRuntime.cpp','hooks\EquipmentWorkshopNativeUi.cpp','hooks\ElementHook.cpp','shared\Config.cpp','hooks\EquipmentWorkshopStore.cpp','hooks\RonsoPoolStore.cpp','hooks\RonsoPoolSave.cpp','hooks\F8RuntimeCore.cpp','hooks\MinHookBatchCoordinator.cpp') | ForEach-Object {'"'+(Join-Path $here $_)+'"'}
 $cmd='call "{0}" x86 >nul && cl /nologo /EHsc /std:c++17 /O2 /W4 /WX /utf-8 /MT /DFFXHOOKS_TESTING /DFFXHOOKS_HAVE_POLYHOOK /I"{1}\research\equipment_workshop\include" /I"{2}\include" {3} "{1}\research\equipment_workshop\src\workshop.cpp" "{1}\research\equipment_workshop\src\lifecycle.cpp" hook.obj buffer.obj trampoline.obj hde32.obj /Fe"{4}" bcrypt.lib' -f $vcvars,$repo,$mh,($source -join ' '),$exe
 Push-Location $obj
 try {
@@ -21,7 +21,7 @@ try {
  $fixture=Join-Path $repo 'native-fixtures\FFX.exe'
  if((Get-FileHash $fixture -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Wrong private PE fixture'}
  $data=Join-Path $obj ('private-'+[guid]::NewGuid().ToString('N'))
- foreach($scanMode in 0..3){
+ foreach($scanMode in 0..4){
   & $exe $fixture (Join-Path $repo 'native-fixtures\ffx_000') ($data+'-'+$scanMode) (Join-Path $repo 'sin-fixtures\a_ability.bin') $scanMode
   if($LASTEXITCODE -ne 0){throw ('Workshop runtime RT1 failed: Scan mode '+$scanMode)}
  }

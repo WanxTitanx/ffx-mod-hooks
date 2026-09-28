@@ -4,6 +4,7 @@ static const workshop::Piece* VisiblePiece(unsigned slot){
     return slot<200&&snapshot.pieces[slot].id?&snapshot.pieces[slot]:nullptr;
 }
 static int __cdecl Draw(int obj){
+    (void)W::CatalogBridge::Read(catalog);
     if(InterlockedCompareExchange(&drawSeen,1,0)==0)Log("[ffx-hooks] Workshop UI: first native draw obj=0x%08X\n",static_cast<unsigned>(obj));
     static int frame=0;const int f=++frame,selection=RdW(obj,O_SELECTED),top=RdW(obj,O_TOP);
     auto text=[](const char* value,float x,float y,bool compact=true){unsigned char bytes[192]{};EncodeLabel(value,bytes,sizeof(bytes));if(compact)DrawStringSub(bytes,x,y);else DrawString(bytes,x,y);};
@@ -52,7 +53,10 @@ static int __cdecl Draw(int obj){
         if(!piece){text("Select an equipment to compare.",NX(.505f),NY(at+.065f));return;}
         PieceLabel(*piece,line,sizeof(line));text(line,NX(.505f),NY(at+.043f));
         for(unsigned i=0;i<5;++i){const bool open=i<piece->native[11]||(i==4&&piece->fifthUnlocked);const auto word=workshop::Ability(*piece,i);
-            if(open&&word!=255)_snprintf_s(line,sizeof(line),_TRUNCATE,workshop::GenericRefinement(word)?"%s%u: %.28s +%u%% STR/MAG":"%s%u: %.28s +%u",highlight==static_cast<int>(i)?"> ":"",i+1,N::Ability(word),workshop::AbilityRank(*piece,i));
+            unsigned effect=2;
+            if(workshop::ProtectedAbility(*piece,i))_snprintf_s(line,sizeof(line),_TRUNCATE,"%u: Aeon Immunity [Permanent]",i+1);
+            else if(open&&UpgradeWord(word,effect))_snprintf_s(line,sizeof(line),_TRUNCATE,"%u: %s [Cap]",i+1,UpgradeName(effect));
+            else if(open&&word!=255)_snprintf_s(line,sizeof(line),_TRUNCATE,workshop::GenericRefinement(word,&catalog)?"%s%u: %.28s +%u%% STR/MAG":"%s%u: %.28s +%u",highlight==static_cast<int>(i)?"> ":"",i+1,N::Ability(word),workshop::AbilityRank(*piece,i));
             else _snprintf_s(line,sizeof(line),_TRUNCATE,"%u: %s",i+1,open?"Empty":"Locked");
             text(line,NX(.505f),NY(at+.083f+i*.035f));
         }
@@ -63,7 +67,7 @@ static int __cdecl Draw(int obj){
         if(random){
             text("Eligible outcomes - not rolled yet",NX(.505f),NY(.525f));unsigned row=0;
             for(unsigned i=0;i<5&&target;++i){const auto word=workshop::Ability(*target,i);const auto rank=workshop::AbilityRank(*target,i);unsigned item=0,quantity=0;
-                if(word==255||rank==10||!workshop::RefinementCost(word,rank+1,preview.policy,item,quantity))continue;
+                if(word==255||rank==10||workshop::ProtectedAbility(*target,i)||!workshop::RefinementCost(word,rank+1,preview.policy,item,quantity,&preview.catalog))continue;
                 _snprintf_s(line,sizeof(line),_TRUNCATE,"%.25s +%u: %.20s x%u",N::Ability(word),rank+1,N::Item(item),quantity);
                 text(line,NX(.505f),NY(.568f+row*.037f));++row;
             }
@@ -71,26 +75,27 @@ static int __cdecl Draw(int obj){
             workshop::Policy policy{};const bool valid=W::Settings::Read(policy);
             text(valid?W::Settings::ModeName(policy.mode):"Invalid Workshop settings",NX(.505f),NY(.545f));
             text("Choose A / B in F8 > Dev.",NX(.505f),NY(.595f));
-            text("Unequip before editing. Save normally.",NX(.505f),NY(.645f));
+            text(workshop::IsAeon(*(target?target:candidate))?"Aeon equipment: Gil x2. Save normally.":"Unequip before editing. Save normally.",NX(.505f),NY(.645f));
             if(page==Page::Donor||page==Page::Models)text("Highlight a candidate to compare it.",NX(.505f),NY(.695f));
         }
     }else{DrawMenuGlassPanel(NX(.485f),NY(.22f),NW(.46f),NH(.565f),f,1);text(page==Page::Info&&notice[0]?notice:W::Detail(),NX(.505f),NY(.26f));}
     if(page==Page::Confirm){
         bool modRecipe=false;
         auto includeRecipe=[&](std::uint16_t word){unsigned item=0,quantity=0;bool native=true;
-            if(workshop::CustomizeCost(word,preview.policy,item,quantity,native)&&!native)modRecipe=true;
+            if(workshop::CustomizeCost(word,preview.policy,item,quantity,native,&preview.catalog)&&!native)modRecipe=true;
         };
         // Inspect all eligible outcomes, never the hidden winner. Fusion prices
         // only the selected donor abilities, not everything on the donor.
         if(draft.op==workshop::Op::Refine&&target){
-            for(unsigned i=0;i<5;++i)if(workshop::AbilityRank(*target,i)<10)includeRecipe(workshop::Ability(*target,i));
+            for(unsigned i=0;i<5;++i)if(!workshop::ProtectedAbility(*target,i)&&workshop::AbilityRank(*target,i)<10)includeRecipe(workshop::Ability(*target,i));
         }else if(draft.op==workshop::Op::Fuse){
             const auto* donor=VisiblePiece(draft.other);
             if(donor)for(unsigned i=0;i<draft.count&&i<2;++i)includeRecipe(workshop::Ability(*donor,draft.from[i]));
         }else if(draft.op==workshop::Op::SetFifth)includeRecipe(draft.value);
         DrawMenuGlassPanel(NX(.055f),NY(.405f),NW(.41f),NH(.355f),f,1);
         text(random?"Prerequisites - all outcomes covered":"Materials charged on confirmation",NX(.07f),NY(.423f));
-        if(preview.gilCost){_snprintf_s(line,sizeof(line),_TRUNCATE,"Gil: %u / %u%s",preview.gilBefore,preview.gilCost,preview.policy.devFreeGil?" DEV - no debit":preview.gilBefore<preview.gilCost?" MISSING":"");text(line,NX(.07f),NY(.461f));}
+        if(upgradeFlow&&reviewError!=workshop::Error::Ok){_snprintf_s(line,sizeof(line),_TRUNCATE,"Gil required: %u",preview.gilCost);text(line,NX(.07f),NY(.461f));}
+        else if(preview.gilCost){_snprintf_s(line,sizeof(line),_TRUNCATE,"Gil: %u / %u%s",preview.gilBefore,preview.gilCost,preview.policy.devFreeGil?" DEV - no debit":preview.gilBefore<preview.gilCost?" MISSING":"");text(line,NX(.07f),NY(.461f));}
         else text(random?"Owned / required (not all are consumed)":"Owned / required",NX(.07f),NY(.461f));
         unsigned row=0;
         for(unsigned item=0;item<112;++item){const unsigned required=random?preview.requirements[item]:preview.costs[item];if(!required)continue;

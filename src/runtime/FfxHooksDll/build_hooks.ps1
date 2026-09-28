@@ -95,6 +95,9 @@ if ($WithPolyHook) {
         "`"$here\hooks\KimahriLancetDualGrantHook.cpp`"",
         "`"$here\hooks\AbilitySfxHook.cpp`"",
         "`"$here\hooks\ElementHook.cpp`"",
+        "`"$here\hooks\ElementalRuntime.cpp`"",
+        "`"$here\hooks\SpiraRuntime.cpp`"",
+        "`"$here\hooks\MonsterRewardsRuntime.cpp`"",
         "`"$here\hooks\ResolverLogHook.cpp`"",
         "`"$here\hooks\FieldProbeHook.cpp`"",
         "`"$here\hooks\FieldScoutHook.cpp`"",
@@ -136,10 +139,26 @@ if ($WithPolyHook) {
         "`"$here\hooks\NativePortsHook.cpp`"",
         "`"$here\hooks\NativeGamepadHook.cpp`"",
         "`"$here\hooks\NativeLanguageHook.cpp`"",
+        "`"$here\hooks\TextLanguageCore.cpp`"",
+        "`"$here\hooks\TextLanguagePayload.cpp`"",
+        "`"$here\hooks\TextLanguagePack.cpp`"",
+        "`"$here\hooks\TextLanguageFiles.cpp`"",
+        "`"$here\hooks\TextLanguageHook.cpp`"",
         "`"$here\hooks\SinAiHook.cpp`"",
         "`"$here\hooks\EquipmentWorkshopRuntime.cpp`"",
+        "`"$here\hooks\VanguardRuntime.cpp`"",
         "`"$here\hooks\EquipmentWorkshopNativeUi.cpp`"",
         "`"$here\hooks\EquipmentWorkshopStore.cpp`"",
+        "`"$here\hooks\ArcanaCore.cpp`"",
+        "`"$here\hooks\ArcanaAcquisition.cpp`"",
+        "`"$here\hooks\ArcanaStore.cpp`"",
+        "`"$here\hooks\ArcanaNativeEffects.cpp`"",
+        "`"$here\hooks\ArcanaRuntime.cpp`"",
+        "`"$here\hooks\ArcanaUiCore.cpp`"",
+        "`"$here\hooks\ArcanaNativeUi.cpp`"",
+        "`"$here\hooks\ArcanaCombatCore.cpp`"",
+        "`"$here\hooks\ArcanaCombat.cpp`"",
+        "`"$here\hooks\ArcanaAssets.cpp`"",
         "`"$here\..\..\..\research\equipment_workshop\src\workshop.cpp`"",
         "`"$here\..\..\..\research\equipment_workshop\src\lifecycle.cpp`"",
         "`"$here\hooks\FmvSpeedHook.cpp`"",
@@ -168,7 +187,7 @@ if ($WithPolyHook) {
         " /Fe:`"$outDir\ffx-hooks.dll`"" +
         " /Fo`"$objDir\\`"" +
         " /link /LIBPATH:`"$vcpkgLib`"" +
-        " PolyHook_2.lib Zydis.lib Zycore.lib asmjit.lib asmtk.lib kernel32.lib user32.lib gdi32.lib d3d11.lib dxgi.lib winhttp.lib bcrypt.lib" +
+        " PolyHook_2.lib Zydis.lib Zycore.lib asmjit.lib asmtk.lib kernel32.lib user32.lib gdi32.lib d3d11.lib d3dcompiler.lib windowscodecs.lib ole32.lib dxgi.lib winhttp.lib bcrypt.lib" +
         " /VERSION:0.1"
     )
 

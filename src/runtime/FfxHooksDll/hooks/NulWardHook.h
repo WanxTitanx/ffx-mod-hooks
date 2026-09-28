@@ -9,9 +9,9 @@ namespace FfxHooks {
     typedef void (*NulWardLogFn)(const char* message);
 
     struct NulWardInstallOptions {
-        bool nativeSlots = false;   /* actor+0x613/+0x614 instead of side-map */
-        bool experimentP16 = false; /* detour ResolveHitDamagePrecheck (log) */
-        bool p16Apply = false;      /* P16 returns 0 when ward blocks (needs experimentP16) */
+        bool nativeSlots = false;   /* compatibility option; external charges only */
+        bool experimentP16 = false; /* compatibility option; shared Nul entry */
+        bool p16Apply = false;      /* compatibility option; shared Nul entry */
     };
 
     struct NulWardInstallResult {
@@ -31,6 +31,7 @@ namespace FfxHooks {
         const NulWardInstallOptions* options = nullptr);
 
     bool RemoveNulWardHook(NulWardLogFn log);
+    void RequestNulWardDetachStop() noexcept;
     bool IsNulWardHookInstalled();
 
 } // namespace FfxHooks

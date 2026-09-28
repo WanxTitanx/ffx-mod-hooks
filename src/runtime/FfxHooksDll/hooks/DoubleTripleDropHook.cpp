@@ -1,4 +1,5 @@
 #include "DoubleTripleDropHook.h"
+#include <atomic>
 #include "../shared/ffx_addresses.h"
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
@@ -13,6 +14,8 @@
 #endif
 
 namespace FfxHooks {
+namespace {std::atomic<SupplementalDropProvider> supplementalDrop{nullptr};}
+void SetSupplementalDropProvider(SupplementalDropProvider provider) noexcept {supplementalDrop.store(provider);}
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 
@@ -88,13 +91,16 @@ static void* GetPartyListActor(uint8_t slot) {
 /* ponytail: Gillionaire-style party MAX — scan active slots, never stack mult per character. */
 static int PartyDropMultiplierMax() {
     int mult = 1;
-    for (uint8_t slot = 0; slot < FFX_BATTLE_PARTY_SCAN_SLOTS; ++slot) {
+    for (uint8_t slot = 0; g_apply&&slot < FFX_BATTLE_PARTY_SCAN_SLOTS; ++slot) {
         const uint16_t ab2 = ReadActorAutoAbilities2(GetPartyListActor(slot));
         if ((ab2 & FFX_AUTOABILITY2_TRIPLE_DROP) != 0) {
             if (mult < 3) mult = 3;
         } else if ((ab2 & FFX_AUTOABILITY2_DOUBLE_DROP) != 0) {
             if (mult < 2) mult = 2;
         }
+    }
+    if(const auto provider=supplementalDrop.load()){
+        const unsigned extra=provider();if(extra>=1&&extra<=3&&static_cast<int>(extra)>mult)mult=static_cast<int>(extra);
     }
     return mult;
 }
@@ -116,7 +122,7 @@ static void MaybeLogHit(uintptr_t callerRva, int itemId, int qtyIn, int mult, in
 
 static int __cdecl AddItem_Shim(int itemId, int qtyDelta) {
     int outQty = qtyDelta;
-    if (g_apply && qtyDelta > 0 && IsBattleItemId(itemId)) {
+    if ((g_apply||supplementalDrop.load()) && qtyDelta > 0 && IsBattleItemId(itemId)) {
         const uintptr_t callerRva =
             reinterpret_cast<uintptr_t>(_ReturnAddress()) - g_base;
         if (IsWhitelistedBattleCallerRva(callerRva)) {

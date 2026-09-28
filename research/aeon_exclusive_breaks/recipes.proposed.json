@@ -1,0 +1,57 @@
+{
+  "schema": "ffx.aeon-exclusive-breaks.design-1",
+  "status": "proposal-not-loaded-by-current-runtime",
+  "feature_key": "aeon_ascension",
+  "mods": ["MOD-002", "MOD-004", "MOD-005"],
+  "enabled_by_default": false,
+  "allowed_party_owners": [8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+  "application_route": "equipment_workshop_only",
+  "requires_canonical_acquired_aeon": true,
+  "preserve_existing_aeon_progression_gates": true,
+  "preserve_aeon_immunity_word": "0x807B",
+  "gil_pricing": {
+    "current_aeon_multiplier": 2,
+    "apply_multiplier_once": true,
+    "generic_fifth_material_multiplier_applies": false,
+    "generic_fifth_placement_gil_applies": false,
+    "fifth_unlock_is_separate": true
+  },
+  "abilities": [
+    {
+      "key": "aeon_break_hp_mp_limit",
+      "name": "Aeon Break HP/MP Limit",
+      "gear_type": "armor",
+      "default_id": 148,
+      "refinable": false,
+      "hp_ceiling": 999999,
+      "mp_ceiling": 9999,
+      "gil_before_aeon_multiplier": 5000000,
+      "gil_final": 10000000,
+      "materials": [
+        {"item_id": 108, "item_word": "0x206C", "name": "Wings to Discovery", "quantity": 60},
+        {"item_id": 69, "item_word": "0x2045", "name": "Three Stars", "quantity": 60},
+        {"item_id": 110, "item_word": "0x206E", "name": "Underdog's Secret", "quantity": 30},
+        {"item_id": 80, "item_word": "0x2050", "name": "Master Sphere", "quantity": 2}
+      ]
+    },
+    {
+      "key": "aeon_break_damage_limit",
+      "name": "Aeon Break Damage Limit",
+      "gear_type": "weapon",
+      "default_id": 149,
+      "refinable": false,
+      "hp_damage_ceiling_per_hit": 999999,
+      "damage_classes": ["physical", "magical", "numeric_overdrive"],
+      "gil_before_aeon_multiplier": 7500000,
+      "gil_final": 15000000,
+      "materials": [
+        {"item_id": 53, "item_word": "0x2035", "name": "Dark Matter", "quantity": 99},
+        {"item_id": 111, "item_word": "0x206F", "name": "Winning Formula", "quantity": 30},
+        {"item_id": 109, "item_word": "0x206D", "name": "Gambler's Spirit", "quantity": 20},
+        {"item_id": 80, "item_word": "0x2050", "name": "Master Sphere", "quantity": 3}
+      ]
+    }
+  ],
+  "ability_data_status": "IDs148/149 created; recipe/runtime still proposed",
+  "ability_registry": "../autoability_expansion/registry.json"
+}

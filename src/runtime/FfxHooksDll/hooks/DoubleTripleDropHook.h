@@ -36,5 +36,7 @@ namespace FfxHooks {
     void RemoveDoubleTripleDropHook(DoubleTripleDropLogFn log);
     bool IsDoubleTripleDropHookInstalled();
     long DoubleTripleDropHookHitCount();
+    using SupplementalDropProvider=unsigned(*)() noexcept;
+    void SetSupplementalDropProvider(SupplementalDropProvider) noexcept;
 
 } // namespace FfxHooks

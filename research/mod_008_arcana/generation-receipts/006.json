@@ -1,0 +1,10 @@
+{
+  "id": 6,
+  "key": "major.the_lovers",
+  "asset": "assets/mod-008-arcana/concepts/cards/006-major-the_lovers.png",
+  "source": "/home/wanderson/.codex/generated_images/01a0ced4-9fba-7a22-9466-d8897fbcba59/exec-287f38a3-3c8f-4dac-956f-9cfa32168543.png",
+  "prompt": "Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. Top medallion text (verbatim): \"VI\". Bottom name plaque text (verbatim): \"THE LOVERS\". Card subject: The Lovers. Scene: Tidus and Yuna reaching toward each other above the Macalania spring, two intertwined pyrefly streams. Accent palette: ocean blue, pearl, antique gold; dramatic celestial light. Keep traditional Tarot symbols legible and the border consistent with the reference.",
+  "tool": "image_gen.imagegen",
+  "status": "GENERATED_LABELLED_CONCEPT",
+  "layout": "number_top_name_bottom_court_unnumbered"
+}

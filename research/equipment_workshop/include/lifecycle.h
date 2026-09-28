@@ -2,7 +2,7 @@
 #include "workshop.h"
 #include <thread>
 namespace workshop {
-enum class InventoryEvent { Created, Swapped, Removed, Equipped, Unequipped };
+enum class InventoryEvent { Created, Swapped, Removed, Equipped, Unequipped, LegendAbilities };
 // Owner-thread observer of completed native producers. No fingerprint matching,
 // automatic installation or disk I/O. An unobserved producer quarantines the lane.
 class Lifecycle {

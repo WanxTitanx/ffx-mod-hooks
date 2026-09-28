@@ -30,9 +30,17 @@ int __cdecl InventoryShim(unsigned offset){
     return result;
 }
 int __cdecl StatusShim(void* object){
-    if(!active.load())return reinterpret_cast<StatusFn>(originals[StatusPage])(object);
+    if(!active.load()){
+        const int result=reinterpret_cast<StatusFn>(originals[StatusPage])(object);
+        // The pinned bridge may still serve an independently enabled Arcana.
+        if(auto observer=statusObserver.load())observer(object,8);
+        return result;
+    }
     Scope current{};current.kind=StatusPage;auto* previous=scope;current.depth=previous?previous->depth+1:0;scope=&current;int result=0;
-    __try{result=reinterpret_cast<StatusFn>(originals[StatusPage])(object);}
+    __try{
+        result=reinterpret_cast<StatusFn>(originals[StatusPage])(object);
+        if(auto observer=statusObserver.load())observer(object,current.statusCount?current.statusCount:8);
+    }
     __finally{scope=previous;}
     return result;
 }

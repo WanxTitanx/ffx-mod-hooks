@@ -2,23 +2,23 @@
 
 ## Current economy and comparison work (2026-09-25)
 
-The source implements default random B, F8 > Dev selection of A/B,
+The new source implements default random B, F8 > Dev selection of A/B,
 all-outcome prerequisites, progressive Customize ingredients, priced fusion
-(Gil + recipe fraction), and target/candidate comparison. The native DLL
-adapter is in `src/runtime/FfxHooksDll/hooks/EquipmentWorkshopRuntime.cpp`;
-the shared model is in `src/workshop.cpp`.
+(Gil + recipe fraction), and target/candidate comparison. See
+[rules and tuning](../../docs/WORKSHOP_ECONOMY.md) and current session evidence.
+The historical prototype descriptions below do not override those rules.
 
-The native Equipment and Customize views and fifth-slot sidecar are part of
-v0.5.0-beta. Their current validation is RT0/RT1; player-run visual and
-gameplay acceptance is still pending. The sections below describe the earlier
-isolated prototype and its evidence.
+**Current main integration:** the shared core now has a native DLL adapter and
+independent in-game menu. See
+[main integration evidence](../../docs/reverse/MAIN_WORKSHOP_SIN_2026_09_24.md)
+for activation, save ownership, supported effects and remaining RT2 limits.
+The sections below describe the earlier isolated prototype and its evidence.
 
-## Historical prototype (2026-09-23)
-
-The original MOD-004/MOD-005 prototype on `codex/mod-ideas-precode-20260923`
-was a C++ model, recoverable per-save host, dedicated interactive menu, and
-isolated native-consumer/producer adapter. At that stage it was not installed
-in the Hooks DLL and the Workshop shortcut was unbound.
+Concrete MOD-004/MOD-005 prototype on `codex/mod-ideas-precode-20260923`.
+This is a C++ model, recoverable per-save host, dedicated interactive menu and
+isolated native-consumer/producer adapter. **It is not installed in the Hooks DLL
+and does not connect to a running game.** No F7/F8/F9 item or default key was added.
+F10 already has two developer handlers in `dllmain.cpp`; the Workshop is unbound.
 
 The menu at `http://127.0.0.1:8771/` runs real previews/transactions against the
 same C++ model that the native harness uses. It imports a private save copy;
@@ -127,9 +127,10 @@ Current validation:165 C++ assertions on Linux/ASan/UBSan and Windows x86;
 UI exercised in the Codex browser: import, search, keyboard tabs, cancellation,
 fifth unlock/selection, removal, A refinement, receipt and restart/readback.
 
-The [native harness](../../src/runtime/FfxHooksDll/tests/EquipmentWorkshopRuntimeRt1.cpp)
-exercises the adapter boundary. The [sidecar contract](include/workshop.h)
-separates mod extension data from native equipment and save formats.
+[Native evidence](../../docs/reverse/EQUIPMENT_WORKSHOP_NATIVE_2026_09_24.md) explains
+which original instructions execute and which harness bridges are artificial.
+[Editor handoff](../../docs/ai/EQUIPMENT_WORKSHOP_EDITOR_HANDOFF_2026_09_24.md)
+separates mod extension data from native formats.
 
 Remaining gates: complete native save/load association and all inventory producer
 coverage; in-game standalone menu/focus integration; all affected preview, name,

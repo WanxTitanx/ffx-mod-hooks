@@ -1,0 +1,10 @@
+{
+  "id": 77,
+  "key": "pentacles.king",
+  "asset": "assets/mod-008-arcana/concepts/cards/077-pentacles-king.png",
+  "source": "/home/wanderson/.codex/generated_images/01a0ced4-9fba-7a22-9466-d8897fbcba59/exec-78dc6858-d8b1-4581-9840-a91e2c8f3a2f.png",
+  "prompt": "Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. This is a traditional court card: NO numeral anywhere. The top medallion contains only a small ornamental suit symbol. Bottom name plaque text (verbatim): \"KING OF PENTACLES\". Card subject: King of Pentacles. Scene: a wealthy Spiran ruler on a carved throne surrounded by vines and golden disks. Accent palette: jade, sand and antique gold. Keep traditional Tarot symbols legible and the border consistent with the reference.",
+  "tool": "image_gen.imagegen",
+  "status": "GENERATED_LABELLED_CONCEPT",
+  "layout": "number_top_name_bottom_court_unnumbered"
+}

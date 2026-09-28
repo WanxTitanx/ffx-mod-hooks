@@ -66,15 +66,15 @@ static void Run(bool elements,bool expanded){
     std::puts("CASE full Scan through native state dispatcher and actor resolver");
     for(const auto viewport:{std::array<float,2>{512.f,416.f},std::array<float,2>{1024.f,576.f},std::array<float,2>{1920.f,1080.f}}){
     viewportWidth=viewport[0];viewportHeight=viewport[1];
-    for(unsigned slot:{3u,5u})for(short phase=3;phase<=6;++phase)for(unsigned bit:{32u,64u})for(unsigned selected=0;selected<8;++selected){
+    for(unsigned slot:{3u,5u})for(short phase=3;phase<=6;++phase)for(unsigned bit:{32u,64u})for(unsigned selected=0;selected<16;++selected){
         *state=phase;*target=static_cast<short>(0x1000+slot);
-        char ini[240]{};_snprintf_s(ini,sizeof(ini),_TRUNCATE,
-            "[element_scan]\nholy_enabled=%u\ndark_enabled=%u\nextra_enabled=%u\nextra_bit=%u\nholy_rgb=1122867\ndark_rgb=4478310\nextra_rgb=7833753\n",
-            selected&1,(selected>>1)&1,(selected>>2)&1,bit);
+        char ini[300]{};_snprintf_s(ini,sizeof(ini),_TRUNCATE,
+            "[element_scan]\nholy_enabled=%u\ndark_enabled=%u\nextra_enabled=%u\nextra_bit=%u\nholy_rgb=1122867\ndark_rgb=4478310\nextra_rgb=7833753\nother_enabled=%u\nother_rgb=11189196\n",
+            selected&1,(selected>>1)&1,(selected>>2)&1,bit,(selected>>3)&1);
         FfxHooks::Config::LoadTextForTests(ini,"C:\\private-full-scan.ini");
-        const unsigned visible=elements?((selected&1)+((selected>>1)&1)+((selected>>2)&1)):0;
+        const unsigned visible=elements?((selected&1)+((selected>>1)&1)+((selected>>2)&1)+((selected>>3)&1)):0;
         // All four categories are read from this actor, not an actor-blind stub.
-        for(unsigned i=0;i<4;++i)actors[slot][0x5DA+i]=static_cast<unsigned char>(0x90|bit);
+        for(unsigned i=0;i<4;++i)actors[slot][0x5DA+i]=0xF0;
         ResetDraw();dispatch();
         Check(std::fabs(lastWidth-ScaleX(1000.f+63.f*visible))<.01f,"Scan data frame grows by each enabled extra element");
         const char* names[]={"Strength","Defense","Magic","Magic Def","Agility","Luck","Evasion","Accuracy"};
@@ -109,11 +109,11 @@ static void Run(bool elements,bool expanded){
             Check(((a.a<<24)|(a.b<<16)|(a.g<<8)|a.r)==E::NativeColor(0x70BCFFu),"MP strip uses the blue tint independently of element colors");}
         Check(highlights.size()==(expanded?4u:0u),"only Scan Expanded adds the four attribute highlights");
         for(const auto& highlight:highlights)Check(bands.size()==5&&std::fabs(highlight.x-bands[0].x)<.01f&&std::fabs(highlight.width-bands[0].width)<.01f&&highlight.y>=bands[0].y+bands[0].height&&highlight.y+highlight.height<=bands[1].y,"attribute highlights align with the resource bands and stay above affinities");
-        const unsigned rgb[]={0x112233,0x445566,0x778899};
-        for(unsigned i=0;i<3;++i)Check(HasColor(rgb[i])==bool(elements&&(selected&(1u<<i))),"full Scan uses every configured custom element and color independently of expanded stats");
+        const unsigned rgb[]={0x112233,0x445566,0x778899,0xAABBCC};
+        for(unsigned i=0;i<4;++i)Check(HasColor(rgb[i])==bool(elements&&(selected&(1u<<i))),"full Scan uses every configured custom element and color independently of expanded stats");
         unsigned colored=0;for(const auto& sprite:sprites){const auto& c=sprite.corners[0];
             const auto packed=(c.a<<24)|(c.b<<16)|(c.g<<8)|c.r;
-            for(unsigned i=0;i<3;++i)if(packed==E::NativeColor(rgb[i])){
+            for(unsigned i=0;i<4;++i)if(packed==E::NativeColor(rgb[i])){
                 ++colored;
                 const auto& end=sprite.corners[1];
                 Check(std::any_of(bands.begin(),bands.end(),[&c,&end](const BandDraw& band){

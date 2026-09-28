@@ -1,0 +1,137 @@
+{
+  "owner": "Jarvis-HOOK",
+  "date": "2026-09-28",
+  "status": "RT0_RT1_CANDIDATE_USER_RETEST_PENDING",
+  "base_commit": "6c4eb09c68913f1f264e42c505499a0a7507f4f0",
+  "game_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+  "dll_sha256": "79cdec74086ff932e7b2177e8272b9cce752887e2d35c99b2bd4fc0af6e2da9e",
+  "dll_bytes": 1996288,
+  "dll_build": "Release Win32 MSBuild and build_hooks.ps1 -WithPolyHook -Release, MSVC x86",
+  "balance_revision": 2,
+  "pack_hash": "b31ad58a8c3ee8e8989c3dea3487b418f11b3a3006974bb902a8e3134c489e75",
+  "compatible_pack_hashes": [
+    "53b3c692d78b846e0d2556d22717c0039f01f4d551fbcb3a56412724da4e163e"
+  ],
+  "build_source_manifest_sha256": "16f3aeddec31f76b757020eff08826f296f5e98b2bd24ec8ff2dcf39b93a7ba3",
+  "build_source_inputs": 382,
+  "build_source_zip_sha256": "4274a86a5597cec74bc5792d3694b7de89d60a486cd77e32291049d667ac11f7",
+  "source_drift_since_build": [],
+  "evidence": [
+    {
+      "log": "work/mod008/world-portable.log",
+      "sha256": "6387ccf7eab586e457e732bf8b995aa2b73e8ea034d671ace2afbe507a962df2",
+      "result_lines": [
+        "PASS typed Arcana catalog: 78 cards, sha256=dfa2cf8bc9828915bbbd192ce0d908141969213cc04ab81d8a92f3692c1c8194",
+        "PASS 78 distinct v2 builds: no pure-stat filler except HP; matching elemental defense; highlighted cards upgraded",
+        "ArcanaStartupRt0 8/8 passed",
+        "ArcanaCoreRt0 76205/76205 passed",
+        "ArcanaAcquisitionRt0 95/95 passed",
+        "ArcanaUiRt0 32/32 passed",
+        "ArcanaNativeEffectsRt0 15/15 passed",
+        "ArcanaCombatCoreRt0 13/13 passed",
+        "ArcanaStoreRt1 30/30 passed",
+        "NativeSaveEventsRt0 25/25 passed",
+        "NativeSaveProjectionRt0 15/15 passed",
+        "NativeGameplayEventsRt0 5/5 passed",
+        "PASS Arcana portable checks; native Windows, graphics and live gameplay are separate gates"
+      ]
+    },
+    {
+      "log": "work/mod008/world-portable-san.log",
+      "sha256": "6387ccf7eab586e457e732bf8b995aa2b73e8ea034d671ace2afbe507a962df2",
+      "result_lines": [
+        "PASS typed Arcana catalog: 78 cards, sha256=dfa2cf8bc9828915bbbd192ce0d908141969213cc04ab81d8a92f3692c1c8194",
+        "PASS 78 distinct v2 builds: no pure-stat filler except HP; matching elemental defense; highlighted cards upgraded",
+        "ArcanaStartupRt0 8/8 passed",
+        "ArcanaCoreRt0 76205/76205 passed",
+        "ArcanaAcquisitionRt0 95/95 passed",
+        "ArcanaUiRt0 32/32 passed",
+        "ArcanaNativeEffectsRt0 15/15 passed",
+        "ArcanaCombatCoreRt0 13/13 passed",
+        "ArcanaStoreRt1 30/30 passed",
+        "NativeSaveEventsRt0 25/25 passed",
+        "NativeSaveProjectionRt0 15/15 passed",
+        "NativeGameplayEventsRt0 5/5 passed",
+        "PASS Arcana portable checks; native Windows, graphics and live gameplay are separate gates"
+      ]
+    },
+    {
+      "log": "work/mod008/world-native-suite.log",
+      "sha256": "fbc66b5820a4f14297e66d8a66cdf1d2c8ebcaf458c2913e03454c13eb8fe051",
+      "result_lines": [
+        "ArcanaNativeUiRt1 52/52 passed",
+        "ArcanaCombatRt1 72/72 passed",
+        "ArcanaAssetsRt1 12/12 passed",
+        "ArcanaRuntimeRt1 26/26 passed",
+        "ArcanaRuntimeRt1 15/15 passed",
+        "ArcanaRuntimeRt1 27/27 passed",
+        "ArcanaRuntimeRt1 19/19 passed",
+        "RonsoPoolIoRt1 ON: PASS (24 checks, 0 failures)",
+        "RonsoPoolIoRt1 OFF: PASS (19 checks, 0 failures)",
+        "PASS Arcana RT1 fixtures; live gameplay and visual acceptance remain RT2"
+      ]
+    },
+    {
+      "log": "work/mod008/balance-regression.log",
+      "sha256": "b5c4fa7363b3ec4780fcf4e3f9e3b31d1560c142de18e274a0d2017cc4d0238a",
+      "result_lines": [
+        "F8RuntimeRt0: PASS (3988 checks)",
+        "F8 RUNTIME RT0: PASS",
+        "SEYMOUR BATTLE RT1: 88/88 PASS",
+        "SEYMOUR BATTLE RT1: PASS",
+        "CustomMix production runtime RT0/RT1: 89/89 passed",
+        "CustomMix Ultra production runtime x86: PASS (RT0 contracts + RT1 composition; COFF-I386 0x014C)"
+      ]
+    },
+    {
+      "log": "work/mod008/world-art-validation.log",
+      "sha256": "6dfde8cbb13bdefbc37d5c674c620edb4b4f0a82fd5081c138a234f5dbd7e733",
+      "result_lines": [
+        "  \"result\": \"PASS_RT0_DELIVERY\","
+      ]
+    },
+    {
+      "log": "work/mod008/world-build.log",
+      "sha256": "86e81f8618a780f7a47db27205bbce48fec59997793561dd6c400fa9adf7f62f",
+      "result_lines": []
+    },
+    {
+      "log": "work/mod008/world-dll-smoke.log",
+      "sha256": "671fa3d97503f990e9c232733b8c4b71f08a078f682b449b94396979f539b9aa",
+      "result_lines": [
+        "PASS Arcana DLL x86 loader/worker smoke with validation-only and unchanged private PE boundaries; no game launched"
+      ]
+    },
+    {
+      "log": "work/mod008/polish-context-tests.log",
+      "sha256": "eb67f5ca3d83fc929b0d5607dfe4b2247e8b4c5464d17fda284a42f6a0a153c1",
+      "result_lines": [
+        "Ran 114 tests in 1.663s",
+        "OK"
+      ]
+    },
+    {
+      "log": "work/mod008/polish-context-evaluate.json",
+      "sha256": "d0b95917442694401f6677b3ce5c18763f3d1f170f0b3de19f1279312ce45be1",
+      "result_lines": [
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "      \"passed\": true",
+        "  \"passed\": 14,"
+      ]
+    }
+  ],
+  "review": "author only; no subagents",
+  "live_validation": "User confirmed prior startup repair, visible Equip/picker and simple stat changes. This candidate still needs user visual/gameplay retest. No game launch or input automation performed."
+}

@@ -94,7 +94,9 @@ static void MigrationAndFusion(){
     s=Make();PrepareArmorFusion(s);r=RequestFor(s,Op::Fuse);r.other=1;r.otherId=s.pieces[1].id;r.count=1;r.from[0]=2;e.policy.fusionGilPerAbility=100000000;e.gil=0xFFFFFFFF;
     Check(Quote(s,r,plan,e)==Error::Ok&&plan.gilCost==100000000,"large allowed Gil cost is computed without signed overflow");
     unsigned char buffer[32];std::memset(buffer,0xA5,sizeof(buffer));
-    Check(ws_plan(&s,&r,reinterpret_cast<Plan*>(buffer))!=0&&buffer[0]==0xA5&&buffer[31]==0xA5&&ws_plan_abi()==3,"legacy C ABI never writes a larger plan into an old host buffer");
+    Check(ws_plan(&s,&r,reinterpret_cast<Plan*>(buffer))!=0&&buffer[0]==0xA5&&buffer[31]==0xA5&&ws_plan_abi()==5,"legacy C ABI never writes a larger plan into an old host buffer");
+    Check(ws_plan_economy_v4(&s,&r,&e,reinterpret_cast<Plan*>(buffer))!=0&&buffer[0]==0xA5&&buffer[31]==0xA5,
+          "ABI4 refuses to write the larger catalogue-bearing ABI5 plan into a legacy buffer");
 }
 int main(){
     CatalogAndRanks();AlternativeRequirements();MigrationAndFusion();

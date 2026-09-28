@@ -1,4 +1,6 @@
 #include "F8FlagCatalog.h"
+#include "VanguardCatalog.h"
+#include "ModFeatureCatalog.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -9,11 +11,13 @@ namespace FfxHooks {
 
 namespace {
 
-const char* const kTabNames[] = {"System", "Boosters", "Cheats", "Arena+", "Input", "Dev", "Reforge"};
+const char* const kTabNames[] = {"System", "Boosters", "Cheats", "Extras", "Input", "Dev", "Reforge"};
 
 const F8ScalarSpec kApMultiplier = {"cheats.ap_multiplier", 100, 1, 100};
 const F8ScalarSpec kGilMultiplier = {"cheats.gil_multiplier", 100, 1, 100};
 const F8ScalarSpec kItemStackCapValue = {"labs.item_stack_cap_value", 255, 1, 255};
+
+#define VANGUARD_GATE(index,key,help) {"Extras",Vanguard::Features[index].label, {"vanguard." key,"f8_authority.vanguard_" key,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},Vanguard::HasNativeConsumer(index)?"RESTART REQUIRED - " help:"NOT WIRED - " help,Vanguard::HasNativeConsumer(index)?F8Activation::RestartRequired:F8Activation::NotWired,F8ApplyMode::None}
 
 const F8FlagSpec kFlags[] = {
     {"System", "Borderless window",
@@ -123,36 +127,36 @@ const F8FlagSpec kFlags[] = {
      "RESTART REQUIRED - Ultra needs Heavy on next launch.",
      F8Activation::RestartRequired, F8ApplyMode::None},
 
-    {"Arena+", "Arena+ Master",
+    {"Reforge", "Arena+ Master",
      {"arena_plus.master", "f8_authority.arena_plus_master", nullptr,
       "FFXHOOKS_ENABLE_ARENA_PLUS", "arena_plus.flag", nullptr, nullptr, nullptr, false},
      "RESTART REQUIRED - Enable Arena+ on next launch.",
      F8Activation::RestartRequired, F8ApplyMode::None},
-    {"Arena+", "Arena+ Compose F7",
+    {"Reforge", "Arena+ Compose F7",
      {"arena_plus.compose_f7", "f8_authority.arena_plus_compose_f7", "labs.arena_plus_compose_f7",
       "FFXHOOKS_ENABLE_ARENA_PLUS_COMPOSE_F7", "arena_plus_compose_f7.flag",
       "FFXHOOKS_DISABLE_ARENA_PLUS_COMPOSE_F7", nullptr, nullptr, false},
      "LIVE - F7 Custom Mix editor; requires Arena+ Master.",
      F8Activation::Live, F8ApplyMode::ConfigPolled},
-    {"Arena+", "Bypass Progression",
+    {"Reforge", "Bypass Progression",
      {"arena_plus.unlock_all", "f8_authority.arena_plus_unlock_all", nullptr,
       "FFXHOOKS_ARENAPLUS_UNLOCK_ALL", "arena_plus_unlock_all.flag",
       nullptr, nullptr, nullptr, false},
      "LIVE - Use all bosses without defeating them first.",
      F8Activation::Live, F8ApplyMode::ConfigPolled},
-    {"Arena+", "Arena+ Victory Hook",
+    {"Reforge", "Arena+ Victory Hook",
      {"arena_plus.victory_hook", "f8_authority.arena_plus_victory_hook", nullptr,
       "FFXHOOKS_ENABLE_ARENA_PLUS_VICTORY_HOOK", "arena_plus_victory_hook.flag",
       nullptr, nullptr, nullptr, false},
      "RESTART REQUIRED - Log victories; rewards stay unchanged.",
      F8Activation::RestartRequired, F8ApplyMode::None},
-    {"Arena+", "Arena+ Resolver Log",
+    {"Reforge", "Arena+ Resolver Log",
      {"arena_plus.resolver_log", "f8_authority.arena_plus_resolver_log", nullptr,
       "FFXHOOKS_ENABLE_ARENA_PLUS_RESOLVER_LOG", "arena_plus_resolver_log.flag",
       nullptr, nullptr, nullptr, false},
      "RESTART REQUIRED - Log Arena+ match choices next launch.",
      F8Activation::RestartRequired, F8ApplyMode::None},
-    {"Arena+", "Arena+ Music",
+    {"Reforge", "Arena+ Music",
      {"arena_plus.music", "f8_authority.arena_plus_music", "music.arena_plus",
       "FFXHOOKS_ARENAPLUS_MUSIC", "arena_plus_music.flag", "FFXHOOKS_DISABLE_ARENA_PLUS_MUSIC",
       "arena_plus_music.flag.off", "music.flag.off", false},
@@ -177,6 +181,16 @@ const F8FlagSpec kFlags[] = {
       "FFXHOOKS_ENABLE_FASTLOAD_AUTOSAVE", "fastload_autosave.flag",
       "FFXHOOKS_DISABLE_FASTLOAD_AUTOSAVE", "fastload_autosave.flag.off", nullptr, false},
      "RESTART REQUIRED - Skip opening; load autosave 000 next boot.",
+     F8Activation::RestartRequired, F8ApplyMode::None},
+    {"Dev", "Arcana: full deck",
+     {"development.arcana_full_deck", "f8_authority.arcana_full_deck", nullptr,
+      "FFXHOOKS_ARCANA_FULL_DECK", nullptr, nullptr, nullptr, nullptr, false},
+     "LIVE - Grant all 78 cards. OFF keeps your collection.",
+     F8Activation::Live, F8ApplyMode::ConfigPolled},
+    {"Reforge", "Arcana of the Fayth",
+     {"arcana.enabled", "f8_authority.arcana", nullptr,
+      "FFXHOOKS_ARCANA", "arcana.flag", nullptr, nullptr, nullptr, false, true},
+     "RESTART REQUIRED - Equip Tarot in the native Equip menu.",
      F8Activation::RestartRequired, F8ApplyMode::None},
     {"Reforge", "Nova Super Damage",
      {"labs.nova_super_damage", "f8_authority.lab_nova_super_damage", nullptr,
@@ -228,13 +242,52 @@ const F8FlagSpec kFlags[] = {
       "FFXHOOKS_ENABLE_DOUBLE_TRIPLE_DROP", "double_triple_drop.flag", nullptr, nullptr, nullptr, false, true},
      "RESTART REQUIRED - LAB: battle drops x2/x3 with drop abilities.",
      F8Activation::RestartRequired, F8ApplyMode::None},
+    VANGUARD_GATE(0,"stat_pct_universal","Bonuses follow the formula's actual stats."),
+    VANGUARD_GATE(1,"defense_ehp_scaling","Defensive bonuses grant effective HP."),
+    VANGUARD_GATE(2,"healing_ignore_shell","Protections do not reduce restoration."),
+    VANGUARD_GATE(3,"breaks_additive_damage","Break adds 25% of pre-defense damage."),
+    VANGUARD_GATE(4,"auto_crit_mp0_turn_end","Consume temporary benefits after all hits."),
+    VANGUARD_GATE(5,"element_opposite_weakness","Opposite elemental weakness grants x1.25."),
+    VANGUARD_GATE(6,"status_refresh_duration","Successful reapplication renews duration."),
+    VANGUARD_GATE(7,"enemy_duration_resistance","Separate duration from application chance."),
+    VANGUARD_GATE(8,"threaten_single_use","One successful Threaten per enemy."),
+    VANGUARD_GATE(9,"guaranteed_hits_no_miss","Preserve explicitly guaranteed attacks."),
+    VANGUARD_GATE(10,"quickcast_replace_doublecast","One spell, rank 2, double MP cost."),
+    VANGUARD_GATE(11,"dualcast_white_magic","Independent White Magic cast submenu."),
+    VANGUARD_GATE(12,"magic_mp_scaling","Current MP increases magic power."),
+    VANGUARD_GATE(13,"party_switch_costs_turn","Voluntary switching costs a turn."),
+    VANGUARD_GATE(14,"eject_shatter_auto_replace","Use the first eligible reserve ally."),
+    VANGUARD_GATE(15,"single_multi_hit_normalization","Explicit single/multi-hit balance policy."),
+    VANGUARD_GATE(16,"hero_bravery","Increase critical chance dealt/received."),
+    VANGUARD_GATE(17,"energy_boost","Elemental potency above half Overdrive."),
+    VANGUARD_GATE(18,"energy_burst","Increased potency above 75% Overdrive."),
+    VANGUARD_GATE(19,"efficiency","Reduce MP and Overdrive costs."),
+    VANGUARD_GATE(20,"vampirism","Recover 2% of hostile HP lost per action."),
+    VANGUARD_GATE(21,"follow_up","Assist one ally's single-target action."),
+    VANGUARD_GATE(22,"p_trade","Physical damage x0.8; magical x1.2."),
+    VANGUARD_GATE(23,"m_trade","Magical damage x0.8; physical x1.2."),
+    VANGUARD_GATE(24,"hero_caution","Critical policy; Hero Drink has priority."),
+    VANGUARD_GATE(25,"mp_regen","Restore 2% maximum MP at turn start."),
+    VANGUARD_GATE(26,"elude","Gain 50 evasion while defending."),
+    VANGUARD_GATE(27,"energy_wall","Reduce damage above half Overdrive."),
+    VANGUARD_GATE(28,"energy_barrier","Reduce damage above 75% Overdrive."),
+    VANGUARD_GATE(29,"equipment_active_commands","Commands require verified equipped gear."),
+    VANGUARD_GATE(30,"equipment_partial_overdrive","Display and debit the same partial fee."),
+#define MOD_FEATURE(index) {"Extras",ModFeatures::Entries[index].label,ModFeatures::Entries[index].gate,ModFeatures::Entries[index].help,F8Activation::RestartRequired,F8ApplyMode::None}
+    MOD_FEATURE(0),MOD_FEATURE(1),MOD_FEATURE(2),MOD_FEATURE(3),MOD_FEATURE(4),MOD_FEATURE(5),
+#undef MOD_FEATURE
+    {"Cheats", "Per-monster AP/Gil",
+     {"cheats.monster_rewards", "f8_authority.monster_rewards", nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, false},
+     "RESTART REQUIRED - Per-monster AP/Gil before native bonuses.",
+     F8Activation::RestartRequired, F8ApplyMode::None},
 };
+#undef VANGUARD_GATE
 
 constexpr size_t kFlagCount = sizeof(kFlags) / sizeof(kFlags[0]);
 constexpr size_t kTabCount = sizeof(kTabNames) / sizeof(kTabNames[0]);
 constexpr size_t kInvalidIndex = static_cast<size_t>(-1);
 
-static_assert(kFlagCount == 48, "F8 catalog must contain exactly 48 rows");
+static_assert(kFlagCount == 51 + Vanguard::FeatureCount + ModFeatures::Entries.size(), "F8 preserves old rows and appends independent mod identities");
 static_assert(kFlagCount <= kF8BulkRowResultMax,
               "bulk row results must hold every catalog row");
 static_assert(kTabCount == 7, "F8 catalog must contain exactly seven tabs");
@@ -426,7 +479,11 @@ F8BulkEditResult SetF8TabValues(const char* tab, bool requestedValue) {
     size_t indexes[kFlagCount] = {};
     size_t indexCount = 0;
     for (size_t i = 0; i < kFlagCount; ++i) {
-        if (strcmp(kFlags[i].tab, tab) == 0 &&
+        // The former Arena+ tab remains an exact logical bulk group for existing
+        // callers. Reforge includes it; Extras must never inherit its controls.
+        const bool matchesGroup = strcmp(kFlags[i].tab, tab) == 0 ||
+            (strcmp(tab,"Arena+")==0 && strncmp(kFlags[i].gate.canonicalKey,"arena_plus.",11)==0);
+        if (matchesGroup &&
             kFlags[i].activation != F8Activation::NotWired && kFlags[i].activation != F8Activation::ReadOnly) {
             indexes[indexCount++] = i;
         }

@@ -1,4 +1,5 @@
 #include "SharedBattleRuntime.h"
+#include "NativeGameplayEvents.h"
 
 namespace FfxHooks::SharedBattleRuntime {
 namespace {
@@ -20,9 +21,13 @@ int CallOriginalOnce(void* context) {
     if (guarded.reserved.beforeOriginal) {
         guarded.reserved.beforeOriginal(guarded.reserved.context, guarded.returnRva);
     }
+    NativeGameplayEvents::Ticket ticket{};
+    if(guarded.original.call&&ClassifyInitSceneCaller(guarded.returnRva)==InitSceneCaller::BattleState)
+        ticket=NativeGameplayEvents::Begin({NativeGameplayEvents::Kind::Battle});
     guarded.result = guarded.original.call
         ? guarded.original.call(guarded.original.context)
         : 0;
+    NativeGameplayEvents::End(ticket,guarded.original.call!=nullptr);
     if (guarded.reserved.afterOriginal) {
         guarded.reserved.afterOriginal(
             guarded.reserved.context, guarded.returnRva, guarded.result);
@@ -33,7 +38,7 @@ int CallOriginalOnce(void* context) {
 } // namespace
 
 bool AnyConsumerRequiresRuntime(const ConsumerRequest& request) noexcept {
-    return request.difficulty || request.seymour || request.sin || request.customMix;
+    return request.difficulty || request.seymour || request.sin || request.customMix || request.arcana || ActionConsumersRequested();
 }
 
 InitSceneCaller ClassifyInitSceneCaller(uintptr_t returnRva) noexcept {
@@ -54,6 +59,7 @@ InitSceneRunResult RunInitScene(
     // WHY: bootstrap and the Japanese startup path both call the same target, but the latter also
     // loads Sphere Grid buffers. Only the battle state-machine caller may reach behavioral seams.
     const bool battleCaller = result.caller == InitSceneCaller::BattleState;
+    if(battleCaller)NotifyActionConsumers();
     GuardedOriginal guarded{original, battleCaller ? reserved : ReservedSeamIo{}, returnRva};
     const OriginalIo guardedIo{&guarded, &CallOriginalOnce};
     if (battleCaller && composer.compose) {

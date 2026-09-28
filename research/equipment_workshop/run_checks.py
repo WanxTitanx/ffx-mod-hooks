@@ -29,7 +29,7 @@ def local(args):
     print(run([str(BUILD/'economy_tests')]),end='')
     run(['c++',*common,'-fsanitize=address,undefined','-fno-omit-frame-pointer','-g','tests/test_economy.cpp','-o',str(BUILD/'economy_sanitized')])
     print(run([str(BUILD/'economy_sanitized')],env=dict(os.environ,ASAN_OPTIONS='detect_leaks=1',UBSAN_OPTIONS='halt_on_error=1')),end='')
-    for name in ('progression','fifth_order','fifth_catalog','customize_limits'):
+    for name in ('progression','fifth_order','fifth_catalog','customize_limits','aeons','extension_catalog'):
         for suffix,flags in [('tests',[]),('sanitized',['-fsanitize=address,undefined','-fno-omit-frame-pointer','-g'])]:
             executable=str(BUILD/(name+'_'+suffix))
             run(['c++',*common,*flags,'tests/test_'+name+'.cpp','-o',executable])

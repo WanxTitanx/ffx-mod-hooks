@@ -3,6 +3,8 @@
 #include "MinHookBatchCoordinator.h"
 #include "RonsoPoolRuntime.h"
 #include "NativeSaveEvents.h"
+#include "RonsoCommandCosts.h"
+#include "CombatExtensionBus.h"
 #include "../shared/ffx_addresses.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -35,6 +37,7 @@ static uintptr_t g_patchVa=0,g_resumeVa=0;
 static void* g_original=nullptr;
 static bool g_created=false,g_applyAttempted=false;
 static std::atomic<bool> g_damageCreated{false};
+static std::atomic<bool> g_novaDamageRequested{false};
 static std::array<uintptr_t,6> g_targets{};
 static size_t g_targetCount=0;
 static volatile LONG g_installed=0,g_attempted=0;
@@ -103,6 +106,15 @@ extern "C" void __cdecl NovaSuperDamage_LogPrecClamp(int32_t command,int32_t dam
     std::snprintf(line,sizeof(line),"[ffx-hooks] NovaClamp cmd=0x%04X damage_pre=%d cap=%d bypass=%d",
                   static_cast<unsigned>(command),damage,cap,bypassed);log(line);
 }
+extern "C" int32_t __cdecl CombatDamage_ResolveUpper(
+    int32_t damage,int32_t cap,unsigned actor,unsigned command,unsigned remaining,
+    unsigned bypass,unsigned logHits) noexcept {
+    if(InterlockedCompareExchange(&g_admission,0,0)!=1)return damage>cap?cap:damage;
+    const bool nova=command==0x3073u&&actor==3u&&remaining==3u;
+    if(logHits&&(nova||bypass))NovaSuperDamage_LogPrecClamp(
+        static_cast<int32_t>(command),damage,cap,nova&&bypass?1:0);
+    return CombatExtensions::UpperDamage(damage,cap,actor,command,remaining,nova&&bypass);
+}
 static void PatchRel32(std::vector<uint8_t>& bytes,size_t offset,int32_t value) {
     std::memcpy(bytes.data()+offset,&value,sizeof(value));
 }
@@ -110,12 +122,11 @@ static void PatchU32(std::vector<uint8_t>& bytes,size_t offset,uint32_t value) {
     std::memcpy(bytes.data()+offset,&value,sizeof(value));
 }
 static bool BuildStub(uintptr_t resumeVa,bool bypass,bool logHits,uint8_t** outStub,size_t* outLen) {
-    if(!resumeVa||!outStub||!outLen||(!bypass&&!logHits))return false;
+    if(!resumeVa||!outStub||!outLen||(!bypass&&!logHits&&!CombatExtensions::Required()))return false;
     *outStub=nullptr;*outLen=0;
     std::vector<uint8_t> bytes;
     struct AbsoluteFixup {size_t displacement;uintptr_t destination;};
     std::vector<AbsoluteFixup> absolute;
-    std::vector<size_t> toVanilla;
     const auto emit=[&](std::initializer_list<uint8_t> input){bytes.insert(bytes.end(),input);};
     const auto jump=[&](uint8_t opcode) {
         emit({0x0F,opcode});const size_t at=bytes.size();emit({0,0,0,0});return at;
@@ -123,36 +134,27 @@ static bool BuildStub(uintptr_t resumeVa,bool bypass,bool logHits,uint8_t** outS
     const auto resume=[&]() {
         emit({0xE9});const size_t at=bytes.size();emit({0,0,0,0});absolute.push_back({at,resumeVa});
     };
-    const auto log=[&](uint8_t bypassed) {
-        // A C logger may clobber every volatile register and x87/SSE state.
-        // Save all of it on a bounded, 16-byte-aligned private stack block.
-        emit({0x9C,0x60,0x8B,0xD4}); // pushfd; pushad; mov edx,esp
-        emit({0x81,0xEC,0x20,0x02,0,0,0x83,0xE4,0xF0});
-        emit({0x89,0x94,0x24,0x00,0x02,0,0,0x0F,0xAE,0x04,0x24});
-        emit({0x6A,bypassed,0x53,0x50,0xFF,0x75,0x1C,0xE8});
-        const size_t at=bytes.size();emit({0,0,0,0});
-        absolute.push_back({at,reinterpret_cast<uintptr_t>(&NovaSuperDamage_LogPrecClamp)});
-        emit({0x83,0xC4,0x10,0x0F,0xAE,0x0C,0x24});
-        emit({0x8B,0xA4,0x24,0x00,0x02,0,0,0x61,0x9D});
-    };
-
     emit({0x83,0x3D});const size_t admission=bytes.size();emit({0,0,0,0,0x01});
     PatchU32(bytes,admission,static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&g_admission)));
     const size_t stopped=jump(0x85);
-    emit({0x81,0x7D,0x1C,0x73,0x30,0,0});toVanilla.push_back(jump(0x85)); // encoded Nova
-    emit({0x83,0x7D,0x08,0x03});toVanilla.push_back(jump(0x85)); // Kimahri actor slot
-    emit({0x83,0x7D,0x88,0x03});toVanilla.push_back(jump(0x85)); // first (HP) component
-    if(logHits)log(bypass?1u:0u);
-    if(bypass)resume();
-    emit({0xE9});const size_t novaClamp=bytes.size();emit({0,0,0,0});
-    const size_t vanilla=bytes.size();
-    if(logHits&&bypass)log(0);
+    // The one upper-clamp owner resolves all requests before native writeback.
+    // EBX remains the native cap for the lower floor and subsequent MP/CTB
+    // passes. Only saved EAX is replaced; integer flags, x87 and SIMD survive a
+    // normal C++ callback, including a logger that clobbers volatile state.
+    emit({0x3B,0xC3,0x9C,0x60,0x8B,0xD4}); // native cmp; pushfd; pushad; mov edx,esp
+    emit({0x81,0xEC,0x20,0x02,0,0,0x83,0xE4,0xF0});
+    emit({0x89,0x94,0x24,0x00,0x02,0,0,0x0F,0xAE,0x04,0x24});
+    emit({0x6A,static_cast<uint8_t>(logHits?1:0),0x6A,static_cast<uint8_t>(bypass?1:0)});
+    emit({0xFF,0x75,0x88,0xFF,0x75,0x1C,0xFF,0x75,0x08,0x53,0x50,0xE8});
+    const size_t resolve=bytes.size();emit({0,0,0,0});
+    absolute.push_back({resolve,reinterpret_cast<uintptr_t>(&CombatDamage_ResolveUpper)});
+    emit({0x83,0xC4,0x1C,0x8B,0x94,0x24,0x00,0x02,0,0,0x89,0x42,0x1C});
+    emit({0x0F,0xAE,0x0C,0x24,0x8B,0xA4,0x24,0x00,0x02,0,0,0x61,0x9D});
+    resume();
     const size_t clamp=bytes.size();
     emit({0x3B,0xC3,0x7E,0x02,0x8B,0xC3}); // exact vanilla upper clamp
     resume(); // native MOV [ESI],EAX and every incoming edge remain in place
-    for(size_t at:toVanilla)PatchRel32(bytes,at,static_cast<int32_t>(vanilla-(at+4)));
     PatchRel32(bytes,stopped,static_cast<int32_t>(clamp-(stopped+4)));
-    PatchRel32(bytes,novaClamp,static_cast<int32_t>(clamp-(novaClamp+4)));
 
     auto* stub=static_cast<uint8_t*>(VirtualAlloc(nullptr,bytes.size(),MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE));
     if(!stub)return false;
@@ -213,8 +215,8 @@ void RequestNovaSuperDamageStop() {
 NovaSuperDamageInstallResult InstallNovaSuperDamageHook(
     uintptr_t base,bool bypass,bool logHits,bool ronsoMana,NovaSuperDamageLogFn log) {
     NovaSuperDamageInstallResult result{false,0};
-    const bool damage=bypass||logHits;
-    const bool poolRequested=ronsoMana||RonsoPool::HasPersistentOwnership()||NativeSaveEvents::Requested();
+    const bool damage=bypass||logHits||CombatExtensions::Required();
+    const bool poolRequested=ronsoMana||RonsoPool::HasPersistentOwnership()||NativeSaveEvents::Requested()||RonsoPool::CommandCosts::Requested();
     if(!damage&&!poolRequested)return result;
     LifecycleScope lock;
     if(!lock.held)return result;
@@ -223,7 +225,7 @@ NovaSuperDamageInstallResult InstallNovaSuperDamageHook(
         result.stub=reinterpret_cast<uintptr_t>(g_stub);return result;
     }
     if(InterlockedCompareExchange(&g_attempted,1,0)!=0||InterlockedCompareExchange(&g_admission,0,0)==2)return result;
-    g_logFn.store(log,std::memory_order_release);g_hitLogCount=0;
+    g_logFn.store(log,std::memory_order_release);g_hitLogCount=0;g_novaDamageRequested=bypass||logHits;
 #ifdef FFXHOOKS_HAVE_POLYHOOK
     uint8_t saved[kPatchLen]={};
     if(damage&&(!ValidateProfile(base)||!ResolveClampPatchSite(base,&g_patchVa,&g_resumeVa,saved))) {
@@ -268,7 +270,7 @@ NovaSuperDamageInstallResult InstallNovaSuperDamageHook(
     if(pool.ioRequired)RonsoPool::ActivateRuntime();
     if(InterlockedCompareExchange(&g_admission,0,0)!=1){Neutralize();return result;}
     InterlockedExchange(&g_installed,1);result.ok=true;result.stub=reinterpret_cast<uintptr_t>(g_stub);
-    if(damage)HookLog("[ffx-hooks] NovaClamp installed patch@0x%08X resume@0x%08X cmd=0x3073 actor=3 component=HP bypass=%d log=%d\n",
+    if(damage)HookLog("[ffx-hooks] CombatClamp installed patch@0x%08X resume@0x%08X legacy-Nova-bypass=%d log=%d\n",
         static_cast<unsigned>(g_patchVa),static_cast<unsigned>(g_resumeVa),bypass?1:0,logHits?1:0);
     HookLog("[ffx-hooks] RonsoPool mode=%s capacity-override=%u native-per-command-cost=1 save-compatibility=%d partial-entry=%d left-input=%d\n",
         ronsoMana?"ACTIVE":(pool.ioRequired?"COMPATIBILITY":"OFF"),ronsoMana?200u:0u,pool.ioRequired?1:0,ronsoMana?1:0,ronsoMana?1:0);
@@ -294,6 +296,9 @@ bool RemoveNovaSuperDamageHook(NovaSuperDamageLogFn log) {
 #endif
 }
 bool IsNovaSuperDamageHookInstalled() {
+    return g_novaDamageRequested&&g_damageCreated&&InterlockedCompareExchange(&g_installed,0,0)!=0&&InterlockedCompareExchange(&g_admission,0,0)==1;
+}
+bool IsCombatDamageClampInstalled() {
     return g_damageCreated&&InterlockedCompareExchange(&g_installed,0,0)!=0&&InterlockedCompareExchange(&g_admission,0,0)==1;
 }
 } // namespace FfxHooks

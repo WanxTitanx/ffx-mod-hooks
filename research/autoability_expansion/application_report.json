@@ -1,0 +1,101 @@
+{
+  "manifest": "/home/wanderson/.codex/backups/autoability-expansion-20260927T203501Z/manifest.json",
+  "files_verified": 25,
+  "ability_tables": 13,
+  "rate_tables": 12,
+  "new_ids": "148..174",
+  "existing_ids_preserved": "0..147",
+  "new_records_per_table": 27,
+  "gameplay_validation": "not performed; data only",
+  "source_authority": "Current user explicitly requested creating all named new Spira/Aeon auto-abilities in the agreed three groups, including Drop markers.",
+  "definitions_sha256": "1b807dffec27c3af1ca858d14e91b97fe15e6aa7f3b57aa99747df1b3b0cdc08",
+  "author_sha256": "6ffc21bea18a93d83d2888153c8402e7a91646f3fed77d831da463b452303e4c",
+  "unit_tests": {
+    "passed": 13,
+    "total": 13
+  },
+  "editor_validator_sha256": "44aa17e079a0f4eace2f74c5c749dcb7dfeee3630082be1d010f0a5f1f423ce7",
+  "actual_file_reader_cases": [
+    {
+      "group": "extracted",
+      "locale": "new_uspc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "spira_reforge",
+      "locale": "jppc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "spira_reforge",
+      "locale": "new_uspc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "inpc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "jppc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "new_chpc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "new_depc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "new_frpc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "new_itpc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "new_jppc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "new_krpc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "new_sppc",
+      "passed": true,
+      "exit": 0
+    },
+    {
+      "group": "steam",
+      "locale": "new_uspc",
+      "passed": true,
+      "exit": 0
+    }
+  ],
+  "runtime_hook_changes": false,
+  "game_launched": false,
+  "assets_are_local_only": true
+}

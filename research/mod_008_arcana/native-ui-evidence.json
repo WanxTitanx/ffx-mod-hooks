@@ -1,0 +1,398 @@
+{
+  "pe_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+  "address_form": "RVA, x86 32-bit",
+  "preferred_base": "0x400000",
+  "context_state_offset": "0x1c",
+  "root_idle_state": 10,
+  "native_category_rva": "0x146a5e4",
+  "native_category_allowed_values": [
+    0,
+    1
+  ],
+  "spans": [
+    {
+      "name": "controller",
+      "rva": "0x4ceff0",
+      "width": 32,
+      "relocation_offsets": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "sha256": "f5838004af1f6687ba13c71d55d921169bd52d4a58a93badfe07e4ee8d281c21",
+      "hooked": true,
+      "group": "spans"
+    },
+    {
+      "name": "draw",
+      "rva": "0x4cf640",
+      "width": 32,
+      "relocation_offsets": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "sha256": "daeb1ce0899d3bf8f2ea37aa691c6807913a320841d965d2f3ef312c18761c49",
+      "hooked": true,
+      "group": "spans"
+    },
+    {
+      "name": "enter",
+      "rva": "0x4cf800",
+      "width": 32,
+      "relocation_offsets": [
+        16,
+        26,
+        255,
+        255
+      ],
+      "sha256": "322a2eb9e349c88048a54517d9d434054be1a3afcd62db1bf99c638227cf1911",
+      "hooked": true,
+      "group": "spans"
+    },
+    {
+      "name": "leave",
+      "rva": "0x4cf8e0",
+      "width": 32,
+      "relocation_offsets": [
+        1,
+        11,
+        21,
+        255
+      ],
+      "sha256": "bcf696d69895481622b16e8510199b07aec6ba5562c025cbf4630c1ee5b33083",
+      "hooked": true,
+      "group": "spans"
+    },
+    {
+      "name": "cursor",
+      "rva": "0x4cf960",
+      "width": 32,
+      "relocation_offsets": [
+        6,
+        17,
+        23,
+        255
+      ],
+      "sha256": "d3bbf57478f88a16bd2df4792e61378d179368429ce256ffbf731983e7b0af97",
+      "hooked": true,
+      "group": "spans"
+    },
+    {
+      "name": "scale_y",
+      "rva": "0x2449d0",
+      "width": 32,
+      "relocation_offsets": [
+        8,
+        14,
+        255,
+        255
+      ],
+      "sha256": "1236733a0e39de907f1f5cb0ca4fa3ee12b279d6191968e664bf511d2cf50e2e",
+      "hooked": true,
+      "group": "spans"
+    },
+    {
+      "name": "scale_x",
+      "rva": "0x244990",
+      "width": 32,
+      "relocation_offsets": [
+        8,
+        14,
+        255,
+        255
+      ],
+      "sha256": "8896c33b8afd3b557824895f336742f20d4c835d59daa79ca2adfa24d23213fa",
+      "hooked": true,
+      "group": "spans"
+    },
+    {
+      "name": "status_overview",
+      "rva": "0x4d26e0",
+      "width": 32,
+      "relocation_offsets": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "sha256": "376c2bf721ee630b1d7ce65c5c2065f339a74ced6c95a92f624a4ff8d3f8d5a5",
+      "hooked": true,
+      "group": "spans"
+    },
+    {
+      "name": "root_state",
+      "rva": "0x4cf35f",
+      "width": 32,
+      "relocation_offsets": [
+        2,
+        255,
+        255,
+        255
+      ],
+      "sha256": "46bc2ca0122334ca5fda561f51e748cf8ac75e76e5252b97a4e7c13879f61ede",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "native_category_toggle",
+      "rva": "0x4cf444",
+      "width": 32,
+      "relocation_offsets": [
+        17,
+        28,
+        255,
+        255
+      ],
+      "sha256": "218709521125d9931d6914c6e9da975882baa966c1b3d94f73a420db44957e10",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "read_direction_entry_window",
+      "rva": "0x4be438",
+      "width": 32,
+      "relocation_offsets": [
+        20,
+        255,
+        255,
+        255
+      ],
+      "sha256": "67ab1ffda75b8c615e896acf5189ace0c51079bd1272a8d1c10dd7e1376f1e9d",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "read_edge_entry_window",
+      "rva": "0x4be478",
+      "width": 32,
+      "relocation_offsets": [
+        20,
+        255,
+        255,
+        255
+      ],
+      "sha256": "1eead7c8fe723848a220bf2754bf94287cfb7591bf32fbe81e34d4cab72c48f6",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "current_actor",
+      "rva": "0x4a9810",
+      "width": 32,
+      "relocation_offsets": [
+        1,
+        8,
+        17,
+        255
+      ],
+      "sha256": "a082222c52c3bc76015d80360fdcec727fa30b6bf6f4d1f2ac174b180629d585",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "menu_sfx",
+      "rva": "0x486b00",
+      "width": 32,
+      "relocation_offsets": [
+        15,
+        255,
+        255,
+        255
+      ],
+      "sha256": "ac1d1fce9f2fbbf429e9e664a4009216864cea9fc1457488e48ced11d74884ba",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "portrait_transition",
+      "rva": "0x4bf720",
+      "width": 32,
+      "relocation_offsets": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "sha256": "d1781bf2037842307925a2c462f98efb4c56880479c3f7c80d74e88c887133c7",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "portrait_transition_arguments",
+      "rva": "0x4cf014",
+      "width": 32,
+      "relocation_offsets": [
+        1,
+        6,
+        11,
+        19
+      ],
+      "sha256": "fcca27f4a989abd1d81f89fb0817f95b801db6dea2854ababd65938d42a6c260",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "native_ability_font",
+      "rva": "0x505ab0",
+      "width": 32,
+      "relocation_offsets": [
+        9,
+        27,
+        255,
+        255
+      ],
+      "sha256": "4c91c34b27ba5ed3952796a167f40432fbde410681c2aff46285cfc95ab14cb1",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "native_font_measure",
+      "rva": "0x505290",
+      "width": 32,
+      "relocation_offsets": [
+        13,
+        255,
+        255,
+        255
+      ],
+      "sha256": "b49eb02e708243e633edec0089d811a44dff7a826070d1de2728f47773ace0cb",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "native_caption",
+      "rva": "0x4f8d50",
+      "width": 32,
+      "relocation_offsets": [
+        10,
+        255,
+        255,
+        255
+      ],
+      "sha256": "dd76ae38213dce2190e35c840a5b9207689f23e8785a1db09d7c3b56b3ca565b",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "status_animation",
+      "rva": "0x4d3090",
+      "width": 32,
+      "relocation_offsets": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "sha256": "b3248039277c6742f30efaf11f18cd1a0334f624f5156d064ae3a1d521a4189b",
+      "hooked": false,
+      "group": "spans"
+    },
+    {
+      "name": "status_draw",
+      "rva": "0x4d2760",
+      "width": 32,
+      "relocation_offsets": [
+        10,
+        255,
+        255,
+        255
+      ],
+      "sha256": "f8d21175c5277e49a1d008ebe1dedf7d15120f41dae4369025737273501e238f",
+      "hooked": true,
+      "group": "statusSpans"
+    },
+    {
+      "name": "status_list",
+      "rva": "0x4d2de0",
+      "width": 32,
+      "relocation_offsets": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "sha256": "aff024227bae0b93247b179f4c63637e0c639bcfaa8657fea8f4884314cd36f2",
+      "hooked": false,
+      "group": "statusSpans"
+    }
+  ],
+  "portrait_transition_fields_rva": [
+    "0x1fcc3c8",
+    "0x1fcc3c4",
+    "0x1fcc3c0",
+    "0x1fcc3bc"
+  ],
+  "portrait_transition_field_width": 4,
+  "status_context_fields": {
+    "retiring_byte": "0x41",
+    "mode": "0x58",
+    "category": "0x5c",
+    "page": "0x60",
+    "aeon": "0x64"
+  },
+  "status_native_capacity": 22,
+  "menu_feedback": {
+    "dispatcher_rva": "0x486b00",
+    "move_confirm": 1,
+    "error": 3,
+    "cancel": 4,
+    "ownership": "One cue after consumed private input; delegated native controls own their audio."
+  },
+  "status_typography": {
+    "ability_font_rva": "0x505ab0",
+    "measure_rva": "0x505290",
+    "caption_rva": "0x4f8d50",
+    "caption_id_context_offset": "0x68",
+    "native_caption_size": [
+      430,
+      36
+    ],
+    "outline": "native",
+    "width_fit": "uniform per section"
+  },
+  "status_overview": {
+    "draw_rva": "0x4d26e0",
+    "animation_phase_offset": "0x52",
+    "phase_width": 2,
+    "animation_rva": "0x4d3090",
+    "row_y": 490,
+    "row_height": 44,
+    "armor_bottom": 482,
+    "stats_top": 552,
+    "slots": "2 or 3 in one read-only row"
+  },
+  "status_visibility": {
+    "cover_step_rva": "0x146a9bc",
+    "cover_amount_rva": "0x146a9c0",
+    "cover_field_width": 2,
+    "cover_range": [
+      0,
+      4096
+    ],
+    "cover_set_step_rva": "0x4d2630",
+    "cover_advance_rva": "0x4d3250",
+    "cover_get_rva": "0x4d48e0",
+    "cover_reset_rva": "0x4d4ea0",
+    "retire_page_rva": "0x4d2650",
+    "cover_draw_rva": "0x4d4140",
+    "rule": "Overview additions require a live page, zero cover and nonpositive cover step; ability additions require a live page."
+  },
+  "equip_cursor_order": "Suppress the earlier native Tarot cursor and draw it once after opaque extension rows; native Weapon/Armor delegation is unchanged.",
+  "status_extension": "Private direct-draw rows; existing native ability buffer remains unchanged. Borrow the validated Workshop status bridge when installed.",
+  "ability_row_scale_returns": {
+    "icon_width": "0x4f4f66",
+    "icon_height": "0x4f4f54",
+    "icon_y": "0x4f4f78",
+    "text_y": "0x4f4fc8"
+  },
+  "header_scale_y_returns": {
+    "equipment_panel": "0x4cf6c3",
+    "equipment_caption": "0x4cf712",
+    "abilities_panel": "0x4cf766",
+    "abilities_caption": "0x4cf7b5"
+  },
+  "scope": "RT0 static bytes and caller/context analysis; not an in-game observation"
+}

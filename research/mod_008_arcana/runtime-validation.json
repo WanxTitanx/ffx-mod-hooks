@@ -1,0 +1,164 @@
+{
+  "owner": "Jarvis-HOOK",
+  "date": "2026-09-28",
+  "status": "RT0_RT1_CANDIDATE_RT2_PENDING",
+  "base_commit": "f2308dddc1833811899c0999c96b5ee25a18bd66",
+  "concept_commit": "569bdbdb95bc33d8234b121adf4cd7119a63b4e1",
+  "game_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+  "dll_sha256": "438f333053ff9fc30eead9ce65c0b17010a1be6a27978b50af71af1fc1fa0e9a",
+  "dll_bytes": 1991680,
+  "dll_build": "build_hooks.ps1 -WithPolyHook -Release, MSVC x86",
+  "runtime_source_manifest_sha256": "ca69e6741c76a531a0422579d7c99b07656d87f4e3abf3c76c974235bf58b110",
+  "evidence": [
+    {
+      "log": "work/mod008/portable.log",
+      "sha256": "9aba8872625912827e2680a53edd7a5bc8991cb24fef095cb5bb206660063b51",
+      "passes": [
+        "PASS typed Arcana catalog: 78 cards, sha256=17b8412c44288c1b15e47e8e1f23823f341b6f38c3861fa7e4a411d02e522663",
+        "ArcanaCoreRt0 76194/76194 passed",
+        "ArcanaAcquisitionRt0 95/95 passed",
+        "ArcanaUiRt0 23/23 passed",
+        "ArcanaNativeEffectsRt0 13/13 passed",
+        "ArcanaCombatCoreRt0 13/13 passed",
+        "ArcanaStoreRt1 26/26 passed",
+        "NativeSaveEventsRt0 25/25 passed",
+        "NativeSaveProjectionRt0 15/15 passed",
+        "NativeGameplayEventsRt0 5/5 passed",
+        "PASS Arcana portable checks; native Windows, graphics and live gameplay are separate gates"
+      ],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/portable-san.log",
+      "sha256": "9aba8872625912827e2680a53edd7a5bc8991cb24fef095cb5bb206660063b51",
+      "passes": [
+        "PASS typed Arcana catalog: 78 cards, sha256=17b8412c44288c1b15e47e8e1f23823f341b6f38c3861fa7e4a411d02e522663",
+        "ArcanaCoreRt0 76194/76194 passed",
+        "ArcanaAcquisitionRt0 95/95 passed",
+        "ArcanaUiRt0 23/23 passed",
+        "ArcanaNativeEffectsRt0 13/13 passed",
+        "ArcanaCombatCoreRt0 13/13 passed",
+        "ArcanaStoreRt1 26/26 passed",
+        "NativeSaveEventsRt0 25/25 passed",
+        "NativeSaveProjectionRt0 15/15 passed",
+        "NativeGameplayEventsRt0 5/5 passed",
+        "PASS Arcana portable checks; native Windows, graphics and live gameplay are separate gates"
+      ],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/suite-msvc.log",
+      "sha256": "480ab3fce8469fbb6810980e9d692d9f38ed50283222c850dfd45af3b383f17d",
+      "passes": [
+        "ArcanaNativeUiRt1 37/37 passed",
+        "ArcanaCombatRt1 60/60 passed",
+        "ArcanaAssetsRt1 12/12 passed",
+        "ArcanaRuntimeRt1 26/26 passed",
+        "ArcanaRuntimeRt1 15/15 passed",
+        "ArcanaRuntimeRt1 27/27 passed",
+        "RonsoPoolIoRt1 ON: PASS (24 checks, 0 failures)",
+        "RonsoPoolIoRt1 OFF: PASS (19 checks, 0 failures)",
+        "PASS Arcana RT1 fixtures; live gameplay and visual acceptance remain RT2"
+      ],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/save-execution-msvc.log",
+      "sha256": "b38b1f24bd14260e71607bc944cf100470b5c202ef0eeff2321e7e23d70871f6",
+      "passes": [
+        "RonsoPoolIoRt1 ON: PASS (24 checks, 0 failures)",
+        "RonsoPoolIoRt1 OFF: PASS (19 checks, 0 failures)"
+      ],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/regression-msvc.log",
+      "sha256": "b5c4fa7363b3ec4780fcf4e3f9e3b31d1560c142de18e274a0d2017cc4d0238a",
+      "passes": [
+        "F8RuntimeRt0: PASS (3988 checks)",
+        "F8 RUNTIME RT0: PASS",
+        "SEYMOUR BATTLE RT1: 88/88 PASS",
+        "SEYMOUR BATTLE RT1: PASS",
+        "CustomMix production runtime RT0/RT1: 89/89 passed",
+        "CustomMix Ultra production runtime x86: PASS (RT0 contracts + RT1 composition; COFF-I386 0x014C)"
+      ],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/workshop-final.log",
+      "sha256": "db5f239bdd452ce59be93660d18587d3622583c09a7a6d908bf1208878e13ff9",
+      "passes": [
+        "WORKSHOP_CORE 1283/1283 passed",
+        "WORKSHOP_CORE 1283/1283 passed",
+        "WORKSHOP_ECONOMY 2660/2660 passed",
+        "WORKSHOP_ECONOMY 2660/2660 passed",
+        "WORKSHOP_PROGRESSION 62/62 passed",
+        "WORKSHOP_PROGRESSION 62/62 passed",
+        "WORKSHOP_FIFTH_ORDER 116/116 passed",
+        "WORKSHOP_FIFTH_ORDER 116/116 passed",
+        "WORKSHOP_FIFTH_CATALOG 1299/1299 passed",
+        "WORKSHOP_FIFTH_CATALOG 1299/1299 passed",
+        "WORKSHOP_CUSTOMIZE_LIMITS 194/194 passed",
+        "WORKSHOP_CUSTOMIZE_LIMITS 194/194 passed",
+        "WORKSHOP_AEONS 169/169 passed",
+        "WORKSHOP_AEONS 169/169 passed",
+        "Ran 45 tests in 0.703s",
+        "OK (skipped=2)"
+      ],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/final-build.log",
+      "sha256": "456bc1da06d70ada7b39797f63f3d3f28d09d4523e4f1ed70b0f07b23fa98a20",
+      "passes": [],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/smoke-msvc.log",
+      "sha256": "671fa3d97503f990e9c232733b8c4b71f08a078f682b449b94396979f539b9aa",
+      "passes": [
+        "PASS Arcana DLL x86 loader/worker smoke with validation-only and unchanged private PE boundaries; no game launched"
+      ],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/context-tests.log",
+      "sha256": "fae09081a57730766c654d2b205be27a8c720bb02f9e6545e4ed48e400bb078d",
+      "passes": [
+        "Ran 114 tests in 1.861s",
+        "OK"
+      ],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/context-doctor.json",
+      "sha256": "80194030b5dd42d5c8fe6afc8716b99d38aad6603558555fd9636c24d8f7924a",
+      "passes": [],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/context-evaluate.json",
+      "sha256": "d0b95917442694401f6677b3ce5c18763f3d1f170f0b3de19f1279312ce45be1",
+      "passes": [],
+      "note": ""
+    },
+    {
+      "log": "work/mod008/art-final.log",
+      "sha256": "d477581a125cf575e266546e1ae34966d18bc4942b540af365bc052c56575595",
+      "passes": [
+        "\"result\": \"PASS_RT0_DELIVERY\","
+      ],
+      "note": ""
+    }
+  ],
+  "limits": [
+    "No deployment, live gameplay, RT2, or Production promotion.",
+    "Author verification is not independent review.",
+    "WARP checks art rendering; native-menu visual fit and controller timing require RT2.",
+    "Additional healing/MP/CTB/reactive modifiers are battle consumers; full field Skills/Items parity is not established.",
+    "Encounter and gil adapters are compiled and signature admitted; end-to-end reward and encounter pacing require RT2."
+  ],
+  "runtime_build_input_count": 228,
+  "context_cases_passed": 14,
+  "integration_authorization": "Later explicit user instruction: commit, branch synchronization, PR, then merge, after disclosure of author-only review."
+}

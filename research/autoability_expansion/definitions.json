@@ -1,0 +1,421 @@
+{
+  "schema": 1,
+  "purpose": "Additive auto-ability records. Native effects only where defined; exclusive and unresolved effects remain neutral until Hook support. No recipes or equipment grants.",
+  "first_id": 148,
+  "last_id": 174,
+  "preserve_existing_through_id": 147,
+  "cjk_numeric_placeholders": true,
+  "existing_mod002_manifest": "../mod_002_autoabilities/default_ids.json",
+  "definitions": [
+    {
+      "key": "aeon_break_hp_mp_limit",
+      "id": 148,
+      "equipment_word": "0x8094",
+      "name": "Aeon Break HP/MP Limit",
+      "gear_type": "armor",
+      "description": "Aeons only. HP cap 999999. MP cap 9999. Workshop Hook required.",
+      "payload_mode": "hook_only",
+      "writes": {},
+      "allowed_owners": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "arms_rate": 0,
+      "workshop_only": true
+    },
+    {
+      "key": "aeon_break_damage_limit",
+      "id": 149,
+      "equipment_word": "0x8095",
+      "name": "Aeon Break Damage Limit",
+      "gear_type": "weapon",
+      "description": "Aeons only. Damage cap 999999. Workshop Hook required.",
+      "payload_mode": "hook_only",
+      "writes": {},
+      "allowed_owners": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "arms_rate": 0,
+      "workshop_only": true
+    },
+    {
+      "key": "spira_mana_spring",
+      "id": 150,
+      "equipment_word": "0x8096",
+      "name": "Mana Spring",
+      "gear_type": "weapon",
+      "description": "Restores 5 MP per turn. Hook required.",
+      "payload_mode": "hook_only",
+      "writes": {},
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_break_limits",
+      "id": 151,
+      "equipment_word": "0x8097",
+      "name": "Break Limits",
+      "gear_type": "armor",
+      "description": "Raises HP limit to 99999 and MP limit to 9999.",
+      "payload_mode": "native",
+      "writes": {
+        "flags64": 1536
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_devils_bargain",
+      "id": 152,
+      "equipment_word": "0x8098",
+      "name": "Devil's Bargain",
+      "gear_type": "armor",
+      "description": "Deals and receives 50% more damage. Hook required.",
+      "payload_mode": "hook_only",
+      "writes": {},
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_wardens_oath",
+      "id": 153,
+      "equipment_word": "0x8099",
+      "name": "Warden's Oath",
+      "gear_type": "armor",
+      "description": "Auron only. HP cap 999999 with BHP. Hook required.",
+      "payload_mode": "hook_only",
+      "writes": {},
+      "allowed_owners": [
+        2
+      ],
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_arcane_focus",
+      "id": 154,
+      "equipment_word": "0x809A",
+      "name": "Arcane Focus",
+      "gear_type": null,
+      "description": "Lulu only. Hook required. Effect pending.",
+      "payload_mode": "hook_only",
+      "writes": {},
+      "allowed_owners": [
+        5
+      ],
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_double_drop",
+      "id": 155,
+      "equipment_word": "0x809B",
+      "name": "Double Drop",
+      "gear_type": "armor",
+      "description": "Doubles battle item quantities. Drop Hook required.",
+      "payload_mode": "hook_marker",
+      "writes": {
+        "flags64": 4096
+      },
+      "allowed_owners": null,
+      "arms_rate": 0,
+      "legacy_id": 129
+    },
+    {
+      "key": "spira_triple_drop",
+      "id": 156,
+      "equipment_word": "0x809C",
+      "name": "Triple Drop",
+      "gear_type": "armor",
+      "description": "Triples battle item quantities. Drop Hook required.",
+      "payload_mode": "hook_marker",
+      "writes": {
+        "flags64": 8192
+      },
+      "allowed_owners": null,
+      "arms_rate": 0,
+      "legacy_id": 130
+    },
+    {
+      "key": "spira_element_eater",
+      "id": 157,
+      "equipment_word": "0x809D",
+      "name": "Element Eater",
+      "gear_type": "weapon",
+      "description": "Absorbs Fire damage.",
+      "payload_mode": "native",
+      "writes": {
+        "element_absorb": 1
+      },
+      "allowed_owners": null,
+      "arms_rate": 0,
+      "legacy_custom_id": 134
+    },
+    {
+      "key": "spira_hpmp_10",
+      "id": 158,
+      "equipment_word": "0x809E",
+      "name": "HPMP +10%",
+      "gear_type": "armor",
+      "description": "Raises max HP and MP by 10%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 10,
+        "stat_mask": 768
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_hpmp_20",
+      "id": 159,
+      "equipment_word": "0x809F",
+      "name": "HPMP +20%",
+      "gear_type": "armor",
+      "description": "Raises max HP and MP by 20%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 20,
+        "stat_mask": 768
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_hpmp_40",
+      "id": 160,
+      "equipment_word": "0x80A0",
+      "name": "HPMP +40%",
+      "gear_type": "armor",
+      "description": "Raises max HP and MP by 40%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 40,
+        "stat_mask": 768
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_hpmp_60",
+      "id": 161,
+      "equipment_word": "0x80A1",
+      "name": "HPMP +60%",
+      "gear_type": "armor",
+      "description": "Raises max HP and MP by 60%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 60,
+        "stat_mask": 768
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_aio_3",
+      "id": 162,
+      "equipment_word": "0x80A2",
+      "name": "AIO +3%",
+      "gear_type": "armor",
+      "description": "Raises HP MP STR MAG DEF and MDEF by 3%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 3,
+        "stat_mask": 16128
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_aio_6",
+      "id": 163,
+      "equipment_word": "0x80A3",
+      "name": "AIO +6%",
+      "gear_type": "armor",
+      "description": "Raises HP MP STR MAG DEF and MDEF by 6%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 6,
+        "stat_mask": 16128
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_aio_9",
+      "id": 164,
+      "equipment_word": "0x80A4",
+      "name": "AIO +9%",
+      "gear_type": "armor",
+      "description": "Raises HP MP STR MAG DEF and MDEF by 9%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 9,
+        "stat_mask": 16128
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_aio_12",
+      "id": 165,
+      "equipment_word": "0x80A5",
+      "name": "AIO +12%",
+      "gear_type": "armor",
+      "description": "Raises HP MP STR MAG DEF and MDEF by 12%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 12,
+        "stat_mask": 16128
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_str_mag_10",
+      "id": 166,
+      "equipment_word": "0x80A6",
+      "name": "STR MAG +10%",
+      "gear_type": "weapon",
+      "description": "Raises Strength and Magic by 10%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 10,
+        "stat_mask": 3072
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_str_mag_20",
+      "id": 167,
+      "equipment_word": "0x80A7",
+      "name": "STR MAG +20%",
+      "gear_type": "weapon",
+      "description": "Raises Strength and Magic by 20%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 20,
+        "stat_mask": 3072
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_def_mdef_10",
+      "id": 168,
+      "equipment_word": "0x80A8",
+      "name": "DEF MDEF +10%",
+      "gear_type": "armor",
+      "description": "Raises Defense and Magic Defense by 10%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 10,
+        "stat_mask": 12288
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_def_mdef_20",
+      "id": 169,
+      "equipment_word": "0x80A9",
+      "name": "DEF MDEF +20%",
+      "gear_type": "armor",
+      "description": "Raises Defense and Magic Defense by 20%.",
+      "payload_mode": "native",
+      "writes": {
+        "stat_amount": 20,
+        "stat_mask": 12288
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_foolstrike",
+      "id": 170,
+      "equipment_word": "0x80AA",
+      "name": "Foolstrike",
+      "gear_type": "weapon",
+      "description": "Spira status strike. Hook required. Status rules pending.",
+      "payload_mode": "hook_only",
+      "writes": {},
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_fooltouch",
+      "id": 171,
+      "equipment_word": "0x80AB",
+      "name": "Fooltouch",
+      "gear_type": "weapon",
+      "description": "Spira status touch. Hook required. Status rules pending.",
+      "payload_mode": "hook_only",
+      "writes": {},
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_fourstrike",
+      "id": 172,
+      "equipment_word": "0x80AC",
+      "name": "Fourstrike",
+      "gear_type": "weapon",
+      "description": "Four elements. Extra status effects require Hook.",
+      "payload_mode": "native_base_hook_pending",
+      "writes": {
+        "element_strike": 15
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_fourtouch",
+      "id": 173,
+      "equipment_word": "0x80AD",
+      "name": "Fourtouch",
+      "gear_type": "weapon",
+      "description": "Four elements. Extra status effects require Hook.",
+      "payload_mode": "native_base_hook_pending",
+      "writes": {
+        "element_strike": 15
+      },
+      "allowed_owners": null,
+      "arms_rate": 0
+    },
+    {
+      "key": "spira_spell_spring",
+      "id": 174,
+      "equipment_word": "0x80AE",
+      "name": "Spell Spring",
+      "gear_type": null,
+      "description": "Reserved Spira ability. Hook required. Effect pending.",
+      "payload_mode": "hook_only",
+      "writes": {},
+      "allowed_owners": null,
+      "arms_rate": 0
+    }
+  ],
+  "coverage_notes": {
+    "existing_mod002": "IDs 135..147 preserved; not duplicated.",
+    "legacy_spira": "Existing native/rebalanced rows and custom134 are preserved. Dedicated named additions receive fresh IDs; no guessing rework bytes from a conflicting historical export.",
+    "character_directions": "Unnamed Tidus/Yuna/Wakka/Rikku equipment concepts and the command-based Kimahri system have no new passive definition to allocate.",
+    "double_triple_drop": "No 0x1000/0x2000 marker found in the 13 input ability tables. New common IDs preserve divergent legacy slots129/130.",
+    "exclusivity": "Owner and Workshop restrictions are Hook contracts; neutral rows grant no native exclusive effect."
+  }
+}

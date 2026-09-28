@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "captured_at": "2026-09-27",
+  "expected_start_id": 148,
+  "targets": [
+    {
+      "group": "extracted",
+      "locale": "new_uspc",
+      "kind": "a_ability",
+      "path": "/home/wanderson/Documents/ffx-editor-main/docs/history/DOSSI\u00ca FFX 01-06-2026/ffx-editor-pt29__PT29_DOSSIE_COMPLETO_CHAT/dependencies/D/FFX Extracted/FFX/ffx_ps2/ffx/master/new_uspc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 23621,
+      "sha256": "b8119bcce3c2d9953a25adb928e00906fa91c10fac07030a967047494909ee36",
+      "mode": 509
+    },
+    {
+      "group": "extracted",
+      "locale": "jppc",
+      "kind": "arms_rate",
+      "path": "/home/wanderson/Documents/ffx-editor-main/docs/history/DOSSI\u00ca FFX 01-06-2026/ffx-editor-pt29__PT29_DOSSIE_COMPLETO_CHAT/dependencies/D/FFX Extracted/FFX/ffx_ps2/ffx/master/jppc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "0b8f0154f985b9deb966f61f27b0a57f19d4457dd9662dc2a9aece286c918205",
+      "mode": 509
+    },
+    {
+      "group": "spira_reforge",
+      "locale": "jppc",
+      "kind": "a_ability",
+      "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/data/mods/ffx_ps2/ffx/master/jppc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 21155,
+      "sha256": "0525b4929e31467f449349b23353969083cdddf6d8ca83d3f562c8c62393e9a1",
+      "mode": 509
+    },
+    {
+      "group": "spira_reforge",
+      "locale": "new_uspc",
+      "kind": "a_ability",
+      "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/data/mods/ffx_ps2/ffx/master/new_uspc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 23071,
+      "sha256": "70e0e14178c7dae5616667e624fe39359b1f1e4f7c47ba95868f0808acd92268",
+      "mode": 509
+    },
+    {
+      "group": "spira_reforge",
+      "locale": "jppc",
+      "kind": "arms_rate",
+      "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/data/mods/ffx_ps2/ffx/master/jppc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 509
+    },
+    {
+      "group": "steam",
+      "locale": "inpc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/inpc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 23591,
+      "sha256": "e04227416bc808a1a4033b0e071c89c380f46c3f7f0221dfb612916d3723927c",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "jppc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/jppc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 21155,
+      "sha256": "0525b4929e31467f449349b23353969083cdddf6d8ca83d3f562c8c62393e9a1",
+      "mode": 509
+    },
+    {
+      "group": "steam",
+      "locale": "new_chpc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_chpc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 20143,
+      "sha256": "ac7852ac95e7a3cbd64b30630367194fe6b702fb4ae91a5a849d154b12facaf0",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_depc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_depc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 24161,
+      "sha256": "4f316f6403f3aa1af3bcd7db7eaa605412efc1b9ec9aafb907fa137d7715f41e",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_frpc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_frpc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 23242,
+      "sha256": "2fe098ca8427598fec0b44ca2cc7d3b719e73e2db526684c5836d5e3030e7f0b",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_itpc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_itpc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 23681,
+      "sha256": "75ff6f8199d7ecd819cf0bccb4c062ddfe6d84af72f278c6076103ef57776bee",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_jppc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_jppc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 20876,
+      "sha256": "56e3bffe1a2a191c9ffcad27f8714334a1258b00ecc25a24cddae078c695aef8",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_krpc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_krpc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 21444,
+      "sha256": "e052d8749d9e0bbc31e620a695c7b62ae5bdcb026487e5ae34c428bc85c90c02",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_sppc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_sppc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 23759,
+      "sha256": "7476d3292f669f5239d469eae0b6036333c082a7d03104a04237f18fb9a5c4c8",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_uspc",
+      "kind": "a_ability",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_uspc/battle/kernel/a_ability.bin",
+      "max_id": 147,
+      "size": 23071,
+      "sha256": "70e0e14178c7dae5616667e624fe39359b1f1e4f7c47ba95868f0808acd92268",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "inpc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/inpc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "jppc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/jppc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_chpc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_chpc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_depc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_depc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_frpc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_frpc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_itpc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_itpc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_jppc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_jppc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_krpc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_krpc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_sppc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_sppc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    },
+    {
+      "group": "steam",
+      "locale": "new_uspc",
+      "kind": "arms_rate",
+      "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_uspc/battle/kernel/arms_rate.bin",
+      "max_id": 147,
+      "size": 612,
+      "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+      "mode": 493
+    }
+  ]
+}

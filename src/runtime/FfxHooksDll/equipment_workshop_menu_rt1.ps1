@@ -29,6 +29,6 @@ foreach($needle in @('if(InterlockedCompareExchange(&EquipmentMenu::wantOpen,0,0
 $ordered=($steps | Sort-Object {$_.Position} | ForEach-Object {$_.Code}) -join "`n"
 Set-Content -LiteralPath (Join-Path $obj 'WorkshopOpenCloseOrder.inc') -Value $ordered -Encoding utf8
 $exe=Join-Path $obj 'EquipmentWorkshopMenuRt1.exe'
-$cmd='call "{0}" x86 >nul && cl /nologo /EHsc /std:c++17 /W4 /WX /utf-8 /MT /DFFXHOOKS_TESTING /I"{1}" /I"{2}\research\equipment_workshop\include" "{3}\tests\EquipmentWorkshopMenuRt1.cpp" "{3}\hooks\F7UiCore.cpp" "{3}\shared\Config.cpp" "{2}\research\equipment_workshop\src\workshop.cpp" /Fe"{4}" user32.lib' -f $vcvars,$obj,$repo,$here,$exe
+$cmd='call "{0}" x86 >nul && cl /nologo /EHsc /std:c++17 /W4 /WX /utf-8 /MT /DFFXHOOKS_TESTING /I"{1}" /I"{2}\research\equipment_workshop\include" "{3}\tests\EquipmentWorkshopMenuRt1.cpp" "{3}\hooks\F7UiCore.cpp" "{3}\hooks\TextLanguageCore.cpp" "{3}\hooks\F8FlagCatalog.cpp" "{3}\shared\Config.cpp" "{2}\research\equipment_workshop\src\workshop.cpp" /Fe"{4}" user32.lib' -f $vcvars,$obj,$repo,$here,$exe
 Push-Location $obj
 try {& $env:ComSpec /d /s /c $cmd;if($LASTEXITCODE -ne 0){throw 'Menu harness build failed'};& $exe;if($LASTEXITCODE -ne 0){throw 'Menu regression failed'}}finally{Pop-Location}

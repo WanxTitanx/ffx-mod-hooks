@@ -7,6 +7,18 @@ that do not change behavior.
 
 ## [Unreleased]
 
+## [0.6.0-beta] — 2026-09-28
+
+- Consolidate Vanguard (31 controls), Elemental Dominion, Spira Reforge, paid Aeon Ascension, Equipment Workshop, text-language support and Arcana (78 cards) in one DLL.
+- Reorganize F8 into seven tabs and 88 canonical boolean controls; group Additional mods, FieldScout and AP/Gil Multipliers into native submenus.
+- Show eight native plus two Hook-only elements in F7/Scan, with stable identities, applied-affinity ownership, colors and visibility.
+- Add independent per-monster AP/Gil factors (1–1000), general factors (1–100), original/individual/total previews and atomic TSV persistence. Wide bounded arithmetic runs before vanilla bonuses without widening monster WORDs.
+- Include Arcana's runtime artwork, OFF settings examples, installation guides, licenses and source/binary hashes in the full binary package; publish the corresponding complete source tree.
+- Refresh README and checked roadmap without erasing completion history; document actual Editor gaps, inactive Spira definitions and current RT2 limits.
+- Repair a test-only GCC misleading-indentation build error; production DLL inputs remain byte-identical to the validated source checkpoint.
+- Windows Release/RT0/RT1 and 22 same-binary Proton cases validate the distributed DLL. Current-candidate gameplay/visual acceptance remains pending; this release is beta, not a Production promotion.
+
+
 ## [0.5.0-beta] — 2026-09-27
 
 - Integrated the Equipment Workshop's native equipment and Customize views,

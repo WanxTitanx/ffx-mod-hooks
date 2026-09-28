@@ -1,0 +1,24 @@
+{
+  "id": 44,
+  "key": "cups.nine",
+  "asset": "assets/mod-008-arcana/concepts/cards/044-cups-nine.png",
+  "source": "/home/wanderson/.codex/generated_images/01a0ced4-9fba-7a22-9466-d8897fbcba59/exec-471407ea-4699-4471-8846-cc024d7c1031.png",
+  "prompt": "Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. Top medallion text (verbatim): \"IX\". Bottom name plaque text (verbatim): \"NINE OF CUPS\". Card subject: Nine of Cups. Scene: a contented Spiran host seated before nine ceremonial cups. Accent palette: turquoise, pearl and silver. Keep traditional Tarot symbols legible and the border consistent with the reference.",
+  "tool": "image_gen.imagegen",
+  "status": "GENERATED_LABELLED_CONCEPT",
+  "layout": "number_top_name_bottom_court_unnumbered",
+  "revisions": [
+    {
+      "revision": "v2",
+      "asset": "assets/mod-008-arcana/concepts/cards/044-cups-nine-v2.png",
+      "source": "/home/wanderson/.codex/generated_images/01a0e4f3-941d-7982-9126-fda15e1382dd/exec-7ad9812f-59b5-43e6-aef9-dffcc44b2546.png",
+      "sha256": "b79253c83e94ce527a1c5f36e51f3e71503c1977e1e617e355cb97020719c1ea",
+      "tool": "image_gen.imagegen",
+      "reason": "Remove the extra small rear-center goblet; keep the nine large foreground cups, approved frame, IX and bottom title.",
+      "prompt": "Use case: precise-object-edit. Edit this existing Tarot card only to correct the cup count. Preserve the entire ivory/ocean-blue/gold frame, top Roman numeral IX, bottom exact title NINE OF CUPS, portrait 2:3 canvas, Tidus figure, costume, face, pose, sea, palm trees, fabric and the NINE large ornate cups across the foreground. There is an unwanted TENTH small narrow champagne-like silver goblet at the back center of the table, directly above the large central foreground cup and in front of the man's crossed forearms (approximately x=510, y=820 in the 1024x1536 source). REMOVE ONLY that small rear-center goblet and its stem, filling its footprint with the existing white-and-blue tablecloth/forearm background naturally. Keep all NINE large foreground cups exactly in place, fully intact. Final illustration must have exactly NINE cups in total. Do not add any cup, rearrange objects, change text, redraw the frame, zoom, crop, or redesign the card.",
+      "review": "Nine foreground cups visible; no rear goblet; IX and NINE OF CUPS preserved.",
+      "input_asset": "assets/mod-008-arcana/concepts/cards/044-cups-nine.png",
+      "input_sha256": "e4cf635d6b884b11350d05f10bd9a0a1840ea8357b88bbd6d15f9788d152e1d5"
+    }
+  ]
+}

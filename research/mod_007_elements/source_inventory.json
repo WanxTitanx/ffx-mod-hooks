@@ -1,0 +1,229 @@
+{
+  "producer": "Jarvis-HOOK",
+  "date": "2026-09-27",
+  "groups": {
+    "runtime": {
+      "root": "/home/wanderson/Documents/ffx-hooks",
+      "branch": "main",
+      "head": "f2308dddc1833811899c0999c96b5ee25a18bd66",
+      "files": [
+        {
+          "path": "src/runtime/FfxHooksDll/hooks/ElementScanCore.h",
+          "bytes": 2456,
+          "sha256": "094f12dcc0e65ca89d516c1c52950613ca4d4808e0e36242d732655e4f059514"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/hooks/ElementScanDetails.inl",
+          "bytes": 9739,
+          "sha256": "1f6012c0b396d5fe4162b415368bb5bd03763b4d2db616c5f1e00dffe010221e"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/hooks/ElementHook.cpp",
+          "bytes": 9176,
+          "sha256": "9fba696b210038c243b35598c79cfaead1a18a472691d0be5d82a945a047b43f"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/hooks/F7DifficultyCore.cpp",
+          "bytes": 92744,
+          "sha256": "ea20d21e97293c73e882e58ae8e824a2b529bae397cecbf5fb3cecf2cb81b56d"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/hooks/F7DifficultyCore.h",
+          "bytes": 22684,
+          "sha256": "5af909c3ec4ae86a45eeb77e9ce4000ce7d38d795cfd9bf3309144fc25908b8b"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopRuntime.cpp",
+          "bytes": 32951,
+          "sha256": "c53142997938c5db1e4b620fe1d67c2f7bf6364ef9b9c605648e3cd6c08dd9e9"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/hooks/NulWardHook.cpp",
+          "bytes": 26111,
+          "sha256": "6874ec44e1b3ac30b360c6d2aa6d20e619ed7814f22d2e0c9b639e4e3c66eef3"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/tests/F7ExtraElementCases.inl",
+          "bytes": 1935,
+          "sha256": "b2226d68ccfe9ab02efbf876c78bae23c7c9b96ea7bb19e845187a0d34f57ec6"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/tests/ElementVisibilityCases.inl",
+          "bytes": 3742,
+          "sha256": "1688a177e01d73cae338388cc62c2c163b370d904dd46d44f6b90f1de266a7d3"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/hooks/NovaSuperDamageHook.cpp",
+          "bytes": 14869,
+          "sha256": "b8f03ba608d0b69f31a31140c24a056646b591304755dc1fe656aa8c1b0094b9"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/shared/ffx_addresses.h",
+          "bytes": 59635,
+          "sha256": "4801d93b8eeebfa302896e388473b0128cccbd11462f398d9156ec2f823214b1"
+        },
+        {
+          "path": "src/runtime/FfxHooksDll/tests/NovaSuperDamageRt1.cpp",
+          "bytes": 12662,
+          "sha256": "e684aa475504fdc9067d3f9f3545e164c413fcd38c540d6173de1b1042a20686"
+        }
+      ]
+    },
+    "editor": {
+      "root": "/home/wanderson/Documents/ffx-editor-main",
+      "branch": "codexclaudiocodeffxeditor",
+      "head": "399164236638bd34d44c4833b02ea3b15a49d771",
+      "files": [
+        {
+          "path": "FFXProjectEditor/FfxLib/Dictionaries/Element_Flags.cs",
+          "bytes": 538,
+          "sha256": "582bb26b293ee4f557c088f83f201038ae5fb9109aae0ec1f1e7854e610965dd"
+        },
+        {
+          "path": "FFXProjectEditor/FfxLib/Dictionaries/Element_Enum.cs",
+          "bytes": 253,
+          "sha256": "82846bfb0fb37117b26bfe59c99372e149c0f2705f51e4efbcef281019c21888"
+        },
+        {
+          "path": "FFXProjectEditor/FfxLib/Dictionaries/DamageFormula_Enum.cs",
+          "bytes": 771,
+          "sha256": "209f642237ef3be4dfb55a0c0a54f675de1fc85145350c180620c87b1e1328ed"
+        },
+        {
+          "path": "FFXProjectEditor/FfxLib/Ability/Ability_Command.cs",
+          "bytes": 48319,
+          "sha256": "30991d35a6fe99d8b34e5add1717c213946bf8cc3de3846e9cb73b01f562209c"
+        },
+        {
+          "path": "FFXProjectEditor/FfxLib/Ability/MonsterMagicGrowWriter.cs",
+          "bytes": 129019,
+          "sha256": "7048ac294873e1f9341b5eb44f3b15638bd62e3b4143476baa2b9e55df942c86"
+        },
+        {
+          "path": "FFXProjectEditor/FfxLib/Ability/AutoAbility_File.cs",
+          "bytes": 20302,
+          "sha256": "b296ec8183621bdf295edb7a69c420575701661c9da3f9d70cbbe501beebc8f2"
+        },
+        {
+          "path": "FFXProjectEditor/FfxLib/Common/ElementalWeaknessData.cs",
+          "bytes": 5792,
+          "sha256": "05cc883a2419fdcce44973521d6f577da2ffd994f45ecd11adb84a83de1153a4"
+        },
+        {
+          "path": "FFXProjectEditor/FfxLib/Monster/Monster_StatSheet.cs",
+          "bytes": 29752,
+          "sha256": "554f2a9cd6e6f3d9e768c849e27ffc80f49f88031963d8621e12cd642e0e411a"
+        },
+        {
+          "path": "FFXProjectEditor.Tests/Fixtures/Battle/command.bin",
+          "bytes": 44558,
+          "sha256": "db4c87f33f27a7df41bc8a520bc2246b664167319386fe99da9880ae06000429"
+        },
+        {
+          "path": "work/_btl/damage_formula_dispatch.c",
+          "bytes": 12022,
+          "sha256": "96b297a83f2839d8b3a7214e8c28da6a8beceed8616a5f3bfaa3c6383f72a66f"
+        },
+        {
+          "path": "work/_btl/compute_hit_damage.c",
+          "bytes": 20823,
+          "sha256": "37d31c083ff4897dd46c47d51bb6318f48708c4919c3ab18af74eca299a7d0cf"
+        },
+        {
+          "path": "docs/reverse/FFX_DARK_HOLY_ELEMENT_OFFICIAL_2026-06-15.md",
+          "bytes": 6577,
+          "sha256": "83d33c08342a14f2b7048f61f538297c933ebbb9f9cc26f71ba6fff9a8bc3b12"
+        },
+        {
+          "path": "work/wiki_ffx_full/Element (term).wiki.txt",
+          "bytes": 24868,
+          "sha256": "437eece5f581c8c5746d1631bf675c737a4b31cdd018eb3df0db697c1de49b1f"
+        },
+        {
+          "path": "work/wiki_ffx_full/Gravity (ability).wiki.txt",
+          "bytes": 22620,
+          "sha256": "d1af97ebe06c139cc52005987595249e39ddf6893f2431ff44093f0f0b9762d3"
+        },
+        {
+          "path": "work/wiki_ffx_full/Imperil (status).wiki.txt",
+          "bytes": 2993,
+          "sha256": "a7ff5915db529a93b311d5c7cd03c96dbe841897b55b709db55f9c3749c4c1ee"
+        },
+        {
+          "path": "work/wiki_ffx_full/Oil (status).wiki.txt",
+          "bytes": 3030,
+          "sha256": "1d8b9751c7028789256f5f37b2ebc77ac15345e0dd05170b41061784a5f19c3b"
+        },
+        {
+          "path": "docs/reverse/_archive/superseded/FFX_DAMAGE_CAP_CLAMP_IDA_2026-06-15.md",
+          "bytes": 8541,
+          "sha256": "2d6fef9f2bff290c6253636855d1142166c77d2d35244317a31412d55db3d7e0"
+        },
+        {
+          "path": "docs/reverse/_archive/superseded/FFX_DAMAGE_CAP_BEYOND_99999_RESEARCH_BRIEF_2026-06-15.md",
+          "bytes": 10892,
+          "sha256": "3510b8a346c6659ea5c5c39776b7f55c6bdc041421b9741cf70197a4264e0fd0"
+        }
+      ]
+    },
+    "fahrenheit": {
+      "root": "/home/wanderson/Documents/external-compare/fahrenheit",
+      "branch": "main",
+      "head": "c149c847b3a24a66114956f87f1b008599736f75",
+      "files": [
+        {
+          "path": "src/core/ffx/element.cs",
+          "bytes": 1526,
+          "sha256": "ccbd5b892ccf7e5e3839a3cd5a1c1c1a8c870774d688c7101f2721f653f7364c"
+        },
+        {
+          "path": "src/core/ffx/command.cs",
+          "bytes": 12298,
+          "sha256": "3fc08354b9aca041f3ff85f08dd43810b1b3d39a3654bf0d16b66e903bf3db3d"
+        },
+        {
+          "path": "src/core/ffx/aability.cs",
+          "bytes": 5189,
+          "sha256": "fccad45a51a890e17c9928d0a284597dc46f4d86f89799be6d7ffe5c381e182e"
+        },
+        {
+          "path": "src/core/ffx/battle/chr.cs",
+          "bytes": 14355,
+          "sha256": "cb1189cb9b4280fd4e067ef15c4013df8ff81d38734bfdd38200f23f1b581fe0"
+        },
+        {
+          "path": "src/core/ffx/battle/mon_stats.cs",
+          "bytes": 2155,
+          "sha256": "e89078cf76cc3e3cd5fab37305992be4a69b5dd327bb83b6df27b2416471ee4b"
+        },
+        {
+          "path": "src/core/ffx/call_4.g.cs",
+          "bytes": 2192870,
+          "sha256": "0927d61dcececb5f57987ee5870be0d56bac25d7d1807b9544e355d71006077d"
+        },
+        {
+          "path": "COPYING.LESSER",
+          "bytes": 7651,
+          "sha256": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b"
+        }
+      ]
+    },
+    "fantasia": {
+      "root": "/home/wanderson/Documents/external-compare/repos/EvelynTSMG_ffx-mods-fantasia",
+      "branch": "main",
+      "head": "64b03ae915c32f47d4a84aefffcd3130cb13ddce",
+      "files": [
+        {
+          "path": "src/balance/elemental_affinities.cs",
+          "bytes": 7978,
+          "sha256": "e7e41034164380fc0808089df2cc2ae9323ca1f5612bcbea6e8ae1933660d4e7"
+        },
+        {
+          "path": "LICENSE",
+          "bytes": 1067,
+          "sha256": "c9da96d7da72569cb93f1eb8bbf37e779d170cdb0c4e8bc9582d0a635e1115b7"
+        }
+      ]
+    }
+  }
+}

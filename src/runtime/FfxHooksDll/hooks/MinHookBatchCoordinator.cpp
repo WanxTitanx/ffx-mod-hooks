@@ -26,7 +26,21 @@ bool ValidTargets(Owner owner, const uintptr_t* targets, size_t targetCount) {
                             owner == Owner::ArenaPositions ||
                             owner == Owner::EquipmentWorkshop ||
                             owner == Owner::EquipmentWorkshopUi ||
-                            owner == Owner::ElementScan;
+                            owner == Owner::ElementScan ||
+                            owner == Owner::Vanguard ||
+                            owner == Owner::SharedDamage ||
+                            owner == Owner::SharedTurn ||
+                            owner == Owner::SharedElement ||
+                            owner == Owner::ElementalRuntime ||
+                            owner == Owner::SharedAction ||
+                            owner == Owner::SharedActor ||
+                            owner == Owner::SpiraRuntime ||
+                            owner == Owner::SharedNul ||
+                            owner == Owner::SharedClamp ||
+                            owner == Owner::SharedCombat ||
+                            owner == Owner::ArcanaUi ||
+                            owner == Owner::ArcanaGameplay ||
+                            owner == Owner::TextLanguage || owner == Owner::MonsterRewards;
     if (!knownOwner || !targets || targetCount == 0u ||
         targetCount > kMaximumTargets) {
         return false;

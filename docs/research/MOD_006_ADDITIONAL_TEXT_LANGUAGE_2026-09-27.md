@@ -1,0 +1,36 @@
+# Jarvis-HOOK — MOD-006: idioma textual adicional no FFX
+
+**Objetivo:** permitir que o jogador escolha **Português (Brasil)** como opção adicional do jogo, mantendo cada idioma original selecionável e seus arquivos intactos. O escopo inclui textos de menus, combate, eventos e legendas; a dublagem permanece sob a escolha de áudio existente. Esta é pesquisa/escopo RT0; não há opção PT-BR, pack de tradução ou hook implementado.
+
+## Fontes e limites da evidência
+
+| Fonte | Identidade e observação | Confiança / limite |
+|---|---|---|
+| FFX PC | `FFX.exe` PE32/i386, ImageBase `0x400000`, SHA-256 `78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced`. RE em `FFX_MISLABEL_AUDIT_R2_2026-09-16.md` do Editor: `FFX_Locale_GetCurrentId` flat `0x8AC2A0`/RVA `0x4AC2A0` alcança o ID `u32` do singleton `sLanguageManager+4`; `FFX_Save_IsLangMismatch` flat `0x787430`/RVA `0x387430` compara save e idioma corrente. | Alta para o getter e comparação **nesse PE**, segundo a auditoria IDA existente; não houve nova descompilação nesta tarefa. O construtor do menu e seu limite de linhas ainda não foram mapeados. |
+| Encoding e fonte | Editor `FFX_FONT_RUNTIME_2026-09-18.md`: idiomas ocidentais e JP/KR/CH selecionam slots/páginas de fonte diferentes. `FFX_Encoding_LoadSjisForCurrentLocale` flat `0x646AC0`/RVA `0x246AC0` é candidato para carga da tabela de caracteres. | Forte evidência de que trocar só a pasta de texto não basta. Assinatura/ABI/cobertura do loader pedem RE atual antes de hook. |
+| Dados Steam | Instalação `/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/` contém diretórios `inpc`, `jppc`, `new_chpc`, `new_depc`, `new_frpc`, `new_itpc`, `new_jppc`, `new_krpc`, `new_sppc`, `new_uspc`. A tabela `jppc/ffx_encoding/ffxsjistbl_us.bin` tem 310 B, SHA-256 `9f96e3b904c0ed332bb6859ec74f36b5a440c9c10c00fad24099afd42bd39af8`. | Diretórios/bytes atuais do override local, não prova do inventário integral dentro do VBF nem de como o menu forma a lista. |
+| Acentos PT-BR | `FfxEncoding.us.cs` do Editor e o `ffxsjistbl_us.bin` atual incluem `á, é, í, ó, ú, ç`, mas **não `ã` ou `õ`**. A tabela tem 192 caracteres decodificados. | Fato sobre a tabela/mapeamento examinado; ainda falta provar cobertura do atlas de fonte e de outros bancos de glifos. Sem isso não prometer texto PT-BR completo. |
+| Save | O writer `FFX_Save_InitRowStructFromGameData` flat `0x8B3E10`/RVA `0x4B3E10` escreve o ID de locale no cabeçalho do save; a auditoria de save anterior aponta byte `RowStruct+12`. | Uma nova seleção deve sobreviver a save/load sem produzir falso mismatch ou tornar o save ilegível quando o mod faltar. O formato novo de persistência não foi implementado. |
+| Localização de texto | [FFXDataParser](https://github.com/Karifean/FFXDataParser) documenta edição de nomes/descrições por idioma e diretórios regionais. Clone local `/home/wanderson/Documents/external-compare/repos/Karifean_FFXDataParser`, branch `master`, commit `6e86fe1` no levantamento. | Referência de authoring, não prova de que o executável aceita mais uma opção no menu. Código não copiado. |
+
+O documento histórico `FFX_STRUCTURE_COMPLETE_2026-09-14.md` do Editor sugere `version_config` e novos sufixos de diretório, mas os arquivos `version_config` **não foram encontrados na instalação/extração local examinada**. Esses detalhes não são contrato confirmado para o MOD-006. Também há notas antigas com endereços diferentes para o alvo interno da carga SJIS; é preciso revalidar corpo, callers e assinatura antes de nomear detours.
+
+## Arquitetura candidata
+
+**Primeiro caminho a investigar: idioma virtual `pt-BR` do mod.** O Hook adiciona “Português (Brasil)” ao seletor visível e guarda uma escolha de mod separada dos IDs vanilla. Para subsistemas do jogo que exigem um ID existente, conserva o ID base escolhido pelo jogador, enquanto redireciona **somente** a leitura de recursos textuais PT-BR para um pacote independente (sufixo candidato `new_ptpc/`). Recursos textuais ausentes podem cair no English original, com diagnóstico de cobertura; isto não autoriza forçar o ID global para English, pois esse ID também pode governar áudio e outros recursos. Esta rota preserva a opção English e evita gravar um ID ainda não comprovado no save vanilla. Ela **continua exigindo** mapeamento de todos os leitores relevantes; não basta interceptar uma função de filename.
+
+**Caminho alternativo: ID novo no gerenciador de idiomas.** Exigiria provar e ampliar enumeração/menu, aceitação do ID em todos os leitores e tabelas, escolha de fonte/encoding, caminhos, save, texturas regionais e relações com áudio. O número do ID e o sufixo do diretório não estão definidos nesta pesquisa. Não assumir que o próximo inteiro está livre nem que um `switch` tem fallback seguro.
+
+**Pacote de idioma:** manifesto versionado de locale (`pt-BR`), idioma-base/fallback, arquivos presentes, hashes, tabela de caracteres/fontes e compatibilidade de versão. A lane do Editor pode escrever esse pacote como **`[DERIVADO DE MOD-006]`** em raiz própria, sem sobrescrever `new_uspc` nem mudar o comportamento de projetos vanilla. Textos embutidos em imagens ou fontes exigem assets próprios quando aplicável. O Hook não fornece uma tradução por si só.
+
+**Áudio:** preservar configuração e caminhos de voz existentes. A seleção textual PT-BR não deve apontar para uma dublagem inexistente nem mudar o idioma das vozes. O caminho de áudio ainda precisa ser traçado em RE; o contrato será testado por comparação antes/depois.
+
+## Gates de implementação
+
+1. **RT0 mapa de seleção:** localizar no PE fixado o construtor e o commit do menu de idiomas, contagem/cursor e recurso que mostra nomes; documentar flat/RVA, larguras, callers e assinaturas. Confirmar também se o seletor relevante pertence ao jogo FFX, ao menu externo do remaster ou a ambos.
+2. **RT0 mapa de recursos:** rastrear o ID do `sLanguageManager` através de menus, battle kernel, textos de evento, legendas, texturas, encoding/fontes e save. Listar para cada família a pasta/carregador e fallback seguro; auditar explicitamente caminhos de voz.
+3. **RT0 assets PT-BR:** produzir um pequeno pacote isolado com strings sentinela (incluindo `ã/õ/ç`), sem tocar arquivos English. Confirmar mapeamento de bytes, glifos, métricas e largura de UI no Editor/renderer offline. Tradução integral é trabalho separado.
+4. **RT1 Hook:** opção OFF por padrão e perfil/assinatura do PE; abrir/fechar/selecionar PT-BR em harness de menu, trocar de volta a English, faltar um arquivo, faltar o pack, carregar save antigo e remover o mod sem corromper estado. Teardown e thread de UI seguros.
+5. **RT2 e produção:** somente com autorização separada, observar jogo real com Português e English alternáveis, texto parcial/fallback, save/reload e vozes inalteradas. Revisão independente e promoção explícita depois.
+
+**Resultado atual:** viabilidade **plausível**, com evidência de infraestrutura de locale e arquivos regionalizados, mas **a nova opção no menu e a aceitação de idioma adicional não foram provadas**. O primeiro spike deve escolher idioma virtual versus ID novo após mapear o seletor e os recursos; apresentar somente um botão “Português” sem a rota completa de texto/fonte/save seria uma interface enganosa.

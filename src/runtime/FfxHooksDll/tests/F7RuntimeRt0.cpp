@@ -3233,7 +3233,9 @@ void TestAutoStatusBodyAdmission() {
     }
 }
 
+#include "F7ElementConfigCases.inl"
 int main() {
+    TestHookElementConfiguration();
     TestAutoStatusAdmissionAndFaults();
     TestAutoStatusBodyAdmission();
     TestStatusAndElementApplyEditRestore();

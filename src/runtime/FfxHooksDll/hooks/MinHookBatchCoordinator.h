@@ -7,7 +7,8 @@
 
 namespace FfxHooks::MinHookBatch {
 
-inline constexpr size_t kMaximumTargets = 16u;
+// Complete feature families publish in one bounded transaction.
+inline constexpr size_t kMaximumTargets = 32u;
 
 enum class Owner : uint8_t {
     None = 0,
@@ -22,6 +23,21 @@ enum class Owner : uint8_t {
     EquipmentWorkshop,
     EquipmentWorkshopUi,
     ElementScan,
+    Vanguard,
+    SharedDamage,
+    SharedTurn,
+    SharedElement,
+    ElementalRuntime,
+    SharedAction,
+    SharedActor,
+    SpiraRuntime,
+    SharedNul,
+    SharedClamp,
+    SharedCombat,
+    ArcanaUi,
+    ArcanaGameplay,
+    TextLanguage,
+    MonsterRewards,
 };
 
 enum class State : uint8_t {

@@ -1,3 +1,5 @@
+static unsigned statusObservations=0,statusObservedCapacity=0;
+static void ObserveStatus(void*,unsigned capacity) noexcept {++statusObservations;statusObservedCapacity=capacity;}
 static void ExtendedEquipmentCases(W::Store& store,const std::wstring& path,W::SaveImage& native,workshop::State& state){
     const auto shared=reinterpret_cast<int(__cdecl*)(float,float,const void*)>(imageBase+0x4D8A70);
     const auto* record=reinterpret_cast<const void*>(imageBase+0xD30F2C);
@@ -14,6 +16,9 @@ static void ExtendedEquipmentCases(W::Store& store,const std::wstring& path,W::S
     Redirect(0x4A9810,reinterpret_cast<const void*>(&NoDevice));
     Redirect(0x390250,reinterpret_cast<const void*>(&CustomizeNativeTest::UnusedKernel));
     unsigned char object[152]{};
+    W::NativeUi::SetStatusObserver(ObserveStatus);
     ResetDraw();reinterpret_cast<int(__cdecl*)(void*)>(imageBase+0x4D2760)(object);
     Check(labels.size()==4&&HasRank(1)&&HasRank(2)&&HasRank(3)&&HasRank(4),"Status Auto-Abilities includes the equipped fifth and per-instance refinements");
+    Check(statusObservations==1&&statusObservedCapacity==9,"Status observer runs once with the actual fifth-slot capacity after ranked native rows");
+    W::NativeUi::SetStatusObserver(nullptr);
 }

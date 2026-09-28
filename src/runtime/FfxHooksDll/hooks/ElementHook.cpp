@@ -1,6 +1,7 @@
 #include "ElementHook.h"
 #include "ElementScanSettings.h"
 #include "ElementScanSprites.h"
+#include "ElementalScanView.h"
 #include "NativeUiHookSupport.h"
 #include "NativePresentationEvidence.h"
 #include <atomic>
@@ -17,7 +18,7 @@ std::uintptr_t module=0;
 std::atomic<bool> active{false},attempted{false};
 // Immutable startup choices, published before active. Shared draw targets are
 // installed once even when both independently controlled features are enabled.
-bool extraElementsEnabled=false,expandedStatsEnabled=false;
+bool extraElementsEnabled=false,expandedStatsEnabled=false,numericScanEnabled=false;
 static_assert(std::atomic<bool>::is_always_lock_free,"detach admission must be lock-free");
 std::atomic<unsigned> drawingThread{0};
 enum class ScanSection {Sensor,Frame,Data,Description};
@@ -25,6 +26,9 @@ struct ResourceQuad {unsigned atlas=0;float x=0,y=0,w=0,h=0,u0=0,v0=0,u1=0,v1=0;
 struct ResourceNumber {float x=0,y=0;unsigned style=0;float sx=0,sy=0;bool present=false;};
 struct ScanScope {int actor=0;unsigned depth=0;ElementScan::Settings settings{};
     ScanSection section=ScanSection::Sensor;bool full=false,expanded=false,extras=false;
+    bool numeric=false,sensorPanel=false;
+    ElementalScanView::Snapshot numerical{};
+    float panelX=0,panelY=0,panelW=0;
     unsigned char stats[8]{};unsigned mp=0,maxMp=0;
     ResourceQuad hpBand{},hpLabel{};ResourceNumber hpNumbers[2]{};
     const void* hpSlash=nullptr;int slashX=0,slashY=0;};
@@ -61,6 +65,7 @@ int __cdecl RowShim(int actor,int category,int x,int y){
     const int result=reinterpret_cast<RowFn>(originals[Row])(actor,category,x,y);
     Extras(actor,category,static_cast<float>(x),static_cast<float>(y));return result;
 }
+#include "ElementalScanDraw.inl"
 #include "ElementScanDetails.inl"
 int __cdecl TextureShim(unsigned atlas,float x,float y,float w,float h,float u0,float v0,float u1,float v1){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
@@ -68,6 +73,7 @@ int __cdecl TextureShim(unsigned atlas,float x,float y,float w,float h,float u0,
        (caller==0x493E5E||caller==0x493F17||caller==0x493FD6||caller==0x49408B))w+=X(ElementScan::PanelWidthFor(scope->settings)-385.f);
     if(FullScope()&&scope->section==ScanSection::Data&&caller>=0x49BEE0&&caller<0x49C740){
         if(scope->expanded&&(caller==0x49C30C||caller==0x49C3E6))return 0;
+        if(scope->numeric&&(caller==0x49C30C||caller==0x49C3E6))y-=Y(NumericalExtraHeight());
         x-=X(ExtraWidth()*.5f);
         if(caller==0x49C016||caller==0x49C561)w+=X(ExtraWidth());
         // Affinity rows use truncated integer coordinates; comparing them with
@@ -88,34 +94,39 @@ int __cdecl PanelShim(float x,float y,float width,float height,int style){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
     if(FullScope()&&scope->section==ScanSection::Frame&&caller==0x49BEB2){x-=X(ExtraWidth()*.5f);y-=Y(ExtraHeight());width+=X(ExtraWidth());height+=Y(ExtraHeight());}
     if(InScope()&&caller==0x493B8D)width=X(ElementScan::PanelWidthFor(scope->settings));
+    if(active.load()&&scope&&scope->section==ScanSection::Sensor&&scope->depth<4&&caller==0x493B8D){
+        scope->sensorPanel=true;scope->panelX=x;scope->panelY=y;scope->panelW=width;
+    }
     return reinterpret_cast<PanelFn>(originals[Panel])(x,y,width,height,style);
 }
 int __cdecl InfoShim(int actor,int a,int b){
-    if(!active.load()||!extraElementsEnabled)return reinterpret_cast<InfoFn>(originals[Info])(actor,a,b);
+    if(!active.load()||(!extraElementsEnabled&&!numericScanEnabled))return reinterpret_cast<InfoFn>(originals[Info])(actor,a,b);
     unsigned expected=0;const auto thread=GetCurrentThreadId();
     drawingThread.compare_exchange_strong(expected,thread);
     if(drawingThread.load()!=thread)return reinterpret_cast<InfoFn>(originals[Info])(actor,a,b);
     ScanScope current{};current.actor=actor;auto* previous=scope;current.depth=previous?previous->depth+1:0;
     const bool valid=ElementScan::ReadSettings(current.settings);
-    current.extras=valid;
-    scope=valid?&current:nullptr;int result=0;
-    __try{result=reinterpret_cast<InfoFn>(originals[Info])(actor,a,b);}
+    current.extras=extraElementsEnabled&&valid;
+    scope=(current.extras||numericScanEnabled)&&current.depth<4?&current:nullptr;int result=0;
+    __try{result=reinterpret_cast<InfoFn>(originals[Info])(actor,a,b);if(scope==&current)DrawSensorNumerical(current);}
     __finally{scope=previous;}
     return result;
 }
 }
 bool StartElementHook(std::uintptr_t base,bool extraElements,bool expandedStats,bool validateOnly,void(*log)(const char*)){
-    if((!extraElements&&!expandedStats)||validateOnly)return false;
+    const bool numeric=Config::GetBool("elemental.numeric_scan",false);
+    if((!extraElements&&!expandedStats&&!numeric)||validateOnly)return false;
     if(attempted.load())return active.load();
     if(!NativeUiSupport::Profile(base,NativePresentationEvidence::scan)){
         if(log)log("[ffx-hooks] Element Scan rejected: executable or drawing signatures differ\n");return false;}
     attempted=true;module=base;
     void* replacements[ElementTargetCount]={reinterpret_cast<void*>(&InfoShim),reinterpret_cast<void*>(&RowShim),reinterpret_cast<void*>(&TextureShim),reinterpret_cast<void*>(&PanelShim),reinterpret_cast<void*>(&FullFrameShim),reinterpret_cast<void*>(&FullDataShim),reinterpret_cast<void*>(&FullDescriptionShim),reinterpret_cast<void*>(&FullRowShim),reinterpret_cast<void*>(&TintShim),reinterpret_cast<void*>(&RotateShim),reinterpret_cast<void*>(&TextShim),reinterpret_cast<void*>(&NumberRightShim),reinterpret_cast<void*>(&NumberLeftShim),reinterpret_cast<void*>(&GlyphShim)};
     if(!NativeUiSupport::Install(base,rvas,replacements,originals,MinHookBatch::Owner::ElementScan,reinterpret_cast<const void*>(&StartElementHook)))return false;
-    extraElementsEnabled=extraElements;expandedStatsEnabled=expandedStats;active=true;
+    extraElementsEnabled=extraElements;expandedStatsEnabled=expandedStats;numericScanEnabled=numeric;active=true;
     if(log){
         log(expandedStats?"[ffx-hooks] Scan Expanded: ON (native stats and MP presentation)\n":"[ffx-hooks] Scan Expanded: OFF\n");
         log(extraElements?"[ffx-hooks] Scan Extra Elements: ON (Sensor and full Scan affinities)\n":"[ffx-hooks] Scan Extra Elements: OFF\n");
+        log(numeric?"[ffx-hooks] Elemental numerical Scan: ON (admitted resolver snapshots only)\n":"[ffx-hooks] Elemental numerical Scan: OFF\n");
     }
     return true;
 }

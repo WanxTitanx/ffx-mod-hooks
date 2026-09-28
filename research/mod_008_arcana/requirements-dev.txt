@@ -1,0 +1,4 @@
+# Offline art checks/builders. No Python packages are needed by the game or ZIP builder.
+Pillow==12.1.1
+# Only needed to regenerate signatures from a privately supplied supported FFX.exe.
+pefile==2024.8.26

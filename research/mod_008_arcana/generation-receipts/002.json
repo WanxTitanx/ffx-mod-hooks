@@ -1,0 +1,10 @@
+{
+  "id": 2,
+  "key": "major.the_high_priestess",
+  "asset": "assets/mod-008-arcana/concepts/cards/002-major-the_high_priestess.png",
+  "source": "/home/wanderson/.codex/generated_images/01a0ced4-9fba-7a22-9466-d8897fbcba59/exec-8de1a305-b94f-435a-a7d6-cac3e62667eb.png",
+  "prompt": "Edit the supplied illustrated card. Preserve the exact existing illustration, character, composition and original frame. ONLY add the correct labels specified below: numeral in the TOP medallion, name in the BOTTOM plaque. Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. Top medallion text (verbatim): \"II\". Bottom name plaque text (verbatim): \"THE HIGH PRIESTESS\". Card subject: The High Priestess. Scene: Yuna between two moonlit temple columns, luminous fayth water at her feet. Accent palette: ocean blue, pearl, antique gold; dramatic celestial light. Keep traditional Tarot symbols legible and the border consistent with the reference.",
+  "tool": "image_gen.imagegen",
+  "status": "GENERATED_LABELLED_CONCEPT",
+  "layout": "number_top_name_bottom_court_unnumbered"
+}

@@ -2,6 +2,7 @@
 
 #include "MinHookBatchCoordinator.h"
 #include "SinRamScalingCore.h"
+#include "F7ElementAffinities.h"
 
 #include <array>
 #include <atomic>
@@ -185,6 +186,7 @@ struct Preset {
     uint8_t elemWeak = 0;
     uint8_t elemResist = 0;
     uint8_t elemAbsorb = 0;
+    F7Elements::Extras elemExtra{};
     std::array<uint8_t, kStatusCount> statusResist{};
 };
 
@@ -203,6 +205,7 @@ struct DifficultyConfig {
 
 Preset MakeNeutralPreset();
 DifficultyConfig MakeNeutralConfig();
+F7Elements::Selection SelectElements(const DifficultyConfig& config, bool valid, int32_t fieldRow);
 
 enum class ConfigCode : uint8_t {
     Ok = 0,

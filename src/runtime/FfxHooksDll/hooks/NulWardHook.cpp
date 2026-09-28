@@ -1,742 +1,261 @@
 #include "NulWardHook.h"
-#include "../shared/ffx_addresses.h"
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <vector>
-#include <unordered_map>
-
-#ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
-#endif
+#include "SharedNulRuntime.h"
+#include "SharedActionRuntime.h"
+#include "SharedActorRuntime.h"
+#include "SharedBattleRuntime.h"
+#include <array>
+#include <atomic>
+#include <cstdint>
+#include <cstring>
 
 namespace FfxHooks {
-
 namespace {
-
-constexpr size_t kWritebackPatchLen = 5;
-
-static const uint8_t kExpectedWritebackPatch[kWritebackPatchLen] = {
-    0x89, 0x06, 0x01, 0x81, 0x50,
+namespace Bus=CombatExtensions;
+using Byte=unsigned char;
+constexpr unsigned ActorCount=31,ResultsPerActor=32;
+std::atomic<bool> running{false};
+std::atomic<DWORD> ownerThread{0};
+std::atomic<std::uint64_t> resetEpoch{1};
+std::uintptr_t image=0;
+bool applying=false;
+std::uint64_t observedEpoch=0,nextSerial=0;
+struct ActorState {
+    Byte* pointer=nullptr;std::uint32_t file=0;std::uint16_t identity=0;
+    std::uint64_t serial=0;unsigned charges=0;
 };
-
-using GetActorByIndexFn = void*(__cdecl*)(uint8_t actorIndex);
-using ApplyHitDamageLoopFn = int(__cdecl*)(
-    int i,
-    int actorRecord,
-    int n,
-    int a4,
-    int a5,
-    int n12320,
-    unsigned char* a7,
-    uint32_t* a8,
-    int* a9,
-    unsigned char** a10,
-    int a11);
-using ActionAftermathFn = int(__cdecl*)(int i, int a2, int ia, int* a4, int16_t a5);
-
-static bool                 g_installed         = false;
-static bool                 g_applyBlocks       = false;
-static bool                 g_logEvents         = false;
-static bool                 g_nativeSlots       = false;
-static bool                 g_experimentP16     = false;
-static bool                 g_p16Apply          = false;
-static NulWardLogFn         g_logFn             = nullptr;
-static uintptr_t            g_base              = 0;
-static GetActorByIndexFn    g_getActor          = nullptr;
-
-static std::unordered_map<uintptr_t, uint8_t> g_holyBlocks;
-static std::unordered_map<uintptr_t, uint8_t> g_darkBlocks;
-
-static uint8_t              g_savedWriteback[kWritebackPatchLen] = {};
-static uint8_t*             g_writebackStub                    = nullptr;
-static size_t               g_writebackStubLen                 = 0;
-static uintptr_t            g_writebackPatchVa                 = 0;
-static uintptr_t            g_writebackResumeVa                = 0;
-
-static volatile LONG        g_castLogCount  = 0;
-static volatile LONG        g_nullLogCount  = 0;
-static volatile LONG        g_probeLogCount = 0;   // diag 2026-06-16: log EVERY writeback hit
-static thread_local int32_t g_tlsEncodedCmd = 0;
-
-#ifdef FFXHOOKS_HAVE_POLYHOOK
-static ApplyHitDamageLoopFn g_hitLoopTrampoline     = nullptr;
-static ActionAftermathFn    g_aftermathTrampoline   = nullptr;
-static PLH::x86Detour*      g_hitLoopDetour         = nullptr;
-static PLH::x86Detour*      g_aftermathDetour       = nullptr;
-static PLH::x86Detour*      g_precheckDetour        = nullptr;
-static uint64_t             g_hitLoopTrampolineVa   = 0;
-static uint64_t             g_aftermathTrampolineVa = 0;
-static uint64_t             g_precheckTrampolineVa  = 0;
-
-using ResolveHitPrecheckFn = int(__cdecl*)(
-    int targetIdx,
-    int n8,
-    int n2,
-    int n3,
-    int n100_1,
-    int n100,
-    int* p_n10000,
-    uint32_t* a8,
-    uint32_t* a9,
-    int a10,
-    char a11,
-    int a12,
-    int16_t a13,
-    int a14,
-    int* a15);
-
-static ResolveHitPrecheckFn g_precheckTrampoline = nullptr;
-static volatile LONG        g_p16LogCount = 0;
-#endif
-
-static void HookLog(const char* fmt, ...) {
-    if (!g_logFn) return;
-    char line[512] = {};
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(line, sizeof(line), fmt, ap);
-    va_end(ap);
-    g_logFn(line);
+struct ActionState {
+    std::uint64_t serial=0,actor=0;unsigned index=0;
+    std::array<Byte,72> row{};
+    std::array<unsigned,ActorCount> granted{};
+};
+struct Reservation {
+    std::uint64_t target=0,action=0;
+    unsigned source=ActorCount,sub=4,command=0,mask=0;
+};
+std::array<ActorState,ActorCount> actors{};
+std::array<ActionState,ActorCount> actions{};
+std::array<Reservation,ActorCount*ResultsPerActor> reservations{};
+bool Copy(void* out,const void* in,std::size_t size) noexcept {return NativeUiSupport::Copy(out,in,size);}
+template<class T> bool Read(std::uintptr_t at,T& value) noexcept {
+    return at>=0x10000&&at<=UINT32_MAX-sizeof(T)&&Copy(&value,reinterpret_cast<const void*>(at),sizeof(T));
 }
-
-static bool MemWrite(void* dest, const void* src, size_t len) {
-    if (!dest || !src || len == 0) return false;
-    DWORD old = 0;
-    if (!VirtualProtect(dest, len, PAGE_EXECUTE_READWRITE, &old)) return false;
-    memcpy(dest, src, len);
-    VirtualProtect(dest, len, old, &old);
-    FlushInstructionCache(GetCurrentProcess(), dest, len);
+bool Context() noexcept {
+    if(!running.load())return false;
+    DWORD empty=0;ownerThread.compare_exchange_strong(empty,GetCurrentThreadId());
+    if(ownerThread.load()!=GetCurrentThreadId())return false;
+    const auto epoch=resetEpoch.load();
+    if(epoch!=observedEpoch){actors={};actions={};reservations={};observedEpoch=epoch;}
     return true;
 }
-
-static void* ResolveActor(uint8_t actorIndex) {
-    if (!g_getActor) return nullptr;
-    return g_getActor(actorIndex);
+std::uint64_t Serial() noexcept {
+    if(nextSerial==UINT64_MAX){running=false;return 0;}return ++nextSerial;
 }
-
-static uint8_t GetHolyBlock(void* actor) {
-    if (!actor) return 0;
-    if (g_nativeSlots) {
-        return reinterpret_cast<const uint8_t*>(actor)[FFX_BATTLE_ACTOR_NUL_HOLY_BLOCK_OFF];
-    }
-    const uintptr_t key = reinterpret_cast<uintptr_t>(actor);
-    const auto it = g_holyBlocks.find(key);
-    return it != g_holyBlocks.end() ? it->second : 0;
+void Retire(unsigned owner) noexcept {
+    if(owner>=ActorCount)return;
+    actors[owner]={};actions[owner]={};
+    for(unsigned i=0;i<reservations.size();++i)
+        if(i/ResultsPerActor==owner||reservations[i].source==owner)reservations[i]={};
 }
-
-static uint8_t GetDarkBlock(void* actor) {
-    if (!actor) return 0;
-    if (g_nativeSlots) {
-        return reinterpret_cast<const uint8_t*>(actor)[FFX_BATTLE_ACTOR_NUL_DARK_BLOCK_OFF];
+ActorState* Actor(unsigned owner) noexcept {
+    if(owner>=ActorCount||!Context())return nullptr;
+    std::uint32_t pool=0,file=0;std::uint16_t slot=0xFFFF,identity=0xFFFF,status=0;
+    Byte exists=0,removed[2]{};int hp=0;
+    if(!Read(image+0xD334CC,pool)||pool<0x10000||pool>UINT32_MAX-ActorCount*0xF90u){Retire(owner);return nullptr;}
+    const auto address=std::uintptr_t(pool)+owner*0xF90u;
+    if(SharedActor::Busy(owner)||!Read(address+0xC,slot)||slot!=owner||!Read(address+0xE,identity)||identity==0xFFFF||
+       (owner<18&&identity!=owner)||!Read(address+0x48,file)||!Read(address+0xDC8,exists)||!exists||
+       !Read(address+0x5D0,hp)||hp<=0||!Read(address+0x606,status)||(status&1)||
+       !Copy(removed,reinterpret_cast<const void*>(address+0xDCD),2)||removed[0]||removed[1]){Retire(owner);return nullptr;}
+    auto& current=actors[owner];auto* pointer=reinterpret_cast<Byte*>(address);
+    if(current.pointer!=pointer||current.identity!=identity||current.file!=file){
+        Retire(owner);current={pointer,file,identity,Serial(),0};
     }
-    const uintptr_t key = reinterpret_cast<uintptr_t>(actor);
-    const auto it = g_darkBlocks.find(key);
-    return it != g_darkBlocks.end() ? it->second : 0;
+    return current.serial?&current:nullptr;
 }
-
-static void SetHolyBlock(void* actor, uint8_t value) {
-    if (!actor) return;
-    if (g_nativeSlots) {
-        reinterpret_cast<uint8_t*>(actor)[FFX_BATTLE_ACTOR_NUL_HOLY_BLOCK_OFF] = value;
-        return;
-    }
-    const uintptr_t key = reinterpret_cast<uintptr_t>(actor);
-    if (value == 0) {
-        g_holyBlocks.erase(key);
-    } else {
-        g_holyBlocks[key] = value;
-    }
+ActionState* Track(unsigned owner) noexcept {
+    const auto* actor=Actor(owner);if(!actor)return nullptr;
+    Byte index=255;std::int8_t count=0;std::array<Byte,72> row{};
+    if(!Read(image+0xD2BDE1,count)||count<1||count>62||!Copy(&index,actor->pointer+0xDE5,1)||index>=count||
+       !Copy(row.data(),reinterpret_cast<const void*>(image+0xD2AC70+72u*index),row.size())||
+       row[0]!=owner||!row[3]||row[3]>4||row[2]>row[3])return nullptr;
+    auto& action=actions[owner];bool same=action.serial&&action.actor==actor->serial&&action.index==index&&
+        action.row[1]==row[1]&&action.row[3]==row[3];
+    for(unsigned sub=0;same&&sub<row[3];++sub)same=std::memcmp(action.row.data()+8+16*sub,row.data()+8+16*sub,4)==0;
+    if(!same){for(auto& reservation:reservations)if(reservation.source==owner)reservation={};
+        action={};action.serial=Serial();action.actor=actor->serial;action.index=index;}
+    action.row=row;return action.serial?&action:nullptr;
 }
-
-static void SetDarkBlock(void* actor, uint8_t value) {
-    if (!actor) return;
-    if (g_nativeSlots) {
-        reinterpret_cast<uint8_t*>(actor)[FFX_BATTLE_ACTOR_NUL_DARK_BLOCK_OFF] = value;
-        return;
-    }
-    const uintptr_t key = reinterpret_cast<uintptr_t>(actor);
-    if (value == 0) {
-        g_darkBlocks.erase(key);
-    } else {
-        g_darkBlocks[key] = value;
-    }
+unsigned Command(const ActionState& action,unsigned sub) noexcept {
+    return sub<action.row[3]?unsigned(action.row[8+16*sub])|(unsigned(action.row[9+16*sub])<<8):0;
 }
-
-static uint16_t NormalizeEncodedCommand(uint16_t raw) {
-    if (raw == FFX_CMD_RADIANT_WARD_ENCODED || raw == FFX_CMD_UMBRAL_WARD_ENCODED) {
-        return raw;
-    }
-    const uint16_t low = raw & 0x0FFFu;
-    if (low == FFX_CMD_RADIANT_WARD_ID) return FFX_CMD_RADIANT_WARD_ENCODED;
-    if (low == FFX_CMD_UMBRAL_WARD_ID) return FFX_CMD_UMBRAL_WARD_ENCODED;
-    return 0;
+bool CommandRow(unsigned command,const Byte*& row) noexcept {
+    if((command&0xFFFFF000u)!=0x3000)return false;
+    std::uint32_t bank=0;std::array<Byte,20> header{};
+    if(!Read(image+0xD2A92C,bank)||bank<0x10000||bank>UINT32_MAX-0x100000||
+       !Copy(header.data(),reinterpret_cast<const void*>(bank),header.size()))return false;
+    const auto word=[&](unsigned at){return unsigned(header[at])|(unsigned(header[at+1])<<8);};
+    const unsigned id=command&0xFFF;
+    if(word(0)!=1||word(12)!=96||id>word(10)||word(16)!=20)return false;
+    row=reinterpret_cast<const Byte*>(std::uintptr_t(bank)+20+96u*id);return true;
 }
-
-static uint16_t ReadEncodedCmdFromActionEntry(const uint8_t* entry) {
-    if (!entry) return 0;
-
-    const uint16_t primary = *reinterpret_cast<const uint16_t*>(entry + FFX_BATTLE_ACTION_ENCODED_CMD_OFF);
-    uint16_t encoded = NormalizeEncodedCommand(primary);
-    if (encoded != 0) {
-        return encoded;
+unsigned ResultIndex(const Bus::DamageCall& call,unsigned& sub) noexcept {
+    const auto* target=Actor(call.target);if(!target||target->pointer!=call.targetActor)return UINT_MAX;
+    auto* action=Track(call.user);if(!action||actors[call.user].pointer!=call.userActor)return UINT_MAX;
+    const auto pointer=reinterpret_cast<std::uintptr_t>(call.info);
+    const auto address=reinterpret_cast<std::uintptr_t>(target->pointer);
+    for(unsigned group=0;group<2;++group){const auto start=address+0x774u+728u*group;
+        if(pointer<start+24||pointer>=start+24+16*44||(pointer-start-24)%44)continue;
+        const unsigned hit=static_cast<unsigned>((pointer-start-24)/44);Byte header[4]{};
+        if(!Copy(header,reinterpret_cast<const void*>(start),4)||header[0]>hit||header[1]>16||hit>=header[1]||
+           header[2]!=call.user||header[3]>=action->row[3]||Command(*action,header[3])!=call.commandId)return UINT_MAX;
+        sub=header[3];return call.target*ResultsPerActor+group*16+hit;
     }
-
-    const uint16_t legacy = *reinterpret_cast<const uint16_t*>(entry + FFX_BATTLE_ACTION_ENCODED_CMD_LEGACY_OFF);
-    return NormalizeEncodedCommand(legacy);
+    return UINT_MAX;
 }
-
-static uint16_t ReadEncodedCommandFromActor(uint8_t actorIndex) {
-    if (!g_base || !g_getActor) return 0;
-    const auto* actor = reinterpret_cast<const uint8_t*>(g_getActor(actorIndex));
-    if (!actor) return 0;
-
-    const uint8_t slot = actor[FFX_BATTLE_ACTOR_ACTION_SLOT_OFF];
-    const uint8_t* entry = nullptr;
-    if (slot == 0xFFu) {
-        entry = actor + FFX_BATTLE_ACTOR_INLINE_ACTION_OFF;
-    } else {
-        entry = reinterpret_cast<const uint8_t*>(g_base + RVA_FFX_BATTLE_ACTION_POOL_BSS)
-            + static_cast<size_t>(slot) * FFX_BATTLE_ACTION_POOL_STRIDE;
+unsigned Available(const Bus::DamageCall& call) noexcept {
+    if(!applying||!Context())return 0;unsigned sub=4;const auto index=ResultIndex(call,sub);
+    if(index>=reservations.size())return 0;
+    auto& target=actors[call.target];unsigned mask=target.charges;
+    for(unsigned i=call.target*ResultsPerActor;i<(call.target+1)*ResultsPerActor;++i){auto& reservation=reservations[i];
+        if(reservation.target!=target.serial||reservation.source>=ActorCount||
+           reservation.action!=actions[reservation.source].serial){reservation={};continue;}
+        if(i!=index)mask&=~reservation.mask;
     }
-
-    return ReadEncodedCmdFromActionEntry(entry);
+    return mask;
 }
-
-static void ClearWrongVanillaBlockBytes(void* actor, uint16_t encodedCmd) {
-    if (!actor || !g_applyBlocks) return;
-    auto* bytes = reinterpret_cast<uint8_t*>(actor);
-    if (encodedCmd == FFX_CMD_RADIANT_WARD_ENCODED) {
-        bytes[FFX_BATTLE_ACTOR_NUL_TIDE_BLOCK_OFF] = 0;
-    } else if (encodedCmd == FFX_CMD_UMBRAL_WARD_ENCODED) {
-        bytes[FFX_BATTLE_ACTOR_NUL_SHOCK_BLOCK_OFF] = 0;
-    }
+bool Reserve(const Bus::DamageCall& call,unsigned mask) noexcept {
+    if(!mask)return true;if(mask&~Available(call))return false;
+    unsigned sub=4;const auto index=ResultIndex(call,sub);if(index>=reservations.size())return false;
+    reservations[index]={actors[call.target].serial,actions[call.user].serial,call.user,sub,call.commandId,mask};return true;
 }
-
-static void ApplyWardBlockToTarget(void* target, uint16_t encodedCmd, uint8_t attackerIdx, uint8_t targetIdx) {
-    if (!target || encodedCmd == 0) return;
-
-    const LONG n = InterlockedIncrement(&g_castLogCount);
-    const bool shouldLog = g_logEvents && g_logFn && n <= 128;
-
-    if (encodedCmd == FFX_CMD_RADIANT_WARD_ENCODED) {
-        if (g_applyBlocks) {
-            SetHolyBlock(target, 1);
-            ClearWrongVanillaBlockBytes(target, encodedCmd);
-        }
-        if (shouldLog) {
-            HookLog(
-                "[ffx-hooks] NulWard cast #%ld Radiant att=%u tgt=%u holyBlock=%u apply=%d actor=0x%08X",
-                static_cast<long>(n),
-                static_cast<unsigned>(attackerIdx),
-                static_cast<unsigned>(targetIdx),
-                static_cast<unsigned>(GetHolyBlock(target)),
-                g_applyBlocks ? 1 : 0,
-                static_cast<unsigned>(reinterpret_cast<uintptr_t>(target)));
-        }
-        return;
-    }
-
-    if (encodedCmd == FFX_CMD_UMBRAL_WARD_ENCODED) {
-        if (g_applyBlocks) {
-            SetDarkBlock(target, 1);
-            ClearWrongVanillaBlockBytes(target, encodedCmd);
-        }
-        if (shouldLog) {
-            HookLog(
-                "[ffx-hooks] NulWard cast #%ld Umbral att=%u tgt=%u darkBlock=%u apply=%d actor=0x%08X",
-                static_cast<long>(n),
-                static_cast<unsigned>(attackerIdx),
-                static_cast<unsigned>(targetIdx),
-                static_cast<unsigned>(GetDarkBlock(target)),
-                g_applyBlocks ? 1 : 0,
-                static_cast<unsigned>(reinterpret_cast<uintptr_t>(target)));
-        }
-    }
+bool Reserved(const Bus::DamageCall& call) noexcept {
+    const auto available=Available(call);unsigned sub=4;
+    const auto index=ResultIndex(call,sub);if(index>=reservations.size())return false;
+    const auto& reservation=reservations[index];
+    return reservation.mask&&(available&reservation.mask)==reservation.mask&&
+        reservation.target==actors[call.target].serial&&reservation.action==actions[call.user].serial&&
+        reservation.source==call.user&&reservation.sub==sub&&reservation.command==call.commandId;
 }
-
-static void OnAfterAction(uint8_t attackerIdx, uint8_t targetIdx) {
-    uint16_t encodedCmd = ReadEncodedCommandFromActor(attackerIdx);
-    if (encodedCmd == 0 && g_tlsEncodedCmd != 0) {
-        encodedCmd = NormalizeEncodedCommand(static_cast<uint16_t>(g_tlsEncodedCmd & 0xFFFF));
+bool ResolveNative(unsigned argument,unsigned mask,void* info,int& output) noexcept {
+    if(!(mask&0x90)||mask>255||!Context())return false;
+    std::uint32_t pool=0;if(!Read(image+0xD334CC,pool))return false;
+    const auto pointer=reinterpret_cast<std::uintptr_t>(info);
+    if(pointer<pool||pointer>=std::uintptr_t(pool)+ActorCount*0xF90u)return false;
+    const auto target=static_cast<unsigned>((pointer-pool)/0xF90u);auto* actor=Actor(target);if(!actor)return false;
+    const auto relative=pointer-reinterpret_cast<std::uintptr_t>(actor->pointer);
+    const unsigned group=relative>=0x774+728?1:0;Byte header[4]{};
+    if(!Copy(header,actor->pointer+0x774+728*group,4))return false;
+    auto* action=Track(header[2]);if(!action||header[3]>=action->row[3])return false;
+    const auto command=Command(*action,header[3]);const Byte* row=nullptr;
+    if(!CommandRow(command,row))return false;
+    Byte flags[2]{};if(!Copy(flags,row+0x20,1)||!Copy(flags+1,row+0x23,1)||!(flags[1]&1)||(flags[0]&0x10))return false;
+    Bus::DamageCall call{header[2],actors[header[2]].pointer,target,actor->pointer,row,command,info};
+    if(Reserved(call)){output=-1;return true;}
+    const unsigned wardMask=mask&0x90;output=0;
+    if((Available(call)&wardMask)!=wardMask)return true;
+    unsigned nativeMask=0;
+    for(unsigned bit=1;bit<=128;bit<<=1)if((mask&bit)&&!(wardMask&bit)){
+        const unsigned offset=bit==1?14:bit==2?16:bit==4?15:bit==8?13:0;Byte count=0;
+        if(!offset||!Copy(&count,static_cast<const Byte*>(info)+offset,1)||!count)return true;nativeMask|=bit;
     }
-    if (encodedCmd == 0) return;
-
-    void* target = ResolveActor(targetIdx);
-    ApplyWardBlockToTarget(target, encodedCmd, attackerIdx, targetIdx);
+    if(nativeMask&&SharedNul::Original()(argument,nativeMask,info)!=-1)return true;
+    if(!Reserve(call,wardMask))return true;output=-1;return true;
 }
-
-extern "C" int32_t __cdecl NulWard_ApplyNullBlocks(
-    int32_t damage,
-    void* targetPlus6E4,
-    int32_t encodedCmd,
-    int32_t elemFlags) {
-    if (!targetPlus6E4) return damage;
-
-    void* actor = reinterpret_cast<uint8_t*>(targetPlus6E4) - 0x6E4u;
-    const uint32_t elem = static_cast<uint32_t>(elemFlags);
-    const bool holyHit = (elem & FFX_ELEM_HOLY) != 0;
-    const bool darkHit = (elem & FFX_ELEM_DARK) != 0;
-
-    // DIAG (2026-06-16): log EVERY hit reaching the writeback (not only consumed ones), so a
-    // failed block can be attributed precisely: writeback-not-on-path (no probe line during the
-    // hit), element-not-detected (holyHit/darkHit=0), or block-absent-on-this-actor (blk=0 =>
-    // actor-ptr mismatch vs the cast that set it). Throttled.
-    if (g_logEvents && g_logFn) {
-        const LONG pn = InterlockedIncrement(&g_probeLogCount);
-        if (pn <= 64) {
-            HookLog(
-                "[ffx-hooks] NulWard probe #%ld dmg=%d elem=0x%X holyHit=%d darkHit=%d holyBlk=%u darkBlk=%u cmd=0x%04X actor=0x%08X",
-                static_cast<long>(pn),
-                damage,
-                elem,
-                holyHit ? 1 : 0,
-                darkHit ? 1 : 0,
-                static_cast<unsigned>(GetHolyBlock(actor)),
-                static_cast<unsigned>(GetDarkBlock(actor)),
-                static_cast<unsigned>(encodedCmd & 0xFFFF),
-                static_cast<unsigned>(reinterpret_cast<uintptr_t>(actor)));
+struct ResultFrame {
+    std::uint64_t epoch=0,target=0,action=0;unsigned command=0;
+    std::array<std::array<Byte,4>,2> before{};Byte tide=0,shock=0;
+};
+struct FinishFrame {std::uint64_t epoch=0,action=0;unsigned count=0;};
+thread_local std::array<ResultFrame,SharedAction::MaximumDepth> results{};
+thread_local std::array<FinishFrame,SharedAction::MaximumDepth> finishes{};
+void* BeforeResult(const SharedAction::ResultCall& call) noexcept {
+    if(!Context()||!SharedAction::resultDepth||SharedAction::resultDepth>results.size())return nullptr;
+    const auto* target=Actor(call.target);auto* action=Track(call.source);
+    if(!target||!action||call.sub>=action->row[3])return nullptr;
+    auto& frame=results[SharedAction::resultDepth-1];frame={};
+    frame.epoch=observedEpoch;frame.target=target->serial;frame.action=action->serial;frame.command=Command(*action,call.sub);
+    for(unsigned group=0;group<2;++group)
+        if(!Copy(frame.before[group].data(),target->pointer+0x774+728*group,4))return nullptr;
+    if(!Copy(&frame.tide,target->pointer+0x60E,1)||!Copy(&frame.shock,target->pointer+0x610,1))return nullptr;
+    return &frame;
+}
+void AfterResult(void* token,const SharedAction::ResultCall& call,int,bool completed) noexcept {
+    const auto* frame=static_cast<const ResultFrame*>(token);
+    if(!completed||!frame||!Context()||frame->epoch!=observedEpoch)return;
+    auto* target=Actor(call.target);auto* action=Track(call.source);
+    if(!target||!action||target->serial!=frame->target||action->serial!=frame->action)return;
+    bool landed=false;
+    for(unsigned group=0;group<2;++group){Byte after[4]{};const auto& before=frame->before[group];
+        if(!Copy(after,target->pointer+0x774+728*group,4)||before[2]!=call.source||before[3]!=call.sub||
+           after[2]!=call.source||after[3]!=call.sub||after[0]<=before[0]||after[0]>16||after[0]>before[1])continue;
+        for(unsigned hit=before[0];hit<after[0];++hit){Byte code=255;
+            if(!Copy(&code,target->pointer+0x774+728*group+24+44*hit+1,1))continue;
+            auto& reservation=reservations[call.target*ResultsPerActor+16*group+hit];
+            if(reservation.target==target->serial&&reservation.action==action->serial&&reservation.source==call.source&&
+               reservation.sub==call.sub){if(code==2)target->charges&=~reservation.mask;reservation={};}
+            landed=landed||code==0;
         }
     }
-
-    uint8_t holyBefore = 0;
-    uint8_t darkBefore = 0;
-    bool consumed = false;
-    int32_t outDamage = damage;
-
-    if (holyHit && GetHolyBlock(actor) > 0) {
-        holyBefore = GetHolyBlock(actor);
-        if (g_applyBlocks) {
-            SetHolyBlock(actor, 0);
-            outDamage = 0;
-        }
-        consumed = true;
-    } else if (darkHit && GetDarkBlock(actor) > 0) {
-        darkBefore = GetDarkBlock(actor);
-        if (g_applyBlocks) {
-            SetDarkBlock(actor, 0);
-            outDamage = 0;
-        }
-        consumed = true;
-    }
-
-    if (consumed && g_logEvents && g_logFn) {
-        const LONG n = InterlockedIncrement(&g_nullLogCount);
-        if (n <= 128) {
-            HookLog(
-                "[ffx-hooks] NulWard null #%ld cmd=0x%04X elem=0x%02X dmgIn=%d dmgOut=%d holy=%u->%u dark=%u->%u apply=%d actor=0x%08X",
-                static_cast<long>(n),
-                static_cast<unsigned>(encodedCmd & 0xFFFF),
-                static_cast<unsigned>(elem & 0xFFu),
-                damage,
-                outDamage,
-                static_cast<unsigned>(holyBefore),
-                static_cast<unsigned>(GetHolyBlock(actor)),
-                static_cast<unsigned>(darkBefore),
-                static_cast<unsigned>(GetDarkBlock(actor)),
-                g_applyBlocks ? 1 : 0,
-                static_cast<unsigned>(reinterpret_cast<uintptr_t>(actor)));
-        }
-    }
-
-    return outDamage;
+    const unsigned grant=frame->command==0x3140?16:frame->command==0x3141?128:0;
+    const Byte* row=nullptr;Byte flags=255;
+    if(!applying||!landed||!grant||(action->granted[call.target]&grant)||!CommandRow(frame->command,row)||
+       !Copy(&flags,row+0x23,1)||(flags&1))return;
+    target->charges|=grant;action->granted[call.target]|=grant;
+    // Old Ward payloads reused Water/Lightning. Preserve the pre-existing
+    // native charge instead of zeroing it or occupying status timer bytes.
+    if(grant==16)Copy(target->pointer+0x60E,&frame->tide,1);
+    else Copy(target->pointer+0x610,&frame->shock,1);
 }
-
-static bool BuildWritebackStub(uintptr_t resumeVa, uint8_t** outStub, size_t* outLen) {
-    std::vector<uint8_t> code;
-    const auto emit = [&](std::initializer_list<uint8_t> bytes) {
-        code.insert(code.end(), bytes.begin(), bytes.end());
-    };
-
-    emit({ 0xFF, 0x75, static_cast<uint8_t>(FFX_BATTLE_COMPUTE_HIT_DAMAGE_ELEM_FLAGS_OFF) });
-    emit({ 0xFF, 0x75, static_cast<uint8_t>(FFX_BATTLE_COMPUTE_HIT_DAMAGE_ARG_N12320) });
-    emit({ 0x51 });
-    emit({ 0x50 });
-    emit({ 0xE8 });
-    const size_t callSite = code.size();
-    emit({ 0x00, 0x00, 0x00, 0x00 });
-    emit({ 0x83, 0xC4, 0x10 });
-    emit({ 0x89, 0x06 });
-    emit({ 0x01, 0x81, 0x50, 0x06, 0x00, 0x00 });
-    emit({ 0xE9 });
-    const size_t jmpSite = code.size();
-    emit({ 0x00, 0x00, 0x00, 0x00 });
-
-    uint8_t* stub = static_cast<uint8_t*>(VirtualAlloc(
-        nullptr,
-        code.size(),
-        MEM_COMMIT | MEM_RESERVE,
-        PAGE_EXECUTE_READWRITE));
-    if (!stub) return false;
-    memcpy(stub, code.data(), code.size());
-
-    const uintptr_t applyVa = reinterpret_cast<uintptr_t>(&NulWard_ApplyNullBlocks);
-    const int32_t callRel = static_cast<int32_t>(applyVa - (reinterpret_cast<uintptr_t>(stub) + callSite + 4));
-    memcpy(stub + callSite, &callRel, sizeof(callRel));
-
-    const int32_t jmpRel = static_cast<int32_t>(resumeVa - (reinterpret_cast<uintptr_t>(stub) + jmpSite + 4));
-    memcpy(stub + jmpSite, &jmpRel, sizeof(jmpRel));
-
-    FlushInstructionCache(GetCurrentProcess(), stub, code.size());
-    *outStub = stub;
-    *outLen = code.size();
-    return true;
+void* BeforeFinish(const SharedAction::FinishCall& call) noexcept {
+    if(!Context()||!SharedAction::finishDepth||SharedAction::finishDepth>finishes.size())return nullptr;
+    auto* action=Track(call.owner);std::int8_t count=0;
+    if(!action||action->index!=call.index||!Read(image+0xD2BDE1,count)||count<1)return nullptr;
+    auto& frame=finishes[SharedAction::finishDepth-1];frame={observedEpoch,action->serial,static_cast<unsigned>(count)};return &frame;
 }
-
-static bool InstallWritebackPatch(uintptr_t base) {
-    g_writebackPatchVa = base + RVA_FFX_BATTLE_DAMAGE_WRITEBACK_PATCH;
-    g_writebackResumeVa = base + RVA_FFX_BATTLE_DAMAGE_WRITEBACK_RESUME;
-
-    uint8_t actual[kWritebackPatchLen] = {};
-    memcpy(actual, reinterpret_cast<const void*>(g_writebackPatchVa), kWritebackPatchLen);
-    if (memcmp(actual, kExpectedWritebackPatch, kWritebackPatchLen) != 0) {
-        HookLog(
-            "[ffx-hooks] ERROR NulWard writeback unexpected bytes @0x%08X: %02X %02X %02X %02X %02X",
-            static_cast<unsigned>(g_writebackPatchVa),
-            actual[0], actual[1], actual[2], actual[3], actual[4]);
-        return false;
-    }
-
-    memcpy(g_savedWriteback, kExpectedWritebackPatch, kWritebackPatchLen);
-    if (!BuildWritebackStub(g_writebackResumeVa, &g_writebackStub, &g_writebackStubLen)) {
-        HookLog("[ffx-hooks] ERROR NulWard writeback stub alloc failed");
-        return false;
-    }
-
-    const int32_t rel = static_cast<int32_t>(
-        reinterpret_cast<uintptr_t>(g_writebackStub) - (g_writebackPatchVa + 5));
-    const uint8_t jmpPatch[kWritebackPatchLen] = {
-        0xE9,
-        static_cast<uint8_t>(rel & 0xFF),
-        static_cast<uint8_t>((rel >> 8) & 0xFF),
-        static_cast<uint8_t>((rel >> 16) & 0xFF),
-        static_cast<uint8_t>((rel >> 24) & 0xFF),
-    };
-
-    if (!MemWrite(reinterpret_cast<void*>(g_writebackPatchVa), jmpPatch, kWritebackPatchLen)) {
-        HookLog("[ffx-hooks] ERROR NulWard writeback patch write failed @0x%08X", static_cast<unsigned>(g_writebackPatchVa));
-        VirtualFree(g_writebackStub, 0, MEM_RELEASE);
-        g_writebackStub = nullptr;
-        return false;
-    }
-
-    HookLog(
-        "[ffx-hooks] NulWard writeback installed patch@0x%08X resume@0x%08X apply=%d log=%d stub=0x%08X",
-        static_cast<unsigned>(g_writebackPatchVa),
-        static_cast<unsigned>(g_writebackResumeVa),
-        g_applyBlocks ? 1 : 0,
-        g_logEvents ? 1 : 0,
-        static_cast<unsigned>(reinterpret_cast<uintptr_t>(g_writebackStub)));
-    return true;
+void AfterFinish(void* token,const SharedAction::FinishCall& call,int result,bool completed) noexcept {
+    const auto* frame=static_cast<const FinishFrame*>(token);std::int8_t count=0;
+    if(!frame||!completed||result!=1||!Context()||frame->epoch!=observedEpoch||call.owner>=ActorCount||
+       actions[call.owner].serial!=frame->action||!Read(image+0xD2BDE1,count)||count<0||static_cast<unsigned>(count)+1!=frame->count)return;
+    for(auto& reservation:reservations)if(reservation.source==call.owner)reservation={};actions[call.owner]={};
 }
-
-static bool RemoveWritebackPatch() {
-    bool restored = true;
-    if (g_writebackPatchVa != 0 && g_savedWriteback[0] != 0) {
-        restored = MemWrite(reinterpret_cast<void*>(g_writebackPatchVa), g_savedWriteback, kWritebackPatchLen);
-    }
-    if (g_writebackStub) {
-        VirtualFree(g_writebackStub, 0, MEM_RELEASE);
-        g_writebackStub = nullptr;
-        g_writebackStubLen = 0;
-    }
-    g_writebackPatchVa = 0;
-    g_writebackResumeVa = 0;
-    memset(g_savedWriteback, 0, sizeof(g_savedWriteback));
-    return restored;
-}
-
-#ifdef FFXHOOKS_HAVE_POLYHOOK
-
-static int __cdecl ApplyHitDamageLoop_Shim(
-    int i,
-    int actorRecord,
-    int n,
-    int a4,
-    int a5,
-    int n12320,
-    unsigned char* a7,
-    uint32_t* a8,
-    int* a9,
-    unsigned char** a10,
-    int a11) {
-    g_tlsEncodedCmd = n12320;
-    return g_hitLoopTrampoline(i, actorRecord, n, a4, a5, n12320, a7, a8, a9, a10, a11);
-}
-
-static int __cdecl ActionAftermath_Shim(int i, int a2, int ia, int* a4, int16_t a5) {
-    const int result = g_aftermathTrampoline(i, a2, ia, a4, a5);
-    if (g_logEvents || g_applyBlocks) {
-        OnAfterAction(static_cast<uint8_t>(i), static_cast<uint8_t>(ia));
-    }
-    return result;
-}
-
-static bool PrecheckElemLooksHolyDark(int n8, int n2, const uint32_t* a8) {
-    const uint32_t probe = static_cast<uint32_t>(n8) | static_cast<uint32_t>(n2);
-    if ((probe & FFX_ELEM_HOLY) != 0 || (probe & FFX_ELEM_DARK) != 0) {
-        return true;
-    }
-    if (a8 && ((*a8 & FFX_ELEM_HOLY) != 0 || (*a8 & FFX_ELEM_DARK) != 0)) {
-        return true;
-    }
-    return false;
-}
-
-static int __cdecl ResolveHitPrecheck_Shim(
-    int targetIdx,
-    int n8,
-    int n2,
-    int n3,
-    int n100_1,
-    int n100,
-    int* p_n10000,
-    uint32_t* a8,
-    uint32_t* a9,
-    int a10,
-    char a11,
-    int a12,
-    int16_t a13,
-    int a14,
-    int* a15) {
-    const int vanilla = g_precheckTrampoline(
-        targetIdx, n8, n2, n3, n100_1, n100, p_n10000, a8, a9, a10, a11, a12, a13, a14, a15);
-
-    void* actor = ResolveActor(static_cast<uint8_t>(targetIdx & 0xFF));
-    const uint8_t holy = GetHolyBlock(actor);
-    const uint8_t dark = GetDarkBlock(actor);
-    const bool elemHit = PrecheckElemLooksHolyDark(n8, n2, a8);
-
-    if ((g_logEvents || g_experimentP16) && g_logFn && holy + dark > 0) {
-        const LONG n = InterlockedIncrement(&g_p16LogCount);
-        if (n <= 64) {
-            HookLog(
-                "[ffx-hooks] NulWard P16 #%ld tgt=%d vanilla=%d holy=%u dark=%u n8=%d n2=%d elemHit=%d",
-                static_cast<long>(n),
-                targetIdx,
-                vanilla,
-                static_cast<unsigned>(holy),
-                static_cast<unsigned>(dark),
-                n8,
-                n2,
-                elemHit ? 1 : 0);
-        }
-    }
-
-    if (g_p16Apply && g_applyBlocks && elemHit && vanilla != 0) {
-        if ((holy > 0 && (static_cast<uint32_t>(n8 | n2 | (a8 ? *a8 : 0)) & FFX_ELEM_HOLY) != 0)
-            || (dark > 0 && (static_cast<uint32_t>(n8 | n2 | (a8 ? *a8 : 0)) & FFX_ELEM_DARK) != 0)) {
-            if (holy > 0) SetHolyBlock(actor, 0);
-            if (dark > 0) SetDarkBlock(actor, 0);
-            if (g_logFn) {
-                HookLog("[ffx-hooks] NulWard P16 apply null tgt=%d vanilla=%d->0", targetIdx, vanilla);
-            }
-            return 0;
-        }
-    }
-
-    return vanilla;
-}
-
-static bool InstallDetour(
-    uintptr_t base,
-    uint32_t rva,
-    uint64_t shimVa,
-    PLH::x86Detour** detourOut,
-    uint64_t* trampolineOut,
-    const char* label) {
-    if (!detourOut || !trampolineOut || *detourOut) return false;
-    const uint64_t targetVa = static_cast<uint64_t>(base + rva);
-    *trampolineOut = 0;
-    try {
-        *detourOut = new PLH::x86Detour(targetVa, shimVa, trampolineOut);
-        const bool hooked = (*detourOut)->hook();
-        if (!hooked) {
-            delete *detourOut;
-            *detourOut = nullptr;
-            *trampolineOut = 0;
-            HookLog("[ffx-hooks] ERROR NulWard %s detour hook() failed @0x%08X", label, static_cast<unsigned>(targetVa));
-            return false;
-        }
-        HookLog(
-            "[ffx-hooks] NulWard %s detour ok target=0x%08X trampoline=0x%llX",
-            label,
-            static_cast<unsigned>(targetVa),
-            static_cast<unsigned long long>(*trampolineOut));
-        return true;
-    } catch (...) {
-        delete *detourOut;
-        *detourOut = nullptr;
-        *trampolineOut = 0;
-        HookLog("[ffx-hooks] ERROR NulWard %s detour exception @0x%08X", label, static_cast<unsigned>(targetVa));
-        return false;
-    }
-}
-
-static bool RemoveDetour(PLH::x86Detour* detour, const char* label) {
-    if (!detour) return true;
-    const bool ok = detour->unHook();
-    delete detour;
-    HookLog("[ffx-hooks] NulWard %s detour remove %s", label, ok ? "ok" : "FAILED");
-    return ok;
-}
-
-#endif /* FFXHOOKS_HAVE_POLYHOOK */
-
-static void ResolveGameFns(uintptr_t base) {
-    g_base = base;
-    g_getActor = reinterpret_cast<GetActorByIndexFn>(base + RVA_FFX_BATTLE_GET_ACTOR_BY_INDEX);
-}
-
+void BeforeActor(unsigned,unsigned owner) noexcept {if(Context())Retire(owner);}
+void ResetWards(Bus::ResetReason) noexcept {resetEpoch.fetch_add(1);}
+void NewBattle() noexcept {ResetWards(Bus::ResetReason::BattleStart);}
+const SharedAction::Observer actionObserver{BeforeResult,AfterResult,BeforeFinish,AfterFinish};
+const SharedActor::Observer actorObserver{BeforeActor,nullptr};
+const SharedNul::Wards wardProvider{ResolveNative,Available,Reserve,Reserved};
+const Bus::Observer combatObserver{nullptr,nullptr,nullptr,ResetWards,nullptr};
+const SharedBattleRuntime::ActionObserver battleObserver{NewBattle};
 } // namespace
 
-NulWardInstallResult InstallNulWardHook(
-    uintptr_t base,
-    bool applyBlocks,
-    bool logEvents,
-    NulWardLogFn log,
-    const NulWardInstallOptions* options) {
-    NulWardInstallResult result = { false, 0, 0, 0, 0 };
-    if (g_installed) {
-        result.ok = true;
-        result.stubWriteback = g_writebackPatchVa;
-#ifdef FFXHOOKS_HAVE_POLYHOOK
-        result.detourAftermath = static_cast<uintptr_t>(g_aftermathTrampolineVa);
-        result.detourHitLoop = static_cast<uintptr_t>(g_hitLoopTrampolineVa);
-#endif
-        return result;
+NulWardInstallResult InstallNulWardHook(std::uintptr_t base,bool apply,bool logEvents,NulWardLogFn log,const NulWardInstallOptions* options){
+    NulWardInstallResult result{};
+    if(running.load()){result.ok=image==base;return result;}
+    if(!apply&&!logEvents)return result;
+    // The former nativeSlots/P16 options now use the same checked external
+    // charge path; neither option grants permission to patch native timers.
+    if(options&&(options->nativeSlots||options->experimentP16||options->p16Apply)&&log)
+        log("[ffx-hooks] NulWard legacy options use shared external charge ownership\n");
+    if(!SharedNul::Start(base)||!SharedAction::Start(base)||!SharedActor::Start(base))return result;
+    image=base;applying=apply;resetEpoch.fetch_add(1);ownerThread=0;
+    if(!SharedAction::Subscribe(SharedAction::Slot::NulWard,&actionObserver)||
+       !SharedActor::Subscribe(SharedActor::Slot::NulWard,&actorObserver)||!SharedNul::RegisterWards(&wardProvider)||
+       !Bus::Subscribe(Bus::Slot::NulWard,&combatObserver)||
+       !SharedBattleRuntime::RegisterActionObserver(SharedBattleRuntime::ActionConsumer::NulWard,&battleObserver)){
+        RemoveNulWardHook(log);return result;
     }
-    if (!applyBlocks && !logEvents) {
-        if (log) {
-            log("[ffx-hooks] NulWard install skipped: neither apply nor log requested");
-        }
-        return result;
-    }
-
-    g_logFn = log;
-    g_applyBlocks = applyBlocks;
-    g_logEvents = logEvents;
-    g_nativeSlots = options && options->nativeSlots;
-    g_experimentP16 = options && options->experimentP16;
-    g_p16Apply = options && options->p16Apply;
-    g_castLogCount = 0;
-    g_nullLogCount = 0;
-    g_probeLogCount = 0;
-#ifdef FFXHOOKS_HAVE_POLYHOOK
-    g_p16LogCount = 0;
-#endif
-    ResolveGameFns(base);
-
-    bool ok = true;
-
-#ifdef FFXHOOKS_HAVE_POLYHOOK
-    const uint64_t hitLoopShimVa = reinterpret_cast<uint64_t>(&ApplyHitDamageLoop_Shim);
-    const uint64_t aftermathShimVa = reinterpret_cast<uint64_t>(&ActionAftermath_Shim);
-
-    if (!InstallDetour(base, RVA_FFX_BATTLE_APPLY_HIT_DAMAGE_LOOP, hitLoopShimVa, &g_hitLoopDetour, &g_hitLoopTrampolineVa, "hitLoop")) {
-        ok = false;
-    } else {
-        g_hitLoopTrampoline = reinterpret_cast<ApplyHitDamageLoopFn>(g_hitLoopTrampolineVa);
-    }
-
-    if (ok && !InstallDetour(base, RVA_FFX_BATTLE_ACTION_AFTERMATH, aftermathShimVa, &g_aftermathDetour, &g_aftermathTrampolineVa, "aftermath")) {
-        ok = false;
-    } else if (ok) {
-        g_aftermathTrampoline = reinterpret_cast<ActionAftermathFn>(g_aftermathTrampolineVa);
-    }
-
-    if (ok && (g_experimentP16 || g_p16Apply)) {
-        const uint64_t precheckShimVa = reinterpret_cast<uint64_t>(&ResolveHitPrecheck_Shim);
-        if (!InstallDetour(base, RVA_FFX_BATTLE_RESOLVE_HIT_PRECHECK, precheckShimVa, &g_precheckDetour, &g_precheckTrampolineVa, "precheck")) {
-            ok = false;
-        } else {
-            g_precheckTrampoline = reinterpret_cast<ResolveHitPrecheckFn>(g_precheckTrampolineVa);
-            result.detourPrecheck = static_cast<uintptr_t>(g_precheckTrampolineVa);
-        }
-    }
-
-    result.detourHitLoop = static_cast<uintptr_t>(g_hitLoopTrampolineVa);
-    result.detourAftermath = static_cast<uintptr_t>(g_aftermathTrampolineVa);
-#else
-    HookLog("[ffx-hooks] WARN NulWard detours require FFXHOOKS_HAVE_POLYHOOK — writeback-only build");
-#endif
-
-    if (ok && !InstallWritebackPatch(base)) {
-        ok = false;
-    }
-
-    if (!ok) {
-        RemoveNulWardHook(log);
-        return result;
-    }
-
-    g_installed = true;
-    result.ok = true;
-    result.stubWriteback = g_writebackPatchVa;
-    HookLog(
-        "[ffx-hooks] NulWard installed apply=%d log=%d native=%d p16=%d p16apply=%d base=0x%08X",
-        applyBlocks ? 1 : 0,
-        logEvents ? 1 : 0,
-        g_nativeSlots ? 1 : 0,
-        g_experimentP16 ? 1 : 0,
-        g_p16Apply ? 1 : 0,
-        static_cast<unsigned>(base));
-    return result;
+    running=true;result.ok=true;
+    result.detourAftermath=reinterpret_cast<std::uintptr_t>(SharedAction::OriginalResult());
+    if(log)log("[ffx-hooks] NulWard shared action/Nul/actor observers installed\n");return result;
 }
-
-bool RemoveNulWardHook(NulWardLogFn log) {
-    if (!g_installed && g_writebackPatchVa == 0
-#ifdef FFXHOOKS_HAVE_POLYHOOK
-        && !g_hitLoopDetour && !g_aftermathDetour
-#endif
-    ) {
-        return true;
-    }
-
-    const bool writebackOk = RemoveWritebackPatch();
-
-#ifdef FFXHOOKS_HAVE_POLYHOOK
-    RemoveDetour(g_hitLoopDetour, "hitLoop");
-    g_hitLoopDetour = nullptr;
-    g_hitLoopTrampoline = nullptr;
-    g_hitLoopTrampolineVa = 0;
-
-    RemoveDetour(g_aftermathDetour, "aftermath");
-    g_aftermathDetour = nullptr;
-    g_aftermathTrampoline = nullptr;
-    g_aftermathTrampolineVa = 0;
-
-    RemoveDetour(g_precheckDetour, "precheck");
-    g_precheckDetour = nullptr;
-    g_precheckTrampoline = nullptr;
-    g_precheckTrampolineVa = 0;
-#endif
-
-    g_holyBlocks.clear();
-    g_darkBlocks.clear();
-    g_installed = false;
-    g_applyBlocks = false;
-    g_logEvents = false;
-    g_nativeSlots = false;
-    g_experimentP16 = false;
-    g_p16Apply = false;
-    g_logFn = nullptr;
-    g_base = 0;
-    g_getActor = nullptr;
-    g_tlsEncodedCmd = 0;
-
-    if (log) {
-        log(writebackOk ? "[ffx-hooks] NulWard removed ok" : "[ffx-hooks] NulWard remove: writeback restore FAILED");
-    }
-    return writebackOk;
+static_assert(std::atomic<bool>::is_always_lock_free,"NulWard detach gate must not lock");
+void RequestNulWardDetachStop() noexcept {running=false;}
+bool RemoveNulWardHook(NulWardLogFn log){
+    RequestNulWardDetachStop();
+    SharedNul::UnregisterWards(&wardProvider);SharedAction::Unsubscribe(SharedAction::Slot::NulWard,&actionObserver);
+    SharedActor::Unsubscribe(SharedActor::Slot::NulWard,&actorObserver);Bus::Unsubscribe(Bus::Slot::NulWard,&combatObserver);
+    SharedBattleRuntime::UnregisterActionObserver(SharedBattleRuntime::ActionConsumer::NulWard,&battleObserver);
+    if(log)log("[ffx-hooks] NulWard stopped; shared native owners retained\n");return true;
 }
-
-bool IsNulWardHookInstalled() {
-    return g_installed;
-}
-
+bool IsNulWardHookInstalled(){return running.load();}
 } // namespace FfxHooks

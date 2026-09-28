@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <array>
 #include <cstdint>
 
 namespace FfxHooks::SharedBattleRuntime {
@@ -23,7 +24,42 @@ struct ConsumerRequest {
     bool seymour = false;
     bool sin = false;
     bool customMix = false;
+    bool arcana = false;
 };
+
+// Passive process-lifetime invalidation is separate from CustomMix's reserved
+// around-original seam and Seymour's composer. It cannot repeat the producer.
+struct ActionObserver {void (*newBattle)() noexcept;};
+inline std::atomic<const ActionObserver*> actionObserver{nullptr};
+inline bool RegisterActionObserver(const ActionObserver* value) noexcept {
+    if(!value||!value->newBattle)return false;
+    const ActionObserver* expected=nullptr;
+    return actionObserver.compare_exchange_strong(expected,value)||expected==value;
+}
+inline void UnregisterActionObserver(const ActionObserver* value) noexcept {
+    const ActionObserver* expected=value;(void)actionObserver.compare_exchange_strong(expected,nullptr);
+}
+enum class ActionConsumer : unsigned {Elemental,Aeon,NulWard,Count};
+inline std::array<std::atomic<const ActionObserver*>,static_cast<unsigned>(ActionConsumer::Count)> actionConsumers{};
+inline bool RegisterActionObserver(ActionConsumer consumer,const ActionObserver* value) noexcept {
+    const auto index=static_cast<unsigned>(consumer);
+    if(index>=actionConsumers.size()||!value||!value->newBattle)return false;
+    const ActionObserver* expected=nullptr;
+    return actionConsumers[index].compare_exchange_strong(expected,value)||expected==value;
+}
+inline void UnregisterActionObserver(ActionConsumer consumer,const ActionObserver* value) noexcept {
+    const auto index=static_cast<unsigned>(consumer);if(index>=actionConsumers.size()||!value)return;
+    const ActionObserver* expected=value;(void)actionConsumers[index].compare_exchange_strong(expected,nullptr);
+}
+inline bool ActionConsumersRequested() noexcept {
+    if(actionObserver.load()!=nullptr)return true;
+    for(const auto& slot:actionConsumers)if(slot.load()!=nullptr)return true;
+    return false;
+}
+inline void NotifyActionConsumers() noexcept {
+    const auto* primary=actionObserver.load();if(primary)primary->newBattle();
+    for(const auto& slot:actionConsumers){const auto* value=slot.load();if(value)value->newBattle();}
+}
 
 // WHY: Playable Seymour is a LIVE flag, so its exact profile-gated entry/exit infrastructure
 // must be installed before the user can turn the behavior ON from F8. This capability bit does

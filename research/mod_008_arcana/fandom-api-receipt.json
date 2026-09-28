@@ -1,0 +1,22 @@
+{
+  "url": "https://finalfantasy.fandom.com/api.php?action=parse&page=Final_Fantasy_X-2_accessories&prop=wikitext%7Ctext%7Csections%7Crevid&format=json",
+  "fetched_at": "2026-09-27T21:14:57.547667+00:00",
+  "http_status": 200,
+  "path": "/home/wanderson/.codex/research-cache/mod008-fandom/ffx2-accessories-api.json",
+  "sha256": "b904fd00e46453aacd27a2d0dac7c797f5bdab3b91d1fdf7e32d39a9ec2616b5",
+  "bytes": 362997,
+  "parse_keys": [
+    "title",
+    "pageid",
+    "revid",
+    "text",
+    "sections",
+    "showtoc",
+    "wikitext"
+  ],
+  "title": "Final Fantasy X-2 accessories",
+  "revision_id": 3940120,
+  "error": null,
+  "api_usage": "MediaWiki action=parse via HTTPS, successful JSON response; browser HTML fetch failed and was not used.",
+  "raw_snapshot_committed": false
+}

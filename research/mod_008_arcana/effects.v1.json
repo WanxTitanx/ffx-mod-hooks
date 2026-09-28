@@ -1,0 +1,1833 @@
+{
+  "schema": "jarvis.arcana.effects.v1",
+  "scope": "Typed effect definitions; native consumer readiness is reported separately.",
+  "cards": [
+    {
+      "id": 0,
+      "effects": [
+        {
+          "kind": "FirstStrike",
+          "value": 1
+        },
+        {
+          "kind": "FirstCtbReduction",
+          "value": 35
+        },
+        {
+          "kind": "EvasionFlat",
+          "value": 20
+        },
+        {
+          "kind": "Sensor",
+          "value": 1
+        }
+      ],
+      "description": "First Strike; first CTB recovery -35%; Evasion +20; Sensor",
+      "inspiration": [
+        "Sprint Shoes"
+      ]
+    },
+    {
+      "id": 1,
+      "effects": [
+        {
+          "kind": "MagicPercent",
+          "value": 30
+        },
+        {
+          "kind": "HalfBlackMp",
+          "value": 1
+        },
+        {
+          "kind": "ElementDamageFireIce",
+          "value": 10
+        },
+        {
+          "kind": "WardFire",
+          "value": 1
+        },
+        {
+          "kind": "WardIce",
+          "value": 1
+        }
+      ],
+      "description": "Magic +30%; Half MP for Black Magic; Fire/Ice damage +10%; Fire/Ice Wards",
+      "inspiration": [
+        "Tarot Card",
+        "Gold Hairpin"
+      ]
+    },
+    {
+      "id": 2,
+      "effects": [
+        {
+          "kind": "WhiteHealing",
+          "value": 40
+        },
+        {
+          "kind": "HalfWhiteMp",
+          "value": 1
+        },
+        {
+          "kind": "ProofSilence",
+          "value": 1
+        }
+      ],
+      "description": "White Magic healing +40%; Half MP for White Magic; Silenceproof",
+      "inspiration": [
+        "White Lore"
+      ]
+    },
+    {
+      "id": 3,
+      "effects": [
+        {
+          "kind": "HpPercent",
+          "value": 40
+        },
+        {
+          "kind": "AutoRegen",
+          "value": 1
+        }
+      ],
+      "description": "Max HP +40%; Auto-Regen",
+      "inspiration": [
+        "Recovery Bracer"
+      ]
+    },
+    {
+      "id": 4,
+      "effects": [
+        {
+          "kind": "AutoProtect",
+          "value": 1
+        },
+        {
+          "kind": "AutoShell",
+          "value": 1
+        },
+        {
+          "kind": "DefensePercent",
+          "value": 20
+        },
+        {
+          "kind": "MagicDefensePercent",
+          "value": 20
+        }
+      ],
+      "description": "Auto-Protect; Auto-Shell; Defense/Magic Defense +20%",
+      "inspiration": [
+        "Defense Bracer"
+      ]
+    },
+    {
+      "id": 5,
+      "effects": [
+        {
+          "kind": "ProofDark",
+          "value": 1
+        },
+        {
+          "kind": "ProofSilence",
+          "value": 1
+        },
+        {
+          "kind": "ProofSleep",
+          "value": 1
+        },
+        {
+          "kind": "ProofPoison",
+          "value": 1
+        },
+        {
+          "kind": "ProofConfuse",
+          "value": 1
+        },
+        {
+          "kind": "ProofDeath",
+          "value": 1
+        },
+        {
+          "kind": "FocusOnStart",
+          "value": 5
+        },
+        {
+          "kind": "DefendMp",
+          "value": 3
+        }
+      ],
+      "description": "Darkness/Silence/Sleep/Poison/Confusion/Death proof; start with Focus x5; Defend restores 3% MP",
+      "inspiration": [
+        "Ribbon"
+      ]
+    },
+    {
+      "id": 6,
+      "effects": [
+        {
+          "kind": "LoversHealing",
+          "value": 25
+        },
+        {
+          "kind": "LoversCapHp",
+          "value": 10
+        },
+        {
+          "kind": "WhiteMpReduction",
+          "value": 25
+        },
+        {
+          "kind": "WhiteHealing",
+          "value": 15
+        }
+      ],
+      "description": "White Magic on another ally shares 25% actual healing, capped at 10% wearer HP per action; White Magic MP cost -25%; healing +15%",
+      "inspiration": [
+        "White Tome"
+      ]
+    },
+    {
+      "id": 7,
+      "effects": [
+        {
+          "kind": "AutoHaste",
+          "value": 1
+        },
+        {
+          "kind": "FirstStrike",
+          "value": 1
+        },
+        {
+          "kind": "CtbReduction",
+          "value": 10
+        },
+        {
+          "kind": "StrengthPercent",
+          "value": 15
+        }
+      ],
+      "description": "Auto-Haste; First Strike; CTB recovery -10%; Strength +15%",
+      "inspiration": [
+        "Speed Bracer"
+      ]
+    },
+    {
+      "id": 8,
+      "effects": [
+        {
+          "kind": "StrengthPercent",
+          "value": 30
+        },
+        {
+          "kind": "Piercing",
+          "value": 1
+        },
+        {
+          "kind": "CriticalChance",
+          "value": 10
+        }
+      ],
+      "description": "Strength +30%; Piercing; Critical chance +10%",
+      "inspiration": [
+        "Champion Belt"
+      ]
+    },
+    {
+      "id": 9,
+      "effects": [
+        {
+          "kind": "MpPercent",
+          "value": 60
+        },
+        {
+          "kind": "MpPerTurn",
+          "value": 1
+        },
+        {
+          "kind": "AutoShell",
+          "value": 1
+        }
+      ],
+      "description": "Max MP +60%; restore 1% MP each turn; Auto-Shell",
+      "inspiration": [
+        "Wizard Bracelet"
+      ]
+    },
+    {
+      "id": 10,
+      "effects": [
+        {
+          "kind": "LuckFlat",
+          "value": 20
+        },
+        {
+          "kind": "DropMultiplier",
+          "value": 2
+        },
+        {
+          "kind": "ApBonus",
+          "value": 25
+        },
+        {
+          "kind": "GilBonus",
+          "value": 25
+        }
+      ],
+      "description": "Double Drops; Luck +20; AP +25%; Gil +25% (drop/gil use highest rate)",
+      "inspiration": [
+        "Key to Success"
+      ]
+    },
+    {
+      "id": 11,
+      "effects": [
+        {
+          "kind": "Counter",
+          "value": 1
+        },
+        {
+          "kind": "MagicCounter",
+          "value": 1
+        },
+        {
+          "kind": "DefensePercent",
+          "value": 20
+        },
+        {
+          "kind": "AccuracyFlat",
+          "value": 20
+        }
+      ],
+      "description": "Counterattack; Magic Counter; Defense +20%; Accuracy +20",
+      "inspiration": [
+        "Black Belt"
+      ]
+    },
+    {
+      "id": 12,
+      "effects": [
+        {
+          "kind": "IncomingDamage",
+          "value": -20
+        },
+        {
+          "kind": "CtbIncrease",
+          "value": 25
+        },
+        {
+          "kind": "DefendMp",
+          "value": 3
+        },
+        {
+          "kind": "AutoProtect",
+          "value": 1
+        }
+      ],
+      "description": "Incoming HP damage -20%; CTB recovery +25%; Defend restores 3% MP; Auto-Protect",
+      "inspiration": [
+        "Adamantite"
+      ]
+    },
+    {
+      "id": 13,
+      "effects": [
+        {
+          "kind": "TouchDeath",
+          "value": 100
+        },
+        {
+          "kind": "KillHp",
+          "value": 20
+        },
+        {
+          "kind": "ProofDeath",
+          "value": 1
+        },
+        {
+          "kind": "DeathImmuneDamage",
+          "value": 20
+        },
+        {
+          "kind": "KillMp",
+          "value": 10
+        }
+      ],
+      "description": "Deathstrike 100%; Deathproof; HP damage +20% against Death-immune targets; a kill restores 20% HP and 10% MP once per action",
+      "inspiration": [
+        "Mortal Shock",
+        "Angel Earrings"
+      ]
+    },
+    {
+      "id": 14,
+      "effects": [
+        {
+          "kind": "HalfMp",
+          "value": 1
+        },
+        {
+          "kind": "ItemHealing",
+          "value": 50
+        },
+        {
+          "kind": "WhiteHealing",
+          "value": 15
+        },
+        {
+          "kind": "ProofPoison",
+          "value": 1
+        }
+      ],
+      "description": "Half MP; recovery items +50%; White Magic healing +15%; Poisonproof",
+      "inspiration": [
+        "Gold Hairpin"
+      ]
+    },
+    {
+      "id": 15,
+      "effects": [
+        {
+          "kind": "OutgoingDamage",
+          "value": 40
+        },
+        {
+          "kind": "IncomingDamage",
+          "value": 25
+        },
+        {
+          "kind": "KillHp",
+          "value": 10
+        }
+      ],
+      "description": "Outgoing HP damage +40%; incoming HP damage +25%; kills restore 10% HP once per action",
+      "inspiration": [
+        "Bloodlust"
+      ]
+    },
+    {
+      "id": 16,
+      "effects": [
+        {
+          "kind": "TouchArmorBreak",
+          "value": 50
+        },
+        {
+          "kind": "TouchMentalBreak",
+          "value": 50
+        },
+        {
+          "kind": "StrengthPercent",
+          "value": 15
+        },
+        {
+          "kind": "MagicPercent",
+          "value": 15
+        },
+        {
+          "kind": "Piercing",
+          "value": 1
+        }
+      ],
+      "description": "Attack: Armor/Mental Break 50% for 3 turns; Strength/Magic +15%; Piercing",
+      "inspiration": [
+        "Power Gloves"
+      ]
+    },
+    {
+      "id": 17,
+      "effects": [
+        {
+          "kind": "AutoRegen",
+          "value": 1
+        },
+        {
+          "kind": "MpPerTurn",
+          "value": 1
+        },
+        {
+          "kind": "MagicDefensePercent",
+          "value": 20
+        },
+        {
+          "kind": "WhiteHealing",
+          "value": 20
+        }
+      ],
+      "description": "Auto-Regen; restore 1% MP each turn; Magic Defense +20%; White Magic healing +20%",
+      "inspiration": [
+        "Heady Perfume"
+      ]
+    },
+    {
+      "id": 18,
+      "effects": [
+        {
+          "kind": "AutoReflect",
+          "value": 1
+        },
+        {
+          "kind": "EvadeCounter",
+          "value": 1
+        },
+        {
+          "kind": "EvasionFlat",
+          "value": 30
+        },
+        {
+          "kind": "ProofSleep",
+          "value": 1
+        },
+        {
+          "kind": "ProofConfuse",
+          "value": 1
+        },
+        {
+          "kind": "TouchSleep",
+          "value": 100
+        },
+        {
+          "kind": "TouchConfuse",
+          "value": 50
+        },
+        {
+          "kind": "IncomingDamage",
+          "value": -10
+        }
+      ],
+      "description": "Auto-Reflect; Evade and Counter; Evasion +30; Sleep/Confusion proof; Sleepstrike 100%; Confusetouch 50%; incoming HP damage -10%",
+      "inspiration": [
+        "Star Bracer",
+        "Black Choker",
+        "Moon Bracer"
+      ]
+    },
+    {
+      "id": 19,
+      "effects": [
+        {
+          "kind": "StrikeHoly",
+          "value": 1
+        },
+        {
+          "kind": "ElementDamageHoly",
+          "value": 25
+        },
+        {
+          "kind": "WardHoly",
+          "value": 1
+        },
+        {
+          "kind": "MagicPercent",
+          "value": 20
+        },
+        {
+          "kind": "AutoProtect",
+          "value": 1
+        }
+      ],
+      "description": "Holystrike; Holy damage +25%; Holy Ward; Magic +20%; Auto-Protect",
+      "inspiration": [
+        "Force of Nature"
+      ]
+    },
+    {
+      "id": 20,
+      "effects": [
+        {
+          "kind": "SurviveOnce",
+          "value": 1
+        },
+        {
+          "kind": "SurviveHeal",
+          "value": 25
+        },
+        {
+          "kind": "OverdriveDamage",
+          "value": 30
+        },
+        {
+          "kind": "ProofDeath",
+          "value": 1
+        }
+      ],
+      "description": "Survive one lethal HP hit per battle, then recover 25% HP; Overdrive damage +30%; Deathproof",
+      "inspiration": [
+        "Angel Earrings"
+      ]
+    },
+    {
+      "id": 21,
+      "effects": [
+        {
+          "kind": "BreakHp",
+          "value": 1
+        },
+        {
+          "kind": "BreakDamage",
+          "value": 1
+        },
+        {
+          "kind": "HpPercent",
+          "value": 50
+        },
+        {
+          "kind": "MpPercent",
+          "value": 40
+        },
+        {
+          "kind": "OverdriveDamage",
+          "value": 50
+        },
+        {
+          "kind": "CtbReduction",
+          "value": 15
+        },
+        {
+          "kind": "IncomingDamage",
+          "value": -10
+        },
+        {
+          "kind": "AutoRegen",
+          "value": 1
+        }
+      ],
+      "description": "Break HP/Damage Limit; HP +50%; MP +40%; Overdrive HP damage +50%; CTB recovery -15%; incoming HP damage -10%; Auto-Regen",
+      "inspiration": [
+        "Enterprise",
+        "Invincible"
+      ]
+    },
+    {
+      "id": 22,
+      "effects": [
+        {
+          "kind": "StrikeFire",
+          "value": 1
+        },
+        {
+          "kind": "WardFire",
+          "value": 1
+        },
+        {
+          "kind": "StrengthPercent",
+          "value": 10
+        },
+        {
+          "kind": "TouchPoison",
+          "value": 25
+        }
+      ],
+      "description": "Firestrike; Fire Ward; Strength +10%; Poisontouch 25%",
+      "inspiration": [
+        "Fiery Gleam"
+      ]
+    },
+    {
+      "id": 23,
+      "effects": [
+        {
+          "kind": "StrikeIce",
+          "value": 1
+        },
+        {
+          "kind": "WardIce",
+          "value": 1
+        },
+        {
+          "kind": "MagicPercent",
+          "value": 10
+        },
+        {
+          "kind": "TouchSlow",
+          "value": 25
+        }
+      ],
+      "description": "Icestrike; Ice Ward; Magic +10%; Slowtouch 25%",
+      "inspiration": [
+        "Icy Gleam"
+      ]
+    },
+    {
+      "id": 24,
+      "effects": [
+        {
+          "kind": "StrikeLightning",
+          "value": 1
+        },
+        {
+          "kind": "WardLightning",
+          "value": 1
+        },
+        {
+          "kind": "AccuracyFlat",
+          "value": 15
+        },
+        {
+          "kind": "FirstCtbReduction",
+          "value": 10
+        }
+      ],
+      "description": "Lightningstrike; Lightning Ward; Accuracy +15; first CTB recovery -10%",
+      "inspiration": [
+        "Lightning Gleam"
+      ]
+    },
+    {
+      "id": 25,
+      "effects": [
+        {
+          "kind": "StrikeWater",
+          "value": 1
+        },
+        {
+          "kind": "WardWater",
+          "value": 1
+        },
+        {
+          "kind": "HpPercent",
+          "value": 15
+        },
+        {
+          "kind": "DefendMp",
+          "value": 1
+        }
+      ],
+      "description": "Waterstrike; Water Ward; HP +15%; Defend restores 1% MP",
+      "inspiration": [
+        "Watery Gleam"
+      ]
+    },
+    {
+      "id": 26,
+      "effects": [
+        {
+          "kind": "TouchDark",
+          "value": 50
+        },
+        {
+          "kind": "ProofDark",
+          "value": 1
+        },
+        {
+          "kind": "MagicPercent",
+          "value": 10
+        }
+      ],
+      "description": "Darktouch 50%; Darkproof; Magic +10%",
+      "inspiration": [
+        "Blind Shock"
+      ]
+    },
+    {
+      "id": 27,
+      "effects": [
+        {
+          "kind": "TouchSilence",
+          "value": 50
+        },
+        {
+          "kind": "ProofSilence",
+          "value": 1
+        },
+        {
+          "kind": "MagicPercent",
+          "value": 10
+        }
+      ],
+      "description": "Silencetouch 50%; Silenceproof; Magic +10%",
+      "inspiration": [
+        "Mute Shock"
+      ]
+    },
+    {
+      "id": 28,
+      "effects": [
+        {
+          "kind": "TouchSleep",
+          "value": 50
+        },
+        {
+          "kind": "ProofSleep",
+          "value": 1
+        },
+        {
+          "kind": "FirstCtbReduction",
+          "value": 10
+        }
+      ],
+      "description": "Sleeptouch 50%; Sleepproof; first CTB recovery -10%",
+      "inspiration": [
+        "Dream Shock"
+      ]
+    },
+    {
+      "id": 29,
+      "effects": [
+        {
+          "kind": "TouchSlow",
+          "value": 50
+        },
+        {
+          "kind": "ProofSlow",
+          "value": 1
+        },
+        {
+          "kind": "MpReduction",
+          "value": 10
+        }
+      ],
+      "description": "Slowtouch 50%; Slowproof; MP cost -10%",
+      "inspiration": [
+        "Lag Shock"
+      ]
+    },
+    {
+      "id": 30,
+      "effects": [
+        {
+          "kind": "TouchPoison",
+          "value": 50
+        },
+        {
+          "kind": "ProofPoison",
+          "value": 1
+        },
+        {
+          "kind": "MagicPercent",
+          "value": 15
+        }
+      ],
+      "description": "Poisontouch 50% for 3 turns; Poisonproof; Magic +15%",
+      "inspiration": [
+        "Venom Shock"
+      ]
+    },
+    {
+      "id": 31,
+      "effects": [
+        {
+          "kind": "StrengthPercent",
+          "value": 15
+        },
+        {
+          "kind": "Piercing",
+          "value": 1
+        },
+        {
+          "kind": "CriticalChance",
+          "value": 5
+        }
+      ],
+      "description": "Strength +15%; Piercing; Critical chance +5%",
+      "inspiration": [
+        "Power Wrist"
+      ]
+    },
+    {
+      "id": 32,
+      "effects": [
+        {
+          "kind": "MagicPercent",
+          "value": 15
+        },
+        {
+          "kind": "HalfBlackMp",
+          "value": 1
+        }
+      ],
+      "description": "Magic +15%; Half MP for Black Magic",
+      "inspiration": [
+        "Amulet"
+      ]
+    },
+    {
+      "id": 33,
+      "effects": [
+        {
+          "kind": "ElementDamageFireIce",
+          "value": 10
+        },
+        {
+          "kind": "WardFire",
+          "value": 1
+        },
+        {
+          "kind": "WardIce",
+          "value": 1
+        },
+        {
+          "kind": "DefensePercent",
+          "value": 15
+        }
+      ],
+      "description": "Fire/Ice damage +10%; Fire/Ice Wards; Defense +15%",
+      "inspiration": [
+        "Red Ring",
+        "White Ring"
+      ]
+    },
+    {
+      "id": 34,
+      "effects": [
+        {
+          "kind": "MpPercent",
+          "value": 25
+        },
+        {
+          "kind": "MagicPercent",
+          "value": 10
+        },
+        {
+          "kind": "MpPerTurn",
+          "value": 1
+        }
+      ],
+      "description": "MP +25%; Magic +10%; restore 1% MP each turn",
+      "inspiration": [
+        "Silver Bracer"
+      ]
+    },
+    {
+      "id": 35,
+      "effects": [
+        {
+          "kind": "ElementDamageFireIce",
+          "value": 20
+        },
+        {
+          "kind": "WardFire",
+          "value": 1
+        },
+        {
+          "kind": "WardIce",
+          "value": 1
+        },
+        {
+          "kind": "MagicPercent",
+          "value": 15
+        },
+        {
+          "kind": "HalfBlackMp",
+          "value": 1
+        }
+      ],
+      "description": "Fire/Ice damage +20%; Fire/Ice Wards; Magic +15%; Half MP for Black Magic",
+      "inspiration": [
+        "Soul of Thamasa"
+      ]
+    },
+    {
+      "id": 36,
+      "effects": [
+        {
+          "kind": "HpPercent",
+          "value": 20
+        }
+      ],
+      "description": "Max HP +20%",
+      "inspiration": [
+        "Iron Bangle"
+      ]
+    },
+    {
+      "id": 37,
+      "effects": [
+        {
+          "kind": "MpPercent",
+          "value": 20
+        },
+        {
+          "kind": "DefendMp",
+          "value": 1
+        }
+      ],
+      "description": "MP +20%; Defend restores 1% MP",
+      "inspiration": [
+        "Silver Bracer"
+      ]
+    },
+    {
+      "id": 38,
+      "effects": [
+        {
+          "kind": "ProofPoison",
+          "value": 1
+        },
+        {
+          "kind": "TouchPoison",
+          "value": 50
+        },
+        {
+          "kind": "SosRegen",
+          "value": 1
+        }
+      ],
+      "description": "Poisonproof; Poisontouch 50% for 3 turns; SOS Regen",
+      "inspiration": [
+        "Star Pendant"
+      ]
+    },
+    {
+      "id": 39,
+      "effects": [
+        {
+          "kind": "ProofSilence",
+          "value": 1
+        },
+        {
+          "kind": "TouchSilence",
+          "value": 50
+        },
+        {
+          "kind": "WhiteMpReduction",
+          "value": 10
+        }
+      ],
+      "description": "Silenceproof; Silencetouch 50%; White Magic MP cost -10%",
+      "inspiration": [
+        "White Cape"
+      ]
+    },
+    {
+      "id": 40,
+      "effects": [
+        {
+          "kind": "ProofSleep",
+          "value": 1
+        },
+        {
+          "kind": "TouchSleep",
+          "value": 50
+        },
+        {
+          "kind": "MpPercent",
+          "value": 15
+        }
+      ],
+      "description": "Sleepproof; Sleeptouch 50%; MP +15%",
+      "inspiration": [
+        "Twist Headband"
+      ]
+    },
+    {
+      "id": 41,
+      "effects": [
+        {
+          "kind": "ProofDark",
+          "value": 1
+        },
+        {
+          "kind": "TouchDark",
+          "value": 50
+        },
+        {
+          "kind": "AccuracyFlat",
+          "value": 15
+        }
+      ],
+      "description": "Darkproof; Darktouch 50%; Accuracy +15",
+      "inspiration": [
+        "Silver Glasses"
+      ]
+    },
+    {
+      "id": 42,
+      "effects": [
+        {
+          "kind": "ProofStone",
+          "value": 1
+        },
+        {
+          "kind": "TouchStone",
+          "value": 30
+        },
+        {
+          "kind": "DefensePercent",
+          "value": 10
+        }
+      ],
+      "description": "Stoneproof; Stonetouch 30%; Defense +10%",
+      "inspiration": [
+        "Gold Anklet"
+      ]
+    },
+    {
+      "id": 43,
+      "effects": [
+        {
+          "kind": "ProofConfuse",
+          "value": 1
+        },
+        {
+          "kind": "TouchConfuse",
+          "value": 30
+        },
+        {
+          "kind": "MagicDefensePercent",
+          "value": 15
+        }
+      ],
+      "description": "Confuseproof; Confusetouch 30%; Magic Defense +15%",
+      "inspiration": [
+        "Black Choker"
+      ]
+    },
+    {
+      "id": 44,
+      "effects": [
+        {
+          "kind": "SosRegen",
+          "value": 1
+        },
+        {
+          "kind": "HpPercent",
+          "value": 20
+        },
+        {
+          "kind": "DefendMp",
+          "value": 3
+        }
+      ],
+      "description": "SOS Regen; HP +20%; Defend restores 3% MP",
+      "inspiration": [
+        "Regen Bangle"
+      ]
+    },
+    {
+      "id": 45,
+      "effects": [
+        {
+          "kind": "HpPercent",
+          "value": 25
+        },
+        {
+          "kind": "WhiteHealing",
+          "value": 15
+        },
+        {
+          "kind": "AutoPhoenix",
+          "value": 1
+        }
+      ],
+      "description": "HP +25%; White Magic healing +15%; Auto-Phoenix",
+      "inspiration": [
+        "Titanium Bangle"
+      ]
+    },
+    {
+      "id": 46,
+      "effects": [
+        {
+          "kind": "WhiteHealing",
+          "value": 15
+        },
+        {
+          "kind": "ProofSilence",
+          "value": 1
+        },
+        {
+          "kind": "SosRegen",
+          "value": 1
+        }
+      ],
+      "description": "White Magic healing +15%; Silenceproof; SOS Regen",
+      "inspiration": [
+        "White Lore"
+      ]
+    },
+    {
+      "id": 47,
+      "effects": [
+        {
+          "kind": "MpReduction",
+          "value": 25
+        },
+        {
+          "kind": "AutoShell",
+          "value": 1
+        },
+        {
+          "kind": "MagicDefensePercent",
+          "value": 10
+        }
+      ],
+      "description": "MP cost -25%; Auto-Shell; Magic Defense +10%",
+      "inspiration": [
+        "Gold Hairpin"
+      ]
+    },
+    {
+      "id": 48,
+      "effects": [
+        {
+          "kind": "AutoRegen",
+          "value": 1
+        },
+        {
+          "kind": "WhiteHealing",
+          "value": 20
+        },
+        {
+          "kind": "HalfWhiteMp",
+          "value": 1
+        }
+      ],
+      "description": "Auto-Regen; White Magic healing +20%; Half MP for White Magic",
+      "inspiration": [
+        "Recovery Bracer"
+      ]
+    },
+    {
+      "id": 49,
+      "effects": [
+        {
+          "kind": "AutoProtect",
+          "value": 1
+        },
+        {
+          "kind": "HpPercent",
+          "value": 25
+        },
+        {
+          "kind": "ItemHealing",
+          "value": 25
+        }
+      ],
+      "description": "Auto-Protect; HP +25%; recovery items +25%",
+      "inspiration": [
+        "Shining Bracer"
+      ]
+    },
+    {
+      "id": 50,
+      "effects": [
+        {
+          "kind": "StrengthPercent",
+          "value": 15
+        },
+        {
+          "kind": "Piercing",
+          "value": 1
+        },
+        {
+          "kind": "AccuracyFlat",
+          "value": 10
+        }
+      ],
+      "description": "Strength +15%; Piercing; Accuracy +10",
+      "inspiration": [
+        "Wristband"
+      ]
+    },
+    {
+      "id": 51,
+      "effects": [
+        {
+          "kind": "DefensePercent",
+          "value": 15
+        },
+        {
+          "kind": "AutoProtect",
+          "value": 1
+        },
+        {
+          "kind": "EvasionFlat",
+          "value": 10
+        }
+      ],
+      "description": "Defense +15%; Auto-Protect; Evasion +10",
+      "inspiration": [
+        "Mythril Gloves"
+      ]
+    },
+    {
+      "id": 52,
+      "effects": [
+        {
+          "kind": "TouchPoison",
+          "value": 100
+        },
+        {
+          "kind": "ProofPoison",
+          "value": 1
+        },
+        {
+          "kind": "OutgoingDamage",
+          "value": 5
+        }
+      ],
+      "description": "Poisonstrike 100% for 3 turns; Poisonproof; outgoing HP damage +5%",
+      "inspiration": [
+        "Venom Shock"
+      ]
+    },
+    {
+      "id": 53,
+      "effects": [
+        {
+          "kind": "TouchSleep",
+          "value": 100
+        },
+        {
+          "kind": "ProofSleep",
+          "value": 1
+        },
+        {
+          "kind": "FirstCtbReduction",
+          "value": 10
+        }
+      ],
+      "description": "Sleepstrike 100%; Sleepproof; first CTB recovery -10%",
+      "inspiration": [
+        "Dream Shock"
+      ]
+    },
+    {
+      "id": 54,
+      "effects": [
+        {
+          "kind": "TouchSilence",
+          "value": 100
+        },
+        {
+          "kind": "ProofSilence",
+          "value": 1
+        },
+        {
+          "kind": "MagicDefensePercent",
+          "value": 15
+        }
+      ],
+      "description": "Silencestrike 100%; Silenceproof; Magic Defense +15%",
+      "inspiration": [
+        "Mute Shock"
+      ]
+    },
+    {
+      "id": 55,
+      "effects": [
+        {
+          "kind": "TouchDark",
+          "value": 100
+        },
+        {
+          "kind": "ProofDark",
+          "value": 1
+        },
+        {
+          "kind": "EvasionFlat",
+          "value": 15
+        }
+      ],
+      "description": "Darkstrike 100%; Darkproof; Evasion +15",
+      "inspiration": [
+        "Blind Shock"
+      ]
+    },
+    {
+      "id": 56,
+      "effects": [
+        {
+          "kind": "MasterThief",
+          "value": 1
+        },
+        {
+          "kind": "AccuracyFlat",
+          "value": 20
+        },
+        {
+          "kind": "FirstCtbReduction",
+          "value": 15
+        }
+      ],
+      "description": "Master Thief; Accuracy +20; first CTB recovery -15%",
+      "inspiration": [
+        "Amulet"
+      ]
+    },
+    {
+      "id": 57,
+      "effects": [
+        {
+          "kind": "TouchSlow",
+          "value": 100
+        },
+        {
+          "kind": "ProofSlow",
+          "value": 1
+        },
+        {
+          "kind": "FirstCtbReduction",
+          "value": 10
+        }
+      ],
+      "description": "Slowstrike 100%; Slowproof; first CTB recovery -10%",
+      "inspiration": [
+        "Lag Shock"
+      ]
+    },
+    {
+      "id": 58,
+      "effects": [
+        {
+          "kind": "TouchDeath",
+          "value": 25
+        },
+        {
+          "kind": "ProofDeath",
+          "value": 1
+        },
+        {
+          "kind": "KillMp",
+          "value": 10
+        }
+      ],
+      "description": "Deathtouch 25%; Deathproof; kills restore 10% MP once per action",
+      "inspiration": [
+        "Mortal Shock"
+      ]
+    },
+    {
+      "id": 59,
+      "effects": [
+        {
+          "kind": "Counter",
+          "value": 1
+        },
+        {
+          "kind": "StrengthPercent",
+          "value": 15
+        },
+        {
+          "kind": "DefensePercent",
+          "value": 15
+        },
+        {
+          "kind": "HpPercent",
+          "value": 10
+        }
+      ],
+      "description": "Counterattack; Strength/Defense +15%; HP +10%",
+      "inspiration": [
+        "Black Belt"
+      ]
+    },
+    {
+      "id": 60,
+      "effects": [
+        {
+          "kind": "AccuracyFlat",
+          "value": 25
+        },
+        {
+          "kind": "Sensor",
+          "value": 1
+        },
+        {
+          "kind": "CriticalChance",
+          "value": 5
+        }
+      ],
+      "description": "Accuracy +25; Sensor; Critical chance +5%",
+      "inspiration": [
+        "Gauntlets"
+      ]
+    },
+    {
+      "id": 61,
+      "effects": [
+        {
+          "kind": "EvadeCounter",
+          "value": 1
+        },
+        {
+          "kind": "EvasionFlat",
+          "value": 20
+        },
+        {
+          "kind": "AutoProtect",
+          "value": 1
+        }
+      ],
+      "description": "Evade and Counter; Evasion +20; Auto-Protect",
+      "inspiration": [
+        "Sprint Shoes"
+      ]
+    },
+    {
+      "id": 62,
+      "effects": [
+        {
+          "kind": "MagicCounter",
+          "value": 1
+        },
+        {
+          "kind": "MagicDefensePercent",
+          "value": 20
+        },
+        {
+          "kind": "HalfBlackMp",
+          "value": 1
+        }
+      ],
+      "description": "Magic Counter; Magic Defense +20%; Half MP for Black Magic",
+      "inspiration": [
+        "Star Bracer"
+      ]
+    },
+    {
+      "id": 63,
+      "effects": [
+        {
+          "kind": "CriticalChance",
+          "value": 15
+        },
+        {
+          "kind": "LuckFlat",
+          "value": 15
+        },
+        {
+          "kind": "StrengthPercent",
+          "value": 15
+        },
+        {
+          "kind": "OverdriveDamage",
+          "value": 10
+        }
+      ],
+      "description": "Critical chance +15%; Luck +15; Strength +15%; Overdrive damage +10%",
+      "inspiration": [
+        "Amulet"
+      ]
+    },
+    {
+      "id": 64,
+      "effects": [
+        {
+          "kind": "GilBonus",
+          "value": 50
+        },
+        {
+          "kind": "MasterThief",
+          "value": 1
+        }
+      ],
+      "description": "Gil +50% (highest-only with native rates); Master Thief",
+      "inspiration": [
+        "Key to Success"
+      ]
+    },
+    {
+      "id": 65,
+      "effects": [
+        {
+          "kind": "ApBonus",
+          "value": 35
+        },
+        {
+          "kind": "GilBonus",
+          "value": 25
+        },
+        {
+          "kind": "LuckFlat",
+          "value": 10
+        }
+      ],
+      "description": "AP +35%; Gil +25%; Luck +10 (native No AP still wins)",
+      "inspiration": [
+        "AP Egg"
+      ]
+    },
+    {
+      "id": 66,
+      "effects": [
+        {
+          "kind": "ItemHealing",
+          "value": 50
+        },
+        {
+          "kind": "AutoPotion",
+          "value": 1
+        },
+        {
+          "kind": "HpPercent",
+          "value": 20
+        }
+      ],
+      "description": "Recovery items +50%; Auto-Potion; HP +20%",
+      "inspiration": [
+        "Key to Success"
+      ]
+    },
+    {
+      "id": 67,
+      "effects": [
+        {
+          "kind": "DefensePercent",
+          "value": 25
+        },
+        {
+          "kind": "AutoProtect",
+          "value": 1
+        },
+        {
+          "kind": "HpPercent",
+          "value": 10
+        }
+      ],
+      "description": "Defense +25%; Auto-Protect; HP +10%",
+      "inspiration": [
+        "Diamond Gloves"
+      ]
+    },
+    {
+      "id": 68,
+      "effects": [
+        {
+          "kind": "MagicDefensePercent",
+          "value": 25
+        },
+        {
+          "kind": "AutoShell",
+          "value": 1
+        },
+        {
+          "kind": "MpPercent",
+          "value": 15
+        }
+      ],
+      "description": "Magic Defense +25%; Auto-Shell; MP +15%",
+      "inspiration": [
+        "Mystery Veil"
+      ]
+    },
+    {
+      "id": 69,
+      "effects": [
+        {
+          "kind": "KillHp",
+          "value": 10
+        },
+        {
+          "kind": "KillMp",
+          "value": 10
+        },
+        {
+          "kind": "Piercing",
+          "value": 1
+        }
+      ],
+      "description": "Kills restore 10% HP and 10% MP once per action; Piercing",
+      "inspiration": [
+        "Wizard Bracelet"
+      ]
+    },
+    {
+      "id": 70,
+      "effects": [
+        {
+          "kind": "ElementDamageLightningWater",
+          "value": 15
+        },
+        {
+          "kind": "WardLightning",
+          "value": 1
+        },
+        {
+          "kind": "WardWater",
+          "value": 1
+        },
+        {
+          "kind": "MpPercent",
+          "value": 20
+        }
+      ],
+      "description": "Lightning/Water damage +15%; Lightning/Water Wards; MP +20%",
+      "inspiration": [
+        "Yellow Ring",
+        "Blue Ring"
+      ]
+    },
+    {
+      "id": 71,
+      "effects": [
+        {
+          "kind": "ApBonus",
+          "value": 75
+        },
+        {
+          "kind": "MpReduction",
+          "value": 25
+        },
+        {
+          "kind": "FocusOnStart",
+          "value": 1
+        }
+      ],
+      "description": "AP +75%; MP cost -25%; begin battle with Focus x1 (native No AP still wins)",
+      "inspiration": [
+        "Charm Bangle",
+        "AP Egg",
+        "Key to Success"
+      ]
+    },
+    {
+      "id": 72,
+      "effects": [
+        {
+          "kind": "OpeningOverdrive",
+          "value": 15
+        },
+        {
+          "kind": "OverdriveDamage",
+          "value": 10
+        },
+        {
+          "kind": "FirstCtbReduction",
+          "value": 10
+        }
+      ],
+      "description": "Begin battle with +15% Overdrive; Overdrive damage +10%; first CTB recovery -10%",
+      "inspiration": [
+        "Sprint Shoes"
+      ]
+    },
+    {
+      "id": 73,
+      "effects": [
+        {
+          "kind": "HpPercent",
+          "value": 25
+        },
+        {
+          "kind": "MpPercent",
+          "value": 25
+        },
+        {
+          "kind": "AutoRegen",
+          "value": 1
+        },
+        {
+          "kind": "IncomingDamage",
+          "value": -5
+        }
+      ],
+      "description": "HP/MP +25%; Auto-Regen; incoming HP damage -5%",
+      "inspiration": [
+        "Iron Bangle",
+        "Silver Bracer"
+      ]
+    },
+    {
+      "id": 74,
+      "effects": [
+        {
+          "kind": "AutoPotion",
+          "value": 1
+        },
+        {
+          "kind": "ItemHealing",
+          "value": 25
+        },
+        {
+          "kind": "DefensePercent",
+          "value": 15
+        }
+      ],
+      "description": "Auto-Potion; recovery items +25%; Defense +15%",
+      "inspiration": [
+        "Cat's Bell"
+      ]
+    },
+    {
+      "id": 75,
+      "effects": [
+        {
+          "kind": "AutoShell",
+          "value": 1
+        },
+        {
+          "kind": "MpPercent",
+          "value": 20
+        },
+        {
+          "kind": "MagicCounter",
+          "value": 1
+        }
+      ],
+      "description": "Auto-Shell; MP +20%; Magic Counter",
+      "inspiration": [
+        "Moon Bracer"
+      ]
+    },
+    {
+      "id": 76,
+      "effects": [
+        {
+          "kind": "AutoPhoenix",
+          "value": 1
+        },
+        {
+          "kind": "WhiteHealing",
+          "value": 20
+        },
+        {
+          "kind": "HpPercent",
+          "value": 20
+        }
+      ],
+      "description": "Auto-Phoenix; White Magic healing +20%; HP +20%",
+      "inspiration": [
+        "Angel Earrings"
+      ]
+    },
+    {
+      "id": 77,
+      "effects": [
+        {
+          "kind": "ProofDark",
+          "value": 1
+        },
+        {
+          "kind": "ProofSilence",
+          "value": 1
+        },
+        {
+          "kind": "ProofSleep",
+          "value": 1
+        },
+        {
+          "kind": "ProofPoison",
+          "value": 1
+        },
+        {
+          "kind": "TouchDark",
+          "value": 30
+        },
+        {
+          "kind": "TouchSilence",
+          "value": 30
+        },
+        {
+          "kind": "TouchSleep",
+          "value": 30
+        },
+        {
+          "kind": "TouchPoison",
+          "value": 30
+        }
+      ],
+      "description": "Darkness/Silence/Sleep/Poison proof; matching touches 30% (Poison: 3 turns)",
+      "inspiration": [
+        "Ribbon"
+      ]
+    }
+  ],
+  "balance_revision": 4,
+  "compatible_pack_hashes": [
+    "53b3c692d78b846e0d2556d22717c0039f01f4d551fbcb3a56412724da4e163e",
+    "b31ad58a8c3ee8e8989c3dea3487b418f11b3a3006974bb902a8e3134c489e75",
+    "c9a3b6349b274d2137e2b317eed244590e1920752849fbc72ce16a1bac51ce37"
+  ],
+  "compatible_identity_sha256": "cb08ef54e21f1bae1b4b9cbd1d6b0f58be147fbd0063ceadee3093e6f34ef378"
+}

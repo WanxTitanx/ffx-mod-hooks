@@ -12,7 +12,7 @@ inline bool BuildGearView(const workshop::Piece& p,GearView& out){
     bool changed=p.fifthUnlocked!=0;
     for(unsigned i=0;i<5;++i){const auto word=workshop::Ability(p,i);const unsigned rank=workshop::AbilityRank(p,i);
         if(rank>10||(i<4&&i>=p.native[11]&&word!=workshop::Empty)||
-           (i==4&&word!=workshop::Empty&&(!p.fifthUnlocked||!workshop::SupportedFifth(word))))return false;
+           (i==4&&word!=workshop::Empty&&(!p.fifthUnlocked||!workshop::ValidFifthWord(word))))return false;
         changed=changed||rank!=0;
     }
     if(!changed)return false;

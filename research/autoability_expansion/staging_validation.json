@@ -1,0 +1,90 @@
+{
+  "stage_root": "/tmp/ffx-autoability-expansion-x8vizpha/tables",
+  "log_root": "/tmp/ffx-autoability-expansion-x8vizpha",
+  "validator_path": "/home/wanderson/.codex/worktrees/mod-ideas-precode/ffx-editor/FFXProjectEditor/bin/Debug/net8.0/FFXProjectEditor.dll",
+  "validator_sha256": "44aa17e079a0f4eace2f74c5c749dcb7dfeee3630082be1d010f0a5f1f423ce7",
+  "validator_mode": "--autoability-rt0 preserve-only no-edit read/write byte identity",
+  "cases": [
+    {
+      "case": "extracted-new_uspc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "2091736d570f1e6c69042c98cfcb7c5d190427d6f9ccb0c03142dff2edf8de34"
+    },
+    {
+      "case": "spira_reforge-jppc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "88a9c9dd78b6706b6ada28cec444fbfc0ee403621ae62617d8ee8125cdfc2e3b"
+    },
+    {
+      "case": "spira_reforge-new_uspc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "7a63852ae954ce0cc9cb7a319164855adb5a87db82bbe6e09ac2a7a006533afc"
+    },
+    {
+      "case": "steam-inpc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "7f21aafd3fbcd2f8c55066b0eb84eb059f03230630009406032d407decbd94f6"
+    },
+    {
+      "case": "steam-jppc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "88a9c9dd78b6706b6ada28cec444fbfc0ee403621ae62617d8ee8125cdfc2e3b"
+    },
+    {
+      "case": "steam-new_chpc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "dac17887ca282e511f96e95365fa43722b7590ea01f4cb710353a9a49f55bb6c"
+    },
+    {
+      "case": "steam-new_depc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "ab422d08a04de103a6c3811375ef7a8be00396df8d50951c7faaa621c785f5f7"
+    },
+    {
+      "case": "steam-new_frpc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "32b583f85b423fd45bf57785e5d307384f6626b4117376a96d4d04e10cbea00f"
+    },
+    {
+      "case": "steam-new_itpc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "080481d20989443e6f7b7e6f6241773f88ec34efae736e2dd28176476af7b802"
+    },
+    {
+      "case": "steam-new_jppc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "5fb8156a7dec4f25ed008257442fbebc5e969eb0c98b93e3481a137315e01615"
+    },
+    {
+      "case": "steam-new_krpc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "ec70893d50b18d81269aefdab8fa0035ae83868c009f1be0f0f915606d5a10d3"
+    },
+    {
+      "case": "steam-new_sppc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "ece3c21c72db5a87fd31ef1c3ae3bbc6ab0ebf523968465c21b1ec1efbfc0181"
+    },
+    {
+      "case": "steam-new_uspc",
+      "passed": true,
+      "exit": 0,
+      "ability_sha256": "7a63852ae954ce0cc9cb7a319164855adb5a87db82bbe6e09ac2a7a006533afc"
+    }
+  ],
+  "passed": 13,
+  "total": 13,
+  "gameplay_validation": false
+}

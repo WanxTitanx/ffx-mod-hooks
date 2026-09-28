@@ -36,9 +36,18 @@ Desktop.ini
 # Working state (never versioned)
 work/
 
+# Private native fixtures, source snapshots and validation receipts.
+.superpowers/
+
 # dotnet
 *.nupkg
 artifacts/
 
 # Local context index (contains private source; never versioned)
 .ffx-context/
+
+# Isolated MOD-007 test executables and temporary probes
+.mod007-validation/
+
+# Local orchestration state (never versioned)
+.omo/

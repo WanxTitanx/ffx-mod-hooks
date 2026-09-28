@@ -1,0 +1,20 @@
+{
+  "result": "PASS_RT0_DELIVERY",
+  "cards": 78,
+  "assets": 81,
+  "selected_generation_receipts": 78,
+  "local_links": 69,
+  "python_syntax_files": 7,
+  "gallery_javascript_syntax": true,
+  "catalog_sha256": "d9407c84e94e52d33a13bef169da123d25ff72a4456adf6f8f669e750dc7e378",
+  "manifest_sha256": "99e9dc10427c2623627047d10fd7b5e82297c8c0eb29ad40c7a5b876bc6d240c",
+  "local_evidence_requested": true,
+  "research_sources_rehashed": 17,
+  "browser_executed": false,
+  "native_functions_executed": false,
+  "limits": [
+    "Visual art review is separate",
+    "No browser navigation test",
+    "No native Equip, effects, save integration, texture upload or RT2"
+  ]
+}

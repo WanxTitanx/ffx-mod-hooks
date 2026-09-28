@@ -1,272 +1,105 @@
-# Installation guide
+# Install FFX Hooks v0.6.0-beta
 
-This guide covers three things: **installing from a release zip**, **building
-from source**, and **uninstalling**. Read it all before you start.
+The package targets the supported Steam **FFX.exe (Windows x86)**. FFX-2 support
+is not implied. A legal game installation and a working FFX DINPUT8 module loader
+are required; game files and the loader are not included. Under Proton, use the
+same Windows DLL and the same paths relative to the game directory.
 
-> **BETA WARNING:** This project just left alpha. Use a **disposable save**.
-> All hooks are OFF by default. Expect mod incompatibilities. See
-> [KNOWN_BUGS.md](KNOWN_BUGS.md) and [ROADMAP.md](ROADMAP.md).
+## Download and verify
 
----
+Download `ffx-hooks-release-v0.6.0-beta.zip` and `ffx-hooks-v0.6.0-beta.sha256`
+from the [release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta).
+The matching `ffx-hooks-source-v0.6.0-beta.tar.gz` contains the public tagged source.
+Verify the downloaded file hashes against the checksum file. The ZIP also has
+`CHECKSUMS.sha256`, `SOURCE.md` and `release-manifest.json` for its contents.
 
-## Prerequisites
+The supplied DLL is 3,398,144 bytes, SHA-256
+`734a0bf94b56157648e5391ca06dfb1c60aad2c6bb27748762a67315c98b8ffc`.
+Its PE resource says 0.2.0.0; the public package/tag is v0.6.0-beta. A separately
+rebuilt DLL can have another hash and is not this tested binary.
 
-- **FINAL FANTASY X/X-2 HD Remaster** (Steam, PC)
-- The **FFX module loader** — a `dinput8.dll` proxy in the game root that loads
-  DLLs from a `modules\` folder. If you already use mods that load via
-  `modules\`, you have this. If not, you need it (see
-  [ffgriever's ff10-file-loader](https://github.com/ffgriever)).
-- **.NET 8 desktop runtime** — only if you want to use the SIN injector
-  (`SinScaleInject.exe`). Download from
-  [dotnet.microsoft.com](https://dotnet.microsoft.com/download/dotnet/8.0).
+## Install with the game closed
 
----
+1. Close FFX. Locate the directory containing `FFX.exe` and `dinput8.dll`.
+2. Back up the previous Hooks DLL, configuration and the saves/sidecars you use.
+3. Copy `ffx-hooks.dll` from the ZIP into `<game>/modules/`.
+4. Copy the ZIP's `mods/` directory into `<game>/modules/`. Arcana images must land
+   in `<game>/modules/mods/arcana/cards/` and `shared/`.
+5. Preserve your existing INI. Merge desired entries from
+   `examples/ffx-hooks.ini.example` into the active Hooks INI, normally
+   `<game>/_isolated/ffx-hooks.ini`. The examples are OFF; do not blindly replace
+   your existing configuration or install lab flag directories from the source.
+6. Restart FFX after enabling a restart-required option. F8 opens the dashboard;
+   Extras contains Additional mods and Vanguard, Dev contains FieldScout, and
+   Cheats contains AP/Gil Multipliers. Installed/admitted status is separate from
+   the saved checkbox value.
 
-## Option A: Install from a release zip (recommended)
-
-### Step 1 — Download
-
-Go to the [Releases page](https://github.com/WanxTitanx/ffx-mod-hooks/releases)
-and download the zip from the latest release (e.g.
-`ffx-hooks-release-v0.5.0-beta.zip`).
-
-### Step 2 — Find your game directory
-
-Your game is typically at:
-
-```
-D:\SteamLibrary\steamapps\common\FINAL FANTASY FFX&FFX-2 HD Remaster\
-```
-
-Or wherever your Steam library is. The folder must contain `FFX.exe` and a
-`modules\` subfolder.
-
-### Step 3 — Back up
-
-Before touching anything, back up your existing `modules\` folder:
-
-```powershell
-Copy-Item "D:\SteamLibrary\steamapps\common\FINAL FANTASY FFX&FFX-2 HD Remaster\modules" `
-          "D:\SteamLibrary\steamapps\common\FINAL FANTASY FFX&FFX-2 HD Remaster\modules.backup_$(Get-Date -Format yyyyMMdd)" `
-          -Recurse -Force
-```
-
-### Step 4 — Extract and copy
-
-Open the zip. This DLL release contains:
-
-```
-ffx-hooks.dll          -> copy to <game>\modules\
-LICENSE, NOTICE        -> license and third-party notices
-SOURCE.md              -> exact source and binary provenance
-CHECKSUMS.sha256       -> checksums for the files above
-```
-
-Only replace `ffx-hooks.dll` after making a backup. Keep any existing
-`ffx-hooks.ini`, probe DLL, and SIN tools; they are not in this zip. A default
-INI template is available in the source repository at
-`src/runtime/FfxHooksDll/ffx-hooks.ini`. Do not overwrite your local settings.
-
-After copying, the relevant game files should look like:
-
-```
-<game>\
+```text
+<game>/
   FFX.exe
-  dinput8.dll              (the module loader proxy — must already exist)
-  modules\
-    ffx-hooks.dll          (our hook layer)
+  dinput8.dll                         existing loader
+  _isolated/ffx-hooks.ini             preserve/merge your active settings
+  modules/
+    ffx-hooks.dll
+    mods/arcana/cards/                78 selected images
+    mods/arcana/shared/               icon and card back
 ```
 
-### Step 5 — Arm a feature (game CLOSED)
+The active INI may be selected by your existing installation. Put
+`monster-rewards-v1.tsv` beside that INI, not beside the DLL by assumption. F8
+creates/saves the table; external edits require restart. The supplied TSV example
+contains only the version header, so missing monster rows retain neutral factors.
 
-All hooks are OFF by default. You arm a feature by creating a flag file:
+## Enable only the features you choose
 
-```powershell
-# F7 In-Live menu (the functional core)
-New-Item -ItemType File "<game>\modules\config\f7_inlive.flag"
-```
+Every editable F8 boolean defaults OFF; the dashboard defaults ON. External OFF
+flags/environment settings can override an INI choice. F8 reports these blockers.
+For the legacy F7 gate, create `modules/config/f7_inlive.flag` with FFX closed or
+use `FFXHOOKS_ENABLE_F7=1`; individual runtime families still have their own gates.
+The `f7_aiswap` compatibility name enables an observer, not general AI mutation.
 
-Other useful flags:
+For Arcana, merge `examples/Arcana-settings.ini.example`, set `[arcana] enabled=1`
+and restart. Open **Main Menu > Equip > Tarot**. The separate Dev full-deck option
+is an explicit instant grant; normal acquisition is in `Arcana-reference/`.
 
-```powershell
-# F7 Monster AI Swap
-New-Item -ItemType File "<game>\modules\config\f7_aiswap.flag"
+The package includes Arcana's original runtime art. It does not contain a complete
+PT-BR translation, game-derived ability tables, authored Elemental packages or
+private S.I.N. AI packs. Their loaders/contracts are implemented; obtain or author
+compatible packages under the documented source/hash/owner rules. No game asset
+or proprietary executable is required to build the DLL itself. Some native RT1
+fixtures require your own exact PE/save/kernel inputs and are not redistributed.
 
-# Music hook
-New-Item -ItemType File "<game>\config\music.flag"
+## Verify and troubleshoot
 
-# Nova Super Damage (lab — 99999 damage cap bypass)
-New-Item -ItemType File "<game>\config\nova_super_damage.flag"
-```
+Check `%TEMP%/ffx-hooks.log` in the game's Windows/Proton environment for the
+selected feature's requested, installed and effective states. Do not infer
+success solely from an ON checkbox. Unsupported executable/signature, absent
+packages, wrong paths and external OFF markers can keep a feature unavailable.
 
-You can also arm via environment variable instead of flag files:
+Use a disposable save for validation. The [roadmap](ROADMAP.md) lists remaining
+live acceptance work. Follow [RT2 protocol](RT2_PROTOCOL.md) for reproducible
+cases; build/loader checks are not gameplay acceptance. Other DINPUT8, Special K
+or UnX owners can conflict. Dynamic hot-unload is unsupported.
 
-```powershell
-$env:FFXHOOKS_ENABLE_F7 = "1"   # then launch FFX from this shell
-```
+## Update, rollback and uninstall
 
-### Step 6 — Launch and verify
+Close FFX before replacing or removing the DLL. Preserve your INI, native saves
+and matching Workshop/Aeon/Arcana/Ronso sidecars; they may carry persistent paid
+upgrades or collection state. Restore the backed-up DLL and matching package
+assets for rollback. Do not assume that deleting metadata refunds purchases or
+that every feature is RAM-only. Do not delete the shared loader or another mod's
+files as part of uninstalling Hooks.
 
-1. Close the game if it's open.
-2. Launch FFX (from Steam, or from a shell with the env var set).
-3. Check the log appeared: open `%TEMP%\ffx-hooks.log` — you should see:
+## Build and package from source
 
-```
-[ffx-hooks] DLL_PROCESS_ATTACH enter
-[ffx-hooks] FFX.exe base = 0x...
-[ffx-hooks] InstallHooks enter
-[ffx-hooks] F7: instalado ok=1 (difficulty=ON, ...)
-[ffx-hooks] InstallHooks leave
-```
+Use the exact tag and follow the [README build instructions](../README.md#build).
+Windows, Visual Studio C++ x86 tools and the pinned static dependencies are needed
+for the DLL. The separate offline SIN tool uses .NET 8. Portable checks cover
+Workshop, Arcana and text-language contracts; optional authoring dependencies are
+listed with each tool.
 
-4. Press **F7** in-game — the In-Live menu should open.
-
-### Step 7 — Use the F7 menu
-
-| Submenu | What it does |
-|---|---|
-| **DIFF** | Difficulty presets + stat multipliers + auto-status + Apply Now / Save |
-| **FORCE** | Force Last Battle (re-triggers the last natural encounter) |
-| **MUSIC** | Track lock / battle-entry override / randomizer / fade |
-
-Navigate with arrow keys (or D-pad). Toggle with Enter. Back with Esc.
-
-## Option B: Build from source
-
-### Prerequisites
-
-- Windows 10/11
-- [Visual Studio 2022](https://visualstudio.microsoft.com/) with the
-  "Desktop development with C++" workload (MSVC x86/x64 tools)
-- [vcpkg](https://github.com/microsoft/vcpkg) — the C++ package manager
-- PowerShell
-- .NET 8 SDK (for the SIN injector)
-
-### Step 1 — Clone
-
-```powershell
-git clone https://github.com/WanxTitanx/ffx-mod-hooks.git
-cd ffx-mod-hooks
-```
-
-### Step 2 — Install vcpkg dependencies (one-time)
-
-```powershell
-# If you don't have vcpkg yet:
-git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
-C:\vcpkg\bootstrap-vcpkg.bat
-
-# Install the static x86 libraries:
-C:\vcpkg\vcpkg install --triplet x86-windows-static polyhook2 zydis minhook
-```
-
-### Step 3 — Copy vcpkg_installed into the project
-
-The build script expects `vcpkg_installed\` inside the FfxHooksDll folder:
-
-```powershell
-Copy-Item C:\vcpkg\installed\x86-windows-static .\src\runtime\FfxHooksDll\vcpkg_installed -Recurse -Force
-```
-
-### Step 4 — Build the hooks DLL
-
-```powershell
-.\src\runtime\FfxHooksDll\build_hooks.ps1 -WithPolyHook -Release
-```
-
-Output: `src\runtime\FfxHooksDll\bin\Release\ffx-hooks.dll`
-
-> **Note:** You can also open `FfxHooksDll.vcxproj` in Visual Studio and build
-> there (the IDE build is the reference — 0 errors). A new hook must be
-> registered in **both** the vcxproj and `build_hooks.ps1`.
-
-### Step 5 — Build the probe
-
-```powershell
-.\src\runtime\FfxDinput8Probe\build.ps1
-```
-
-Output: `src\runtime\FfxDinput8Probe\ffx-probe.dll`
-
-### Step 6 — Build the SIN injector
-
-```powershell
-dotnet build src\sin\SinScaleInject\SinScaleInject.csproj -c Release
-```
-
-Output: `src\sin\SinScaleInject\bin\Release\net8.0\` (exe + deps)
-
-### Step 7 — Deploy
-
-Copy the built files to your game as described in Option A, Step 4. Or use
-the deploy flag (lab deploy to a disposable copy):
-
-```powershell
-.\src\runtime\FfxHooksDll\build_hooks.ps1 -WithPolyHook -Release -Deploy -LabDeploy -GameRoot "D:\path\to\game-copy"
-```
-
----
-
-## Uninstall
-
-### Quick uninstall (remove hooks, keep DLLs)
-
-Delete the flag files — hooks go dormant on next game restart:
-
-```powershell
-Remove-Item "<game>\modules\config\f7_inlive.flag" -Force
-Remove-Item "<game>\modules\config\f7_aiswap.flag" -Force
-Remove-Item "<game>\config\music.flag" -Force
-```
-
-Restart FFX. The DLLs are still loaded but do nothing (all gates OFF).
-
-### Full uninstall (remove everything)
-
-1. Close FFX.
-2. Delete the DLLs and config:
-
-```powershell
-Remove-Item "<game>\modules\ffx-hooks.dll" -Force
-Remove-Item "<game>\modules\ffx-probe.dll" -Force
-Remove-Item "<game>\ffx-hooks.ini" -Force
-Remove-Item "<game>\modules\tools\SinScaleInject" -Recurse -Force
-```
-
-3. Delete any flag files you created.
-4. Restore your `modules\` backup if you made one.
-5. Restart FFX — the game runs vanilla.
-
-Everything is RAM-only and reversible. No `.bin` files are modified by the
-hooks (the SIN injector does modify `.bin` files, but only when explicitly
-spawned — and it has `--restore` and `--restore-area` to undo changes).
-
----
-
-## Troubleshooting
-
-### F7 doesn't open
-
-- Check `%TEMP%\ffx-hooks.log` — did the DLL load? Did InstallHooks run?
-- Verify the flag file exists: `Test-Path "<game>\modules\config\f7_inlive.flag"`
-- Verify the DLL is in `modules\`, not in the game root.
-- Verify `dinput8.dll` (the proxy loader) exists in the game root.
-
-### Game crashes on launch
-
-- Check if `ffx-hooks-polyhook-lab.dll` is in the game directory — **delete it**
-  (lab artifact that crashes the menu — K-20).
-- Check `%TEMP%\ffx-hooks.log` for FAULT lines (crash address).
-- Remove all flag files and try again (clean boot with hooks dormant).
-
-### Hook disappears after a game update
-
-- A Steam update can change `FFX.exe` bytes, breaking signature validation
-  (K-23). The hook logs "unexpected bytes" and stays off. The RVAs need to be
-  re-verified against the new exe. Open an issue on the repo.
-
-### Conflicts with other mods
-
-- If you use Special K (`dxgi.dll`), UnX (`unx.dll`), or any mod that hooks
-  `GetDeviceState` (vtable slot 9), expect conflicts (K-24). UnX crashed 3/3
-  with our probe. Try running without those mods first.
+`tools/package_release.py` recreates the version-bound binary ZIP from the
+recorded validated DLL and a clean source commit. It rejects source or DLL drift.
+`git archive` of the public release tag provides the corresponding source tree.
+Historical research receipts may name private local fixtures; default package
+creation does not read those paths or copy proprietary data.

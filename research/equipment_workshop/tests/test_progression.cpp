@@ -32,7 +32,7 @@ int main(){
   Check(Preview(s,Req(s,Op::Refine),p,Rich())==Error::Ok&&p.gilCost==prices[k],"refinement price uses cumulative total-rank bands");}
  DeveloperCases();
  s=Make(0,true);r=Req(s,Op::Refine);auto economy=Rich();Plan legacy{};legacy.gilCost=0xA5A5A5A5u;const auto canary=legacy;
- Check(ws_plan_abi()==3&&ws_plan_economy(&s,&r,&economy,&legacy)!=0&&std::memcmp(&legacy,&canary,sizeof(legacy))==0,"old ABI2 entrypoint refuses to overwrite a smaller host plan");
+ Check(ws_plan_abi()==5&&ws_plan_economy(&s,&r,&economy,&legacy)!=0&&std::memcmp(&legacy,&canary,sizeof(legacy))==0,"old ABI2 entrypoint refuses to overwrite a smaller host plan");
  std::printf("WORKSHOP_PROGRESSION %u/%u passed\n",checks-failures,checks);return failures?1:0;
 }
 static void DeveloperCases(){

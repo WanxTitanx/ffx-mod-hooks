@@ -13,6 +13,8 @@
 #include "../hooks/F7UiCore.h"
 #include "../hooks/F8FlagsUiState.h"
 #include "../hooks/EquipmentWorkshopRuntime.h"
+#include "../hooks/AeonAscensionBridge.h"
+#include "../hooks/EquipmentWorkshopCatalogBridge.h"
 #include "../hooks/EquipmentWorkshopSettings.h"
 #include "../hooks/EquipmentWorkshopNativeUi.h"
 #include "../hooks/ElementHook.h"
@@ -76,13 +78,18 @@ static F7PointerSnapshot F7CapturePointer(){
 #include "WorkshopListMouse.inc"
 namespace TestHost {
 workshop::State state{};
+workshop::AeonProgress aeons{};
 bool available=false,failReadback=false,customizeUnlocked=true;
-bool nativeDetails=false,scanActive=false;
+bool nativeDetails=false,scanActive=false,scanExpandedActive=false;
 unsigned commits=0;
 std::uint32_t gil=1000000;
+FfxHooks::AeonAscension::Ledger receipts{};
+FfxHooks::AeonAscension::SaveId saveId{};
+FfxHooks::AeonAscension::Mapping paidMapping{};
 }
 namespace FfxHooks::EquipmentWorkshop {
 bool Capture(workshop::State& out){if(!TestHost::available)return false;out=TestHost::state;return true;}
+bool ReadAeons(workshop::AeonProgress& out){out=TestHost::aeons;return TestHost::available;}
 workshop::Error Access(){
     workshop::Policy policy{};if(!TestHost::available)return workshop::Error::InvalidState;
     if(!Settings::Read(policy))return workshop::Error::InvalidPolicy;
@@ -91,6 +98,8 @@ workshop::Error Access(){
 const char* Detail(){return "Load a save to activate Equipment Workshop";}
 workshop::Error Preview(const workshop::Request& r,workshop::Plan& out){
     workshop::Economy economy{};economy.gil=TestHost::gil;economy.customizeUnlocked=TestHost::customizeUnlocked?1:0;
+    economy.aeons=TestHost::aeons;
+    (void)CatalogBridge::Read(economy.catalog);
     if(!Settings::Read(economy.policy)||!Settings::AdmitsExpansion(r))return workshop::Error::InvalidPolicy;
     return TestHost::available?workshop::Preview(TestHost::state,r,out,economy):workshop::Error::InvalidState;
 }
@@ -101,9 +110,30 @@ bool Commit(const workshop::Request& r,const workshop::Plan& reviewed){
     if(TestHost::failReadback)TestHost::available=false;
     return true;
 }
+workshop::Error PreviewAscension(const AeonAscension::Request& request,AeonAscension::Plan& output){
+    if(!TestHost::available)return workshop::Error::InvalidState;
+    workshop::Economy economy{};economy.gil=TestHost::gil;economy.aeons=TestHost::aeons;
+    economy.customizeUnlocked=TestHost::customizeUnlocked?1:0;
+    if(!Settings::Read(economy.policy))return workshop::Error::InvalidPolicy;
+    return AeonAscension::Preview(TestHost::state,TestHost::receipts,TestHost::saveId,TestHost::paidMapping,economy,request,output);
+}
+bool CommitAscension(const AeonAscension::Request& request,const AeonAscension::Plan& reviewed){
+    AeonAscension::Plan current{};
+    if(PreviewAscension(request,current)!=workshop::Error::Ok||std::memcmp(&current,&reviewed,sizeof(current)))return false;
+    TestHost::state=current.inventory.after;TestHost::receipts=current.receipts;
+    TestHost::gil-=current.inventory.gilDebit;++TestHost::commits;return true;
+}
+bool AscensionEffect(unsigned owner,unsigned effect) noexcept {
+    for(const auto& piece:TestHost::state.pieces)if(piece.native[4]==owner)
+        for(unsigned i=0;i<5;++i)if(AeonAscension::Authorized(TestHost::receipts,TestHost::saveId,piece,i,effect,TestHost::paidMapping))return true;
+    return false;
+}
 }
 namespace FfxHooks::EquipmentWorkshop::NativeUi {bool Active() noexcept {return TestHost::nativeDetails;}}
-namespace FfxHooks {bool IsElementHookInstalled(){return TestHost::scanActive;}}
+namespace FfxHooks {
+bool IsElementHookInstalled(){return TestHost::scanActive;}
+bool IsScanExpandedInstalled(){return TestHost::scanExpandedActive;}
+}
 #pragma warning(push)
 #pragma warning(disable:4018) // Existing renderer loop signedness is outside this lifecycle regression.
 #include "../hooks/EquipmentWorkshopMenu.inl"
@@ -148,10 +178,19 @@ static void Check(bool ok,const char* name){++checks;if(!ok){++failures;std::pri
 #include "WorkshopMenuTransactionCases.inl"
 #include "WorkshopMenuEconomyCases.inl"
 #include "WorkshopF8SettingsCases.inl"
+#include "TextLanguageMenuCases.inl"
 #include "WorkshopMenuProgressionCases.inl"
 #include "WorkshopNavigationCases.inl"
 #include "ElementColorSettingsCases.inl"
 #include "ElementVisibilityCases.inl"
+#include "ScanSettingsMenuCases.inl"
+#include "AeonWorkshopMenuCases.inl"
+#include "VanguardMenuCases.inl"
+#include "WorkshopCatalogMenuCases.inl"
+#include "AeonAscensionMenuCases.inl"
+#include "ModFeatureMenuCases.inl"
+#include "ExtendedElementMenuCases.inl"
+#include "MonsterRewardMenuCases.inl"
 static void FullFifthPickerCases(){
     using A=EquipmentMenu::Action;
     for(unsigned kind=0;kind<2;++kind){
@@ -200,13 +239,23 @@ int main(){
     WorkshopMenuAudioCases();
     WorkshopMenuEconomyCases();
     WorkshopF8SettingsCases();
+    TextLanguageMenuCases();
     WorkshopMenuProgressionCases();
     WorkshopF8DevelopmentCases();
     WorkshopNavigationCases();
     WorkshopExpansionSettingsCases();
     ElementColorSettingsCases();
     ElementVisibilityCases();
+    ScanSettingsMenuCases();
+    AeonWorkshopMenuCases();
+    VanguardMenuCases();
     FullFifthPickerCases();
+    WorkshopCatalogMenuCases();
+    AeonAscensionMenuCases();
+    ModFeatureMenuCases();
+    ExtendedElementMenuCases();
+    NestedFeatureMenuCases();
+    MonsterRewardMenuCases();
     TestHost::nativeDetails=false;Check(WorkshopTestOpen(),"native display status fixture opens");
     NativeMenu::rendered.clear();EquipmentMenu::Draw(EquipmentMenu::menu.obj);
     Check(WorkshopRendered("Native detail hook: OFF")&&WorkshopRendered("Reforge"),"Workshop explains disabled native display");
@@ -217,7 +266,8 @@ int main(){
     Check(statusObj!=0,"Scan status fixture allocates");
     if(statusObj){F8NativeSettingsPush(statusObj,NativeSettingsPage::ElementScan);
         for(bool active:{false,true}){TestHost::scanActive=active;NativeMenu::rendered.clear();F8NativeSettingsDraw(statusObj,1);
-            Check(WorkshopRendered(active?"Extra elements: ON":"Extra elements: OFF"),"Scan settings distinguish actual hook status from saved preferences");}
+            char label[128]{};F8NativeSettingsLabel(NativeSettingsPage::ElementScan,1,label,sizeof(label));
+            Check(std::strstr(label,active?"Running: ON":"Running: OFF")&&WorkshopRendered(label),"Scan settings distinguish actual hook status from saved preferences");}
         TestHost::scanActive=false;F8NativeSettingsReset();NativeMenu::Reset(statusObj);}
     std::printf("EquipmentWorkshopMenuRt1 %u/%u passed\n",checks-failures,checks);return failures?1:0;
 }

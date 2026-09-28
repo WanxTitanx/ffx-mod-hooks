@@ -93,7 +93,7 @@ struct F8BulkRowResult {
     Config::BoolSource source;
 };
 
-constexpr size_t kF8BulkRowResultMax = 64;   // bounded catalog; no allocation in the pump
+constexpr size_t kF8BulkRowResultMax = 96;   // bounded catalog; no allocation in the pump
 
 struct F8BulkEditResult {
     bool requestedValue;

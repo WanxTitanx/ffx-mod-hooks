@@ -3,12 +3,15 @@
 #include "EquipmentWorkshopNames.h"
 #include "EquipmentWorkshopSettings.h"
 #include "EquipmentWorkshopNativeUi.h"
+#include "AeonAscensionBridge.h"
+#define FFXHOOKS_ASCENSION_MENU_V1 1
 namespace EquipmentMenu {
 using namespace NativeMenu;
 namespace W=FfxHooks::EquipmentWorkshop;
 namespace N=FfxHooks::EquipmentWorkshop::Names;
-enum class Page {Inventory,Piece,Mode,Fifth,Models,Donor,Source,Destination,TransferCount,Expand,Clear,Evolve,Confirm,Info};
-enum class Action {Close,Back,Filter,Piece,Mode,Refine,Unlock,Fifth,Reforge,Fuse,Expand,Clear,Evolve,Value,Confirm,Second};
+namespace A=FfxHooks::AeonAscension;
+enum class Page {Inventory,Piece,Mode,Fifth,Models,Donor,Source,Destination,TransferCount,Expand,Clear,Evolve,Confirm,Info,Ascension,AscensionSlots};
+enum class Action {Close,Back,Filter,Piece,Mode,Refine,Unlock,Fifth,Reforge,Fuse,Expand,Clear,Evolve,Value,Confirm,Second,Ascension,AscensionApply,AscensionRemove};
 struct Row {char label[96]{};Action action=Action::Back;unsigned value=0;};
 static Menu menu{};
 static Row rows[240]{};
@@ -17,8 +20,13 @@ static volatile LONG owned=0,wantOpen=0,wantClose=0;
 static volatile LONG drawSeen=0;
 static Page page=Page::Inventory;
 static workshop::State snapshot{};
+static workshop::AeonProgress aeons{};
+static workshop::Catalog catalog{};
 static workshop::Request draft{};
 static workshop::Plan preview{};
+static A::Request upgradeRequest{};
+static A::Plan upgradePreview{};
+static bool upgradeFlow=false;
 static workshop::Error reviewError=workshop::Error::InvalidRequest;
 static unsigned transfer=0;
 static std::uint64_t selectedIdentity=0;
@@ -26,7 +34,7 @@ static bool cursorOwned=false;
 static DWORD menuThread=0;
 static char notice[144]{};
 static float eased=-1;
-struct NavigationFrame {Page page;int selected,top,slot;std::uint64_t identity;workshop::Request request;unsigned transfer;};
+struct NavigationFrame {Page page;int selected,top,slot;std::uint64_t identity;workshop::Request request;unsigned transfer;bool upgrade;A::Request paid;};
 static NavigationFrame parents[16]{},origin{};
 static unsigned parentCount=0;
 static int __cdecl Draw(int obj);
@@ -45,7 +53,19 @@ static void Add(Action action,unsigned value,const char* label){
     if(count>=240)return;rows[count].action=action;rows[count].value=value;strncpy_s(rows[count].label,label,_TRUNCATE);++count;
 }
 static bool Regular(const workshop::Piece& p){return p.id&&p.native[4]<7&&p.native[5]<2;}
-static const char* Owner(const workshop::Piece& p){return p.native[4]<7?N::owners[p.native[4]]:"Special";}
+static const char* UpgradeName(unsigned effect){return effect?"Aeon Break Damage Limit":"Aeon Break HP/MP Limit";}
+static bool UpgradeWord(unsigned word,unsigned& effect){
+    A::Mapping mapping{};if(!A::ReadMapping(mapping))return false;
+    for(unsigned i=0;i<2;++i)if(mapping.words[i]==word){effect=i;return true;}
+    return false;
+}
+static void ClearUpgrade(){upgradeFlow=false;upgradeRequest={};upgradePreview={};}
+static const char* OwnerName(unsigned owner){
+    static const char* names[]={"Valefor","Ifrit","Ixion","Shiva","Bahamut","Anima","Yojimbo","Cindy","Sandy","Mindy"};
+    return owner<7?N::owners[owner]:owner>=8&&owner<18?names[owner-8]:"Special";
+}
+static const char* Owner(const workshop::Piece& p){return OwnerName(p.native[4]);}
+static bool Browsable(const workshop::Piece& p){return Regular(p)||(workshop::IsAeon(p)&&(aeons.obtained&(1u<<p.native[4])));}
 static void PieceLabel(const workshop::Piece& p,char* out,std::size_t capacity){
     unsigned rank=0;for(unsigned i=0;i<5;++i)rank+=workshop::AbilityRank(p,i);
     _snprintf_s(out,capacity,_TRUNCATE,"%s %s #%llu +%u%s%s",Owner(p),p.native[5]?"Armor":"Weapon",static_cast<unsigned long long>(p.id),rank,p.native[6]!=255?" [Equipped]":"",p.fifthUnlocked?" [Bound]":"");
@@ -56,29 +76,41 @@ static void Geometry(int obj){
 }
 static void Build(Page next){
     page=next;count=0;char line[128]{};
+    aeons={};(void)W::ReadAeons(aeons);
+    (void)W::CatalogBridge::Read(catalog);
     const auto* piece=selectedSlot>=0&&selectedSlot<200?&snapshot.pieces[selectedSlot]:nullptr;
     switch(page){
     case Page::Inventory:
-        _snprintf_s(line,sizeof(line),_TRUNCATE,"Character: %s",ownerFilter<0?"All":N::owners[ownerFilter]);Add(Action::Filter,0,line);
-        for(unsigned i=0;i<200;++i)if(Regular(snapshot.pieces[i])&&(ownerFilter<0||snapshot.pieces[i].native[4]==ownerFilter)){PieceLabel(snapshot.pieces[i],line,sizeof(line));Add(Action::Piece,i,line);}
+        _snprintf_s(line,sizeof(line),_TRUNCATE,"Character: %s",ownerFilter<0?"All":OwnerName(static_cast<unsigned>(ownerFilter)));Add(Action::Filter,0,line);
+        for(unsigned i=0;i<200;++i)if(Browsable(snapshot.pieces[i])&&(ownerFilter<0||snapshot.pieces[i].native[4]==ownerFilter)){PieceLabel(snapshot.pieces[i],line,sizeof(line));Add(Action::Piece,i,line);}
         Add(Action::Close,0,"Return to game");break;
     case Page::Piece:
         if(!piece||!piece->id){Build(Page::Inventory);return;}
+        if(workshop::IsAeon(*piece)&&workshop::AeonAccess(*piece,static_cast<unsigned>(selectedSlot),aeons)!=workshop::Error::Ok){
+            _snprintf_s(notice,sizeof(notice),_TRUNCATE,"Requires %s and this Aeon obtained.",workshop::AeonRequirement(piece->native[4]));
+            Add(Action::Back,0,"Equipment list");break;
+        }
         {workshop::Policy policy{};const bool valid=W::Settings::Read(policy);
         _snprintf_s(line,sizeof(line),_TRUNCATE,"Refine: %s",valid?W::Settings::ModeName(policy.mode):"invalid F8 / INI setting");Add(Action::Refine,0,line);}
         Add(piece->fifthUnlocked?Action::Fifth:Action::Unlock,0,piece->fifthUnlocked?"Choose fifth ability":"Unlock fifth slot (four native slots)");
-        Add(Action::Reforge,0,"Reforge owner / type");Add(Action::Fuse,0,"Fuse equipment");Add(Action::Expand,0,"Expand original slots");
-        Add(Action::Clear,0,"Remove an ability");Add(Action::Evolve,0,"Evolve an ability");Add(Action::Back,0,"Equipment list");break;
+        if(!workshop::IsAeon(*piece))Add(Action::Reforge,0,"Reforge owner / type");Add(Action::Fuse,0,"Fuse equipment");Add(Action::Expand,0,"Expand original slots");
+        Add(Action::Clear,0,"Remove an ability");Add(Action::Evolve,0,"Evolve an ability");
+        if(workshop::IsAeon(*piece))Add(Action::Ascension,0,"Aeon upgrades");
+        Add(Action::Back,0,"Equipment list");break;
     case Page::Mode:Add(Action::Back,0,"Choose the refinement method in F8 > Dev");break;
     case Page::Fifth:
         if(piece&&!workshop::NativeSlotsFilled(*piece)){Add(Action::Back,0,"Fill the four native abilities first");break;}
-        {workshop::Policy policy{};if(piece&&W::Settings::Read(policy))for(unsigned id=0;id<131;++id){unsigned item=0,quantity=0;
-            if(workshop::FifthCost(*piece,static_cast<std::uint16_t>(0x8000+id),policy,item,quantity)&&
-               workshop::CustomizeEligibility(*piece,4,static_cast<std::uint16_t>(0x8000+id))==workshop::Error::Ok){
+        {workshop::Policy policy{};if(piece&&W::Settings::Read(policy)){
+            auto append=[&](std::uint16_t word){unsigned item=0,quantity=0;
+                if(!word||!workshop::FifthCost(*piece,word,policy,item,quantity,&catalog)||
+                   workshop::CustomizeEligibility(*piece,4,word,&catalog)!=workshop::Error::Ok)return;
                 bool native=false;unsigned originalItem=0,originalQuantity=0;
-                workshop::CustomizeCost(static_cast<std::uint16_t>(0x8000+id),policy,originalItem,originalQuantity,native);
-                _snprintf_s(line,sizeof(line),_TRUNCATE,"%s%s",N::Ability(0x8000+id),native?"":" [Mod recipe]");Add(Action::Value,0x8000+id,line);
-            }}}
+                workshop::CustomizeCost(word,policy,originalItem,originalQuantity,native,&catalog);
+                _snprintf_s(line,sizeof(line),_TRUNCATE,"%s%s",N::Ability(word),native?"":" [Mod recipe]");Add(Action::Value,word,line);
+            };
+            for(unsigned id=0;id<131;++id)append(static_cast<std::uint16_t>(0x8000+id));
+            for(const auto& entry:catalog.entries)append(entry.word);
+        }}
         Add(Action::Back,0,"Back");break;
     case Page::Models:
         for(unsigned i=0;i<200;++i){const auto& p=snapshot.pieces[i];if(!Regular(p)||(p.native[3]&12))continue;
@@ -92,33 +124,61 @@ static void Build(Page next){
     case Page::Source:{const auto& p=snapshot.pieces[draft.other];
         for(unsigned i=0;i<p.native[11];++i){const auto id=workshop::Ability(p,i);if(id==255||(transfer&&i==draft.from[0]))continue;_snprintf_s(line,sizeof(line),_TRUNCATE,"Slot %u: %s",i+1,N::Ability(id));Add(Action::Value,i,line);}Add(Action::Back,0,"Back");break;}
     case Page::Destination:
-        if(piece)for(unsigned i=0;i<piece->native[11];++i){if(transfer&&i==draft.to[0])continue;_snprintf_s(line,sizeof(line),_TRUNCATE,"Replace slot %u: %s",i+1,N::Ability(workshop::Ability(*piece,i)));Add(Action::Value,i,line);}Add(Action::Back,0,"Back");break;
+        if(piece)for(unsigned i=0;i<piece->native[11];++i){if(workshop::ProtectedAbility(*piece,i)||(transfer&&i==draft.to[0]))continue;_snprintf_s(line,sizeof(line),_TRUNCATE,"Replace slot %u: %s",i+1,N::Ability(workshop::Ability(*piece,i)));Add(Action::Value,i,line);}Add(Action::Back,0,"Back");break;
     case Page::TransferCount:Add(Action::Value,0,"Review fusion with one ability");Add(Action::Second,0,"Transfer a second ability");Add(Action::Back,0,"Back to destination");break;
     case Page::Expand:
         {unsigned recipe=0;if(piece&&W::Settings::ReadExpansion(recipe))for(unsigned cap=piece->native[11]+1;cap<=4;++cap){
             _snprintf_s(line,sizeof(line),_TRUNCATE,"%u slots - %s Key Sphere recipe",cap,recipe==2?"1/2/3/4":"one each");Add(Action::Value,cap|((recipe-1)<<8),line);}}
         Add(Action::Back,0,"Back");break;
     case Page::Clear:case Page::Evolve:
-        if(piece)for(unsigned i=0;i<4u+piece->fifthUnlocked;++i){const unsigned word=workshop::Ability(*piece,i);if(word==255)continue;const unsigned id=word-0x8000;
+        if(piece)for(unsigned i=0;i<4u+piece->fifthUnlocked;++i){const unsigned word=workshop::Ability(*piece,i);if(word==255||workshop::ProtectedAbility(*piece,i))continue;const unsigned id=word-0x8000;
+            unsigned effect=2;if(UpgradeWord(word,effect))continue;
             if(page==Page::Evolve && (i==4 || !((id>=98&&id<121&&(id-98)%4<3)||(id>=47&&id<=75&&(id-47)%4==0))))continue;
             _snprintf_s(line,sizeof(line),_TRUNCATE,"Slot %u: %s",i+1,N::Ability(word));Add(Action::Value,i,line);}Add(Action::Back,0,"Back");break;
     case Page::Confirm:if(reviewError==workshop::Error::Ok)Add(Action::Confirm,0,preview.policy.devFreeMaterials||preview.policy.devFreeGil?"Confirm with DEV exemption":"Confirm this change");Add(Action::Back,0,reviewError==workshop::Error::Ok?"Keep as is":"Back - requirements not met");break;
     case Page::Info:Add(Action::Close,0,"Return to game");break;
+    case Page::Ascension:{
+        A::Mapping mapping{};
+        if(!piece||!workshop::IsAeon(*piece)||!A::ReadMapping(mapping)){
+            Add(Action::Back,0,"Enable Aeon Ascension and load its valid data");break;
+        }
+        const unsigned effect=piece->native[5]?0:1;bool present=false;
+        for(unsigned i=0;i<5;++i)present=present||workshop::Ability(*piece,i)==mapping.words[effect];
+        if(!present){_snprintf_s(line,sizeof(line),_TRUNCATE,"Apply %s",UpgradeName(effect));Add(Action::AscensionApply,effect,line);}
+        else if(W::AscensionEffect(piece->native[4],effect)){_snprintf_s(line,sizeof(line),_TRUNCATE,"Remove %s",UpgradeName(effect));Add(Action::AscensionRemove,effect,line);}
+        else Add(Action::Back,0,"This cap has no admitted paid receipt");
+        Add(Action::Back,0,"Equipment options");break;
+    }
+    case Page::AscensionSlots:{
+        A::Mapping mapping{};if(!piece||!A::ReadMapping(mapping)){Add(Action::Back,0,"Mapping unavailable");break;}
+        const auto effect=upgradeRequest.effect;
+        for(unsigned i=0;i<5;++i){
+            if(i<4?i>=piece->native[11]:!piece->fifthUnlocked||(!upgradeRequest.remove&&!workshop::NativeSlotsFilled(*piece)))continue;
+            const unsigned word=workshop::Ability(*piece,i);if(word==0x807B)continue;
+            const bool replacement=effect?word==mapping.replacements[2]:word==mapping.replacements[0]||word==mapping.replacements[1];
+            if(upgradeRequest.remove?word!=mapping.words[effect]:word!=255&&!replacement)continue;
+            unsigned labelEffect=2;
+            _snprintf_s(line,sizeof(line),_TRUNCATE,"Slot %u: %s %.45s",i+1,upgradeRequest.remove?"Remove":word==255?"Apply to":"Replace",word==255?"empty slot":UpgradeWord(word,labelEffect)?UpgradeName(labelEffect):N::Ability(word));
+            Add(Action::Value,i,line);
+        }
+        Add(Action::Back,0,"Back");break;
+    }
     }
     if(menu.obj)Geometry(menu.obj);
 }
 static void SetNotice(const char* text){strncpy_s(notice,text,_TRUNCATE);}
 static void Unavailable(const char* text){
     // A failed read must never leave a pre-transaction donor visible/selectable.
-    snapshot={};draft={};preview={};selectedSlot=-1;selectedIdentity=0;parentCount=0;transfer=0;
+    snapshot={};draft={};preview={};ClearUpgrade();selectedSlot=-1;selectedIdentity=0;parentCount=0;transfer=0;
     SetNotice(text);Build(Page::Info);PlaySfx(3);
 }
-static NavigationFrame Remember(){return {page,menu.obj?RdW(menu.obj,O_SELECTED):0,menu.obj?RdW(menu.obj,O_TOP):0,selectedSlot,selectedIdentity,draft,transfer};}
+static NavigationFrame Remember(){return {page,menu.obj?RdW(menu.obj,O_SELECTED):0,menu.obj?RdW(menu.obj,O_TOP):0,selectedSlot,selectedIdentity,draft,transfer,upgradeFlow,upgradeRequest};}
 static void Restore(const NavigationFrame& saved){
     // Inventory keeps the last target as its comparison card; deeper pages
     // restore the exact operation target captured on entry.
     if(saved.page!=Page::Inventory){selectedSlot=saved.slot;selectedIdentity=saved.identity;}
     draft=saved.request;transfer=saved.transfer;
+    upgradeFlow=saved.upgrade;upgradeRequest=saved.paid;upgradePreview={};
     preview={};reviewError=workshop::Error::InvalidRequest;Build(saved.page);
     if(menu.obj){const int selected=(std::max)(0,(std::min)(saved.selected,count-1));
         const int top=(std::max)(0,(std::min)(saved.top,(std::max)(0,count-8)));
@@ -129,13 +189,32 @@ static void Navigate(Page next){
     Build(next);PlaySfx(1);
 }
 static void ReturnToPiece(){
+    ClearUpgrade();
     while(parentCount){const auto saved=parents[--parentCount];if(saved.page==Page::Piece){Restore(saved);draft={};preview={};transfer=0;PlaySfx(1);return;}}
     draft={};preview={};transfer=0;Build(Page::Piece);PlaySfx(1);
 }
-static void NewRequest(workshop::Op op){draft={};preview={};reviewError=workshop::Error::InvalidRequest;draft.op=op;draft.slot=static_cast<std::uint16_t>(selectedSlot);draft.pieceId=snapshot.pieces[selectedSlot].id;draft.revision=snapshot.revision;}
+static void NewRequest(workshop::Op op){ClearUpgrade();draft={};preview={};reviewError=workshop::Error::InvalidRequest;draft.op=op;draft.slot=static_cast<std::uint16_t>(selectedSlot);draft.pieceId=snapshot.pieces[selectedSlot].id;draft.revision=snapshot.revision;}
+static void ReviewUpgrade(unsigned position){
+    upgradeRequest.slot=static_cast<unsigned>(selectedSlot);upgradeRequest.position=position;
+    upgradeRequest.pieceId=selectedIdentity;upgradeRequest.revision=snapshot.revision;
+    upgradeRequest.replace=!upgradeRequest.remove&&workshop::Ability(snapshot.pieces[selectedSlot],position)!=255;
+    upgradePreview={};preview={};draft={};upgradeFlow=true;
+    reviewError=W::PreviewAscension(upgradeRequest,upgradePreview);
+    if(reviewError!=workshop::Error::Ok&&reviewError!=workshop::Error::Materials&&reviewError!=workshop::Error::Gil){
+        SetNotice(workshop::Message(reviewError));Restore(origin);PlaySfx(3);return;
+    }
+    if(reviewError==workshop::Error::Ok)preview=upgradePreview.inventory;
+    else {preview.after=snapshot;(void)A::QuoteRecipe(upgradeRequest.effect,preview);}
+    SetNotice(upgradeRequest.remove?"Remove this paid cap without refund. Current HP/MP can only decrease to the remaining maximum.":
+        "Fixed recipe; Aeon pricing is already included. This changes the cap, not current HP/MP. Confirm to pay once.");
+    Navigate(Page::Confirm);
+}
 static void Review(){
     const auto error=W::Preview(draft,preview);reviewError=error;
-    if(error==workshop::Error::Locked){Unavailable(workshop::Message(error));return;}
+    if(error==workshop::Error::Locked){
+        if(selectedSlot>=0&&workshop::IsAeon(snapshot.pieces[selectedSlot])){Build(Page::Piece);PlaySfx(3);return;}
+        Unavailable(workshop::Message(error));return;
+    }
     if(error!=workshop::Error::Ok){
         Log("[ffx-hooks] Workshop UI: preview rejected op=%u error=%d\n",static_cast<unsigned>(draft.op),static_cast<int>(error));
         SetNotice(error==workshop::Error::InvalidRequest&&draft.op==workshop::Op::UnlockFifth?"Opening the fifth slot requires four OPEN native slots, filled or empty.":
@@ -146,8 +225,8 @@ static void Review(){
     if(preview.policy.devFreeMaterials||preview.policy.devFreeGil){
         SetNotice(draft.op==workshop::Op::Fuse?"DEV exemption: listed resource waivers apply. The donor WILL be destroyed. Confirm to proceed.":"DEV exemption: nominal prices remain visible. Waived resources are not consumed. Confirm to proceed.");Navigate(Page::Confirm);return;
     }
-    if(draft.op==workshop::Op::UnlockFifth){SetNotice("Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.");Navigate(Page::Confirm);return;}
-    if(draft.op==workshop::Op::Evolve){SetNotice("Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.");Navigate(Page::Confirm);return;}
+    if(draft.op==workshop::Op::UnlockFifth){SetNotice(workshop::IsAeon(snapshot.pieces[selectedSlot])?"Four each: Attribute, Special, Skill, Wht Magic, Blk Magic. Master substitutes missing units 1:1.":"Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.");Navigate(Page::Confirm);return;}
+    if(draft.op==workshop::Op::Evolve){SetNotice(workshop::IsAeon(snapshot.pieces[selectedSlot])?"Half the destination recipe plus 50,000 Gil (Aeon x2). The evolved ability starts at +0.":"Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.");Navigate(Page::Confirm);return;}
     SetNotice(draft.op==workshop::Op::Fuse?"The donor is destroyed. Listed materials and Gil are consumed.":draft.op==workshop::Op::Refine&&preview.policy.mode==2?"Require every possible ingredient; pay only base + rolled result.":"Review the materials before confirming.");Navigate(Page::Confirm);
 }
 static void Choose(const Row& row){
@@ -164,8 +243,11 @@ static void Choose(const Row& row){
     if(snapshot.revision!=displayedRevision){parentCount=0;selectedSlot=-1;selectedIdentity=0;draft={};preview={};SetNotice("Inventory changed. Select the piece again.");Build(Page::Inventory);PlaySfx(3);return;}
     origin=Remember();
     if(page==Page::Inventory){
-        if(row.action==Action::Filter){ownerFilter=ownerFilter==6?-1:ownerFilter+1;Navigate(Page::Inventory);}
-        else if(row.action==Action::Piece&&row.value<200&&Regular(snapshot.pieces[row.value])){selectedSlot=static_cast<int>(row.value);selectedIdentity=snapshot.pieces[selectedSlot].id;SetNotice("");Navigate(Page::Piece);}
+        if(row.action==Action::Filter){
+            do{++ownerFilter;}while(ownerFilter<18&&(ownerFilter==7||(ownerFilter>=8&&!(aeons.obtained&(1u<<ownerFilter)))));
+            if(ownerFilter>=18)ownerFilter=-1;Navigate(Page::Inventory);
+        }
+        else if(row.action==Action::Piece&&row.value<200&&Browsable(snapshot.pieces[row.value])){selectedSlot=static_cast<int>(row.value);selectedIdentity=snapshot.pieces[selectedSlot].id;SetNotice("");Navigate(Page::Piece);}
         return;
     }
     if(selectedSlot<0||selectedSlot>=200||snapshot.pieces[selectedSlot].id!=selectedIdentity){parentCount=0;selectedSlot=-1;selectedIdentity=0;draft={};preview={};SetNotice("The selected piece changed. Choose it again.");Build(Page::Inventory);PlaySfx(3);return;}
@@ -182,11 +264,20 @@ static void Choose(const Row& row){
         case Action::Expand:Navigate(Page::Expand);return;
         case Action::Clear:Navigate(Page::Clear);return;
         case Action::Evolve:Navigate(Page::Evolve);return;
+        case Action::Ascension:ClearUpgrade();Navigate(Page::Ascension);return;
         default:return;
         }
     }
     if(page==Page::Confirm){
         if(reviewError!=workshop::Error::Ok||row.action!=Action::Confirm){PlaySfx(3);return;}
+        if(upgradeFlow){
+            const bool removed=upgradeRequest.remove;
+            const bool committed=W::CommitAscension(upgradeRequest,upgradePreview);ClearUpgrade();preview={};
+            if(!W::Capture(snapshot)){Unavailable(committed?"Paid change committed; close Workshop and reload.":W::Detail());return;}
+            if(!committed){SetNotice("Inventory or mapping changed. Review a new preview.");parentCount=0;Build(Page::Piece);PlaySfx(3);return;}
+            SetNotice(removed?"Paid cap removed. No materials or Gil were refunded.":"Paid cap applied. Current HP and MP were not restored.");
+            ReturnToPiece();return;
+        }
         const auto completed=draft;
         const auto winner=preview.chosenAbility;
         const bool committed=W::Commit(draft,preview);draft={};preview={};
@@ -209,6 +300,12 @@ static void Choose(const Row& row){
         ReturnToPiece();return;
     }
     switch(page){
+    case Page::Ascension:
+        if(row.action==Action::AscensionApply||row.action==Action::AscensionRemove){
+            upgradeRequest={};upgradeRequest.effect=row.value;upgradeRequest.remove=row.action==Action::AscensionRemove;upgradeFlow=true;
+            Navigate(Page::AscensionSlots);
+        }break;
+    case Page::AscensionSlots:ReviewUpgrade(row.value);break;
     case Page::Mode:break;
     case Page::Fifth:NewRequest(workshop::Op::SetFifth);draft.value=static_cast<std::uint16_t>(row.value);Review();break;
     case Page::Models:NewRequest(workshop::Op::Reforge);std::memcpy(draft.gearTemplate,snapshot.pieces[row.value].native,22);draft.gearTemplate[6]=255;Review();break;
@@ -243,6 +340,7 @@ static int __cdecl Input(int obj){
 static int __cdecl Aux(int){return 1;}
 static bool Open(){
     if(menu.obj||closing||!F7IsForegroundWindow())return false;notice[0]=0;selectedSlot=-1;selectedIdentity=0;parentCount=0;draft={};preview={};transfer=0;
+    ClearUpgrade();
     const bool loaded=W::Capture(snapshot);const auto access=loaded?W::Access():workshop::Error::InvalidState;
     if(!loaded)SetNotice(W::Detail());else if(access!=workshop::Error::Ok)SetNotice(workshop::Message(access));
     Build(loaded&&access==workshop::Error::Ok?Page::Inventory:Page::Info);
@@ -255,6 +353,7 @@ static bool Open(){
 }
 static void Release(){const bool hadOwner=InterlockedExchange(&owned,0)!=0;if(cursorOwned){F7ReleaseCursorOwnership();cursorOwned=false;}if(hadOwner)Log("[ffx-hooks] Workshop UI: modal and cursor released\n");}
 static void Close(){
+    ClearUpgrade();
     if(menu.obj&&StillOwned(menu.obj)){ReleaseModalIfOwned(menu.obj);WrB(menu.obj,65,1);closing=menu.obj;closePasses=0;}
     menu.obj=0;result=-2;if(!closing)Release();
 }

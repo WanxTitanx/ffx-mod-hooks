@@ -1,0 +1,195 @@
+{
+  "owner": "Jarvis-HOOK",
+  "date": "2026-09-28",
+  "status": "RT0_RT1_CANDIDATE_USER_RETEST_PENDING",
+  "base_commit": "faccdd79726c5d0b3c3814cbb12f26f0ad4c7d39",
+  "game_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+  "dll_sha256": "a27431819328bf9a680dc70a28292bb89914460411faaa8137ddf2f2f8e4938e",
+  "dll_bytes": 2006528,
+  "build_source_manifest_sha256": "bdc886b009ed7048764edb5b53d290051c7f8b450a64e49ba49759294f326de5",
+  "build_inputs": 382,
+  "build_source_zip_sha256": "d59f3706a03842c76176cc7bc380991d4eedb3b7573a3a2f4a80baa125106975",
+  "source_drift_since_build": [],
+  "balance_revision": 4,
+  "pack_hash": "c6fe69e9f96cf776a943ebeba725ed65dc1872cc6e8e0e1539963c164df2453e",
+  "package": {
+    "sha256": "a7c28a3f6e55e257c1551c77197d27422328aa3d7bc00b2b10fdd20ac77a3de4",
+    "members": 94,
+    "cards": 78,
+    "shared_assets": 2,
+    "per_member_hashes_verified": true,
+    "source_commit_is_base_with_dirty_patch": true
+  },
+  "prior_runtime_diagnostic": {
+    "log_sha256": "3044c8a308614e0774623d4f78bc33c8db46a7e36190ac6972e6ec8d34429605",
+    "log_bytes": 1681541,
+    "installed_dll_sha256": "b35c828884eda8440da9245bee172b4d0af70e11ae020a347060be35e234aed4",
+    "selected_lines": [
+      "[ffx-hooks] Arcana startup runtime=1 combat=1 turn=1 text=1 ui=1 art=1; Load a save to activate Arcana",
+      "[ffx-hooks] F8 gate key=labs.element_scan_dark value=0 source=AuthoritativeCanonicalIni consumer=Scan Extra Elements",
+      "[ffx-hooks] F8 gate key=labs.scan_expanded value=0 source=AuthoritativeCanonicalIni consumer=Scan Expanded",
+      "[ffx-hooks] Arcana startup runtime=1 combat=1 turn=1 text=1 ui=1 art=1; Load a save to activate Arcana",
+      "[ffx-hooks] F8 gate key=labs.element_scan_dark value=0 source=AuthoritativeCanonicalIni consumer=Scan Extra Elements",
+      "[ffx-hooks] F8 gate key=labs.scan_expanded value=0 source=AuthoritativeCanonicalIni consumer=Scan Expanded",
+      "[ffx-hooks] Arcana startup runtime=1 combat=1 turn=1 text=1 ui=1 art=1; Load a save to activate Arcana",
+      "[ffx-hooks] F8 gate key=labs.element_scan_dark value=1 source=AuthoritativeCanonicalIni consumer=Scan Extra Elements",
+      "[ffx-hooks] F8 gate key=labs.scan_expanded value=1 source=AuthoritativeCanonicalIni consumer=Scan Expanded",
+      "[ffx-hooks] Element Scan rejected: executable or drawing signatures differ"
+    ],
+    "scope": "User-run log diagnostic only; no new game run or acceptance claim."
+  },
+  "red_regressions": {
+    "visibility-red.log": {
+      "sha256": "d821e083da334541afc594feb04fc86057875be0aeba1ecace35e9f89198da9a",
+      "expected_failed_assertions": 4,
+      "failure_lines": [
+        "FAIL selected Tarot draws its single native arrow after the opaque row backgrounds",
+        "FAIL starting Display Abilities immediately retires the overview Tarot row",
+        "FAIL a cached overview draw cannot leak Tarot labels over the abilities page",
+        "FAIL the native retiring-page flag immediately hides Arcana effects when advancing past Auto-Abilities"
+      ]
+    },
+    "scan-coexist-red.log": {
+      "sha256": "e23ea8bd411c8747e1256b43aad707fd3ae24c1026e22246d9014691d5348b2f",
+      "expected_failed_assertions": 1,
+      "failure_lines": [
+        "SCAN_PROFILE_MISMATCH rva=00244990",
+        "SCAN_PROFILE_MISMATCH rva=002449D0",
+        "FAIL Scan startup exposes the two independently selected features"
+      ]
+    },
+    "visibility-portable-red.log": {
+      "sha256": "45cd941e9e55f2bac7467ce58acc1f49747670d75ec3bb4c372b40c0df025ad1",
+      "expected_failed_assertions": 1,
+      "failure_lines": [
+        "FAIL Scan must validate its original drawing dependencies before Arcana owns shared scales, independently of Arcana being requested"
+      ]
+    }
+  },
+  "evidence": {
+    "portable": {
+      "command": "python3 research/mod_008_arcana/run_checks.py --output work/mod008/visibility-rt0",
+      "exit_code": 0,
+      "log": "work/mod008/visibility-portable-green.log",
+      "sha256": "30cf4985523322d5ef64566f0ce14527d7d3a705214c935e504326c56fe866ac",
+      "summary": [
+        "PASS typed Arcana catalog: 78 cards, sha256=27655f432cf36ee68f87e6ea859e6f4cb37bb0a5a3210b36af7fc5c3717e7feb",
+        "PASS 78 distinct builds: no pure-stat filler except HP; matching elemental defense; highlighted cards upgraded",
+        "ArcanaStartupRt0 9/9 passed",
+        "ArcanaCoreRt0 76205/76205 passed",
+        "ArcanaAcquisitionRt0 95/95 passed",
+        "ArcanaUiRt0 55/55 passed",
+        "ArcanaNativeEffectsRt0 16/16 passed",
+        "ArcanaCombatCoreRt0 13/13 passed",
+        "ArcanaStoreRt1 30/30 passed",
+        "NativeSaveEventsRt0 25/25 passed",
+        "NativeSaveProjectionRt0 15/15 passed",
+        "NativeGameplayEventsRt0 5/5 passed",
+        "PASS Arcana portable checks; native Windows, graphics and live gameplay are separate gates"
+      ]
+    },
+    "sanitized": {
+      "command": "python3 research/mod_008_arcana/run_checks.py --sanitize --output work/mod008/visibility-rt0-san",
+      "exit_code": 0,
+      "log": "work/mod008/visibility-portable-san.log",
+      "sha256": "30cf4985523322d5ef64566f0ce14527d7d3a705214c935e504326c56fe866ac",
+      "summary": [
+        "PASS typed Arcana catalog: 78 cards, sha256=27655f432cf36ee68f87e6ea859e6f4cb37bb0a5a3210b36af7fc5c3717e7feb",
+        "PASS 78 distinct builds: no pure-stat filler except HP; matching elemental defense; highlighted cards upgraded",
+        "ArcanaStartupRt0 9/9 passed",
+        "ArcanaCoreRt0 76205/76205 passed",
+        "ArcanaAcquisitionRt0 95/95 passed",
+        "ArcanaUiRt0 55/55 passed",
+        "ArcanaNativeEffectsRt0 16/16 passed",
+        "ArcanaCombatCoreRt0 13/13 passed",
+        "ArcanaStoreRt1 30/30 passed",
+        "NativeSaveEventsRt0 25/25 passed",
+        "NativeSaveProjectionRt0 15/15 passed",
+        "NativeGameplayEventsRt0 5/5 passed",
+        "PASS Arcana portable checks; native Windows, graphics and live gameplay are separate gates"
+      ]
+    },
+    "native_arcana": {
+      "command": "arcana_rt1.ps1 -GameExecutable <private FFX.exe> -NativeSaveFixture <private ffx_000> -AssetsRoot <private assets>",
+      "exit_code": 0,
+      "log": "work/mod008/visibility-suite-green.log",
+      "sha256": "c930e309a3fbf53fb28c26088cea2e6e54e3d32ea7d5d143f164569bbb5f9a3d",
+      "summary": [
+        "ArcanaNativeUiRt1 100/100 passed",
+        "ArcanaNativeUiRt1 102/102 passed",
+        "ArcanaCombatRt1 72/72 passed",
+        "ArcanaAssetsRt1 12/12 passed",
+        "ArcanaRuntimeRt1 26/26 passed",
+        "ArcanaRuntimeRt1 15/15 passed",
+        "ArcanaRuntimeRt1 27/27 passed",
+        "ArcanaRuntimeRt1 21/21 passed",
+        "ArcanaRuntimeRt1 21/21 passed",
+        "ArcanaRuntimeRt1 21/21 passed",
+        "RonsoPoolIoRt1 ON: PASS (24 checks, 0 failures)",
+        "RonsoPoolIoRt1 OFF: PASS (19 checks, 0 failures)",
+        "PASS Arcana RT1 fixtures; live gameplay and visual acceptance remain RT2"
+      ]
+    },
+    "native_presentation": {
+      "command": "native_presentation_rt1.ps1; Scan modes 0, 1, 2, 3 with Workshop and Arcana",
+      "exit_code": 0,
+      "log": "work/mod008/scan-coexist-green.log",
+      "sha256": "42a81f84f96ff9ec5bb3e80cee6d74dd17dd7918024f0d598c5660fc7b9acdd2",
+      "summary": [
+        "NATIVE_PRESENTATION_RT1 3/3 passed (Scan mode 0)",
+        "NATIVE_PRESENTATION_RT1 46098/46098 passed",
+        "NATIVE_PRESENTATION_RT1 45115/45115 passed",
+        "NATIVE_PRESENTATION_RT1 47634/47634 passed"
+      ]
+    },
+    "regressions": {
+      "command": "f8_runtime_rt0.ps1; seymour_battle_rt1.ps1; custom_mix_runtime_rt1.ps1",
+      "exit_code": 0,
+      "log": "work/mod008/visibility-regression.log",
+      "sha256": "b5c4fa7363b3ec4780fcf4e3f9e3b31d1560c142de18e274a0d2017cc4d0238a",
+      "summary": [
+        "F8RuntimeRt0: PASS (3988 checks)",
+        "F8 RUNTIME RT0: PASS",
+        "SEYMOUR BATTLE RT1: 88/88 PASS",
+        "SEYMOUR BATTLE RT1: PASS",
+        "CustomMix production runtime RT0/RT1: 89/89 passed",
+        "CustomMix Ultra production runtime x86: PASS (RT0 contracts + RT1 composition; COFF-I386 0x014C)"
+      ]
+    },
+    "builds": {
+      "command": "MSBuild Release Win32 FFXHooksEnablePolyHook=true VcpkgEnabled=false; build_hooks.ps1 -WithPolyHook -Release",
+      "exit_code": 0,
+      "log": "work/mod008/visibility-full-build.log",
+      "sha256": "086935bc2cebf83cfedcceac25d4d6058de0ba798a356c792ad297da0c952dbf",
+      "summary": [
+        "built: C:\\Users\\Public\\Documents\\jarvis_mod008_01a0e4f3\\full-source\\src\\runtime\\FfxHooksDll\\bin\\Release\\ffx-hooks.dll"
+      ]
+    },
+    "dll_smoke": {
+      "command": "ArcanaDllSmokeRt1.exe <candidate DLL> <disposable data> <private FFX.exe>",
+      "exit_code": 0,
+      "log": "work/mod008/visibility-dll-smoke.log",
+      "sha256": "671fa3d97503f990e9c232733b8c4b71f08a078f682b449b94396979f539b9aa",
+      "summary": [
+        "PASS Arcana DLL x86 loader/worker smoke with validation-only and unchanged private PE boundaries; no game launched"
+      ]
+    },
+    "context": {
+      "command": "python3 -W error::ResourceWarning -m unittest discover -s tools/context/tests -v",
+      "exit_code": 0,
+      "log": "work/mod008/visibility-context-tests.log",
+      "sha256": "f3d9c2ac7159a6c7efa7f90859ecf46aaacac6726cd2de91f7f82cb6b6fbeba5",
+      "summary": [
+        "Ran 114 tests in 1.845s"
+      ]
+    },
+    "retrieval": {
+      "command": "python3 tools/context/ffx_context.py doctor/index/evaluate --json; bundle DrawPromptGlyph --max-bytes 24000",
+      "passed": 14,
+      "total": 14,
+      "result_sha256": "4661f64f29dc922fb6e367d74d285311e796f76c88c57d3807308b430675bb97"
+    }
+  },
+  "review": "Author-only; no independent reviewer or subagents. Existing user authorization selects normal PR/merge and closed-game redeploy.",
+  "live_validation": "No game launched or controlled; corrected appearance, audio and battle Scan require user retest; not RT2 acceptance or Production."
+}

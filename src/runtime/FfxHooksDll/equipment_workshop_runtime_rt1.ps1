@@ -21,6 +21,12 @@ try {
  $fixture=Join-Path $repo 'native-fixtures\FFX.exe'
  if((Get-FileHash $fixture -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Wrong private PE fixture'}
  $data=Join-Path $obj ('private-'+[guid]::NewGuid().ToString('N'))
+ & $exe $fixture (Join-Path $repo 'native-fixtures\ffx_000') ($data+'-combat-only') (Join-Path $repo 'sin-fixtures\a_ability.bin') combat-only
+ if($LASTEXITCODE -ne 0){throw 'Standalone combat producer RT1 failed'}
+ & $exe $fixture (Join-Path $repo 'native-fixtures\ffx_000') ($data+'-combat') (Join-Path $repo 'sin-fixtures\a_ability.bin') combat
+ if($LASTEXITCODE -ne 0){throw 'Shared combat producer runtime RT1 failed'}
  & $exe $fixture (Join-Path $repo 'native-fixtures\ffx_000') $data (Join-Path $repo 'sin-fixtures\a_ability.bin')
- if($LASTEXITCODE -ne 0){throw 'Workshop runtime RT1 failed'}
+ if($LASTEXITCODE -ne 0){throw ('Workshop runtime RT1 failed: child exit '+$LASTEXITCODE)}
+ & $exe $fixture (Join-Path $repo 'native-fixtures\ffx_000') ($data+'-aeons') (Join-Path $repo 'sin-fixtures\a_ability.bin') aeons
+ if($LASTEXITCODE -ne 0){throw 'Aeon Workshop runtime RT1 failed'}
 } finally {Pop-Location}

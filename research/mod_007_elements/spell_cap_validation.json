@@ -1,0 +1,92 @@
+{
+  "producer": "Jarvis-HOOK",
+  "date": "2026-09-27",
+  "level": "RT0-static-bytes-and-proposed-policy",
+  "exe_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+  "command_sha256": "db4c87f33f27a7df41bc8a520bc2246b664167319386fe99da9880ae06000429",
+  "cap_graph_rva": "0x38EDCB",
+  "upper_clamp_rva": "0x38EDD3",
+  "writeback_rva": "0x38EDD9",
+  "cap_graph_sha256": "3e6047abbb1dcd3084b6448a1198cd298cee6eca0480911ad0252a29c3101abc",
+  "command_observations": [
+    {
+      "index": 0,
+      "name": "Attack",
+      "damage_flags": 13,
+      "channels": 1,
+      "formula": 1,
+      "row_sha256": "2cd8783f16a50d81951aa5c27dc6b692f38cf22b70f05ab3cd84507cafabc958"
+    },
+    {
+      "index": 63,
+      "name": "Holy",
+      "damage_flags": 2,
+      "channels": 1,
+      "formula": 3,
+      "row_sha256": "a001f0dfca3f090fc50119c8823c52bff9f11bf9bbb22c1870432fa2b5eee3d0"
+    },
+    {
+      "index": 66,
+      "name": "Fire",
+      "damage_flags": 2,
+      "channels": 1,
+      "formula": 3,
+      "row_sha256": "17f38bcf791713595e166151c59ee7d212864395efd86d4cd2de2214ffe913d3"
+    },
+    {
+      "index": 78,
+      "name": "Demi",
+      "damage_flags": 2,
+      "channels": 1,
+      "formula": 5,
+      "row_sha256": "046a0a07a05a29ec3411970cf99a4044d89c237bd3dd401ed2a053e1620b9b40"
+    },
+    {
+      "index": 83,
+      "name": "Ultima",
+      "damage_flags": 2,
+      "channels": 1,
+      "formula": 3,
+      "row_sha256": "9997ea825ee741f85d093fece59ce7476721f79af53445b5acf7e3b83b2f2d69"
+    },
+    {
+      "index": 115,
+      "name": "Nova",
+      "damage_flags": 4,
+      "channels": 1,
+      "formula": 15,
+      "row_sha256": "6829b62bd74fd429ef241776b6bf9f784f8a530f8cdb5d55caab84bcf1b585ac"
+    },
+    {
+      "index": 121,
+      "name": "Fire Fury",
+      "damage_flags": 0,
+      "channels": 1,
+      "formula": 3,
+      "row_sha256": "08452c4973faf8edf79c709616059c3cf47ead6727cfaf753f835fec73341738"
+    },
+    {
+      "index": 133,
+      "name": "Demi Fury",
+      "damage_flags": 0,
+      "channels": 1,
+      "formula": 5,
+      "row_sha256": "5be6e02c1dc6605ff199f135fb86e6574244a444e931fb9c458beb0f214689c1"
+    },
+    {
+      "index": 138,
+      "name": "Ultima Fury",
+      "damage_flags": 0,
+      "channels": 1,
+      "formula": 3,
+      "row_sha256": "ba0d4fd2760ff34e4b04fb5595eebcb0b488c6b24591a369bdd63d91f4febb3e"
+    }
+  ],
+  "policy_assertions": 3175,
+  "failures": 0,
+  "limitations": [
+    "Does not execute the complete native cap loop or a replacement Hook",
+    "Native selection/command flags inspected; spell classification remains a manifest contract",
+    "Damage display, live HP writeback, Nova/Nul composition and RT2 pending"
+  ]
+}

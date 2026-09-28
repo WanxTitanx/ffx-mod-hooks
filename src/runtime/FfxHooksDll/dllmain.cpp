@@ -78,10 +78,21 @@
 #include "hooks/NativePortsHook.h"
 #include "hooks/NativeGamepadHook.h"
 #include "hooks/NativeLanguageHook.h"
+#include "hooks/TextLanguageHook.h"
 #include "hooks/SinAiHook.h"
 #include "hooks/EquipmentWorkshopRuntime.h"
+#include "hooks/VanguardRuntime.h"
+#include "hooks/ElementalRuntime.h"
+#include "hooks/ElementMenuCatalog.h"
+#include "hooks/SpiraRuntime.h"
+#include "hooks/MonsterRewardsRuntime.h"
+#include "hooks/RonsoCommandCosts.h"
 #include "hooks/EquipmentWorkshopNativeUi.h"
 #include "hooks/NativeSaveEvents.h"
+#include "hooks/ArcanaRuntime.h"
+#include "hooks/ArcanaCombat.h"
+#include "hooks/ArcanaAssets.h"
+#include <filesystem>
 #include "hooks/FmvSpeedHook.h"
 #include "hooks/SinSpreadCore.h"
 #include "hooks/F8RuntimeCore.h"
@@ -848,6 +859,7 @@ static F8StartupGateSnapshot g_f8StartupGates[] = {
     { "arena_plus.resolver_log", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "arena_plus.music", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "development.fastload_autosave", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "arcana.enabled", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.nova_super_damage", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.kimahri_ronso_mana", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.equipment_workshop", { false, FfxHooks::Config::BoolSource::DefaultValue } },
@@ -858,6 +870,12 @@ static F8StartupGateSnapshot g_f8StartupGates[] = {
     { "labs.kimahri_lancet_dual_grant", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.item_stack_cap", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "labs.double_triple_drop", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "elemental.core", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "elemental.tactics", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "elemental.gravity", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "elemental.magic_bdl", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "spira.enabled", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "aeon_ascension.enabled", { false, FfxHooks::Config::BoolSource::DefaultValue } },
 };
 static int g_itemStackCapStartupValue = 255;
 static std::atomic<bool> g_f8StartupGatesCaptured{false};
@@ -867,6 +885,7 @@ static BOOL CALLBACK CaptureF8StartupGatesCallback(PINIT_ONCE, PVOID, PVOID*) {
     for (F8StartupGateSnapshot& gate : g_f8StartupGates) {
         gate.result = ResolveF8CatalogGate(gate.canonicalKey);
     }
+    FfxHooks::Vanguard::CaptureStartup();
     g_itemStackCapStartupValue = EnvInt("FFXHOOKS_ITEM_STACK_CAP",
         FfxHooks::Config::GetInt("labs.item_stack_cap_value", 255));
     if (g_itemStackCapStartupValue < 1) g_itemStackCapStartupValue = 1;
@@ -5327,6 +5346,7 @@ static HRESULT STDMETHODCALLTYPE AuroraD3DPresentShim(IDXGISwapChain* swapChain,
         }
         InterlockedExchange(&g_auroraD3DInPresent, 0);
     }
+    FfxHooks::Arcana::Assets::Present(swapChain);
     return reinterpret_cast<AuroraPresentFn>(g_auroraD3DPresentTrampoline)(swapChain, syncInterval, flags);
 }
 
@@ -5679,6 +5699,7 @@ static void RemoveAuroraD3D11Overlay() {
     FfxHooks::FmvSpeed::Neutralize();FfxHooks::FmvSpeed::RequestStop();
     FfxHooks::SinAi::RequestStop();
     FfxHooks::NativeLanguage::Stop();
+    FfxHooks::TextLanguage::Native::Stop();
     FfxHooks::NativePorts::Stop();
     InGameMenuRestoreWndProc();
     AuroraD3DRemoveContextSniffer();
@@ -5821,6 +5842,13 @@ static bool NativeMenuArmedFromConfig() {
      * dashboard setting, the environment, nor f7_inlive.flag may bypass this guard. */
     if (FieldScoutFlagEnabled() || FieldScoutMapOnlyFlagEnabled()) {
         return explicitNativeMenuFlag;
+    }
+    // These opt-in consumers require the existing main-thread pump for loaded
+    // data admission. Arming its infrastructure does not open any menu or turn
+    // on Workshop editing; the Field Scout boundary above remains authoritative.
+    for (const char* key : { "elemental.core", "elemental.tactics", "elemental.gravity",
+                            "elemental.magic_bdl", "spira.enabled", "aeon_ascension.enabled" }) {
+        if (F8CatalogGateEnabled(key)) return true;
     }
     return dashboardEnabled || maechenEnabled || envFlag || fileFlag || F8CatalogGateEnabled("labs.equipment_workshop");
 }
@@ -13589,6 +13617,9 @@ static int __cdecl NativeMenu_PumpHook(unsigned int a1) {
         ArenaPlus_TickEncounterPinPending();
         ArenaPlus_TickDeferredFileRestore();
         FfxHooks::F7_TickMainThread();   // Bounded Force scheduler plus redundant CustomMix deadline tick.
+        FfxHooks::ElementalDominion::TickMainThread();
+        FfxHooks::SpiraAbilities::TickMainThread();
+        FfxHooks::MonsterRewards::TickMainThread();
         FfxHooks::Maechen_PumpTick(F7IsForegroundWindow());
         EquipmentMenu::Tick();
         // WHY: visible menu ownership and the one-shot reap wake are separate.
@@ -13936,12 +13967,20 @@ static int g_f7EditDigits = 0;          // Number of digits entered.
 static int g_f7StatusTicks = 0;         // Remaining frames for the status message.
 static char g_f7StatusMsg[56] = {};     // Apply/Save/Reset/preview feedback.
 static const char* const F7_BASE_NAMES[9] = { "HP","STR","DEF","MAG","MDF","AGI","ACC","EVA","LCK" };
-static const char* const F7_ELEM_NAMES[7] = { "Fire","Ice","Thunder","Water","Holy","Darkness","Custom" };
-static unsigned g_f7CustomElementBit=0x20;
+static FfxHooks::ElementMenu::Catalog g_f7Elements=FfxHooks::ElementMenu::Defaults();
+static FfxHooks::F7Elements::Extras g_f7ExtraAffinities{};
 static unsigned F7ElementRowMask(int row){
-    static constexpr unsigned masks[]={1,2,4,8,0x10,0x80};
-    if(row>=0&&row<6)return masks[row];
-    return row==6&&(g_f7CustomElementBit==0x20||g_f7CustomElementBit==0x40)?g_f7CustomElementBit:0;
+    return row>=0&&row<static_cast<int>(FfxHooks::ElementMenu::NativeCount)?FfxHooks::ElementMenu::NativeBits[row]:0;
+}
+static int F7ExtraSlot(int row){
+    if(row<8||row>=10||!g_f7Elements[row].available)return -1;
+    for(unsigned i=0;i<g_f7ExtraAffinities.size();++i)
+        if(std::strcmp(g_f7ExtraAffinities[i].key.data(),g_f7Elements[row].key)==0)return static_cast<int>(i);
+    return -1;
+}
+static bool F7ElementSelected(int valIdx,int row){
+    if(row<8)return (g_f7Vals[valIdx]&F7ElementRowMask(row))!=0;
+    const int slot=F7ExtraSlot(row);return slot>=0&&static_cast<int>(g_f7ExtraAffinities[slot].affinity)==valIdx-10;
 }
 static const int F7_BASE_MIN[9] = { 100, 100, 100, 100, 100, 100, 100, 100, 100 };
 static const int F7_BASE_MAX[9] = { 10000, 5000, 5000, 5000, 5000, 5000, 5000, 5000, 5000 };  // HP supports up to 10x.
@@ -13951,7 +13990,7 @@ static int F7DiffColRows(int col) {
         case F7DC_PRESETS: return 4;
         case F7DC_BASE:    return 9;
         case F7DC_AUTO:    return F7_STATUS_COUNT;   // 25
-        case F7DC_WEAK: case F7DC_RESIST: case F7DC_ABSORB: return 7;
+        case F7DC_WEAK: case F7DC_RESIST: case F7DC_ABSORB: return 10;
         case F7DC_ACTIONS: return 3;
         default: return 1;
     }
@@ -14022,7 +14061,22 @@ static bool F7_SaveConfigWithFeedback(const char* successMessage) {
 
 static void F7DiffToggleBit(int valIdx, int bit) {
     using namespace NativeMenu;
-    if(valIdx<10||valIdx>13||bit<0||bit>=(valIdx==10?25:7))return;
+    if(valIdx<10||valIdx>13||bit<0||bit>=(valIdx==10?25:10))return;
+    if(valIdx!=10&&bit>=8){
+        const auto current=FfxHooks::ElementMenu::Read();
+        if(!g_f7Elements[bit].available||!current[bit].available||std::strcmp(current[bit].key,g_f7Elements[bit].key)!=0){
+            F7DiffSetStatus("Hook element unavailable; enable its matching pack");PlaySfx(3);return;
+        }
+        int slot=F7ExtraSlot(bit);
+        if(slot<0)for(unsigned i=0;i<g_f7ExtraAffinities.size();++i)if(!g_f7ExtraAffinities[i].key[0]){slot=static_cast<int>(i);break;}
+        if(slot<0)for(unsigned i=0;i<g_f7ExtraAffinities.size();++i){const auto* key=g_f7ExtraAffinities[i].key.data();
+            if(std::strcmp(key,current[8].key)!=0&&std::strcmp(key,current[9].key)!=0){slot=static_cast<int>(i);break;}}
+        if(slot<0){F7DiffSetStatus("Hook element binding unavailable");PlaySfx(3);return;}
+        auto& extra=g_f7ExtraAffinities[slot];std::snprintf(extra.key.data(),extra.key.size(),"%s",g_f7Elements[bit].key);
+        const auto requested=static_cast<FfxHooks::F7Elements::Affinity>(valIdx-10);
+        extra.affinity=extra.affinity==requested?FfxHooks::F7Elements::Affinity::Unchanged:requested;
+        g_f7DifficultyEnabled=true;g_f7DiffPresetIdx=-1;PlaySfx(1);return;
+    }
     const unsigned mask=valIdx==10?(1u<<bit):F7ElementRowMask(bit);
     if(!mask){F7DiffSetStatus("Invalid Custom element bit; check F8 Scan settings");PlaySfx(3);return;}
     g_f7Vals[valIdx] ^= static_cast<int>(mask);
@@ -14038,9 +14092,10 @@ static void F7DiffToggleBit(int valIdx, int bit) {
 }
 
 static void F7_DiffPresetFill(int preset) {
+    g_f7ExtraAffinities={};
     // Difficulty values (multi-column layout, 2026-08-02):
     //   [0]=preset [1..9]=hp,str,def,mag,mdf,agi,acc,eva,lck (permille)
-    //   [10]=autoStatusMask (bits 0..24) [11]=elemWeak [12]=elemResist [13]=elemAbsorb (bits 0..4)
+    //   [10]=autoStatusMask (bits 0..24) [11..13]=native affinity BYTEs; external keys stay separate.
     g_f7DiffPresetIdx = preset;
     g_f7DifficultyEnabled = preset != 0;
     g_f7Vals[0] = preset;
@@ -14162,6 +14217,9 @@ static void F7_BuildRows(int kind) {
         for (size_t i = 0; i < FfxHooks::F8FlagCount() && g_f7RowCount < 31; ++i) {
             const FfxHooks::F8FlagSpec* flag = &FfxHooks::F8FlagAt(i);
             if (strcmp(flag->tab, tabName) != 0) continue;
+            // Scan controls share their existing color submenu; keep catalog
+            // membership for startup resolution and Reforge bulk operations.
+            if (F8NativeScanOwnsFlag(*flag)||F8NativeNestedFlag(*flag)) continue;
             const int idx = g_f7RowCount;
             g_f7FlagSpecs[idx] = flag;
             g_f7Vals[idx] = FfxHooks::ResolveF8Flag(*flag).value ? 1 : 0;
@@ -14184,12 +14242,24 @@ static void F7_BuildRows(int kind) {
                 F8RefreshScalarLabel(scalarRow);
             }
         }
-        if(strcmp(tabName,"System")==0)
+        if(strcmp(tabName,"System")==0){
             g_f7Rows[g_f7RowCount++]={"Audio languages",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Languages),0,0,"Choose voice, battle sound and movie audio languages."};
+            g_f7Rows[g_f7RowCount++]={"Text languages",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::TextLanguages),0,0,"Choose original text or the separate PT-BR package. Restart required."};
+        }
+        if(strcmp(tabName,"Dev")==0)
+            g_f7Rows[g_f7RowCount++]={"FieldScout",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::FieldScout),0,0,"Open FieldScout logging and capture options."};
+        if(strcmp(tabName,"Cheats")==0)
+            g_f7Rows[g_f7RowCount++]={"AP/Gil Multipliers",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::RewardMultipliers),0,0,"Global and per-monster rewards, with separate AP and Gil previews."};
         if(strcmp(tabName,"Dev")==0)
             g_f7Rows[g_f7RowCount++]={"Equipment Workshop",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Workshop),0,0,"Refinement A/B and explicit development-only cost and progression overrides."};
         if(strcmp(tabName,"Reforge")==0)
-            g_f7Rows[g_f7RowCount++]={"Scan element colors",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::ElementScan),0,0,"Choose Holy, Darkness and Custom colors. Enable Scan Extra Elements and restart."};
+            g_f7Rows[g_f7RowCount++]={"Scan settings",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::ElementScan),0,0,"Scan Expanded, extra elements, colors and visibility."};
+        if(strcmp(tabName,"Reforge")==0)
+            g_f7Rows[g_f7RowCount++]={"Arena+",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Arena),0,0,"Configure the existing Arena+ features."};
+        if(strcmp(tabName,"Extras")==0)
+            g_f7Rows[g_f7RowCount++]={"Additional mods",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::AdditionalMods),0,0,"Elemental Dominion, Spira Reforge and Aeon Ascension."};
+        if(strcmp(tabName,"Extras")==0)
+            g_f7Rows[g_f7RowCount++]={"Vanguard Combat Engine",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Vanguard),0,0,"Independent MOD-002 combat rules and equipped-ability mappings."};
         if (strcmp(tabName, "Input") == 0) {
             g_f7Rows[g_f7RowCount++]={"Keyboard shortcuts",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Keyboard),0,0,"Choose shortcuts for menus and existing native actions."};
             g_f7Rows[g_f7RowCount++]={"Gamepad shortcuts",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Gamepad),0,0,"Assign your own physical button combinations."};
@@ -14208,9 +14278,7 @@ static void F7_BuildRows(int kind) {
         g_f7Vals[11] = p.elemWeak;
         g_f7Vals[12] = p.elemResist;
         g_f7Vals[13] = p.elemAbsorb;
-        const auto extra=FfxHooks::Config::ReadIntExact("element_scan.extra_bit",32,64);
-        g_f7CustomElementBit=extra.state==FfxHooks::Config::IntReadState::Missing?32u:
-            extra.state==FfxHooks::Config::IntReadState::Valid&&(extra.value==32||extra.value==64)?static_cast<unsigned>(extra.value):0u;
+        g_f7Elements=FfxHooks::ElementMenu::Read();g_f7ExtraAffinities=p.elemExtra;
         g_f7RowCount = 0;   // Difficulty owns its multi-column input/draw path instead of 1D rows.
         g_f7Col = F7DC_PRESETS; g_f7ColRow = 0; g_f7EditActive = 0;
     }
@@ -15145,12 +15213,17 @@ static void F7Diff_Draw(int F) {
             } else if (c >= F7DC_AUTO && c <= F7DC_ABSORB) {
                 const int valIdx = (c == F7DC_AUTO) ? 10 : (c == F7DC_WEAK) ? 11 : (c == F7DC_RESIST) ? 12 : 13;
                 const unsigned mask=c==F7DC_AUTO?(1u<<r):F7ElementRowMask(r);
-                const bool on = (g_f7Vals[valIdx] & mask) != 0;
+                const bool on = c==F7DC_AUTO?(g_f7Vals[valIdx]&mask)!=0:F7ElementSelected(valIdx,r);
                 const float bs = NX(0.011f);
                 const float bx = cx + NX(0.004f), by = ry + (rowH - bs) * 0.5f;
                 DrawSolidRect(bx, by, bs, bs, on ? 0xC050FF90u : 0xA0182028u, on ? 0xC028C058u : 0x90080810u);
                 unsigned char buf[48] = {};
-                const char* nm = (c == F7DC_AUTO) ? FfxHooks::F7_StatusName(r) : F7_ELEM_NAMES[r];
+                char elementLabel[18]{};
+                if(c!=F7DC_AUTO){
+                    if(r>=8&&!g_f7Elements[r].available)std::snprintf(elementLabel,sizeof(elementLabel),"Hook %d (N/A)",r+1);
+                    else std::snprintf(elementLabel,sizeof(elementLabel),"%.16s",g_f7Elements[r].label);
+                }
+                const char* nm = (c == F7DC_AUTO) ? FfxHooks::F7_StatusName(r) : elementLabel;
                 EncodeLabel(nm, buf, (int)sizeof(buf));
                 DrawStringSub(buf, bx + NX(0.020f), ry);
             } else {
@@ -15675,6 +15748,7 @@ static void F7_CommitValsToConfig() {
         p.elemWeak = (uint8_t)(g_f7Vals[11] & 0xFF);
         p.elemResist = (uint8_t)(g_f7Vals[12] & 0xFF);
         p.elemAbsorb = (uint8_t)(g_f7Vals[13] & 0xFF);
+        p.elemExtra = g_f7ExtraAffinities;
         FfxHooks::F7_SetDifficultyGlobal(p);
     }
 }
@@ -15704,19 +15778,23 @@ using FnNativeTextOutline = int(__cdecl*)(void* renderState, void* glyphMetrics,
 static int __cdecl NativeTextOutline_MenuGuard(
     void* renderState, void* glyphMetrics, float scale) {
     const bool menuActive = EquipmentMenu::Active() || g_nativeMenu.obj || g_arenaPlusMenu.obj || g_sinMenu.obj || g_f7Menu.obj ||
-        ArenaPlusComposePick_IsActive() || FfxHooks::Maechen_MenuOwned();
+        ArenaPlusComposePick_IsActive() || FfxHooks::Maechen_MenuOwned() ||
+        FfxHooks::Arcana::NativeUi::TextDrawingActive();
     if (menuActive || NativeMenuHubCloseDrainPending()) return 0;
     return reinterpret_cast<FnNativeTextOutline>(g_nativeTextOutlineTramp)(
         renderState, glyphMetrics, scale);
 }
 
-static bool StartNativeTextOutlineGuard() {
+static bool StartNativeTextOutlineGuard(uintptr_t moduleBase = 0) {
     if (g_nativeTextOutlineDetour) return true;
-    if (!g_base) return false;
+    // Arcana starts before InstallHooks publishes the legacy global base.
+    // Its admitted executable must bind this dependency directly.
+    const uintptr_t base = moduleBase ? moduleBase : g_base;
+    if (!base) return false;
     PLH::x86Detour* detour = nullptr;
     try {
         detour = new PLH::x86Detour(
-            (uint64_t)(g_base + 0x4FAE40u),
+            (uint64_t)(base + 0x4FAE40u),
             (uint64_t)&NativeTextOutline_MenuGuard, &g_nativeTextOutlineTramp);
         const bool ok = detour->hook();
         Log("[ffx-hooks] Native text-outline guard hook ok=%d target_rva=0x004FAE40\n",
@@ -15867,6 +15945,7 @@ static void InstallHooks() {
             FfxHooks::SharedBattleRuntime::kSeymourLiveProducerRequiresInfrastructure,
             f7SinConfigRequested,
             f7DifficultyStartupRequested || F8CatalogGateEnabled("arena_plus.master"),
+            FfxHooks::Arcana::Runtime::Requested(),
         });
     // WHY: F7 currently retains ResolveEncounter, InitScene, and ActorInit as one exact
     // process-lifetime batch. Even when only the inert Seymour LIVE producer needs InitScene,
@@ -16124,14 +16203,14 @@ static void InstallHooks() {
     } else {
         Log("[ffx-hooks] ItemStackCap not armed (item_stack_cap_255.flag)\n");
     }
-    if (DoubleTripleDropEnabled()) {
+    if (DoubleTripleDropEnabled() || FfxHooks::Arcana::Runtime::Requested()) {
         if (validateOnly) {
             Log("[ffx-hooks] DoubleTripleDrop install blocked by FFXHOOKS_VALIDATE_ONLY=1\n");
         } else {
             const FfxHooks::DoubleTripleDropInstallResult dropResult =
                 FfxHooks::InstallDoubleTripleDropHook(
                     g_base,
-                    true,
+                    DoubleTripleDropEnabled(),
                     DoubleTripleDropLogEnabled(),
                     LogLine);
             Log("[ffx-hooks] DoubleTripleDrop install ok=%d reason=%u hits=%ld\n",
@@ -16276,6 +16355,10 @@ static void InstallHooks() {
     }
     StartLabMenuIfEnabled();
     bool f8PresentProducerArmed = StartAuroraOverlayIfEnabled();
+    if(FfxHooks::Arcana::Runtime::Requested()){
+        if(InstallAuroraD3D11Overlay())StartAuroraD3DLatePresentFallback();
+        else Log("[ffx-hooks] Arcana preview: Present provider unavailable; native text remains available\n");
+    }
     if (enableFpsScout) {
         if (FpsScoutStart()) {
             if (InstallAuroraD3D11Overlay()) {
@@ -16519,8 +16602,17 @@ static void RemoveHooks() {
         return;
     }
 #endif
+    FfxHooks::Arcana::NativeUi::Stop();
+    FfxHooks::Arcana::Combat::Stop();
+    FfxHooks::SetSupplementalDropProvider(nullptr);
+    FfxHooks::Arcana::Assets::Stop();
+    FfxHooks::Arcana::Runtime::Stop();
     FfxHooks::EquipmentWorkshop::NativeUi::Stop();
+    FfxHooks::ElementalDominion::RequestStop();
+    FfxHooks::SpiraAbilities::RequestStop();
+    FfxHooks::MonsterRewards::RequestStop();
     FfxHooks::EquipmentWorkshop::RequestStop();
+    FfxHooks::Vanguard::RequestStop();
     FfxHooks::Fastload::RemoveFastloadHook();
     Log("[ffx-hooks] RemoveHooks enter\n");
 #ifdef FFXHOOKS_HAVE_POLYHOOK
@@ -16568,7 +16660,7 @@ static void StartNovaPoolEarlyIfRequested() {
     const bool enableNovaLog = NovaSuperDamageLogFlagEnabled();
     const bool enableRonsoMana = RonsoManaFlagEnabled();
     const bool compatibility = FfxHooks::RonsoPool::HasPersistentOwnership();
-    if (!enableNovaBypass && !enableNovaLog && !enableRonsoMana && !compatibility && !FfxHooks::NativeSaveEvents::Requested()) return;
+    if (!enableNovaBypass && !enableNovaLog && !enableRonsoMana && !compatibility && !FfxHooks::NativeSaveEvents::Requested() && !FfxHooks::RonsoPool::CommandCosts::Requested()) return;
     const uintptr_t base = reinterpret_cast<uintptr_t>(GetModuleHandleA("FFX.exe"));
     if (!base || InterlockedCompareExchange(&attempted, 1, 0) != 0) return;
     LogF8CatalogGate("labs.nova_super_damage", "Nova/pool early startup");
@@ -16632,6 +16724,8 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
     CaptureF8StartupGates();
     StartupTiming("config-ready");
 #ifdef FFXHOOKS_HAVE_POLYHOOK
+    FfxHooks::TextLanguage::Native::StartConfigured(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
+    Log("[ffx-hooks] Text language startup: %s\n",FfxHooks::TextLanguage::Native::Detail());
     if(!EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY")){
         if(F8CatalogGateEnabled("boosters.speed_hack_fmv")){
             FfxHooks::FmvSpeed::Start(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)));
@@ -16646,7 +16740,23 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
         }
     }
 #endif
+#ifdef FFXHOOKS_HAVE_POLYHOOK
+    FfxHooks::Arcana::Runtime::Settings arcanaSettings{};
+    arcanaSettings.enabled=F8CatalogGateEnabled("arcana.enabled");
+    LogF8CatalogGate("arcana.enabled", "Arcana early startup");
+    arcanaSettings.defaultMode=static_cast<FfxHooks::Arcana::Mode>(FfxHooks::Config::GetInt("arcana.default_mode",0));
+    arcanaSettings.developmentEnabled=[]() noexcept {return F8CatalogGateEnabled("development.arcana_full_deck");};
+    FfxHooks::Arcana::Runtime::Prime(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),arcanaSettings,
+        EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
+#endif
     FfxHooks::EquipmentWorkshop::PrimeSaveIo(F8CatalogGateEnabled("labs.equipment_workshop"),EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"));
+    // Publish pack requests before the existing native owners install.
+    FfxHooks::ElementalDominion::Prepare(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),
+        EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
+    FfxHooks::SpiraAbilities::Prepare(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),
+        EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
+    FfxHooks::MonsterRewards::Prepare(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),
+        EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
     StartupTiming("early-audio-ready");
     StartNovaPoolEarlyIfRequested();
     StartupTiming("nova-save-io-ready");
@@ -16662,6 +16772,44 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
         FfxHooks::EquipmentWorkshop::NativeUi::Active()?1:0);
     Log("[ffx-hooks] Workshop startup: %s\n",FfxHooks::EquipmentWorkshop::Detail());
     StartupTiming("workshop-ready");
+    FfxHooks::Vanguard::Start(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),
+        EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
+    FfxHooks::ElementalDominion::Activate();
+    FfxHooks::SpiraAbilities::Activate();
+    // Scan verifies the original shared scale helpers. Arcana owns those
+    // entrypoints once its Equip layout is installed, so admit Scan first.
+    // Keep this outside the Arcana gate: Scan remains an independent feature.
+    const auto nativePresentationBase=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
+    FfxHooks::InstallElementHook(nativePresentationBase,ElementScanDarkEnabled(),ScanExpandedEnabled(),LogLine);
+    bool arcanaUiOperational=false;
+#ifdef FFXHOOKS_HAVE_POLYHOOK
+    if(FfxHooks::Arcana::Runtime::Requested()){
+        const auto arcanaBase=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
+        const bool runtimeReady=FfxHooks::Arcana::Runtime::Start();
+        const bool combatReady=runtimeReady&&FfxHooks::Arcana::Combat::Start(arcanaBase,true,false,LogLine);
+        bool turnReady=FfxHooks::IsPhaseTurnEdgeHookInstalled();
+        if(combatReady&&!turnReady)turnReady=FfxHooks::InstallPhaseTurnEdgeHook(arcanaBase,nullptr).ok;
+        HMODULE self=nullptr;wchar_t modulePath[4096]{};
+        bool artReady=false;
+        if(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            reinterpret_cast<LPCWSTR>(&HooksWorkerThread),&self)){
+            const DWORD length=GetModuleFileNameW(self,modulePath,4096);
+            if(length&&length<4096)artReady=FfxHooks::Arcana::Assets::Start(std::filesystem::path(modulePath).parent_path()/L"mods"/L"arcana",LogLine);
+        }
+        const bool textReady=combatReady&&StartNativeTextOutlineGuard(arcanaBase);
+        const bool uiReady=textReady&&turnReady&&FfxHooks::Arcana::NativeUi::Start(arcanaBase,true,false,
+            FfxHooks::Arcana::Runtime::Bindings(FfxHooks::Arcana::Assets::Publish),LogLine);
+        arcanaUiOperational=uiReady;
+        if(uiReady)FfxHooks::SetSupplementalDropProvider(FfxHooks::Arcana::Combat::PartyDropMultiplier);
+        else {FfxHooks::Arcana::Combat::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::Arcana::Assets::Stop();}
+        Log("[ffx-hooks] Arcana startup runtime=%d combat=%d turn=%d text=%d ui=%d art=%d; %s\n",
+            runtimeReady?1:0,combatReady?1:0,turnReady?1:0,textReady?1:0,uiReady?1:0,artReady?1:0,FfxHooks::Arcana::Runtime::Detail());
+    }
+#endif
+    PublishResolvedF8Status("development.arcana_full_deck",
+        arcanaUiOperational?FfxHooks::F8RuntimeAvailability::Available:FfxHooks::F8RuntimeAvailability::ProducerUnavailable,
+        arcanaUiOperational);
+
     StartFastloadEarlyIfRequested();
     StartupTiming("fastload-ready");
     int delayMs = EnvInt("FFXHOOKS_INSTALL_DELAY_MS", defaultDelayMs);
@@ -16707,11 +16855,22 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID) {
         // Present frame could publish 8x during the tiny interval after Dialog admission closed.
         // Full teardown still needs a normal-context owner and callback drain.
         case DLL_PROCESS_DETACH:
+            FfxHooks::Arcana::NativeUi::Stop();
+            FfxHooks::Arcana::Combat::Stop();
+            FfxHooks::SetSupplementalDropProvider(nullptr);
+            FfxHooks::Arcana::Assets::Stop();
+            FfxHooks::Arcana::Runtime::Stop();
             FfxHooks::EquipmentWorkshop::NativeUi::Stop();
             FfxHooks::RemoveElementHook();
+            FfxHooks::ElementalDominion::RequestDetachStop();
+            FfxHooks::SpiraAbilities::RequestDetachStop();
+            FfxHooks::MonsterRewards::RequestStop();
+            FfxHooks::RequestNulWardDetachStop();
             FfxHooks::EquipmentWorkshop::RequestStop();
+            FfxHooks::Vanguard::RequestStop();
             FfxHooks::NativePorts::RequestStop();
             FfxHooks::NativeLanguage::RequestStop();
+            FfxHooks::TextLanguage::Native::RequestStop();
             FfxHooks::SinAi::RequestStop();
             FfxHooks::FmvSpeed::RequestStop();
             FfxHooks::Fastload::RequestFastloadStop();

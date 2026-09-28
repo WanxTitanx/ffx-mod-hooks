@@ -1,0 +1,38 @@
+{
+  "exe_path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/FFX.exe",
+  "exe_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+  "pe_machine": "0x14c",
+  "preferred_image_base": "0x400000",
+  "timestamp": "0x55d2f3cc",
+  "sections": [
+    {
+      "name": "equip_controller",
+      "rva": "0x4ceff0",
+      "span_bytes": 4800,
+      "sha256": "ecfc600e6e36e95e36626c9572e5ed1081315c04e99aece338122f5f96eff5bb",
+      "path": "/home/wanderson/.codex/research-cache/mod008-fandom/equip_controller.asm.txt"
+    },
+    {
+      "name": "equip_details",
+      "rva": "0x4d02b0",
+      "span_bytes": 416,
+      "sha256": "6addf8bd2626e16dacf3001a238d3fcbda9798777830be7eb61acd71df8c2f95",
+      "path": "/home/wanderson/.codex/research-cache/mod008-fandom/equip_details.asm.txt"
+    },
+    {
+      "name": "texture_handle",
+      "rva": "0x4ac870",
+      "span_bytes": 288,
+      "sha256": "9648afc84e90619e8ec0d3da4fab682e795969b9f492e3fa6aad7eee0e220d44",
+      "path": "/home/wanderson/.codex/research-cache/mod008-fandom/texture_handle.asm.txt"
+    },
+    {
+      "name": "menu_quad",
+      "rva": "0x23f090",
+      "span_bytes": 256,
+      "sha256": "c704787bf64a2c6c40deb4da08c1d826d07dd2d75aa9fe4e859508170be518bd",
+      "path": "/home/wanderson/.codex/research-cache/mod008-fandom/menu_quad.asm.txt"
+    }
+  ],
+  "scope": "RT0 bounded disassembly spans, not proven function extents or runtime behavior"
+}

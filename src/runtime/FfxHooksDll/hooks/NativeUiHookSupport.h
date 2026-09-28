@@ -14,13 +14,15 @@ namespace FfxHooks::NativeUiSupport {
 inline bool Copy(void* out,const void* source,std::size_t size) noexcept {
     __try{std::memcpy(out,source,size);return true;}__except(EXCEPTION_EXECUTE_HANDLER){return false;}
 }
-template<std::size_t N> bool Profile(std::uintptr_t base,const EquipmentWorkshop::Evidence::Span (&spans)[N]){
+using OwnedProfile=bool(*)(std::uintptr_t,std::uint32_t,const void*,std::size_t) noexcept;
+template<std::size_t N> bool Profile(std::uintptr_t base,const EquipmentWorkshop::Evidence::Span (&spans)[N],OwnedProfile owned=nullptr){
     unsigned char header[0x1000]{};F8Runtime::ExecutableIdentity identity{};
     if(!Copy(header,reinterpret_cast<void*>(base),sizeof(header))||
        F8Runtime::ParseExecutableIdentity(header,sizeof(header),&identity)!=F8Runtime::ProfileResult::Supported||
        !F8Runtime::IsSupportedExecutable(identity))return false;
     for(const auto& span:spans){unsigned char bytes[32]{};
-        if(!Copy(bytes,reinterpret_cast<void*>(base+span.rva),32)||!EquipmentWorkshop::Evidence::Matches(span,bytes,base))return false;}
+        if(!Copy(bytes,reinterpret_cast<void*>(base+span.rva),32)||
+           (!EquipmentWorkshop::Evidence::Matches(span,bytes,base)&&(!owned||!owned(base,span.rva,bytes,32))))return false;}
     return true;
 }
 template<std::size_t N> bool Install(std::uintptr_t base,const std::uint32_t (&rvas)[N],void* (&replacements)[N],void* (&originals)[N],MinHookBatch::Owner owner,const void* anchor){

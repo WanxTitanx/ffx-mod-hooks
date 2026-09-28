@@ -1,0 +1,91 @@
+{
+  "hooks_head": "f2308dddc1833811899c0999c96b5ee25a18bd66",
+  "fahrenheit_head": "c149c847b3a24a66114956f87f1b008599736f75",
+  "files": [
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/EquipmentWorkshopNativeUi.cpp",
+      "sha256": "69e65171403358c02df4e6ea86691841df85d49714c06e74212fd0f26db2ebe3",
+      "bytes": 8899
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/EquipmentWorkshopRuntime.cpp",
+      "sha256": "c53142997938c5db1e4b620fe1d67c2f7bf6364ef9b9c605648e3cd6c08dd9e9",
+      "bytes": 32951
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/EquipmentWorkshopStore.cpp",
+      "sha256": "1d497532319baad89da5216640a4b0b88828ee883b19c604c646566635306c00",
+      "bytes": 7782
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/NativeSaveEvents.h",
+      "sha256": "682a7191063f9e8202ca025e1ddb96579efc56194caef84bc27820673dd24cc4",
+      "bytes": 1620
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/RonsoPoolRuntime.cpp",
+      "sha256": "4b6decf7731753bee72cae0c25b4cbe906aef3c7da3983b59886c8e1a1891876",
+      "bytes": 32739
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/NativeUiHookSupport.h",
+      "sha256": "b010cd4011c8aff55606b6c4154d46402bde7569b5cef32e9104c9576436c200",
+      "bytes": 2515
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/NativePresentationEvidence.h",
+      "sha256": "d91a613dda8a7be59350cb586ab35d0dc41b427354e5a985d1d05452c1880037",
+      "bytes": 13329
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/MinHookBatchCoordinator.h",
+      "sha256": "0cfc1dae05c860954fdb99fc5ca077c024c225d5309b3f20f8de7e362ec0380c",
+      "bytes": 4258
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/DoubleTripleDropHook.cpp",
+      "sha256": "af75802eef9bd6dd089d61d3c8e67b0f99f2e2756f844c0ecdf387591783d198",
+      "bytes": 7104
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/NovaSuperDamageHook.cpp",
+      "sha256": "b8f03ba608d0b69f31a31140c24a056646b591304755dc1fe656aa8c1b0094b9",
+      "bytes": 14869
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/NativeMenuShell/NativeMenuShell.h",
+      "sha256": "89b65654ed0879e6c06e11249ac92ec797c6b2d7e4f78a38f1fc8334e310b93d",
+      "bytes": 53026
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/dllmain.cpp",
+      "sha256": "610a82e229c98b35935222d083d40c2e479c61ae30dca02cc16c1cd62d016418",
+      "bytes": 779105
+    },
+    {
+      "path": "/home/wanderson/Documents/external-compare/fahrenheit/src/core/ffx2/Accessory.cs",
+      "sha256": "b8c8ad2ad5155325fa834910444c6ea58569a1f0d7a503528597aa4115a79a60",
+      "bytes": 1336
+    },
+    {
+      "path": "/home/wanderson/Documents/external-compare/fahrenheit/src/core/ffx2/plysave.cs",
+      "sha256": "eb95fa93c81894c27e559c8ee95edda1f03bd2e203dc8561d74d18f78f6876a6",
+      "bytes": 3069
+    },
+    {
+      "path": "/home/wanderson/Documents/external-compare/fahrenheit/src/core/ffx2/savedata.cs",
+      "sha256": "c1ae32f10ecbc65bf00fe44ec1788ca40f076f88f7c96d9df9dfd9b5d2eb82eb",
+      "bytes": 22787
+    },
+    {
+      "path": "/home/wanderson/Documents/external-compare/fahrenheit/src/core/ffx/plysave.cs",
+      "sha256": "b5c1f2db55f0c1094d8022892754ebe6839e6f94d5f2290af86dd685dfe9bac9",
+      "bytes": 9887
+    },
+    {
+      "path": "/home/wanderson/Documents/external-compare/fahrenheit/src/step/data/functions.ffx.csv",
+      "sha256": "dd8228618a07e961fc5395c1383ded10b10f1e353e8d9b7f12ddb081eb8ddf58",
+      "bytes": 6313519
+    }
+  ]
+}

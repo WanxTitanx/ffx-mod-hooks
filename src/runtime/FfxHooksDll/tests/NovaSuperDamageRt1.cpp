@@ -1,6 +1,7 @@
 // Jarvis-HOOK: isolated x86 execution of the production Nova stub and native clamp graph.
 #define NOMINMAX
 #include "../hooks/NovaSuperDamageHook.cpp"
+#include "../hooks/CombatExtensionBus.h"
 #include "../hooks/MinHookBatchCoordinator.h"
 #include "../hooks/RonsoPoolRuntime.h"
 #include "../hooks/RonsoPoolStore.h"
@@ -121,6 +122,85 @@ void TestGraph(bool bypass,bool trace) {
     Expect(MH_RemoveHook(reinterpret_cast<void*>(patch))==MH_OK,"private fixture removed after quiescence");
     VirtualFree(stub,0,MEM_RELEASE);VirtualFree(image,0,MEM_RELEASE);g_logFn=nullptr;
 }
+FfxHooks::CombatExtensions::CapRequests extensionRequest{};
+unsigned extensionCalls=0;
+void ExtensionCap(void*,const FfxHooks::CombatExtensions::DamageCall&,
+                  FfxHooks::CombatExtensions::CapRequests& out) noexcept {
+    ++extensionCalls;out=extensionRequest;
+    ClobberingLogger("fixture");
+}
+const FfxHooks::CombatExtensions::Observer extensionObserver{nullptr,nullptr,ExtensionCap};
+void TestExtensionGraph(bool nova) {
+    using namespace FfxHooks;
+    namespace B=CombatExtensions;
+    constexpr uint8_t original[]={0x3B,0xC7,0x7D,0x04,0x8B,0xC7,0xEB,0x06,
+                                  0x3B,0xC3,0x7E,0x02,0x8B,0xC3,0x89,0x06,0xC3};
+    Expect(B::Subscribe(B::Slot::Elemental,&extensionObserver),"shared cap observer registers");
+    auto* image=static_cast<uint8_t*>(VirtualAlloc(nullptr,0x400000,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE));
+    Expect(image!=nullptr,"extension fixture image allocated");
+    if(!image){B::Unsubscribe(B::Slot::Elemental,&extensionObserver);return;}
+    const uintptr_t base=reinterpret_cast<uintptr_t>(image);
+    std::memcpy(image+0x38EDCB,original,sizeof(original));
+    uintptr_t patch=0,resume=0;uint8_t saved[kPatchLen]={};
+    Expect(ResolveClampPatchSite(base,&patch,&resume,saved),"extension uses the existing clamp owner");
+    uint8_t* stub=nullptr;size_t length=0;
+    InterlockedExchange(&g_admission,1);g_logFn=nullptr;
+    Expect(BuildStub(resume,nova,false,&stub,&length),"finite policies can request the native clamp independently of Nova");
+    if(!stub){VirtualFree(image,0,MEM_RELEASE);B::Unsubscribe(B::Slot::Elemental,&extensionObserver);return;}
+    DWORD prior=0;
+    Expect(VirtualProtect(image+0x38E000,0x1000,PAGE_EXECUTE_READ,&prior)!=FALSE,"extension fixture is sealed");
+    void* trampoline=nullptr;
+    Expect(MH_CreateHook(reinterpret_cast<void*>(patch),stub,&trampoline)==MH_OK,"one real detour owns the upper clamp");
+    const auto enabled=MinHookBatch::EnableBatch(&MinHookBatch::ProcessCoordinator(),
+        MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::NovaSuperDamage,&patch,1);
+    Expect(enabled.result==MinHookBatch::BatchResult::Applied,"extension detour is enabled");
+    struct Case {int damage,cap,actor;uint32_t command;int pass;bool magic,aeon;int hp;bool context;int want;};
+    const Case cases[]={
+        {150000,99999,5,0x3042,3,true,false,-1,true,150000},
+        {450000,99999,5,0x3042,3,true,false,-1,true,450000},
+        {1200000,99999,5,0x3042,3,true,false,-1,true,999999},
+        {450000,9999,5,0x3042,3,true,false,-1,true,9999},
+        {-200000,99999,5,0x3042,3,true,false,-1,true,-99999},
+        {-500,99999,5,0x3042,3,true,false,-1,true,-500},
+        {450000,99999,5,0x3042,2,true,false,-1,true,99999},
+        {450000,99999,5,0x3042,1,true,false,-1,true,99999},
+        {450000,99999,5,0x3000,3,false,false,-1,true,99999},
+        {450000,99999,8,0x3000,3,false,true,-1,true,450000},
+        {1200000,99999,8,0x3042,3,true,true,-1,true,999999},
+        {50000,99999,5,0x304E,3,true,false,5000,true,4999},
+        {50000,99999,5,0x304E,3,true,false,1,true,0},
+        {50000,99999,5,0x304E,3,true,false,0,true,0},
+        {-500,99999,5,0x304E,3,true,false,5000,true,-500},
+        {1200000,99999,3,0x3073,3,true,false,-1,true,999999},
+        {1200000,99999,3,0x3073,3,false,false,-1,true,nova?1200000:99999},
+        {1200000,99999,3,0x3073,3,false,false,5000,true,4999},
+        {450000,99999,5,0x3042,3,true,false,-1,false,99999},
+    };
+    for(const auto& c:cases){
+        extensionRequest={};extensionRequest.magicEligible=c.magic;extensionRequest.aeonAuthorized=c.aeon;
+        if(c.hp>=0)extensionRequest.Nonlethal(c.hp);
+        B::DamageCall call{};call.user=static_cast<unsigned>(c.actor);call.commandId=c.command;
+        B::DamageScope scope{};if(c.context)Expect(B::EnterDamage(scope,call),"private producer context entered");
+        Result out{};
+        const bool ran=GuardedInvoke(c.actor,c.damage,c.cap,&out,image+0x38EDCB,c.command,c.pass);
+        Expect(ran&&out.damage==c.want,"real native clamp composes finite limits, lower floor and nonlethal requests");
+        if(ran)Expect(out.ecx==0x13572468u&&out.edx==0x24681357u&&out.fpu==1.0f&&
+            std::memcmp(out.xmm,xmmSeed,sizeof(xmmSeed))==0,"extension callbacks preserve registers and x87/SIMD state");
+        if(c.context)Expect(B::LeaveDamage(scope,0,ran),"private producer context retired");
+    }
+    Expect(extensionCalls>0,"production stub reaches the shared policy consumer");
+    InterlockedExchange(&g_admission,2);
+    Result stopped{};
+    Expect(GuardedInvoke(3,1200000,99999,&stopped,image+0x38EDCB,0x3073,3)&&stopped.damage==99999,
+           "stop closes both finite and legacy policies");
+    Expect(B::Unsubscribe(B::Slot::Elemental,&extensionObserver),"extension descriptor retires");
+    const auto disabled=MinHookBatch::NeutralizeBatch(&MinHookBatch::ProcessCoordinator(),
+        MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::NovaSuperDamage,&patch,1);
+    Expect(disabled.neutralized&&std::memcmp(image+0x38EDCB,original,sizeof(original))==0,
+           "extension OFF restores the exact lower and upper graph");
+    Expect(MH_RemoveHook(reinterpret_cast<void*>(patch))==MH_OK,"quiescent extension fixture detour removed");
+    VirtualFree(stub,0,MEM_RELEASE);VirtualFree(image,0,MEM_RELEASE);
+}
 }
 void TestProductionLifecycle(const char* fixture,int mode) {
     using namespace FfxHooks;
@@ -215,7 +295,7 @@ int main(int argc,char** argv) {
     Expect(argc==3,"production fixture requires the exact supported executable path and isolated gate mode");
     const int mode=argc==3?std::atoi(argv[2]):-1;
     Expect(mode>=0&&mode<=15,"gate scenario fits the four explicit test flags");
-    if(mode==3){TestGraph(true,false);TestGraph(true,true);TestGraph(false,true);}
+    if(mode==3){TestGraph(true,false);TestGraph(true,true);TestGraph(false,true);TestExtensionGraph(false);TestExtensionGraph(true);}
     if(argc==3&&mode>=0&&mode<=15)TestProductionLifecycle(argv[1],mode);
     if(failures){std::fprintf(stderr,"NovaSuperDamageRt1: FAIL (%d/%d failed)\n",failures,checks);return 1;}
     std::printf("NovaSuperDamageRt1: PASS mode=%d (%d checks)\n",mode,checks);return 0;

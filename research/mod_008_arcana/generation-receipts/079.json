@@ -1,0 +1,10 @@
+{
+  "id": 79,
+  "key": "shared.icon",
+  "asset": "assets/mod-008-arcana/concepts/tarot-icon-v1.png",
+  "source": "/home/wanderson/.codex/generated_images/01a0ced4-9fba-7a22-9466-d8897fbcba59/exec-5b63e75a-a995-4618-b93d-396cdd15e590.png",
+  "prompt": "Create ONE small game UI inventory icon for the Final Fantasy X inspired Tarot deck Spira: Arcana of the Fayth. A single upright slender ivory and gold Tarot card silhouette with a deep ocean blue center and one bright aqua pyrefly spiral symbol. Strong recognizable silhouette readable at 32 pixels, minimal hand-painted bevel, no text or lettering. Square canvas, centered, generous TRUE TRANSPARENT margins. No extra cards or scenery. Reference supplies colors, simplify decoration radically.",
+  "tool": "image_gen.imagegen",
+  "status": "GENERATED_LABELLED_CONCEPT",
+  "layout": "number_top_name_bottom_court_unnumbered"
+}

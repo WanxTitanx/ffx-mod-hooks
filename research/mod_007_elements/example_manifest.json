@@ -1,0 +1,55 @@
+{
+  "schema": "ffx.mod007.elements.draft-1",
+  "status": "design-example-not-a-loadable-runtime-pack",
+  "package_id": "spira.elemental-dominion",
+  "requires": ["mod007.registry.v1", "mod007.affinity.v1"],
+  "enabled": false,
+  "registry_limit": 32,
+  "elements": [
+    {"key": "ffx.fire", "label": "Fire", "native_bit": 1},
+    {"key": "ffx.ice", "label": "Ice", "native_bit": 2},
+    {"key": "ffx.thunder", "label": "Thunder", "native_bit": 4},
+    {"key": "ffx.water", "label": "Water", "native_bit": 8},
+    {"key": "ffx.holy", "label": "Holy", "native_bit": 16},
+    {"key": "spira.earth", "label": "Earth", "native_bit": 32},
+    {"key": "spira.wind", "label": "Wind", "native_bit": 64},
+    {"key": "spira.dark", "label": "Darkness", "native_bit": 128},
+    {"key": "spira.poison", "label": "Poison", "native_bit": null},
+    {"key": "spira.gravity", "label": "Gravity", "native_bit": null}
+  ],
+  "rules": {
+    "affinity_min_bp": -10000,
+    "affinity_max_bp": 25000,
+    "authoring_step_bp": 2500,
+    "multi_element_policy": "highest_exposure",
+    "rounding": "truncate_toward_zero_once",
+    "imperil_step_bp": 2500,
+    "imperil_max_stacks": 4,
+    "imperil_duration_target_actions": 3,
+    "boss_imperil_max_stacks": 2,
+    "temporary_effects_persist_in_save": false
+  },
+  "magic_break_damage_limit": {
+    "enabled": false,
+    "without_effective_bdl": 9999,
+    "spell_hp_damage_with_effective_bdl": 999999,
+    "other_damage_with_effective_bdl": 99999,
+    "unit": "each-hit-each-target",
+    "preserve_native_healing_floor": true,
+    "spell_classification": "manifest-binding-with-native-magic-hint-and-explicit-fury-bindings",
+    "status": "proposal-only-no-runtime-cap-hook"
+  },
+  "example_target": {
+    "key": "example.synthetic-target",
+    "damage_taken_bp": {"spira.earth": 7500, "spira.poison": 15000, "spira.gravity": 10000}
+  },
+  "gravity_rule_example": {
+    "status": "unbound-example-requires-explicit-command-and-boss-binding",
+    "basis": "target_max_hp",
+    "numerator": 1,
+    "denominator": 16,
+    "nonlethal": true,
+    "preserve_native_gravity_immunity": true,
+    "apply_elemental_affinity": false
+  }
+}

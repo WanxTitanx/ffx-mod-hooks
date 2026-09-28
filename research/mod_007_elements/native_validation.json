@@ -1,0 +1,111 @@
+{
+  "producer": "Jarvis-HOOK",
+  "date": "2026-09-27",
+  "level": "RT1-isolated-native-routine",
+  "scope": "ApplyElementResist only; no process injection, no game session, no MOD-007 implementation",
+  "exe_path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/FFX.exe",
+  "exe_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+  "machine": "PE32-i386",
+  "image_base": "0x400000",
+  "rva": "0x38a420",
+  "flat": "0x78a420",
+  "routine_size": 1045,
+  "routine_sha256": "3ec1a5447679ce745684028ac1e25f4708e33f8d4a7b79b8667c6ae211ede36f",
+  "instructions": 390,
+  "external_calls": 0,
+  "harness_sha256": "bbfd96f3d201057a316a07d7eaa8df412d1777c295039adf148be56c5f070fd3",
+  "compiler": "gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0",
+  "compile_args": [
+    "gcc",
+    "-m32",
+    "-O2",
+    "-ffreestanding",
+    "-fno-builtin",
+    "-fno-pie",
+    "-no-pie",
+    "-fno-stack-protector",
+    "-nostdlib",
+    "-Wl,-e,_start",
+    "/home/wanderson/.codex/worktrees/mod-007-elemental-dominion/ffx-hooks/research/mod_007_elements/native_probe.c",
+    "routine.S",
+    "-o",
+    "native_probe"
+  ],
+  "result": {
+    "single_bit_results": [
+      {
+        "bit": 1,
+        "weak": 1500,
+        "half": 500,
+        "null": 0,
+        "absorb": -1000
+      },
+      {
+        "bit": 2,
+        "weak": 1500,
+        "half": 500,
+        "null": 0,
+        "absorb": -1000
+      },
+      {
+        "bit": 4,
+        "weak": 1500,
+        "half": 500,
+        "null": 0,
+        "absorb": -1000
+      },
+      {
+        "bit": 8,
+        "weak": 1500,
+        "half": 500,
+        "null": 0,
+        "absorb": -1000
+      },
+      {
+        "bit": 16,
+        "weak": 1500,
+        "half": 500,
+        "null": 0,
+        "absorb": -1000
+      },
+      {
+        "bit": 32,
+        "weak": 1500,
+        "half": 500,
+        "null": 0,
+        "absorb": -1000
+      },
+      {
+        "bit": 64,
+        "weak": 1500,
+        "half": 500,
+        "null": 0,
+        "absorb": -1000
+      },
+      {
+        "bit": 128,
+        "weak": 1500,
+        "half": 500,
+        "null": 0,
+        "absorb": -1000
+      }
+    ],
+    "comparisons": 403809,
+    "failures": 0,
+    "first_mismatch": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "limitations": [
+    "No complete hit pipeline, Nul/counter/Reflect/save/UI validation",
+    "High bits are passed to a DWORD argument, not serialized into a native BYTE",
+    "No 9th/10th element runtime adapter exists in this experiment"
+  ]
+}

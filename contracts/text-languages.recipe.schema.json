@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MOD-006 PT-BR authoring recipe",
+  "description": "Only allowlisted resources and native per-table row/slot bounds are accepted by pack.py. Preserve controls, line counts, encoded byte capacity and rendered width.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["locale", "display_name", "pack_version", "resources"],
+  "properties": {
+    "locale": {"const": "pt-BR"},
+    "display_name": {"type": "string", "minLength": 1, "maxLength": 96},
+    "pack_version": {"type": "string", "pattern": "^[0-9]{1,9}\\.[0-9]{1,9}\\.[0-9]{1,9}$"},
+    "resources": {
+      "type": "object", "minProperties": 1, "maxProperties": 4091,
+      "additionalProperties": {
+        "type": "array", "minItems": 1,
+        "items": {
+          "type": "object", "additionalProperties": false,
+          "required": ["row", "slot", "text"],
+          "properties": {
+            "row": {"type": "integer", "minimum": 0, "maximum": 65535},
+            "slot": {"type": "integer", "minimum": 0, "maximum": 3},
+            "text": {"type": "string", "maxLength": 2048}
+          }
+        }
+      }
+    }
+  }
+}

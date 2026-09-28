@@ -104,7 +104,9 @@ function render() {
   $("#piece-owner").textContent =
     p.owner.toUpperCase() + " / " + p.kind.toUpperCase();
   $("#piece-title").textContent = p.kind + " · Piece " + p.id;
-  $("#piece-sub").textContent = p.equipped
+  $("#piece-sub").textContent = p.aeon
+    ? (p.protected ? "Locked: " + p.requirement : "Aeon equipment · all Gil costs are doubled.")
+    : p.equipped
     ? "Currently equipped — unequip before changing this piece."
     : p.protected
       ? "Special equipment — fusion receiver only."
@@ -128,7 +130,7 @@ function render() {
     );
     card.append(text("small", i === 4 ? "FIFTH ABILITY" : "SLOT " + (i + 1)));
     card.append(text("strong", locked ? "Not unlocked" : a.name));
-    if (!locked && a.id !== 255) card.append(text("em", "+" + a.rank));
+    if (!locked && a.id !== 255) card.append(text("em", a.locked ? "Permanent ability" : "+" + a.rank));
     cards.append(card);
   }
   $("#piece-note").textContent = p.abilities.some(
@@ -220,7 +222,8 @@ function operation() {
       body.append(
         text(
           "p",
-          "Requires four open original slots · 10 owner-specific Spheres; Master Spheres substitute 1:1.",
+          p.aeon ? "Four open slots · 4 each: Attribute, Special, Skill, Wht Magic and Blk Magic Sphere. Master substitutes missing units 1:1."
+            : "Requires four open original slots · 10 owner-specific Spheres; Master Spheres substitute 1:1.",
           "inline-note",
         ),
       );
@@ -243,6 +246,8 @@ function operation() {
     const grid = text("div", "", "form-grid");
     const left = document.createElement("div"),
       right = document.createElement("div");
+    if (p.aeon) left.append(text("p", "Aeon owner and equipment type are permanent.", "inline-note"));
+    else {
     left.append(
       select("Reforge with an imported model", model.templates, "template"),
     );
@@ -253,6 +258,7 @@ function operation() {
         "secondary",
       ),
     );
+    }
     const capacities = [1, 2, 3, 4]
       .filter((n) => n > p.capacity)
       .map((n) => ({ id: n, name: n + " original slots" }));
@@ -283,7 +289,7 @@ function operation() {
       right.append(text("p", "Four original slots unlocked.", "description"));
     grid.append(left, right);
     body.append(grid, text("hr", "", "divider"));
-    const occupied = p.abilities.filter((a) => a.id !== 255 && a.available);
+    const occupied = p.abilities.filter((a) => a.id !== 255 && a.available && !a.locked);
     if (occupied.length) {
       body.append(
         select(
@@ -336,7 +342,7 @@ function operation() {
     );
     const donors = model.pieces.filter(
       (x) =>
-        x.slot !== p.slot && !x.equipped && !x.protected,
+        x.slot !== p.slot && !x.equipped && !x.protected && !x.aeon,
     );
     if (!donors.length) {
       body.append(
@@ -371,7 +377,7 @@ function operation() {
             [
               { id: -1, name: "Do not transfer" },
               ...d.abilities
-                .filter((a) => a.id !== 255 && a.available)
+                .filter((a) => a.id !== 255 && a.available && a.slot < 4 && !a.locked)
                 .map((a) => ({ id: a.slot, name: `${a.name} +${a.rank}` })),
             ],
             "source" + i,
@@ -381,7 +387,7 @@ function operation() {
           select(
             "Destination",
             p.abilities
-              .filter((a) => a.available)
+              .filter((a) => a.available && a.slot < 4 && !a.locked)
               .map((a) => ({
                 id: a.slot,
                 name: `Slot ${a.slot + 1} · ${a.name}`,
@@ -410,7 +416,7 @@ function operation() {
     );
   }
   body.querySelectorAll("button").forEach((b) => {
-    if (p.equipped) b.disabled = true;
+    if ((p.equipped && !p.aeon) || (p.aeon && p.protected)) b.disabled = true;
   });
 }
 $("#commit").addEventListener("click", async () => {

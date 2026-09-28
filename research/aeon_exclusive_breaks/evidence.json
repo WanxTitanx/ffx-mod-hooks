@@ -1,0 +1,165 @@
+{
+  "producer": "Jarvis-HOOK",
+  "date": "2026-09-27",
+  "level": "RT0-static-research-only",
+  "scope": "No new Hook, ID, game asset or recipe was installed; no runtime tests executed in this task",
+  "base_documentation_commit": "39ceb19834e87d2ee74349dcf4b1b676f87e677b",
+  "runtime_root": "/home/wanderson/Documents/ffx-hooks",
+  "runtime_head": "f2308dddc1833811899c0999c96b5ee25a18bd66",
+  "editor_root": "/home/wanderson/Documents/ffx-editor-main",
+  "editor_head": "399164236638bd34d44c4833b02ea3b15a49d771",
+  "kaizou": {
+    "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/jppc/battle/kernel/kaizou.bin",
+    "sha256": "fea70d34a8567260e5b27da19eb86234ec02c6ab1e59c774f3b799ccd15ed844",
+    "size": 1020,
+    "rows": 125,
+    "stride": 8,
+    "selected_rows": [
+      {
+        "row": 122,
+        "kind": 2,
+        "ability_word": "0x8017",
+        "item_id": 108,
+        "item_word": "0x206c",
+        "quantity": 30,
+        "item_name": "Wings to Discovery"
+      },
+      {
+        "row": 121,
+        "kind": 2,
+        "ability_word": "0x8018",
+        "item_id": 69,
+        "item_word": "0x2045",
+        "quantity": 30,
+        "item_name": "Three Stars"
+      },
+      {
+        "row": 123,
+        "kind": 1,
+        "ability_word": "0x8019",
+        "item_id": 53,
+        "item_word": "0x2035",
+        "quantity": 60,
+        "item_name": "Dark Matter"
+      },
+      {
+        "row": 113,
+        "kind": 1,
+        "ability_word": "0x800e",
+        "item_id": 110,
+        "item_word": "0x206e",
+        "quantity": 30,
+        "item_name": "Underdog's Secret"
+      },
+      {
+        "row": 114,
+        "kind": 1,
+        "ability_word": "0x800f",
+        "item_id": 111,
+        "item_word": "0x206f",
+        "quantity": 30,
+        "item_name": "Winning Formula"
+      },
+      {
+        "row": 112,
+        "kind": 1,
+        "ability_word": "0x8010",
+        "item_id": 109,
+        "item_word": "0x206d",
+        "quantity": 20,
+        "item_name": "Gambler's Spirit"
+      }
+    ]
+  },
+  "proposal_audit": {
+    "material_names_ids_match": true,
+    "max_required_per_item": 99,
+    "gil_aeon_multiplier_once": true,
+    "two_abilities_per_aeon_gil": 25000000,
+    "all_ten_owners_gil": 250000000
+  },
+  "sources": [
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/docs/reverse/AEON_WORKSHOP_2026_09_27.md",
+      "sha256": "9e5d62910ad0b9d43776cfacb97431515be76d77b60c0f48febf592497c2b0b2",
+      "bytes": 9142
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/research/equipment_workshop/src/workshop.cpp",
+      "sha256": "9ed6235fdcd404065d7fb41d4f713939781fa653174145c890e0328351eb607f",
+      "bytes": 28253
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/research/equipment_workshop/include/customize_recipes.h",
+      "sha256": "29a2e0193fcc09f987caabea1a6828358775a8f82260507ed5eba6ad3f14414c",
+      "bytes": 3354
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/research/equipment_workshop/host/item_names.json",
+      "sha256": "ad65c56bd8219bd032335cd8729f597bb7721bcf6d284f01e1bf464a666345be",
+      "bytes": 2705
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/EquipmentWorkshopRuntime.cpp",
+      "sha256": "c53142997938c5db1e4b620fe1d67c2f7bf6364ef9b9c605648e3cd6c08dd9e9",
+      "bytes": 32951
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/NovaSuperDamageHook.cpp",
+      "sha256": "b8f03ba608d0b69f31a31140c24a056646b591304755dc1fe656aa8c1b0094b9",
+      "bytes": 14869
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/docs/reverse/FFX_STATUS_CFGTABLES_2026-09-15.md",
+      "sha256": "82497454d57149013d209830d342462463765f2aab5373dea72b89e188956612",
+      "bytes": 17583
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/work/wiki_ffx_full/Wings to Discovery.wiki.txt",
+      "sha256": "57bfc9db503fff18169d82843ba93fb13c0380e0016d452fe73c013f70f18b05",
+      "bytes": 7236
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/work/wiki_ffx_full/Master Sphere.wiki.txt",
+      "sha256": "83ae25a2749a468c7f40d3dc328a8aa009e07e3351f074733c6150e2fbc1b44e",
+      "bytes": 7085
+    }
+  ],
+  "exe": {
+    "path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/FFX.exe",
+    "sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+    "image_base": "0x400000",
+    "machine": "0x14c",
+    "size": 10675712
+  },
+  "static_windows": [
+    {
+      "name": "field_max_hp_mp",
+      "rva": "0x386882",
+      "flat": "0x786882",
+      "bytes": 82,
+      "sha256": "0f0b8bd7d8a69d9e260ec07253fff16e719dd9be27d68df25c5252d2dc26c6bb"
+    },
+    {
+      "name": "battle_hp_mp_status",
+      "rva": "0x38d330",
+      "flat": "0x78d330",
+      "bytes": 291,
+      "sha256": "fb764a9f2bba3e45bf24b3cb16de5d3e6b25dcb1e34e699449607cd37591dd28"
+    },
+    {
+      "name": "damage_cap",
+      "rva": "0x38ed1a",
+      "flat": "0x78ed1a",
+      "bytes": 201,
+      "sha256": "747f41a54ccb23b193ff98d65d592b40b45bd2951ad85ba8e721d9bf13f0a33f"
+    },
+    {
+      "name": "signed_clamp_helper",
+      "rva": "0x39a0d0",
+      "flat": "0x79a0d0",
+      "bytes": 26,
+      "sha256": "8ce009cf322caf7ad7b3d6f6e658f5f0097222b743e6fac4a27db0f14165dace"
+    }
+  ]
+}

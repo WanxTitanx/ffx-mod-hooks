@@ -6,6 +6,7 @@
 #include "../hooks/RonsoPoolRuntime.h"
 #include "../hooks/RonsoPoolEvidence.h"
 #include "../hooks/RonsoPoolSave.h"
+#include "../hooks/RonsoCommandCosts.h"
 #include <cstdio>
 #include <fstream>
 #include <vector>
@@ -14,6 +15,11 @@ namespace {
 int checks=0,failures=0;
 std::vector<uint8_t> commands;
 int resetCalls=0;
+bool extensionAllowed=false;
+static bool ExtendedQuote(unsigned actor,const unsigned char* row,CommandCosts::Quote& out) noexcept {
+    if(actor!=3||commands.size()<20+96*105||row!=commands.data()+20+96*104)return false;
+    out={0x3068,7,10,200,extensionAllowed};return true;
+}
 int protectionCalls=0;
 bool FailSecondProtection(uintptr_t address,size_t bytes,uint32_t desired,uint32_t* prior) noexcept {
     if(++protectionCalls==2)return false;
@@ -306,6 +312,20 @@ void TestLeftKeyRoute(uintptr_t base,uint8_t* kimahri,uint8_t* auron,bool active
     Expect(classify(3,0x3068)==-2,"Curse cannot be bypassed by the call-local zero-cost view");
     curse=0;std::memcpy(kimahri+0x616,&curse,2);
     jumpRow[37]=oldMp;std::memcpy(jumpRow+28,&oldFlags,4);std::memcpy(kimahri+0x5D4,&oldActorMp,4);
+    if(active){
+        static const CommandCosts::Provider extension{ExtendedQuote};
+        Expect(CommandCosts::Register(&extension),"a distinct command consumer registers without replacing Ronso ownership");
+        Expect(CommandCosts::nativeReady.load(),"the existing Ronso native owner publishes its reusable cost entry");
+        kimahri[0x5BC]=10;extensionAllowed=true;
+        const auto initialCharge=kimahri[0x5BC],initialMax=kimahri[0x5BD];
+        Expect(classify(3,0x3068)==0xFE,"managed partial-cost quote reuses the Ronso gate below the old child price");
+        Expect(kimahri[0x5BC]==initialCharge&&kimahri[0x5BD]==initialMax&&jumpRow[38]==20,
+               "cost presentation never spoofs capacity, consumes charge or edits the command table");
+        kimahri[0x5BC]=200;extensionAllowed=false;
+        Expect(classify(3,0x3068)==-2,"a rejected current equipment quote cannot fall back to an affordable native command");
+        CommandCosts::Unregister(&extension);kimahri[0x5BC]=10;
+        Expect(classify(3,0x3068)==-2,"removing the extension restores the original Kimahri partial-cost rule");
+    }
     kimahri[0x5BC]=180;
     const auto rawCost=reinterpret_cast<int(__cdecl*)(int,const uint8_t*,int)>(base+0x38C750);
     Expect(rawCost(3,jumpRow,0)==-1,"unknown callers retain the native full-gauge gate");

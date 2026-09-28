@@ -1,0 +1,129 @@
+{
+  "owner": "Jarvis-HOOK",
+  "date": "2026-09-28",
+  "status": "RT0_RT1_CANDIDATE_USER_RETEST_PENDING",
+  "base_commit": "aa64b7480f1f917f2a993b0c45ae4b5289afbffb",
+  "game_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+  "dll_sha256": "b35c828884eda8440da9245bee172b4d0af70e11ae020a347060be35e234aed4",
+  "dll_bytes": 2006016,
+  "build_source_manifest_sha256": "2b492e1d1a8ef38e877392c5d2dcf0917cf9d7f9ce047d237d231e37099f226e",
+  "build_inputs": 382,
+  "build_source_zip_sha256": "fe6b28eca72d8b366dfdadf67d30a3f2ed2d45dc9b4cde7f3331bb1422dcbaf7",
+  "source_drift_since_build": [],
+  "pack_hash": "c6fe69e9f96cf776a943ebeba725ed65dc1872cc6e8e0e1539963c164df2453e",
+  "compatible_pack_hashes": [
+    "53b3c692d78b846e0d2556d22717c0039f01f4d551fbcb3a56412724da4e163e",
+    "b31ad58a8c3ee8e8989c3dea3487b418f11b3a3006974bb902a8e3134c489e75",
+    "c9a3b6349b274d2137e2b317eed244590e1920752849fbc72ce16a1bac51ce37"
+  ],
+  "balance_revision": 4,
+  "evidence": [
+    {
+      "log": "work/mod008/audio-portable.log",
+      "sha256": "970b13040a50070c1aeb5addab61fdd7063cd3d6005ef20378b77df59c8a7684",
+      "result_lines": [
+        "PASS typed Arcana catalog: 78 cards, sha256=27655f432cf36ee68f87e6ea859e6f4cb37bb0a5a3210b36af7fc5c3717e7feb",
+        "PASS 78 distinct builds: no pure-stat filler except HP; matching elemental defense; highlighted cards upgraded",
+        "ArcanaStartupRt0 8/8 passed",
+        "ArcanaCoreRt0 76205/76205 passed",
+        "ArcanaAcquisitionRt0 95/95 passed",
+        "ArcanaUiRt0 55/55 passed",
+        "ArcanaNativeEffectsRt0 16/16 passed",
+        "ArcanaCombatCoreRt0 13/13 passed",
+        "ArcanaStoreRt1 30/30 passed",
+        "NativeSaveEventsRt0 25/25 passed",
+        "NativeSaveProjectionRt0 15/15 passed",
+        "NativeGameplayEventsRt0 5/5 passed",
+        "PASS Arcana portable checks; native Windows, graphics and live gameplay are separate gates"
+      ]
+    },
+    {
+      "log": "work/mod008/audio-portable-san.log",
+      "sha256": "970b13040a50070c1aeb5addab61fdd7063cd3d6005ef20378b77df59c8a7684",
+      "result_lines": [
+        "PASS typed Arcana catalog: 78 cards, sha256=27655f432cf36ee68f87e6ea859e6f4cb37bb0a5a3210b36af7fc5c3717e7feb",
+        "PASS 78 distinct builds: no pure-stat filler except HP; matching elemental defense; highlighted cards upgraded",
+        "ArcanaStartupRt0 8/8 passed",
+        "ArcanaCoreRt0 76205/76205 passed",
+        "ArcanaAcquisitionRt0 95/95 passed",
+        "ArcanaUiRt0 55/55 passed",
+        "ArcanaNativeEffectsRt0 16/16 passed",
+        "ArcanaCombatCoreRt0 13/13 passed",
+        "ArcanaStoreRt1 30/30 passed",
+        "NativeSaveEventsRt0 25/25 passed",
+        "NativeSaveProjectionRt0 15/15 passed",
+        "NativeGameplayEventsRt0 5/5 passed",
+        "PASS Arcana portable checks; native Windows, graphics and live gameplay are separate gates"
+      ]
+    },
+    {
+      "log": "work/mod008/audio-native-suite.log",
+      "sha256": "84786c83967b34c9a32aadf21e89effdf89fc0d4eaa77cb51f6dd17ac3345e27",
+      "result_lines": [
+        "ArcanaNativeUiRt1 92/92 passed",
+        "ArcanaNativeUiRt1 94/94 passed",
+        "ArcanaCombatRt1 72/72 passed",
+        "ArcanaAssetsRt1 12/12 passed",
+        "ArcanaRuntimeRt1 26/26 passed",
+        "ArcanaRuntimeRt1 15/15 passed",
+        "ArcanaRuntimeRt1 27/27 passed",
+        "ArcanaRuntimeRt1 21/21 passed",
+        "ArcanaRuntimeRt1 21/21 passed",
+        "ArcanaRuntimeRt1 21/21 passed",
+        "RonsoPoolIoRt1 ON: PASS (24 checks, 0 failures)",
+        "RonsoPoolIoRt1 OFF: PASS (19 checks, 0 failures)",
+        "PASS Arcana RT1 fixtures; live gameplay and visual acceptance remain RT2"
+      ]
+    },
+    {
+      "log": "work/mod008/audio-build.log",
+      "sha256": "f9d1f94fae90e365faff452358a6bc7745bb9296c619b565019f4a87f58dd291",
+      "result_lines": []
+    },
+    {
+      "log": "work/mod008/audio-dll-smoke.log",
+      "sha256": "671fa3d97503f990e9c232733b8c4b71f08a078f682b449b94396979f539b9aa",
+      "result_lines": [
+        "PASS Arcana DLL x86 loader/worker smoke with validation-only and unchanged private PE boundaries; no game launched"
+      ]
+    },
+    {
+      "log": "work/mod008/audio-regression.log",
+      "sha256": "b5c4fa7363b3ec4780fcf4e3f9e3b31d1560c142de18e274a0d2017cc4d0238a",
+      "result_lines": [
+        "F8RuntimeRt0: PASS (3988 checks)",
+        "F8 RUNTIME RT0: PASS",
+        "SEYMOUR BATTLE RT1: 88/88 PASS",
+        "SEYMOUR BATTLE RT1: PASS",
+        "CustomMix production runtime RT0/RT1: 89/89 passed",
+        "CustomMix Ultra production runtime x86: PASS (RT0 contracts + RT1 composition; COFF-I386 0x014C)"
+      ]
+    },
+    {
+      "log": "work/mod008/audio-contracts.log",
+      "sha256": "e6a5b0649ce543cda798fb2b3a5eae68935c7645ee7e28cf8df19b8b36ec9ab9",
+      "result_lines": [
+        "  \"result\": \"PASS_RT0_MODEL_ONLY\","
+      ]
+    },
+    {
+      "log": "work/mod008/audio-art-validation.log",
+      "sha256": "f680cfee4f6ec139f7529d58f874c2f5a8924e142af7ebafe8e9f28a66def4fa",
+      "result_lines": [
+        "  \"result\": \"PASS_RT0_DELIVERY\","
+      ]
+    },
+    {
+      "log": "work/mod008/audio-context-tests.log",
+      "sha256": "e3bcfd5001a16abda7e16eb7848af3973cb2ec4fd74aa3358a182468ad5a3dea",
+      "result": "114/114 tests PASS"
+    },
+    {
+      "log": "work/mod008/audio-context-evaluate.json",
+      "sha256": "4661f64f29dc922fb6e367d74d285311e796f76c88c57d3807308b430675bb97",
+      "result": "14/14 retrieval cases PASS"
+    }
+  ],
+  "review": "author only; no subagents",
+  "live_validation": "User accepted preceding v3 interface and supplied screenshots. New audio, native typography, overview slots and MP tuning remain pending user retest. No game launch or input automation."
+}

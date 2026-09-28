@@ -34,6 +34,7 @@ enum PresetField : uint8_t {
     FieldElemResist,
     FieldElemAbsorb,
     FieldStatusResist,
+    FieldElemExtra,
 };
 
 bool Equals(const char* left, const char* right) {
@@ -316,6 +317,36 @@ private:
         }
     }
 
+    ConfigCode ParseExtraElements(F7Elements::Extras* output) {
+        if(!output||!Consume('['))return ConfigCode::Malformed;
+        F7Elements::Extras parsed{};size_t count=0;SkipWhitespace();
+        if(!Consume(']'))while(true){
+            if(count>=parsed.size())return ConfigCode::TooManyArrayItems;
+            if(!Consume('{'))return ConfigCode::Malformed;
+            auto& item=parsed[count++];unsigned seen=0;SkipWhitespace();
+            if(Consume('}'))return ConfigCode::Malformed;
+            while(true){
+                char key[80]{};if(!ParseString(key,sizeof(key)))return ConfigCode::Malformed;
+                SkipWhitespace();if(!Consume(':'))return ConfigCode::Malformed;SkipWhitespace();
+                if(Equals(key,"key")){
+                    if(seen&1)return ConfigCode::DuplicateKey;seen|=1;
+                    if(!ParseString(item.key.data(),item.key.size()))return ConfigCode::Malformed;
+                }else if(Equals(key,"affinity")){
+                    if(seen&2)return ConfigCode::DuplicateKey;seen|=2;
+                    uint32_t value=0;const auto result=ParseMask(3,&value);if(result!=ConfigCode::Ok)return result;
+                    item.affinity=static_cast<F7Elements::Affinity>(value);
+                }else if(!SkipValue(0))return ConfigCode::Malformed;
+                SkipWhitespace();if(Consume('}'))break;
+                if(!Consume(','))return ConfigCode::Malformed;SkipWhitespace();
+            }
+            if(seen!=3||!item.key[0])return ConfigCode::Malformed;
+            SkipWhitespace();if(Consume(']'))break;
+            if(!Consume(','))return ConfigCode::Malformed;SkipWhitespace();
+        }
+        if(!F7Elements::Valid(parsed))return ConfigCode::OutOfRange;
+        *output=parsed;return ConfigCode::Ok;
+    }
+
     ConfigCode ParsePresetField(
         const char* key, Preset* preset, uint64_t* seen, size_t bitBase) {
         if (!key || !preset || !seen) return ConfigCode::InvalidArgument;
@@ -337,6 +368,7 @@ private:
         else if (Equals(key, "elemResist")) field = FieldElemResist;
         else if (Equals(key, "elemAbsorb")) field = FieldElemAbsorb;
         else if (Equals(key, "statusResist")) field = FieldStatusResist;
+        else if (Equals(key, "elemExtra")) field = FieldElemExtra;
         else return ConfigCode::InvalidArgument;
 
         if (!MarkSeen(bitBase + static_cast<size_t>(field), seen)) return ConfigCode::DuplicateKey;
@@ -367,6 +399,7 @@ private:
                 return ConfigCode::Ok;
             }
             case FieldStatusResist: return ParseStatusArray(&preset->statusResist);
+            case FieldElemExtra: return ParseExtraElements(&preset->elemExtra);
             default: return ConfigCode::InvalidArgument;
         }
     }
@@ -471,7 +504,15 @@ bool IsPresetSerializable(const Preset& preset) {
     return preset.autoStatusMask <= kStatusMaskMaximum &&
            preset.elemWeak <= kElementMaskMaximum &&
            preset.elemResist <= kElementMaskMaximum &&
-           preset.elemAbsorb <= kElementMaskMaximum;
+           preset.elemAbsorb <= kElementMaskMaximum && F7Elements::Valid(preset.elemExtra);
+}
+
+bool AppendExtraElements(JsonWriter& writer,const F7Elements::Extras& entries,const char* prefix,const char* indent){
+    if(!writer.Append("%s\"%selemExtra\":[",indent,prefix))return false;
+    bool first=true;for(const auto& entry:entries)if(entry.key[0]){
+        if(!writer.Append("%s{\"key\":\"%s\",\"affinity\":%u}",first?"":",",entry.key.data(),static_cast<unsigned>(entry.affinity)))return false;
+        first=false;
+    }return writer.Append("],\n");
 }
 
 bool AppendPreset(JsonWriter& writer, const Preset& preset, const char* prefix, const char* indent) {
@@ -492,6 +533,7 @@ bool AppendPreset(JsonWriter& writer, const Preset& preset, const char* prefix, 
         !writer.Append("%s\"%selemWeak\":%u,\n", indent, prefix, static_cast<unsigned>(preset.elemWeak)) ||
         !writer.Append("%s\"%selemResist\":%u,\n", indent, prefix, static_cast<unsigned>(preset.elemResist)) ||
         !writer.Append("%s\"%selemAbsorb\":%u,\n", indent, prefix, static_cast<unsigned>(preset.elemAbsorb)) ||
+        !AppendExtraElements(writer,preset.elemExtra,prefix,indent) ||
         !writer.Append("%s\"%sstatusResist\":[", indent, prefix)) {
         return false;
     }
@@ -520,6 +562,7 @@ bool AppendArea(JsonWriter& writer, const AreaRule& area) {
                        static_cast<unsigned>(preset.elemWeak),
                        static_cast<unsigned>(preset.elemResist),
                        static_cast<unsigned>(preset.elemAbsorb)) ||
+        !AppendExtraElements(writer,preset.elemExtra,"","      ") ||
         !writer.Append("      \"statusResist\":[")) return false;
     for (size_t i = 0; i < preset.statusResist.size(); ++i) {
         if (!writer.Append("%s%u", i == 0 ? "" : ",",
@@ -998,6 +1041,13 @@ void Runtime::RefreshAutoStatus(
         return;
     }
     ++result.autoStatusRefreshed;
+}
+
+F7Elements::Selection SelectElements(const DifficultyConfig& config,bool valid,int32_t fieldRow){
+    if(!valid)return {};
+    const auto& preset=SelectPreset(config,fieldRow);
+    if(!preset.enabled||!F7Elements::Valid(preset.elemExtra))return {};
+    return {preset.elemWeak,preset.elemResist,preset.elemAbsorb,preset.elemExtra};
 }
 
 RuntimeResult Runtime::Update(

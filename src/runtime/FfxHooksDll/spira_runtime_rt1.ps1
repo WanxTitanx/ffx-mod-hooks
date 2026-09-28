@@ -1,0 +1,34 @@
+# Jarvis-HOOK: bounded isolated x86 runtime; no game session or deployment.
+$ErrorActionPreference='Stop'
+$here=$PSScriptRoot
+$repo=(Resolve-Path (Join-Path $here '..\..\..')).Path
+$vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio\Installer\vswhere.exe'
+$vs=& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+if(-not $vs){throw 'MSVC x86 required'}
+$vcvars=Join-Path $vs.Trim() 'VC\Auxiliary\Build\vcvarsall.bat'
+$obj=Join-Path $here 'obj\spira-runtime-rt1';New-Item -ItemType Directory -Force -Path $obj | Out-Null
+$mh=Join-Path $here 'third_party\minhook'
+$c=@('hook.c','buffer.c','trampoline.c','hde\hde32.c') | ForEach-Object {'"'+(Join-Path "$mh\src" $_)+'"'}
+$compileC='call "{0}" x86 >nul && cl /nologo /TC /O2 /MT /W3 /I"{1}\include" /c {2}' -f $vcvars,$mh,($c -join ' ')
+$files=@('tests\SpiraRuntimeRt1.cpp','hooks\EquipmentWorkshopRuntime.cpp','hooks\EquipmentWorkshopStore.cpp',
+ 'hooks\SharedBattleRuntime.cpp','hooks\RonsoPoolCore.cpp','hooks\RonsoPoolStore.cpp','hooks\RonsoPoolSave.cpp',
+ 'hooks\RonsoPoolRuntime.cpp','hooks\NovaSuperDamageHook.cpp','hooks\F8RuntimeCore.cpp','hooks\MinHookBatchCoordinator.cpp','shared\Config.cpp')
+if(Test-Path (Join-Path $here 'hooks\SpiraRuntime.cpp')){$files+='hooks\SpiraRuntime.cpp'}
+$sources=$files | ForEach-Object {'"'+(Join-Path $here $_)+'"'}
+$exe=Join-Path $obj 'SpiraRuntimeRt1.exe'
+$compile='call "{0}" x86 >nul && cl /nologo /EHsc /std:c++17 /W4 /WX /utf-8 /MT /DFFXHOOKS_TESTING /DFFXHOOKS_HAVE_POLYHOOK /I"{1}\research\equipment_workshop\include" /I"{2}\include" {3} "{1}\research\equipment_workshop\src\workshop.cpp" "{1}\research\equipment_workshop\src\lifecycle.cpp" hook.obj buffer.obj trampoline.obj hde32.obj /Fe"{4}" bcrypt.lib user32.lib' -f $vcvars,$repo,$mh,($sources -join ' '),$exe
+$fixture=Join-Path $repo 'native-fixtures\FFX.exe'
+if((Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Wrong private PE'}
+Push-Location $obj
+try{
+ & $env:ComSpec /d /s /c $compileC;if($LASTEXITCODE -ne 0){throw 'MinHook compilation failed'}
+ & $env:ComSpec /d /s /c $compile;if($LASTEXITCODE -ne 0){throw 'Spira compilation failed'}
+ # Both modes run in separate processes with fresh private save directories.
+ # A failing reward consumer must not silently skip the paid-cap regression.
+ & $exe $fixture (Join-Path $repo 'sin-fixtures\a_ability.bin') (Join-Path $obj ('private-'+[guid]::NewGuid().ToString('N')))
+ $runtimeExit=$LASTEXITCODE
+ & $exe $fixture (Join-Path $repo 'sin-fixtures\a_ability.bin') (Join-Path $obj ('paid-'+[guid]::NewGuid().ToString('N'))) (Join-Path $repo 'native-fixtures\ffx_000')
+ $paidExit=$LASTEXITCODE
+ Write-Output ('SPIRA_MODE_RESULTS runtime={0} paid_caps={1}' -f $runtimeExit,$paidExit)
+ if($runtimeExit -ne 0 -or $paidExit -ne 0){throw ('Spira regressions failed: runtime={0}; paid_caps={1}' -f $runtimeExit,$paidExit)}
+}finally{Pop-Location}

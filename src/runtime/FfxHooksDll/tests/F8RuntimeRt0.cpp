@@ -1,6 +1,7 @@
 #include "../shared/Config.h"
 #include "../shared/ffx_addresses.h"
 #include "../hooks/F8FlagCatalog.h"
+#include "../hooks/VanguardCatalog.h"
 #include "../hooks/F8RuntimeCore.h"
 #include "../hooks/F7UnsafePrototypePolicy.h"
 #include "../hooks/ResolverOwnerPolicy.h"
@@ -597,7 +598,7 @@ bool ReplaceFirstSourceToken(std::string& source, const char* from, const char* 
 
 bool ValidateTask6DetachBody(const std::string& body) {
     return CompactSourceCode(body) ==
-           "caseDLL_PROCESS_DETACH:FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::NativeLanguage::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
+           "caseDLL_PROCESS_DETACH:FfxHooks::Arcana::NativeUi::Stop();FfxHooks::Arcana::Combat::Stop();FfxHooks::SetSupplementalDropProvider(nullptr);FfxHooks::Arcana::Assets::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::ElementalDominion::RequestDetachStop();FfxHooks::SpiraAbilities::RequestDetachStop();FfxHooks::MonsterRewards::RequestStop();FfxHooks::RequestNulWardDetachStop();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::Vanguard::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::NativeLanguage::RequestStop();FfxHooks::TextLanguage::Native::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
            "FfxHooks::F7_RequestStop();"
            "FfxHooks::F7AiSwap_RequestStop();"
            "FfxHooks::RequestSpeedHackStop();"
@@ -2063,6 +2064,22 @@ void TestTask6DllmainIntegrationContracts() {
            nativeUiSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos&&
            elementSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos,
            "new drawing detach stops are proven atomic stores without removal or locking");
+    for (const char* relative : {"hooks/ElementalRuntime.cpp", "hooks/SpiraRuntime.cpp"}) {
+        std::string runtimeSource;
+        Expect(ReadWholeFile(RuntimeSourcePath(relative), runtimeSource),
+               "integrated mod detach source must be readable");
+        const auto stop = SourceFunctionBody(runtimeSource, "void RequestDetachStop() noexcept");
+        Expect(stop.Valid() && CompactSourceCode(stop.body) ==
+                   "terminal=true;armed=false;ready=false;configured=false;" &&
+                   runtimeSource.find("std::atomic<bool>::is_always_lock_free") != std::string::npos,
+               "integrated mod detach closes admission using only proven lock-free boolean stores");
+    }
+    std::string wardSource;
+    Expect(ReadWholeFile(RuntimeSourcePath("hooks/NulWardHook.cpp"),wardSource),"ward detach source is readable");
+    const auto wardStop=SourceFunctionBody(wardSource,"void RequestNulWardDetachStop() noexcept");
+    Expect(wardStop.Valid()&&CompactSourceCode(wardStop.body)=="running=false;"&&
+           wardSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos,
+           "ward detach closes admission with one proven lock-free store");
     ExpectSourceIncludes(source, "Dynamic FreeLibrary is unsupported",
                          "source must document unsupported hot unload explicitly");
     ExpectSourceIncludes(source, "Process termination discards process-owned state",
@@ -2257,11 +2274,22 @@ void TestTask6SourceValidatorMutationPressure() {
            "UnX booster source must be readable for Task 6 mutation pressure");
     const std::string validDetach =
         "case DLL_PROCESS_DETACH:\n"
+        "FfxHooks::Arcana::NativeUi::Stop();\n"
+        "FfxHooks::Arcana::Combat::Stop();\n"
+        "FfxHooks::SetSupplementalDropProvider(nullptr);\n"
+        "FfxHooks::Arcana::Assets::Stop();\n"
+        "FfxHooks::Arcana::Runtime::Stop();\n"
         "FfxHooks::EquipmentWorkshop::NativeUi::Stop();\n"
         "FfxHooks::RemoveElementHook();\n"
+        "FfxHooks::ElementalDominion::RequestDetachStop();\n"
+        "FfxHooks::SpiraAbilities::RequestDetachStop();\n"
+        "FfxHooks::MonsterRewards::RequestStop();\n"
+        "FfxHooks::RequestNulWardDetachStop();\n"
         "FfxHooks::EquipmentWorkshop::RequestStop();\n"
+        "FfxHooks::Vanguard::RequestStop();\n"
         "FfxHooks::NativePorts::RequestStop();\n"
         "FfxHooks::NativeLanguage::RequestStop();\n"
+        "FfxHooks::TextLanguage::Native::RequestStop();\n"
         "FfxHooks::SinAi::RequestStop();\n"
         "FfxHooks::FmvSpeed::RequestStop();\n"
         "FfxHooks::Fastload::RequestFastloadStop();\n"
@@ -4155,6 +4183,8 @@ void TestCatalogMetadataAndInvariants() {
         {"Input", "Filter IME", "input.filter_ime", nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, false, F8Activation::Live, F8ApplyMode::RuntimeAcknowledged},
         {"Input", "Dialog Skip", "input.dialog_skip", nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, false, F8Activation::Live, F8ApplyMode::ConfigPolled},
         {"Dev", "Fastload Autosave", "development.fastload_autosave", "f8_authority.fastload_autosave", nullptr, "FFXHOOKS_ENABLE_FASTLOAD_AUTOSAVE", "fastload_autosave.flag", "FFXHOOKS_DISABLE_FASTLOAD_AUTOSAVE", "fastload_autosave.flag.off", nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
+        {"Dev", "Arcana: full deck", "development.arcana_full_deck", "f8_authority.arcana_full_deck", nullptr, "FFXHOOKS_ARCANA_FULL_DECK", nullptr, nullptr, nullptr, nullptr, false, F8Activation::Live, F8ApplyMode::ConfigPolled},
+        {"Reforge", "Arcana of the Fayth", "arcana.enabled", "f8_authority.arcana", nullptr, "FFXHOOKS_ARCANA", "arcana.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Nova Super Damage", "labs.nova_super_damage", "f8_authority.lab_nova_super_damage", nullptr, "FFXHOOKS_ENABLE_NOVA_SUPER_DAMAGE", "nova_super_damage.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Ronso Mana", "labs.kimahri_ronso_mana", "f8_authority.lab_kimahri_ronso_mana", nullptr, "FFXHOOKS_ENABLE_RONSO_MANA", "kimahri_ronso_mana.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Equipment Workshop", "labs.equipment_workshop", "f8_authority.equipment_workshop", nullptr, "FFXHOOKS_EQUIPMENT_WORKSHOP", "equipment_workshop.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
@@ -4166,8 +4196,8 @@ void TestCatalogMetadataAndInvariants() {
         {"Reforge", "Item Stack Cap", "labs.item_stack_cap", "f8_authority.lab_item_stack_cap", nullptr, "FFXHOOKS_ENABLE_ITEM_STACK_CAP", "item_stack_cap_255.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
         {"Reforge", "Double/Triple Drop", "labs.double_triple_drop", "f8_authority.lab_double_triple_drop", nullptr, "FFXHOOKS_ENABLE_DOUBLE_TRIPLE_DROP", "double_triple_drop.flag", nullptr, nullptr, nullptr, false, F8Activation::RestartRequired, F8ApplyMode::None},
     };
-    const char* expectedTabs[] = {"System", "Boosters", "Cheats", "Arena+", "Input", "Dev", "Reforge"};
-    const size_t expectedTabCounts[] = {10, 5, 8, 6, 4, 5, 10};
+    const char* expectedTabs[] = {"System", "Boosters", "Cheats", "Extras", "Input", "Dev", "Reforge"};
+    const size_t expectedTabCounts[] = {10, 5, 8, 31, 4, 6, 17};
 
     std::string speedHackSource;
     std::string dllmainSource;
@@ -4370,9 +4400,10 @@ void TestCatalogMetadataAndInvariants() {
                trackedIniSource.find("max_speed = 8.0") != std::string::npos,
            "Speed Hack defaults must document the fixed cycle, legacy keys, and 8x safety cap");
 
-    Expect(FfxHooks::F8FlagCount() == 48, "catalog must expose exactly 48 rows");
-    Expect(FfxHooks::F8FlagCount() == sizeof(expected) / sizeof(expected[0]),
-           "catalog row count must match the hand-derived fixture");
+    Expect(FfxHooks::F8FlagCount() == 88 && FfxHooks::Vanguard::FeatureCount == 31,
+           "catalog preserves50 established rows and31 Vanguard identities, then six mod gates and the independent reward gate");
+    Expect(sizeof(expected) / sizeof(expected[0]) == 50,
+           "the hand-derived legacy fixture still covers every established row");
     Expect(FfxHooks::F8TabCount() == 7, "catalog must expose exactly seven tabs");
 
     size_t tabCounts[7] = {};
@@ -4382,7 +4413,8 @@ void TestCatalogMetadataAndInvariants() {
     for (size_t i = 0; i < FfxHooks::F8FlagCount() && i < sizeof(expected) / sizeof(expected[0]); ++i) {
         const FfxHooks::F8FlagSpec& actual = FfxHooks::F8FlagAt(i);
         const ExpectedCatalogRow& want = expected[i];
-        ExpectCatalog(SameNullable(actual.tab, want.tab), i, "tab");
+        const char* wantedTab=strcmp(want.tab,"Arena+")==0?"Reforge":want.tab;
+        ExpectCatalog(SameNullable(actual.tab, wantedTab), i, "tab");
         ExpectCatalog(SameNullable(actual.label, want.label), i, "label");
         ExpectCatalog(SameNullable(actual.gate.canonicalKey, want.canonicalKey), i, "canonical key");
         ExpectCatalog(SameNullable(actual.gate.authorityKey, want.authorityKey), i, "authority key");
@@ -4411,6 +4443,31 @@ void TestCatalogMetadataAndInvariants() {
                       i, "activation-prefixed help");
     }
 
+    // These are UI/config contracts, not evidence that combat consumers run.
+    const char* vanguardKeys[]={
+        "stat_pct_universal","defense_ehp_scaling","healing_ignore_shell","breaks_additive_damage",
+        "auto_crit_mp0_turn_end","element_opposite_weakness","status_refresh_duration",
+        "enemy_duration_resistance","threaten_single_use","guaranteed_hits_no_miss",
+        "quickcast_replace_doublecast","dualcast_white_magic","magic_mp_scaling",
+        "party_switch_costs_turn","eject_shatter_auto_replace","single_multi_hit_normalization",
+        "hero_bravery","energy_boost","energy_burst","efficiency","vampirism","follow_up",
+        "p_trade","m_trade","hero_caution","mp_regen","elude","energy_wall","energy_barrier",
+        "equipment_active_commands","equipment_partial_overdrive"};
+    for(size_t i=0;i<std::size(vanguardKeys);++i){
+        const auto& actual=FfxHooks::F8FlagAt(50+i);
+        const auto key=std::string("vanguard.")+vanguardKeys[i];
+        const auto authority=std::string("f8_authority.vanguard_")+vanguardKeys[i];
+        ExpectCatalog(SameNullable(actual.tab,"Extras"),50+i,"Vanguard tab");
+        ExpectCatalog(SameNullable(actual.gate.canonicalKey,key.c_str()),50+i,"Vanguard stable key");
+        ExpectCatalog(SameNullable(actual.gate.authorityKey,authority.c_str()),50+i,"Vanguard authority");
+        ExpectCatalog(!actual.gate.defaultValue,50+i,"independent default OFF");
+        const bool nativeProducer=i<31;
+        ExpectCatalog(actual.activation==(nativeProducer?F8Activation::RestartRequired:F8Activation::NotWired),
+                      50+i,"native producer surfaces are editable; partial consumers stay explicit");
+        ExpectCatalog(FfxHooks::FindF8Flag(key.c_str())==&actual,50+i,"Vanguard lookup identity");
+        ++keyOccurrences[actual.gate.canonicalKey?actual.gate.canonicalKey:""];
+        if(strcmp(actual.tab,"Extras")==0)++tabCounts[3];
+    }
     for (const auto& occurrence : keyOccurrences) {
         Expect(occurrence.first.size() > 0 && occurrence.second == 1,
                "every canonical key must be non-empty and unique");
@@ -4419,23 +4476,28 @@ void TestCatalogMetadataAndInvariants() {
         Expect(strcmp(FfxHooks::F8TabName(tab), expectedTabs[tab]) == 0,
                "tab names must use the hand-derived stable order");
         Expect(tabCounts[tab] == expectedTabCounts[tab],
-               "tab row counts must be 10/5/8/6/4/5/10");
+               "tab row counts include 31 Extras identities and 17 Reforge controls");
     }
-    Expect(activationCounts[static_cast<size_t>(F8Activation::Live)] == 24,
-           "catalog must contain 24 LIVE rows");
-    Expect(activationCounts[static_cast<size_t>(F8Activation::RestartRequired)] == 20,
-           "catalog must contain 20 RESTART REQUIRED rows");
+    Expect(activationCounts[static_cast<size_t>(F8Activation::Live)] == 25,
+           "the established subset retains its 25 LIVE rows");
+    Expect(activationCounts[static_cast<size_t>(F8Activation::RestartRequired)] == 21,
+           "the established subset retains its 21 RESTART REQUIRED rows");
     Expect(activationCounts[static_cast<size_t>(F8Activation::NotWired)] == 0,
-           "catalog must contain no unresolved NOT WIRED rows");
+           "no established control may regress to an unresolved NOT WIRED row");
     Expect(activationCounts[static_cast<size_t>(F8Activation::ReadOnly)] == 4,
            "external module compatibility remains read-only information");
-    Expect(applyCounts[static_cast<size_t>(F8ApplyMode::ConfigPolled)] == 4,
-           "Speed, Compose, progression bypass, and Dialog are ConfigPolled");
+    Expect(applyCounts[static_cast<size_t>(F8ApplyMode::ConfigPolled)] == 5,
+           "Speed, Compose, progression bypass, Dialog and Arcana development grant are ConfigPolled");
     Expect(applyCounts[static_cast<size_t>(F8ApplyMode::RuntimeAcknowledged)] == 20,
            "existing gameplay and new native ports must be RuntimeAcknowledged");
     Expect(FfxHooks::FindF8Flag(nullptr) == nullptr &&
                FfxHooks::FindF8Flag("unknown.flag") == nullptr,
            "catalog lookup must reject null and unknown keys");
+    const auto& reward=FfxHooks::F8FlagAt(87);
+    Expect(SameNullable(reward.gate.canonicalKey,"cheats.monster_rewards")&&SameNullable(reward.gate.authorityKey,"f8_authority.monster_rewards")&&
+               !reward.gate.defaultValue&&reward.activation==F8Activation::RestartRequired&&reward.applyMode==F8ApplyMode::None&&
+               FfxHooks::FindF8Flag("cheats.monster_rewards")==&reward,
+           "per-monster rewards append one default-OFF identity without renumbering existing flags");
 
     const FfxHooks::F8FlagSpec* seymour = FfxHooks::FindF8Flag("boosters.playable_seymour");
     const FfxHooks::F8FlagSpec* compose = FfxHooks::FindF8Flag("arena_plus.compose_f7");
@@ -4585,6 +4647,7 @@ void TestCatalogEditGuardsAndReadback() {
 }
 
 void TestF8BulkTabTransactions() {
+    FfxHooks::PublishF8RuntimeStatus("development.arcana_full_deck",FfxHooks::F8RuntimeAvailability::Available,true,false);
     const char* const scoutOff =
         "[field_scout]\nmaster = 0\nheavy = 0\nmax = 0\nultra = 0\n"
         "[f8_authority]\nfield_scout_master = 1\nfield_scout_heavy = 1\n"
@@ -4593,26 +4656,26 @@ void TestF8BulkTabTransactions() {
         FakeState state;
         Configure(state, scoutOff);
         FfxHooks::F8BulkEditResult result = FfxHooks::SetF8TabValues("Dev", true);
-        Expect(result.requestedValue && result.eligible == 5 && result.changed == 5 &&
+        Expect(result.requestedValue && result.eligible == 6 && result.changed == 6 &&
                    result.already == 0 && result.unavailable == 0 &&
                    result.externalOverride == 0 && result.invalidParameter == 0 &&
                    result.effectiveMismatch == 0 && !result.persistFailed &&
-                   state.persistCalls == 1 && result.rowCount == 5,
-               "Enable Tab must persist all five editable Dev rows in one transaction");
+                   state.persistCalls == 1 && result.rowCount == 6,
+               "Enable Tab must persist all six editable Dev rows in one transaction");
         for (const char* key : {"field_scout.master", "field_scout.heavy",
-                                "field_scout.max", "field_scout.ultra", "development.fastload_autosave"}) {
+                                "field_scout.max", "field_scout.ultra", "development.fastload_autosave", "development.arcana_full_deck"}) {
             const FfxHooks::F8FlagSpec* flag = FfxHooks::FindF8Flag(key);
             Expect(flag && FfxHooks::ResolveF8Flag(*flag).value,
                    "the successful Scout bulk-enable must publish every accepted row");
         }
         result = FfxHooks::SetF8TabValues("Dev", true);
-        Expect(result.eligible == 5 && result.changed == 0 && result.already == 5 &&
+        Expect(result.eligible == 6 && result.changed == 0 && result.already == 6 &&
                    result.unavailable == 0 && result.externalOverride == 0 &&
                    result.invalidParameter == 0 && result.effectiveMismatch == 0 &&
                    state.persistCalls == 1,
                "repeating Enable Tab must detect already-effective rows without another write");
         result = FfxHooks::SetF8TabValues("Dev", false);
-        Expect(!result.requestedValue && result.changed == 5 && result.already == 0 &&
+        Expect(!result.requestedValue && result.changed == 6 && result.already == 0 &&
                    result.unavailable == 0 && result.externalOverride == 0 &&
                    result.invalidParameter == 0 && result.effectiveMismatch == 0 &&
                    !result.persistFailed && state.persistCalls == 2,
@@ -4624,8 +4687,8 @@ void TestF8BulkTabTransactions() {
         state.persistSucceeds = false;
         const FfxHooks::F8BulkEditResult result =
             FfxHooks::SetF8TabValues("Dev", true);
-        Expect(result.eligible == 5 && result.changed == 0 && result.persistFailed &&
-                   state.persistCalls == 1 && result.rowCount == 5,
+        Expect(result.eligible == 6 && result.changed == 0 && result.persistFailed &&
+                   state.persistCalls == 1 && result.rowCount == 6,
                "failed bulk persistence must report every pending row as persist-failed and publish none");
         bool everyQueuedRowFailed = true;
         for (size_t row = 0; row < result.rowCount; ++row) {
@@ -4635,7 +4698,7 @@ void TestF8BulkTabTransactions() {
         Expect(everyQueuedRowFailed,
                "every queued row must carry PersistFailed when the atomic write fails");
         for (const char* key : {"field_scout.master", "field_scout.heavy",
-                                "field_scout.max", "field_scout.ultra", "development.fastload_autosave"}) {
+                                "field_scout.max", "field_scout.ultra", "development.fastload_autosave", "development.arcana_full_deck"}) {
             const FfxHooks::F8FlagSpec* flag = FfxHooks::FindF8Flag(key);
             Expect(flag && !FfxHooks::ResolveF8Flag(*flag).value,
                    "failed bulk persistence must preserve the complete previous tab snapshot");
@@ -5255,11 +5318,10 @@ void TestMultiplierEditorAndUiContracts() {
         ++cheatsFlags;
         if (flag.scalar) ++cheatsScalars;
     }
-    Expect(cheatsFlags == 8 && cheatsScalars == 2 &&
-               cheatsFlags + cheatsScalars + 1 == 11,
-           "Cheats must expose ten functional physical rows plus Back");
+    Expect(cheatsFlags == 9 && cheatsScalars == 2,
+           "Cheats retains eight legacy controls and both general rates plus one independent monster gate");
     Expect(FfxHooks::F8Ui::Layout::VisibleRows == 9,
-           "the eleven-row Cheats surface must retain the nine-row viewport");
+           "the grouped Cheats surface retains the nine-row viewport");
 
     std::string source;
     Expect(ReadWholeFile(RuntimeSourcePath("dllmain.cpp"), source),
@@ -5532,7 +5594,7 @@ void TestFastloadDevelopmentGate() {
     const auto rows=SourceFunctionBody(source,"static void F7_BuildRows(int kind)");
     size_t devRows=0;
     for(size_t i=0;i<FfxHooks::F8FlagCount();++i)if(std::strcmp(FfxHooks::F8FlagAt(i).tab,"Dev")==0)++devRows;
-    Expect(devRows==5&&rows.body.find("if (editableCount > 1)")!=std::string::npos,"Dev combines Scout and Fastload with atomic bulk actions");
+    Expect(devRows==6&&rows.body.find("if (editableCount > 1)")!=std::string::npos,"Dev combines Scout, Fastload and Arcana development with atomic bulk actions");
     const auto status=SourceFunctionBody(source,"static void F8BuildSelectedStatus(int sel, char* out, size_t outSize)");
     Expect(status.body.find("Fastload::GetRuntimeSnapshot()")!=std::string::npos&&status.body.find("Fastload::RuntimeDetail")!=std::string::npos,
            "Fastload row reports bounded actual runtime status independently of pending configuration");
@@ -5564,10 +5626,15 @@ void TestLabCatalogAndRestartControls() {
         {"labs.item_stack_cap","f8_authority.lab_item_stack_cap","FFXHOOKS_ENABLE_ITEM_STACK_CAP","item_stack_cap_255.flag","ItemStackCapFlagEnabled"},
         {"labs.double_triple_drop","f8_authority.lab_double_triple_drop","FFXHOOKS_ENABLE_DOUBLE_TRIPLE_DROP","double_triple_drop.flag","DoubleTripleDropEnabled"},
     };
-    Expect(FfxHooks::F8FlagCount()==48&&FfxHooks::F8TabCount()==7&&
+    Expect(FfxHooks::F8FlagCount()==88&&FfxHooks::F8TabCount()==7&&
                strcmp(FfxHooks::F8TabName(6),"Reforge")==0,"Reforge retains existing rows and adds both optional drawing gates");
     std::string source;
     Expect(ReadWholeFile(RuntimeSourcePath("dllmain.cpp"),source),"Lab install source readable");
+    const auto menuRows=SourceFunctionBody(source,"static void F7_BuildRows(int kind)");
+    Expect(menuRows.Valid()&&SourceTokensInOrder(menuRows.body,{"F8NativeScanOwnsFlag(*flag)","g_f7FlagSpecs[idx] = flag"})&&
+           CountSourceToken(menuRows.body,"\"Scan settings\",F7RT_OPTIONS")==1&&
+           menuRows.body.find("\"Scan element colors\"")==std::string::npos,
+           "Reforge routes Scan to one settings submenu and skips its two flat toggles");
     const auto capture=SourceBlockAfterToken(source,"static F8StartupGateSnapshot g_f8StartupGates[]").body;
     for(const auto& row:rows) {
         const auto* flag=FfxHooks::FindF8Flag(row.key);
@@ -5629,10 +5696,14 @@ void TestLabCatalogAndRestartControls() {
         FakeState bulk;Configure(bulk,"[labs]\n");
         for(const auto& row:rows)bulk.flags[row.flag]=BoolSource::LegacyFlagRoot;
         bulk.flags["equipment_workshop.flag"]=BoolSource::LegacyFlagRoot;
+        bulk.flags["arcana.flag"]=BoolSource::LegacyFlagRoot;
+        FfxHooks::PublishF8RuntimeStatus("arena_plus.compose_f7",F8RuntimeAvailability::Available,true,false);
         const auto disabled=FfxHooks::SetF8TabValues("Reforge",false);
-        Expect(disabled.eligible==10&&disabled.changed==10&&bulk.persistCalls==1,"Reforge bulk OFF resolves ten stale flags in one atomic write");
+        Expect(disabled.eligible==17&&disabled.changed==11&&disabled.already==6&&bulk.persistCalls==1,
+               "Reforge bulk OFF resolves eleven stale Lab flags and retains six already-OFF nested Arena flags");
         const auto enabled=FfxHooks::SetF8TabValues("Reforge",true);
-        Expect(enabled.eligible==10&&enabled.changed==10&&bulk.persistCalls==2,"Reforge bulk ON persists all ten independent rows once");
+        Expect(enabled.eligible==17&&enabled.changed==17&&bulk.persistCalls==2,
+               "Reforge bulk ON includes its nested Arena controls in one atomic write");
         for(const auto& row:rows)Expect(FfxHooks::ResolveF8Flag(*FfxHooks::FindF8Flag(row.key)).value,"every bulk-enabled Lab gate resolves ON");
     }
     Expect(!FfxHooks::FindF8Flag("labs.kimahri_ronso_mana_apply")&&
@@ -5645,6 +5716,20 @@ void TestLabCatalogAndRestartControls() {
                early.body.find("base, enableNovaBypass, enableNovaLog, enableRonsoMana, LogLine")!=std::string::npos,
            "early startup admits Ronso independently from Nova before any Fastload read");
     const auto worker=SourceFunctionBody(source,"static DWORD WINAPI HooksWorkerThread(LPVOID)");
+    Expect(worker.Valid()&&SourceTokensInOrder(worker.body,{
+        "CaptureF8StartupGates()","FfxHooks::EquipmentWorkshop::Start(",
+        "FfxHooks::Vanguard::Start(","StartFastloadEarlyIfRequested()"}),
+        "native Vanguard starts in the existing worker before Fastload, after shared Workshop ownership");
+    const auto startupCapture=SourceFunctionBody(source,"static BOOL CALLBACK CaptureF8StartupGatesCallback(PINIT_ONCE, PVOID, PVOID*)");
+    Expect(startupCapture.Valid()&&startupCapture.body.find("FfxHooks::Vanguard::CaptureStartup()")!=std::string::npos,
+        "Vanguard restart-required intent is captured with the same boot configuration generation");
+    std::string project,buildScript;
+    Expect(ReadWholeFile(RuntimeSourcePath("FfxHooksDll.vcxproj"),project)&&
+        ReadWholeFile(RuntimeSourcePath("build_hooks.ps1"),buildScript)&&
+        project.find("hooks\\VanguardRuntime.cpp")!=std::string::npos&&
+        buildScript.find("hooks\\VanguardRuntime.cpp")!=std::string::npos,
+        "both actual DLL build paths compile Vanguard, not only the standalone test");
+
     Expect(worker.Valid()&&SourceTokensInOrder(worker.body,{
                "CaptureF8StartupGates()","StartNovaPoolEarlyIfRequested()","StartFastloadEarlyIfRequested()"}),
            "Ronso save interception remains before Fastload and delayed installers");
@@ -5699,8 +5784,8 @@ void TestMultiplierCatalogAndTransactions() {
     const FfxHooks::F8FlagSpec* ap = FfxHooks::FindF8Flag("cheats.ap_100x");
     const FfxHooks::F8FlagSpec* gil = FfxHooks::FindF8Flag("cheats.gil_100x");
     Expect(ap && gil, "AP and Gil legacy boolean rows must remain in the catalog");
-    Expect(FfxHooks::F8FlagCount() == 48,
-           "scalar metadata must not add boolean catalog rows");
+    Expect(FfxHooks::F8FlagCount() == 88,
+           "general scalar metadata adds no boolean rows beyond the explicit independent monster gate");
     Expect(ap && ap->scalar && strcmp(ap->scalar->canonicalKey, "cheats.ap_multiplier") == 0 &&
                ap->scalar->defaultValue == 100 && ap->scalar->minimum == 1 &&
                ap->scalar->maximum == 100,
@@ -12916,7 +13001,7 @@ void TestNativeMenuFunctionKeySafetyContracts() {
     const SourceBlock titleGuard = SourceFunctionBody(
         dllmain, "static int __cdecl NativeTextOutline_MenuGuard(\n    void* renderState, void* glyphMetrics, float scale)");
     const SourceBlock titleGuardStart = SourceFunctionBody(
-        dllmain, "static bool StartNativeTextOutlineGuard()");
+        dllmain, "static bool StartNativeTextOutlineGuard(uintptr_t moduleBase = 0)");
     const SourceBlock installHooks = SourceFunctionBody(
         dllmain, "static void InstallHooks()");
     const SourceBlock dashTick = SourceFunctionBody(
@@ -12967,7 +13052,7 @@ void TestNativeMenuFunctionKeySafetyContracts() {
                "F7CloseTransition("}),
            "the Present producer must publish only after pump-hook success and revoke before stop work");
     Expect(titleGuardStart.Valid() &&
-               titleGuardStart.body.find("g_base + 0x4FAE40u") != std::string::npos &&
+               titleGuardStart.body.find("base + 0x4FAE40u") != std::string::npos &&
                titleGuardStart.body.find("(0x4FAE40u - 0x400000u)") == std::string::npos &&
                titleGuardStart.body.find("catch (const std::exception& ex)") != std::string::npos &&
                titleGuardStart.body.find("catch (...)") != std::string::npos &&
@@ -12984,6 +13069,7 @@ void TestNativeMenuFunctionKeySafetyContracts() {
            "the native menu must fail closed when its required text-outline guard is absent");
     Expect(titleGuard.Valid() &&
                titleGuard.body.find("FfxHooks::Maechen_MenuOwned()") != std::string::npos &&
+               titleGuard.body.find("FfxHooks::Arcana::NativeUi::TextDrawingActive()") != std::string::npos &&
                titleGuard.body.find("NativeMenuHubCloseDrainPending()") != std::string::npos &&
                titleGuard.body.find("g_nativeMenuTitleGuardRequired") == std::string::npos &&
                dllmain.find("static volatile LONG     g_nativeMenuTitleGuardRequired") == std::string::npos,

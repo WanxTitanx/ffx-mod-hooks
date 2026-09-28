@@ -7,12 +7,17 @@
 #include <intrin.h>
 
 namespace FfxHooks::EquipmentWorkshop::NativeUi {
+static std::atomic<EquipmentLayout> equipmentLayout{nullptr};
+void SetEquipmentLayout(EquipmentLayout layout) noexcept {equipmentLayout.store(layout);}
+static std::atomic<StatusObserver> statusObserver{nullptr};
+void SetStatusObserver(StatusObserver observer) noexcept {statusObserver.store(observer);}
 namespace {
 enum Hook {Equipment,Customize,Battle,AbilityRow,AbilityDefinition,Shared,Inventory,StatusPage,StatusList,Frame,Count};
 constexpr std::uint32_t rvas[Count]={0x4D02B0,0x4D63C0,0x4F34C0,0x4F4F10,0x3909C0,0x4D8A70,0x4BCFE0,0x4D2760,0x4D2DE0,0x4F5F70};
 void* originals[Count]{};
 std::uintptr_t module=0;
 std::atomic<bool> active{false},attempted{false};
+std::atomic<bool> installed{false};
 static_assert(std::atomic<bool>::is_always_lock_free,"detach admission must be lock-free");
 struct NamedRow {unsigned char row[108]{},text[192]{};};
 struct Scope {
@@ -35,7 +40,7 @@ using GetGearFn=const unsigned char*(__cdecl*)(unsigned,const unsigned char**);
 using DefinitionFn=const unsigned char*(__cdecl*)(unsigned,const unsigned char**);
 using ScaleFn=float(__cdecl*)(float);
 float X(float value){return reinterpret_cast<ScaleFn>(module+0x244990)(value);}
-float Y(float value){return reinterpret_cast<ScaleFn>(module+0x2449D0)(value);}
+float Y(float value){if(scope&&scope->kind==Equipment){if(auto layout=equipmentLayout.load())value=layout(value);}return reinterpret_cast<ScaleFn>(module+0x2449D0)(value);}
 bool Enabled(){return active.load(std::memory_order_acquire)&&scope&&scope->depth<4;}
 const unsigned char* GearAdapter(std::uintptr_t caller,const unsigned char* native){
     if(!Enabled()||!native)return native;
@@ -129,11 +134,12 @@ bool Start(std::uintptr_t base,bool enabled,bool validateOnly,void(*log)(const c
     attempted=true;module=base;
     void* replacements[Count]={reinterpret_cast<void*>(&EquipmentShim),reinterpret_cast<void*>(&CustomizeShim),reinterpret_cast<void*>(&BattleShim),reinterpret_cast<void*>(&RowShim),reinterpret_cast<void*>(&DefinitionShim),reinterpret_cast<void*>(&SharedShim),reinterpret_cast<void*>(&InventoryShim),reinterpret_cast<void*>(&StatusShim),reinterpret_cast<void*>(&StatusListShim),reinterpret_cast<void*>(&FrameShim)};
     if(!NativeUiSupport::Install(base,rvas,replacements,originals,MinHookBatch::Owner::EquipmentWorkshopUi,reinterpret_cast<const void*>(&Start)))return false;
-    SetPresentationAdapter(GearAdapter);active=true;
+    SetPresentationAdapter(GearAdapter);installed=true;active=true;
     if(log)log("[ffx-hooks] Workshop native UI: private fifth-row and ranked-name views enabled\n");return true;
 }
 void Stop() noexcept {active=false;}
 bool Active() noexcept {return active.load();}
+bool StatusBridgeInstalled(std::uintptr_t base) noexcept {return installed.load()&&module==base;}
 #ifdef FFXHOOKS_TESTING
 void FrameEnvironmentForTests(void* frame){if(active.load()&&frame)originals[Frame]=frame;}
 #endif

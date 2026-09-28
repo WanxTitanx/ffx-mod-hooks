@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   FFX Hooks DLL - Visual Studio 2022, x86 only (game is 32-bit).
   Requires:
@@ -89,8 +89,8 @@
       <EnableUAC>false</EnableUAC>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x86-windows-static\debug\lib;$(ProjectDir)vcpkg_installed\x86-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -114,8 +114,8 @@
       <EnableUAC>false</EnableUAC>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x86-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -163,6 +163,12 @@
     <ClInclude Include="hooks\NativePortsHook.h" />
     <ClInclude Include="hooks\NativeGamepadHook.h" />
     <ClInclude Include="hooks\NativeLanguageHook.h" />
+    <ClInclude Include="hooks\TextLanguageCore.h" />
+    <ClInclude Include="hooks\TextLanguagePayload.h" />
+    <ClInclude Include="hooks\TextLanguagePack.h" />
+    <ClInclude Include="hooks\TextLanguageFiles.h" />
+    <ClInclude Include="hooks\TextLanguageHook.h" />
+    <ClInclude Include="hooks\TextLanguageSettings.h" />
     <ClInclude Include="hooks\NativeLanguageCore.h" />
     <ClInclude Include="hooks\SinAiCore.h" />
     <ClInclude Include="hooks\SinAiHook.h" />
@@ -170,6 +176,22 @@
     <ClInclude Include="hooks\FmvSpeedCore.h" />
     <ClInclude Include="hooks\SinAiProfiles.generated.h" />
     <ClInclude Include="hooks\NativeSettingsUi.inl" />
+    <ClInclude Include="hooks\ArcanaCore.h" />
+    <ClInclude Include="hooks\ArcanaAcquisition.h" />
+    <ClInclude Include="hooks\ArcanaStore.h" />
+    <ClInclude Include="hooks\ArcanaUiCore.h" />
+    <ClInclude Include="hooks\ArcanaNativeUi.h" />
+    <ClInclude Include="hooks\ArcanaNativeEffects.h" />
+    <ClInclude Include="hooks\ArcanaRuntime.h" />
+    <ClInclude Include="hooks\ArcanaCombatCore.h" />
+    <ClInclude Include="hooks\ArcanaCombat.h" />
+    <ClInclude Include="hooks\ArcanaAssets.h" />
+    <ClInclude Include="hooks\ArcanaCatalog.generated.h" />
+    <ClInclude Include="hooks\ArcanaEvidence.generated.h" />
+    <ClInclude Include="hooks\ArcanaRuntimeEvidence.generated.h" />
+    <ClInclude Include="hooks\ArcanaCombatEvidence.generated.h" />
+    <ClInclude Include="hooks\NativeGameplayEvents.h" />
+
     <ClInclude Include="hooks\NativeGamepadCore.h" />
     <ClInclude Include="hooks\NativePortsCore.h" />
     <ClInclude Include="hooks\NativeBindingsCore.h" />
@@ -185,6 +207,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="hooks\ArcanaCore.cpp" />
+    <ClCompile Include="hooks\ArcanaAcquisition.cpp" />
+    <ClCompile Include="hooks\ArcanaStore.cpp" />
+    <ClCompile Include="hooks\ArcanaUiCore.cpp" />
+    <ClCompile Include="hooks\ArcanaNativeUi.cpp" />
+    <ClCompile Include="hooks\ArcanaNativeEffects.cpp" />
+    <ClCompile Include="hooks\ArcanaRuntime.cpp" />
+    <ClCompile Include="hooks\ArcanaCombatCore.cpp" />
+    <ClCompile Include="hooks\ArcanaCombat.cpp" />
+    <ClCompile Include="hooks\ArcanaAssets.cpp" />
+
     <ClCompile Include="hooks\MusicHook.cpp" />
     <ClCompile Include="hooks\NovaSuperDamageHook.cpp" />
     <ClCompile Include="hooks\RonsoPoolCore.cpp" />
@@ -193,6 +226,9 @@
     <ClCompile Include="hooks\RonsoPoolRuntime.cpp" />
     <ClCompile Include="hooks\RonsoManaHook.cpp" />
     <ClCompile Include="hooks\ElementHook.cpp" />
+    <ClCompile Include="hooks\ElementalRuntime.cpp" />
+    <ClCompile Include="hooks\SpiraRuntime.cpp" />
+    <ClCompile Include="hooks\MonsterRewardsRuntime.cpp" />
     <ClCompile Include="hooks\ResolverLogHook.cpp" />
     <ClCompile Include="hooks\ArenaProgressSidecar.cpp" />
     <ClCompile Include="hooks\ItemStackCapHook.cpp" />
@@ -234,8 +270,14 @@
     <ClCompile Include="hooks\NativePortsHook.cpp" />
     <ClCompile Include="hooks\NativeGamepadHook.cpp" />
     <ClCompile Include="hooks\NativeLanguageHook.cpp" />
+    <ClCompile Include="hooks\TextLanguageCore.cpp" />
+    <ClCompile Include="hooks\TextLanguagePayload.cpp" />
+    <ClCompile Include="hooks\TextLanguagePack.cpp" />
+    <ClCompile Include="hooks\TextLanguageFiles.cpp" />
+    <ClCompile Include="hooks\TextLanguageHook.cpp" />
     <ClCompile Include="hooks\SinAiHook.cpp" />
     <ClCompile Include="hooks\EquipmentWorkshopRuntime.cpp" />
+    <ClCompile Include="hooks\VanguardRuntime.cpp" />
     <ClCompile Include="hooks\EquipmentWorkshopNativeUi.cpp" />
     <ClCompile Include="hooks\EquipmentWorkshopStore.cpp" />
     <ClCompile Include="..\..\..\research\equipment_workshop\src\workshop.cpp" />

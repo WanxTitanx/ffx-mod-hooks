@@ -1,0 +1,99 @@
+{
+  "locale": "pt-BR",
+  "display_name": "Português (Brasil)",
+  "pack_version": "2.0.0",
+  "resources": {
+    "mmain_txt.bin": [
+      {
+        "row": 0,
+        "slot": 0,
+        "text": "Itens"
+      },
+      {
+        "row": 0,
+        "slot": 2,
+        "text": "Usar itens."
+      },
+      {
+        "row": 1,
+        "slot": 0,
+        "text": "Ações"
+      },
+      {
+        "row": 1,
+        "slot": 2,
+        "text": "Usar ações."
+      },
+      {
+        "row": 6,
+        "slot": 0,
+        "text": "Formação"
+      },
+      {
+        "row": 6,
+        "slot": 2,
+        "text": "Trocar formação."
+      },
+      {
+        "row": 8,
+        "slot": 2,
+        "text": "ÁÉÍÓÚ: ãõç, ÃÕ!"
+      }
+    ],
+    "btlend_txt.bin": [
+      {
+        "row": 0,
+        "slot": 0,
+        "text": "AP obtidos."
+      }
+    ],
+    "status_txt.bin": [
+      {
+        "row": 7,
+        "slot": 0,
+        "text": "Força"
+      },
+      {
+        "row": 10,
+        "slot": 0,
+        "text": "Def. mágica"
+      },
+      {
+        "row": 25,
+        "slot": 0,
+        "text": "Faltam: {VAR:4}"
+      }
+    ],
+    "btl_txt.bin": [
+      {
+        "row": 2,
+        "slot": 0,
+        "text": "{CTRL:09:30}Ataque inicial!"
+      }
+    ],
+    "event/obj_ps3/ss/ssbt0000/ssbt0000.bin": [
+      {
+        "row": 0,
+        "slot": 0,
+        "text": "{TIDUS}\nMaldito velho..."
+      },
+      {
+        "row": 1,
+        "slot": 0,
+        "text": "{CTRL:19:59}\nVi um brilho\nno braço de {CTRL:19:70}!"
+      }
+    ],
+    "event/obj_psv/ss/ssbt0000/ssbt0000.bin": [
+      {
+        "row": 0,
+        "slot": 0,
+        "text": "{TIDUS}\nMaldito velho..."
+      },
+      {
+        "row": 1,
+        "slot": 0,
+        "text": "{CTRL:19:59}\nVi um brilho\nno braço de {CTRL:19:70}!"
+      }
+    ]
+  }
+}

@@ -5,6 +5,7 @@
 #include "RonsoPoolEvidence.h"
 #include "F8RuntimeCore.h"
 #include "NativeSaveEvents.h"
+#include "RonsoCommandCosts.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -188,7 +189,9 @@ bool IoCaller(uintptr_t address,bool write) noexcept {
     return write?(rva==0x2F06C5u||rva==0x2F0A45u):rva==0x2F0228u;
 }
 struct IoWork {
-    SaveImage input{},output{};
+    SaveImage input{},output{},selected{},projected{};
+    NativeSaveEvents::CheckpointSelection selection{};
+    NativeSaveEvents::WriteTransaction transaction;
     std::wstring path;
     SavedOwner owner{};
     bool needsOwner=false,useOutput=false;
@@ -203,16 +206,42 @@ size_t __cdecl ReadShim(void* data,size_t size,size_t count,void* stream) {
     const bool candidate=StreamInfo(stream,path,4096,&offset)&&offset==0;
     const size_t result=readOriginal(data,size,count,stream);
     const DWORD nativeError=GetLastError();
+    // This exact game call reads a complete save, not an arbitrary file. Without
+    // its canonical slot identity there is no safe paid-checkpoint decision.
+    // Returning the raw bytes here would silently roll back accepted spending.
+    if(!candidate||!OwnerStore::IsSavePath(path)||
+       !DataRange(reinterpret_cast<uintptr_t>(data),kSaveSize,true)){
+        storageFault.store(true);NativeSaveEvents::ReadRejected();
+        Notice("[ffx-hooks] ERROR native save identity unavailable; load rejected\n");
+        SetLastError(ERROR_INVALID_DATA);return 0;
+    }
     try {
         if(candidate&&result==count&&readiness.load()==1&&stateEpoch.load()==epoch&&
             OwnerStore::IsSavePath(path)&&DataRange(reinterpret_cast<uintptr_t>(data),kSaveSize,true)) {
             auto work=std::make_unique<IoWork>();work->path=path;
             if(Copy(work->input.data(),data,kSaveSize)) {
-                SavedOwner metadata{};const auto ownership=store.Read(work->path,work->input,&metadata);
+                work->selected=work->input;
+                if(!NativeSaveEvents::SelectRead(path,work->input.data(),work->selected.data(),
+                                                kSaveSize,&work->selection)){
+                    storageFault.store(true);NativeSaveEvents::ReadRejected();
+                    Notice("[ffx-hooks] ERROR paid checkpoint could not be verified; native load rejected\n");
+                    SetLastError(ERROR_INVALID_DATA);return 0;
+                }
+                SavedOwner metadata{};OwnerRead ownership=OwnerRead::Missing;
+                if(work->selection.selected){
+                    const auto& pool=work->selection.pool;
+                    metadata={pool.originalMax,pool.charge,pool.maximum};
+                    if(pool.present)ownership=OwnerRead::Found;
+                }else ownership=store.Read(work->path,work->input,&metadata);
+                const auto& loadImage=work->selection.selected?work->selected:work->input;
                 SaveSession next{};SaveDecision decision=SaveDecision::Invalid;
                 if(ownership==OwnerRead::Found||ownership==OwnerRead::Missing)
-                    decision=LoadPool(requestedGameplay,work->input,ownership==OwnerRead::Found?&metadata:nullptr,
+                    decision=LoadPool(requestedGameplay,loadImage,ownership==OwnerRead::Found?&metadata:nullptr,
                         CurrentScene(),&next,&work->output);
+                if(work->selection.selected&&decision!=SaveDecision::Native&&decision!=SaveDecision::Converted){
+                    storageFault.store(true);NativeSaveEvents::ReadRejected();
+                    SetLastError(ERROR_INVALID_DATA);return 0;
+                }
                 {
                 std::lock_guard<std::mutex> lock(stateMutex);
                 if(readiness.load()==1&&stateEpoch.load()==epoch) {
@@ -225,7 +254,9 @@ size_t __cdecl ReadShim(void* data,size_t size,size_t count,void* stream) {
                             Notice("[ffx-hooks] ERROR RonsoPool load-buffer publication failed\n");
                         }
                     } else if(decision==SaveDecision::Native) {
-                        session=next;storageFault.store(false);
+                        if(!work->selection.selected||Copy(data,work->output.data(),kSaveSize)){
+                            session=next;storageFault.store(false);
+                        }else storageFault.store(true);
                     } else if(ownership==OwnerRead::Invalid||ownership==OwnerRead::Unavailable||
                               decision==SaveDecision::OwnershipConflict) {
                         storageFault.store(true);
@@ -233,21 +264,47 @@ size_t __cdecl ReadShim(void* data,size_t size,size_t count,void* stream) {
                     }
                 }
                 }
-                // Notify only after releasing the pool mutex. Subscribers copy
-                // these bounded images; they never own or rewrite the CRT buffer.
+                if(work->selection.selected&&storageFault.load()){
+                    NativeSaveEvents::ReadRejected();SetLastError(ERROR_INVALID_DATA);return 0;
+                }
+                // Selection happened before LoadPool. Both subscribers now
+                // receive the same canonical save and the original disk anchor.
                 NativeSaveEvents::ReadCompleted(path,work->input.data(),
-                    static_cast<const unsigned char*>(data),kSaveSize);
+                    static_cast<const unsigned char*>(data),kSaveSize,&work->selection,work->selected.data());
             }
         }
     } catch(...) {
-        storageFault.store(true);Notice("[ffx-hooks] ERROR RonsoPool load metadata failed; no retry\n");
+        // The temporary native buffer is not admitted until ownership/checkpoint
+        // verification completes. A metadata exception must not import old RAM.
+        storageFault.store(true);NativeSaveEvents::ReadRejected();
+        Notice("[ffx-hooks] ERROR RonsoPool load metadata failed; native load rejected\n");
+        SetLastError(ERROR_INVALID_DATA);return 0;
     }
     SetLastError(nativeError);return result;
 }
+bool SerializeCheckpoint(const unsigned char* input,unsigned char* output,std::size_t size,
+                         NativeSaveEvents::CheckpointOwnership* ownership) noexcept {
+    if(!input||!output||!ownership||size!=kSaveSize||readiness.load()!=1||storageFault.load())return false;
+    try {
+        SaveSession snapshot{};uint32_t epoch=0;
+        {std::lock_guard<std::mutex> lock(stateMutex);epoch=stateEpoch.load();
+            if(sessionEpoch!=epoch||readiness.load()!=1)return false;snapshot=session;}
+        SaveImage original{},serialized{};SavedOwner owner{};bool needed=false;
+        if(!Copy(original.data(),input,size))return false;
+        const auto decision=SavePool(requestedGameplay,snapshot,original,&serialized,&owner,&needed);
+        if((decision!=SaveDecision::Native&&decision!=SaveDecision::Converted)||
+           readiness.load()!=1||stateEpoch.load()!=epoch||storageFault.load()||!Copy(output,serialized.data(),size))return false;
+        *ownership=needed?NativeSaveEvents::CheckpointOwnership{1,owner.originalMax,owner.charge,owner.maximum}:
+                          NativeSaveEvents::CheckpointOwnership{};
+        return true;
+    }catch(...){return false;}
+}
 size_t __cdecl WriteShim(const void* data,size_t size,size_t count,void* stream) {
     const uintptr_t caller=reinterpret_cast<uintptr_t>(_ReturnAddress());
+    const DWORD incomingError=GetLastError();
     if(!writeOriginal)return 0;
-    if(readiness.load()!=1||size!=1||count!=kSaveSize||!IoCaller(caller,true)||
+    const bool projectionRequired=NativeSaveEvents::ProjectionRequired();
+    if((readiness.load()!=1&&!projectionRequired)||size!=1||count!=kSaveSize||!IoCaller(caller,true)||
        (storageFault.load()&&!NativeSaveEvents::Requested()))
         return writeOriginal(data,size,count,stream);
     std::unique_ptr<IoWork> work;
@@ -263,7 +320,7 @@ size_t __cdecl WriteShim(const void* data,size_t size,size_t count,void* stream)
                 if(sessionEpoch==prepared->epoch)snapshot=session;
             }
             if(Copy(prepared->input.data(),data,kSaveSize)) {
-                const auto decision=storageFault.load()?SaveDecision::Native:
+                const auto decision=storageFault.load()||readiness.load()!=1?SaveDecision::Native:
                     SavePool(requestedGameplay,snapshot,prepared->input,
                         &prepared->output,&prepared->owner,&prepared->needsOwner);
                 if(decision==SaveDecision::Converted){prepared->useOutput=true;work=std::move(prepared);}
@@ -274,15 +331,41 @@ size_t __cdecl WriteShim(const void* data,size_t size,size_t count,void* stream)
             }
         }
     } catch(...) {Notice("[ffx-hooks] ERROR RonsoPool save preparation failed; native write retained\n");}
-    if(work&&(readiness.load()!=1||stateEpoch.load()!=work->epoch))work.reset();
+    if(work&&((readiness.load()!=1&&!projectionRequired)||stateEpoch.load()!=work->epoch))work.reset();
     const void* bytes=work&&work->useOutput?work->output.data():data;
+    bool metadataPrepared=true;
+    if(work){
+        const auto* source=work->useOutput?work->output.data():work->input.data();
+        if(!NativeSaveEvents::ProjectWrite(work->path.c_str(),source,work->projected.data(),kSaveSize,work->transaction)){
+            Notice("[ffx-hooks] ERROR native save projection rejected; write not attempted\n");
+            SetLastError(ERROR_INVALID_DATA);return 0;
+        }
+        if(work->transaction.count){
+            if(std::memcmp(source,work->projected.data(),kSaveSize)!=0)SealSave(work->projected);
+            bytes=work->projected.data();
+        }
+        metadataPrepared=NativeSaveEvents::PrepareWrite(work->path.c_str(),static_cast<const unsigned char*>(bytes),kSaveSize,work->transaction);
+        // A sidecar failure must not discard the primary save after the game's
+        // caller has already opened/truncated its stream. Write the projected
+        // vanilla image once, expose the extension failure, and never retry I/O.
+        if(!metadataPrepared)Notice("[ffx-hooks] ERROR extension prepare failed; continuing with vanilla-compatible save bytes\n");
+    }else if(NativeSaveEvents::ProjectionRequired()){
+        Notice("[ffx-hooks] ERROR native save identity unavailable while temporary fields require projection\n");
+        SetLastError(ERROR_INVALID_DATA);return 0;
+    }
+    if(work)NativeSaveEvents::WritePrepared(work->path.c_str(),static_cast<const unsigned char*>(bytes),kSaveSize);
     // Never put this call inside a retry/catch path: an exception after fwrite
     // must not append a second save payload to the native stream.
+    SetLastError(incomingError);
     const size_t result=writeOriginal(bytes,size,count,stream);
     const DWORD nativeError=GetLastError();
     if(work&&work->needsOwner&&result==count) {
         try {
-            if(!store.Write(work->path,work->output,work->owner)) {
+            // Other save owners may project temporary fields after Ronso's
+            // transformation. Bind ownership to the exact successfully written
+            // bytes, not the earlier image with transient maxima still present.
+            SaveImage persisted{};
+            if(!Copy(persisted.data(),bytes,kSaveSize)||!store.Write(work->path,persisted,work->owner)) {
                 storageFault.store(true);
                 Notice("[ffx-hooks] ERROR RonsoPool ownership commit failed; full charge remains in native save\n");
             }
@@ -291,6 +374,7 @@ size_t __cdecl WriteShim(const void* data,size_t size,size_t count,void* stream)
             Notice("[ffx-hooks] ERROR RonsoPool ownership commit threw; native save is not retried\n");
         }
     }
+    if(work)NativeSaveEvents::FinishWrite(work->transaction,static_cast<const unsigned char*>(bytes),kSaveSize,metadataPrepared&&result==count);
     if(work&&result==count)NativeSaveEvents::WriteCompleted(work->path.c_str(),
         static_cast<const unsigned char*>(bytes),kSaveSize);
     SetLastError(nativeError);return result;
@@ -321,10 +405,25 @@ Availability DecideAvailability(uint8_t slot,int16_t command,int vanilla) {
     } else decision=Evaluate(facts).availability;
     return decision;
 }
+bool ExtendedHeaderReady(int slot) noexcept {
+    if(slot<0||slot>=18||!CommandCosts::nativeReady.load())return false;
+    uintptr_t ring=0;std::array<uint16_t,8> headers{};
+    const uintptr_t offset=static_cast<unsigned>(slot)*0x478u+0x28u;
+    if(!Copy(&ring,reinterpret_cast<void*>(moduleBase+0x1F10CD8u),4)||ring>UINT32_MAX-offset-sizeof(headers)||
+       !DataRange(ring+offset,sizeof(headers))||!Copy(headers.data(),reinterpret_cast<void*>(ring+offset),sizeof(headers)))return false;
+    for(unsigned word:headers){
+        if(word<0x3000||word>0x3FFF)continue;
+        CommandCosts::Quote quote{};
+        if(CommandCosts::Read(static_cast<unsigned>(slot),Command(static_cast<uint16_t>(word&0xFFF)),quote)&&quote.allowed)return true;
+    }
+    return false;
+}
 int __cdecl MenuReadyShim(int slot) {
     const auto original=reinterpret_cast<MenuReadyFn>(menuReadyOriginal);
     const uintptr_t caller=reinterpret_cast<uintptr_t>(_ReturnAddress());
     const int vanilla=original?original(slot):0;
+    if(readiness.load()==1&&!storageFault.load()&&caller>=moduleBase&&
+       (caller-moduleBase==0x392BD3u||caller-moduleBase==0x39B6AEu)&&ExtendedHeaderReady(slot))return 1;
     // These two callers construct the input ring and the menu's blocked word.
     // Other readiness consumers include charge-clearing/gameplay paths; they
     // must retain the real full-gauge bit. No gauge or actor flag is spoofed.
@@ -344,6 +443,10 @@ int __cdecl LeftEntryShim(int slot) {
     const auto original=reinterpret_cast<MenuReadyFn>(leftEntryOriginal);
     const uintptr_t caller=reinterpret_cast<uintptr_t>(_ReturnAddress());
     const int vanilla=original?original(slot):0;
+    if(readiness.load()==1&&!storageFault.load()&&caller>=moduleBase){
+        bool known=false;for(uint32_t rva:Evidence::kLeftEntryCallers)if(caller-moduleBase==rva)known=true;
+        if(known&&ExtendedHeaderReady(slot))return vanilla|2;
+    }
     if(readiness.load()!=1||!requestedGameplay||storageFault.load()||slot!=kCharacter||caller<moduleBase)
         return vanilla;
     const uint32_t callerRva=static_cast<uint32_t>(caller-moduleBase);
@@ -399,10 +502,30 @@ int __cdecl LeftEntryShim(int slot) {
     }
     SetLastError(nativeError);return result;
 }
+int EvaluateExtendedCost(int slot,const uint8_t* command,int extraMp,const CommandCosts::Quote& quote) noexcept {
+    if(!quote.allowed||quote.cost>quote.charge||!costGateOriginal)return -1;
+    std::array<uint8_t,96> view{};
+    if(!command||!DataRange(reinterpret_cast<uintptr_t>(command),view.size())||!Copy(view.data(),command,view.size()))return -1;
+    // Reuse the original Ronso design: bypass only the full-gauge shortcut on a
+    // call-local row. Native MP/One-MP/Silence/cheat checks still execute once.
+    view[38]=0;
+    return reinterpret_cast<CostGateFn>(costGateOriginal)(slot,view.data(),extraMp);
+}
+int __cdecl EvaluateOwnedCost(int slot,const uint8_t* command,int extraMp) {
+    if(readiness.load()!=1||storageFault.load()||!costGateOriginal)return -1;
+    CommandCosts::Quote quote{};
+    if(CommandCosts::Read(static_cast<unsigned>(slot),command,quote))return EvaluateExtendedCost(slot,command,extraMp,quote);
+    return reinterpret_cast<CostGateFn>(costGateOriginal)(slot,command,extraMp);
+}
 int __cdecl CostGateShim(int slot,const uint8_t* command,int extraMp) {
     const auto original=reinterpret_cast<CostGateFn>(costGateOriginal);
     if(!original)return -1;
     const uintptr_t caller=reinterpret_cast<uintptr_t>(_ReturnAddress());
+    if(readiness.load()==1&&!storageFault.load()&&caller>=moduleBase){
+        bool known=false;for(uint32_t rva:Evidence::kCostGateCallers)if(caller-moduleBase==rva)known=true;
+        CommandCosts::Quote quote{};
+        if(known&&CommandCosts::Read(static_cast<unsigned>(slot),command,quote))return EvaluateExtendedCost(slot,command,extraMp,quote);
+    }
     if(readiness.load()!=1||!requestedGameplay||storageFault.load()||slot!=kCharacter||caller<moduleBase)
         return original(slot,command,extraMp);
     const uint32_t rva=static_cast<uint32_t>(caller-moduleBase);
@@ -539,15 +662,15 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
     wchar_t legacy[8]={};
     if(GetEnvironmentVariableW(L"FFXHOOKS_RONSO_MANA_FORCE",legacy,8)>0&&legacy[0]!=L'0')return false;
     const auto directory=overrideDirectory?std::wstring(overrideDirectory):StorageDirectory();
-    const bool observerRequested=NativeSaveEvents::Requested();
-    if(!gameplay&&!overrideDirectory&&!HasPersistentOwnership()&&!observerRequested)return true;
-    if((gameplay||observerRequested)&&!overrideDirectory) {
+    const bool observerRequested=NativeSaveEvents::Requested(),commandRequested=CommandCosts::Requested();
+    if(!gameplay&&!overrideDirectory&&!HasPersistentOwnership()&&!observerRequested&&!commandRequested)return true;
+    if((gameplay||observerRequested||commandRequested)&&!overrideDirectory) {
         const auto slash=directory.find_last_of(L"/\\");
         if(slash==std::wstring::npos)return false;
         const auto parent=directory.substr(0,slash);
         if(!CreateDirectoryW(parent.c_str(),nullptr)&&GetLastError()!=ERROR_ALREADY_EXISTS)return false;
     }
-    if(!store.Initialize(directory,gameplay||observerRequested))return false;
+    if(!store.Initialize(directory,gameplay||observerRequested||commandRequested))return false;
     HMODULE crt=GetModuleHandleW(L"msvcr110.dll");if(!crt)return false;
     readOriginal=reinterpret_cast<ReadFn>(GetProcAddress(crt,"fread"));
     writeOriginal=reinterpret_cast<WriteFn>(GetProcAddress(crt,"fwrite"));
@@ -562,6 +685,8 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
     if(gameplay) {
         if(!BuildMaximumStub())return false;
         result->hooks[result->count++]={base+0x39B5B7,maxStub,&maxOriginal};
+    }
+    if(gameplay||commandRequested){
         result->hooks[result->count++]={base+0x39AF70,reinterpret_cast<void*>(&MenuReadyShim),&menuReadyOriginal};
         result->hooks[result->count++]={base+0x38F750,reinterpret_cast<void*>(&LeftEntryShim),&leftEntryOriginal};
         result->hooks[result->count++]={base+0x38C750,reinterpret_cast<void*>(&CostGateShim),&costGateOriginal};
@@ -582,12 +707,25 @@ bool InstallIoImports() noexcept {
     return true;
 }
 bool RestoreIoImports() noexcept {
+    // A stopped client may still own temporary RAM fields. Its passive
+    // serialization projection must outlive those fields; do not expose them
+    // to a later vanilla save by retiring the import first.
+    if(NativeSaveEvents::ProjectionRequired())return false;
     const bool read=RestoreImport(kReadImport,reinterpret_cast<void*>(&ReadShim),reinterpret_cast<void*>(readOriginal),&readPatch);
     const bool write=RestoreImport(kWriteImport,reinterpret_cast<void*>(&WriteShim),reinterpret_cast<void*>(writeOriginal),&writePatch);
     return read&&write;
 }
-void ActivateRuntime() noexcept {uint32_t expected=0;readiness.compare_exchange_strong(expected,1);}
-void RequestStop() noexcept {readiness.store(2);}
+void ActivateRuntime() noexcept {
+    uint32_t expected=0;
+    if(readiness.compare_exchange_strong(expected,1)&&
+       !NativeSaveEvents::RegisterCheckpointSerializer(&SerializeCheckpoint)){
+        readiness.store(2);Log("[ffx-hooks] ERROR checkpoint serializer already owned; Ronso I/O admission closed\n");
+    }
+    if(readiness.load()==1&&costGateOriginal){
+        CommandCosts::gate.store(&EvaluateOwnedCost);CommandCosts::nativeReady.store(true);
+    }
+}
+void RequestStop() noexcept {readiness.store(2);CommandCosts::nativeReady.store(false);CommandCosts::gate.store(nullptr);NativeSaveEvents::UnregisterCheckpointSerializer(&SerializeCheckpoint);}
 void DiscardUnpublishedRuntime() noexcept {
     if(readiness.load()==0&&maxStub){VirtualFree(maxStub,0,MEM_RELEASE);maxStub=nullptr;}
 }

@@ -2,6 +2,12 @@
 #include "../hooks/NativePortsHook.h"
 #include "../hooks/NativeGamepadHook.h"
 #include "../hooks/NativeLanguageCore.h"
+#include "../hooks/TextLanguageHook.h"
+namespace FfxHooks::TextLanguage::Native {
+Snapshot Inspect() noexcept {return {};}
+const char* Detail() noexcept {return "Original text language";}
+}
+
 namespace FfxHooks::NativePorts {
 void CancelBindingCapture(){}
 const char* BindingText(NativeBindings::Action){return "Unassigned";}

@@ -1,0 +1,536 @@
+{
+  "producer": "Jarvis-HOOK",
+  "date": "2026-09-27",
+  "level": "static-source-and-binary-read-only",
+  "document_branch": "codex/aeon-exclusive-breaks-plan-20260927",
+  "document_base": "3b010845ece1d5f927485eae0cf67f04a46c97b2",
+  "editor_head": "399164236638bd34d44c4833b02ea3b15a49d771",
+  "hooks_head": "f2308dddc1833811899c0999c96b5ee25a18bd66",
+  "files": [
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/data/mods/ffx_ps2/ffx/master/jppc/battle/kernel/a_ability.bin",
+      "bytes": 21155,
+      "sha256": "0525b4929e31467f449349b23353969083cdddf6d8ca83d3f562c8c62393e9a1",
+      "count": 148,
+      "stride": 108,
+      "steam_path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/jppc/battle/kernel/a_ability.bin",
+      "steam_sha256": "0525b4929e31467f449349b23353969083cdddf6d8ca83d3f562c8c62393e9a1",
+      "steam_identical": true
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/data/mods/ffx_ps2/ffx/master/new_uspc/battle/kernel/a_ability.bin",
+      "bytes": 23071,
+      "sha256": "70e0e14178c7dae5616667e624fe39359b1f1e4f7c47ba95868f0808acd92268",
+      "count": 148,
+      "stride": 108,
+      "steam_path": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/new_uspc/battle/kernel/a_ability.bin",
+      "steam_sha256": "70e0e14178c7dae5616667e624fe39359b1f1e4f7c47ba95868f0808acd92268",
+      "steam_identical": true
+    }
+  ],
+  "samples": {
+    "jppc": [
+      {
+        "id": 13,
+        "equipment_word": "0x800D",
+        "name_us": null,
+        "payload_sha256": "8b9fcde464d25804008928f17c382cb72b4e4b75aa74d52675223662a6ea0566",
+        "stat_increase_amount_at_55": 15,
+        "stat_mask_at_56": "0x0011",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 23,
+        "equipment_word": "0x8017",
+        "name_us": null,
+        "payload_sha256": "86ce91f3088d4fd88d478517d5ceff81687ac49d225fa59d3e163be1a069b4bd",
+        "stat_increase_amount_at_55": 24,
+        "stat_mask_at_56": "0x4002",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0200"
+      },
+      {
+        "id": 24,
+        "equipment_word": "0x8018",
+        "name_us": null,
+        "payload_sha256": "6354f3b66c0ae8d89f05c0edb4bb30c4b76a60b6dbccba7b8a87864bc03c490b",
+        "stat_increase_amount_at_55": 26,
+        "stat_mask_at_56": "0x8000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0400"
+      },
+      {
+        "id": 54,
+        "equipment_word": "0x8036",
+        "name_us": null,
+        "payload_sha256": "3ea052fb155e2c372e563ba5a42aaad500d70d1e3cd35c88706d27dafabc5b5c",
+        "stat_increase_amount_at_55": 57,
+        "stat_mask_at_56": "0x0001",
+        "element_strike": 15,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 55,
+        "equipment_word": "0x8037",
+        "name_us": null,
+        "payload_sha256": "2f844499b051479f699cecd2d3a74c5b7856e0a8351bfe1d7f3153331f288260",
+        "stat_increase_amount_at_55": 59,
+        "stat_mask_at_56": "0x000A",
+        "element_strike": 15,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 114,
+        "equipment_word": "0x8072",
+        "name_us": null,
+        "payload_sha256": "830efa0288b0b67b23883a6402f397fc4cbc350ab15bbd7828a22e25acf9b8d3",
+        "stat_increase_amount_at_55": 118,
+        "stat_mask_at_56": "0x0300",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 115,
+        "equipment_word": "0x8073",
+        "name_us": null,
+        "payload_sha256": "f1549b9109eb266445fe55a690cf2a4ce901c9b415000e3e43d5bcb572993b61",
+        "stat_increase_amount_at_55": 119,
+        "stat_mask_at_56": "0x0300",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 116,
+        "equipment_word": "0x8074",
+        "name_us": null,
+        "payload_sha256": "0d464b391d72264f5a09dc83ab3e715d86595e947e72d72a901f6f60dc0da959",
+        "stat_increase_amount_at_55": 120,
+        "stat_mask_at_56": "0x0300",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 117,
+        "equipment_word": "0x8075",
+        "name_us": null,
+        "payload_sha256": "366e31c9deb830cec767cb1e4b075c7b7dd2d4720747adbb8a3a1806de1202d2",
+        "stat_increase_amount_at_55": 121,
+        "stat_mask_at_56": "0x0300",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 118,
+        "equipment_word": "0x8076",
+        "name_us": null,
+        "payload_sha256": "806015145d95044ad6d6aeeebab49c8a20963f7de89db8b311f8f156157b46b2",
+        "stat_increase_amount_at_55": 122,
+        "stat_mask_at_56": "0x3F00",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 119,
+        "equipment_word": "0x8077",
+        "name_us": null,
+        "payload_sha256": "06e23c0c73a1a1e553e75fd0b23241e5f57e523726fe4d04740362e1f54fa87b",
+        "stat_increase_amount_at_55": 123,
+        "stat_mask_at_56": "0x3F00",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 120,
+        "equipment_word": "0x8078",
+        "name_us": null,
+        "payload_sha256": "733d2f56d5616a2532e98b329e69e91d5569ffc196e8fe93d4dfcd3e4ed06aba",
+        "stat_increase_amount_at_55": 124,
+        "stat_mask_at_56": "0x3F00",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 121,
+        "equipment_word": "0x8079",
+        "name_us": null,
+        "payload_sha256": "ce763719942e600b3fb6ab8970b11eb1ab5f758985d8e390f804be8c7f535aa0",
+        "stat_increase_amount_at_55": 125,
+        "stat_mask_at_56": "0x3F00",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 129,
+        "equipment_word": "0x8081",
+        "name_us": null,
+        "payload_sha256": "998f772ce45e8e7e079f28b9b71f1e6532b7622fe1f34cc430b64a1784af0f45",
+        "stat_increase_amount_at_55": 130,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 130,
+        "equipment_word": "0x8082",
+        "name_us": null,
+        "payload_sha256": "62b14867e4e79d50673d2f7474335229f54c478f56d2a910235e1953c6d29206",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 134,
+        "equipment_word": "0x8086",
+        "name_us": null,
+        "payload_sha256": "09b78b8b369bcbeba337b2c6ac72b9cc857d7ef995c7a1a3db2fcf2cb14f955f",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 1,
+        "auto_temporal_at_5a": "0x0C38",
+        "auto_extra_at_5c": "0x0200",
+        "flags_word_64": "0x0000"
+      }
+    ],
+    "new_uspc": [
+      {
+        "id": 13,
+        "equipment_word": "0x800D",
+        "name_us": "One MP Cost",
+        "payload_sha256": "b5c9558e8b19bbc79c4418a0036245636ade329b61ac527578976d0aae02c10e",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 23,
+        "equipment_word": "0x8017",
+        "name_us": "Break HP Limit",
+        "payload_sha256": "43ba6a093295f7e257729daeb835b96ec345fc3a5cb9f1ab4a3bee1e3818f3ca",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0200"
+      },
+      {
+        "id": 24,
+        "equipment_word": "0x8018",
+        "name_us": "Break MP Limit",
+        "payload_sha256": "2b975884c23d1dd1f31f297d075f8395dbf5f3d0b5029c910ec853bcde0b704f",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0400"
+      },
+      {
+        "id": 54,
+        "equipment_word": "0x8036",
+        "name_us": "Stonestrike",
+        "payload_sha256": "8008ecb4ad0a317dc19d45dfb75e0875d41d7b0c313a765e9e7b6e7ad9176e7d",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 55,
+        "equipment_word": "0x8037",
+        "name_us": "Stonetouch",
+        "payload_sha256": "aa054cc777f6e5a86c7e625286090fa47beb4403f22deb2f2caad0e2dfbfa556",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 114,
+        "equipment_word": "0x8072",
+        "name_us": "HP +5%",
+        "payload_sha256": "ebbce8bef4dbd0dd4640113ef7e1ea2d181d0b26ac01e92cb423f0c90673fc56",
+        "stat_increase_amount_at_55": 5,
+        "stat_mask_at_56": "0x0100",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 115,
+        "equipment_word": "0x8073",
+        "name_us": "HP +10%",
+        "payload_sha256": "96d742b86ecfa516726392a5e52aea41e3d626cdefa050e80ad8e1c451e205e4",
+        "stat_increase_amount_at_55": 10,
+        "stat_mask_at_56": "0x0100",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 116,
+        "equipment_word": "0x8074",
+        "name_us": "HP +20%",
+        "payload_sha256": "26bf40921adeca1d30b3a8828fd6218ceaac4246babb4bb3334ba9db7f0659f9",
+        "stat_increase_amount_at_55": 20,
+        "stat_mask_at_56": "0x0100",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 117,
+        "equipment_word": "0x8075",
+        "name_us": "HP +30%",
+        "payload_sha256": "aab7cb4e4740a0baac360d5b05231fb8c3c124849131aedb2e361440b099a7aa",
+        "stat_increase_amount_at_55": 30,
+        "stat_mask_at_56": "0x0100",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 118,
+        "equipment_word": "0x8076",
+        "name_us": "MP +5%",
+        "payload_sha256": "608aca1c572c96b5ec100c8398b7b59e7133dc7ac7e5b0ffa036293e7b450c1c",
+        "stat_increase_amount_at_55": 5,
+        "stat_mask_at_56": "0x0200",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 119,
+        "equipment_word": "0x8077",
+        "name_us": "MP +10%",
+        "payload_sha256": "854a8f2d949c886bca29597a26ceb0e68552dde629adeb892579710b4d8d4590",
+        "stat_increase_amount_at_55": 10,
+        "stat_mask_at_56": "0x0200",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 120,
+        "equipment_word": "0x8078",
+        "name_us": "MP +20%",
+        "payload_sha256": "50f8cf493a5dcfa50a2bf8ee55ac8269536f2864416fd006b599b1370b03283d",
+        "stat_increase_amount_at_55": 20,
+        "stat_mask_at_56": "0x0200",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 121,
+        "equipment_word": "0x8079",
+        "name_us": "MP +30%",
+        "payload_sha256": "fc4ad8c19ec1abb563cfef6d33310045997cd26eb9ec56f9444c110fc46db42e",
+        "stat_increase_amount_at_55": 30,
+        "stat_mask_at_56": "0x0200",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 129,
+        "equipment_word": "0x8081",
+        "name_us": "Extra 1",
+        "payload_sha256": "62b14867e4e79d50673d2f7474335229f54c478f56d2a910235e1953c6d29206",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 130,
+        "equipment_word": "0x8082",
+        "name_us": "Extra 2",
+        "payload_sha256": "62b14867e4e79d50673d2f7474335229f54c478f56d2a910235e1953c6d29206",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 0,
+        "auto_temporal_at_5a": "0x0000",
+        "auto_extra_at_5c": "0x0000",
+        "flags_word_64": "0x0000"
+      },
+      {
+        "id": 134,
+        "equipment_word": "0x8086",
+        "name_us": "Ribbon",
+        "payload_sha256": "09b78b8b369bcbeba337b2c6ac72b9cc857d7ef995c7a1a3db2fcf2cb14f955f",
+        "stat_increase_amount_at_55": 0,
+        "stat_mask_at_56": "0x0000",
+        "element_strike": 0,
+        "element_absorb": 1,
+        "auto_temporal_at_5a": "0x0C38",
+        "auto_extra_at_5c": "0x0200",
+        "flags_word_64": "0x0000"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/VISION_AND_ROADMAP.md",
+      "bytes": 100680,
+      "sha256": "6c1389b8a9e153e08595fbc9b8196eef9742cdfd24e0b100c83c2b705aa37830"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/docs/AUTOABILITY_REBALANCE_FULL_CATALOG.md",
+      "bytes": 23388,
+      "sha256": "ed8acc3eeda16472f42f51883fb06e8c051cdeb126c35482b6caff0928d9eb85"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/docs/halyson_autoability_diff.json",
+      "bytes": 39309,
+      "sha256": "a6b1dc747273195a3eb3ecafc7b68f121cd504a6ab090e3482bb9665c5ef6321"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/docs/halyson_weapon_aa_diff.md",
+      "bytes": 4816,
+      "sha256": "c1e214656e9fd50db8945e12002f4baf07964371311e0c52b4913b69250b6033"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/docs/reverse/FFX_SPIRA_REFORGE_AURON_TANK_HOOK_RESEARCH_2026-06-15.md",
+      "bytes": 3315,
+      "sha256": "04572cf01fac084568d4135d2b830f977e28343a819480258d9a83b3511db0de"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/docs/reverse/_archive/playbook/FFX_SPIRA_REFORGE_LULU_MAGIC_RESEARCH_2026-06-15.md",
+      "bytes": 3809,
+      "sha256": "c5693c2a4e42e0a0e9993d9908c45cc125d00b2b7e159405a5ed71085ed827d1"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/docs/reverse/_archive/superseded/FFX_SPIRA_REFORGE_VANILLA_OFFENSIVE_REBALANCE_2026-06-16.md",
+      "bytes": 24612,
+      "sha256": "613d893809231864a1057480294390629d918b5455e767626756af5fb34558b8"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/FFXProjectEditor/FfxLib/Ability/AutoAbility_File.cs",
+      "bytes": 20302,
+      "sha256": "b296ec8183621bdf295edb7a69c420575701661c9da3f9d70cbbe501beebc8f2"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-editor-main/FFXProjectEditor/FfxLib/Encoding/FfxEncoding.us.cs",
+      "bytes": 10496,
+      "sha256": "8e40b2e99f3adcc4fe6f9d8571aa03862f543f840caa82b7da4da35efe104e2d"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/DoubleTripleDropHook.cpp",
+      "bytes": 7104,
+      "sha256": "af75802eef9bd6dd089d61d3c8e67b0f99f2e2756f844c0ecdf387591783d198"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/F8FlagCatalog.cpp",
+      "bytes": 33086,
+      "sha256": "d26cd9814a39169239344d56a53dfba59c0fc39e0d015949a5f3d54331c7355e"
+    },
+    {
+      "path": "/home/wanderson/Documents/ffx-hooks/src/runtime/FfxHooksDll/hooks/EquipmentWorkshopNames.h",
+      "bytes": 4509,
+      "sha256": "85fcfbb45aee55ef5d6228882cbb31c3d376cfb92813469ebdf97068ad9d7c6a"
+    },
+    {
+      "path": "/home/wanderson/Documents/external-compare/fahrenheit/src/core/ffx/status.cs",
+      "bytes": 15707,
+      "sha256": "f7e82d9deb12d5cd45eaf24c7a8e18dd6b277008bedd288f51f133dd5370be39"
+    }
+  ],
+  "arms_rate": {
+    "path": "/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/data/mods/ffx_ps2/ffx/master/jppc/battle/kernel/arms_rate.bin",
+    "sha256": "4699bea40e3afecaeea2599f3ed4f86613b38f7895f59b835c284a5e21420a6d",
+    "value_at_134": 200,
+    "interpretation": "Table value only, not an asserted Workshop crafting price."
+  },
+  "prior_mod002_preservation": {
+    "jppc": {
+      "old_0_through_134_rows_identical": true,
+      "manifest_path": "/home/wanderson/.codex/backups/mod002-autoabilities-20260927T162559Z/manifest.json"
+    },
+    "new_uspc": {
+      "old_0_through_134_rows_identical": true,
+      "manifest_path": "/home/wanderson/.codex/backups/mod002-autoabilities-20260927T162559Z/manifest.json"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 #pragma once
+#include "EquipmentWorkshopCatalogBridge.h"
 namespace FfxHooks::EquipmentWorkshop::Names {
 inline constexpr const char* abilities[]={
  "Sensor",
@@ -249,6 +250,6 @@ inline constexpr const char* items[]={
  "Winning Formula",
 };
 inline const char* Item(unsigned id){return id<112?items[id]:"Unknown material";}
-inline const char* Ability(unsigned word){return word>=0x8000&&word<0x8083?abilities[word-0x8000]:"Empty";}
+inline const char* Ability(unsigned word){return word>=0x8000&&word<0x8083?abilities[word-0x8000]:word>=0x8087&&word<=0x8FFF?CatalogBridge::Name(word):"Empty";}
 inline constexpr const char* owners[]={"Tidus","Yuna","Auron","Kimahri","Wakka","Lulu","Rikku"};
 }

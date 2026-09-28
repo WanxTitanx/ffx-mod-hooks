@@ -602,6 +602,22 @@ static MemoryIo DifficultyMemoryIo() {
             autoReady ? &DifficultyRefreshAutoStatus : nullptr};
 }
 
+static F7Elements::AppliedSelection g_difficultyElements;
+static bool DifficultyReadElements(unsigned slot,uintptr_t actor,F7Elements::Selection& output) noexcept {
+    output={};
+    if(slot<18||slot>=18+kActorSlots||!DifficultyAutoStatusThreadAdmitted())return false;
+    // A nested native callback must never wait behind a Difficulty transaction.
+    if(!TryAcquireSRWLockShared(&g_difficultyRuntimeLock))return false;
+    struct Release {~Release(){ReleaseSRWLockShared(&g_difficultyRuntimeLock);}} release;
+    if(!DifficultyAutoStatusThreadAdmitted()||!g_difficultyGeneration||
+       DifficultyGetActorBySlot(nullptr,static_cast<uint8_t>(slot-18))!=actor||
+       !ValidateCommittedWritableSpan(actor,kActorSpan))return false;
+    std::uint16_t formation=0xFFFF;
+    if(!DifficultyReadMemory(nullptr,actor+kFormationIdOffset,&formation,sizeof(formation)))return false;
+    return g_difficultyElements.Read(g_difficultyGeneration,slot,actor,formation,output);
+}
+static const F7Elements::Provider difficultyElementProvider{DifficultyReadElements};
+
 static void DifficultyPublishResult(const RuntimeResult& result, size_t pointersRejected) {
     g_difficultyLast = result;
     g_difficultyPointersRejected = pointersRejected;
@@ -651,6 +667,14 @@ static RuntimeResult DifficultyUpdateCurrentActorsLocked(
         DifficultyMemoryIo(), configSnapshot.difficulty, configSnapshot.difficultyValid,
         g_difficultyCurrentBattleField.fieldRow, sinRequest,
         actorCount == 0 ? nullptr : actors.data(), actorCount);
+    g_difficultyElements.Clear();
+    if(result.code==ResultCode::Applied||result.code==ResultCode::Restored){
+        g_difficultyElements.Begin(g_difficultyGeneration,SelectElements(configSnapshot.difficulty,configSnapshot.difficultyValid,g_difficultyCurrentBattleField.fieldRow));
+        for(size_t i=0;i<actorCount;++i){std::uint16_t formation=0xFFFF;
+            if(DifficultyReadMemory(nullptr,actors[i].address+kFormationIdOffset,&formation,sizeof(formation)))
+                g_difficultyElements.Admit(actors[i].slot,actors[i].address,formation);
+        }
+    }
     SinAi::RefreshLabels(g_difficultyGeneration);
     return result;
 }
@@ -1790,6 +1814,10 @@ static bool InstallDifficultyHook() {
 
     // The one Apply succeeded for all three exact targets. Opening admission afterward prevents
     // a callback from observing only part of the batch or unpublished trampoline outputs.
+    if(!F7Elements::Register(&difficultyElementProvider)){
+        F7_Log("[ffx-hooks] F7: element affinity provider ownership conflict; admission remains closed\n");
+        return false;
+    }
     InterlockedExchange(&g_difficultyAccepting, 1);
     return true;
 }
@@ -2078,6 +2106,7 @@ void F7_RequestStop() {
     // Loader-lock callers may only close admission. The coordinator, waits, and config/runtime
     // state belong to the explicit normal-context owner.
     InterlockedExchange(&g_difficultyAccepting, 0);
+    F7Elements::Unregister(&difficultyElementProvider);
     InterlockedExchange(&g_difficultyRetryArmed, 0);
     InterlockedExchange(&g_positionHookAccepting,0);
     CustomMixUltra::Runtime::ProductionRequestStop();

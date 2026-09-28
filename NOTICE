@@ -10,8 +10,8 @@ presented as our own.
   - License: MIT
   - Used for x86 detours (PLH::x86Detour) across the hook layer.
 - **MinHook** — Tsuda Kageyu — https://github.com/TsudaKageyu/minhook
-  - License: BSD-2-Clause (with prohibition of commercial use without permission)
-  - Used by F7InLive for read-only battle hooks.
+  - License: BSD-2-Clause; see the license header in the vendored MinHook source.
+  - Used by native hook layers, including F7InLive and Arcana.
 - **Zydis / Zycore** — zyantific — https://github.com/zyantific/zydis
   - License: MIT
   - Static dependency of PolyHook2.

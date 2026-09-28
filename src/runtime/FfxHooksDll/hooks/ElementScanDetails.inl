@@ -11,8 +11,8 @@ using NumberFn=int(__cdecl*)(int,float,float,unsigned,float,float);
 using GlyphFn=int(__cdecl*)(const void*,int,int);
 using RotatedFn=int(__cdecl*)(unsigned,float,float,float,float,float,float,float,float,unsigned,unsigned,float);
 bool FullScope(){return active.load()&&scope&&scope->depth<4&&scope->full;}
-float ExtraWidth(){return scope->extras?63.f*ElementScan::VisibleCount(scope->settings):0.f;}
-float ExtraHeight(){return scope->expanded?70.f+(scope->maxMp?45.f:0.f):0.f;}
+float ExtraWidth(){return scope->numeric?320.f:scope->extras?63.f*ElementScan::VisibleCount(scope->settings):0.f;}
+float ExtraHeight(){return NumericalExtraHeight()+(scope->expanded?70.f+(scope->maxMp?45.f:0.f):0.f);}
 bool PrepareFull(ScanScope& current,ScanSection section){
     if(!active.load())return false;
     unsigned expected=0;const auto thread=GetCurrentThreadId();drawingThread.compare_exchange_strong(expected,thread);
@@ -23,9 +23,11 @@ bool PrepareFull(ScanScope& current,ScanSection section){
     current.expanded=expandedStatsEnabled;
     // Invalid element preferences must not suppress the independent stats view.
     current.extras=extraElementsEnabled&&ElementScan::ReadSettings(current.settings);
-    if(!current.expanded&&!current.extras)return false;
     // RVA394030 resolves the low BYTE; rows also pass a narrowed actor slot.
     current.actor=target&0xFF;current.section=section;current.depth=scope?scope->depth+1:0;
+    if(current.depth>=4)return false;
+    if(CaptureNumerical(current))current.extras=false;
+    if(!current.expanded&&!current.extras&&!current.numeric)return false;
     // Failed target reads during scene teardown preserve the native path.
     if(current.expanded)__try{
         const auto* actor=reinterpret_cast<const unsigned char*(__cdecl*)(unsigned)>(module+0x394030)(static_cast<unsigned>(target));
@@ -80,7 +82,10 @@ int __cdecl FullFrameShim(){
 int __cdecl FullDataShim(int x,int y){
     ScanScope current{};if(!PrepareFull(current,ScanSection::Data))return reinterpret_cast<FullDataFn>(originals[FullData])(x,y);
     auto* previous=scope;scope=&current;int result=0;
-    __try{result=reinterpret_cast<FullDataFn>(originals[FullData])(x,y);FullStats(x);}__finally{scope=previous;}return result;
+    __try{result=reinterpret_cast<FullDataFn>(originals[FullData])(x,y);FullStats(x);
+        if(current.numeric)DrawNumerical(current,static_cast<float>(x)+X(480.f-ExtraWidth()*.5f),
+            Y(696.f-NumericalExtraHeight()),252.f+NumericalExtraHeight());
+    }__finally{scope=previous;}return result;
 }
 int __cdecl FullDescriptionShim(int x){
     ScanScope current{};if(!PrepareFull(current,ScanSection::Description))return reinterpret_cast<FullDescriptionFn>(originals[FullDescription])(x);
@@ -116,6 +121,7 @@ int NumberAt(unsigned target,std::uintptr_t caller,int value,float x,float y,uns
     if(FullScope()&&scope->section==ScanSection::Data){
         if(scope->expanded&&(caller==0x49C447||caller==0x49C4A2))return 0;
         if(caller==0x49C447||caller==0x49C4A2)x-=X(ExtraWidth()*.5f);
+        if(scope->numeric&&(caller==0x49C447||caller==0x49C4A2))y-=Y(NumericalExtraHeight());
         if(caller==0x49C198||caller==0x49C232){x-=X(ExtraWidth()*.5f);y-=Y(ExtraHeight());}
         if(scope->expanded&&(caller==0x49C198||caller==0x49C232))scope->hpNumbers[caller==0x49C232?1:0]={x,y,style,sx,sy,true};
     }

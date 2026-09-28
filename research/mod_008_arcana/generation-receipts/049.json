@@ -1,0 +1,10 @@
+{
+  "id": 49,
+  "key": "cups.king",
+  "asset": "assets/mod-008-arcana/concepts/cards/049-cups-king.png",
+  "source": "/home/wanderson/.codex/generated_images/01a0ced4-9fba-7a22-9466-d8897fbcba59/exec-61b9b850-da37-4709-8e67-d42314302efa.png",
+  "prompt": "Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. This is a traditional court card: NO numeral anywhere. The top medallion contains only a small ornamental suit symbol. Bottom name plaque text (verbatim): \"KING OF CUPS\". Card subject: King of Cups. Scene: a serene Spiran ruler on a throne amid ocean waves with a cup and a short scepter. Accent palette: turquoise, pearl and silver. Keep traditional Tarot symbols legible and the border consistent with the reference.",
+  "tool": "image_gen.imagegen",
+  "status": "GENERATED_LABELLED_CONCEPT",
+  "layout": "number_top_name_bottom_court_unnumbered"
+}

@@ -2,11 +2,35 @@
 #include "../hooks/ElementScanSprites.h"
 #include <cstdio>
 #include <cmath>
+#include <type_traits>
 namespace E=FfxHooks::ElementScan;
 static unsigned checks=0,failures=0;
 static void Check(bool b,const char* s){++checks;if(!b){++failures;std::printf("FAIL %s\n",s);}}
 int main(){
     E::Settings c{};Check(E::Valid(c),"default Scan palette is valid");
+    constexpr unsigned extraColumns=std::extent_v<decltype(c.enabled)>;
+    Check(extraColumns==4,"Eight supports Holy, Darkness and both native Custom bits simultaneously");
+    if constexpr(extraColumns==4){
+        Check(c.enabled[3]==0,"legacy preferences keep the newly exposed Custom column OFF");
+        for(unsigned first:{0x20u,0x40u})for(unsigned selected=0;selected<16;++selected){
+            E::Settings eight{};eight.extraBit=first;
+            for(unsigned i=0;i<4;++i)eight.enabled[i]=(selected>>i)&1;
+            const unsigned expectedBits[]={0x10,0x80,first,0x60u^first};
+            for(unsigned mask=0;mask<256;++mask){
+                const auto row=E::Orbs(mask,eight);unsigned column=0;
+                for(unsigned i=0;i<4;++i)if(eight.enabled[i]){
+                    Check(column<row.size()&&row[column].bit==expectedBits[i]&&
+                          row[column].active==bool(mask&expectedBits[i])&&row[column].rgb==eight.rgb[i],
+                          "each of the four extras keeps its own identity, color and native affinity");
+                    if(column<row.size())Check(row[column].x+row[column].size<E::PanelWidthFor(eight),
+                          "all eight native elements fit the selected panel width");
+                    ++column;
+                }
+                Check(E::VisibleCount(eight)==column,"four independent toggles agree with the rendered column count");
+                for(;column<row.size();++column)Check(!row[column].bit,"disabled columns leave no stale orb");
+            }
+        }
+    }
     for(unsigned bit:{0x20u,0x40u}){c.extraBit=bit;
         for(unsigned mask=0;mask<256;++mask){auto row=E::Orbs(mask,c);const unsigned bits[]={0x10,0x80,bit};
             for(unsigned i=0;i<3;++i){

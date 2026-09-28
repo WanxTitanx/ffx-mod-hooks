@@ -1,0 +1,460 @@
+{
+  "schema": 1,
+  "purpose": "Current unified defaults for created named abilities. Future Hook menu must support safe ID remapping and owner/gear/source gates.",
+  "created_id_range": "135..174",
+  "abilities": [
+    {
+      "key": "hero_bravery",
+      "default_id": 135,
+      "equipment_word": "0x8087",
+      "name": "Hero's Bravery",
+      "gear_type": "weapon",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "energy_boost",
+      "default_id": 136,
+      "equipment_word": "0x8088",
+      "name": "Energy Boost",
+      "gear_type": "weapon",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "energy_burst",
+      "default_id": 137,
+      "equipment_word": "0x8089",
+      "name": "Energy Burst",
+      "gear_type": "weapon",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "efficiency",
+      "default_id": 138,
+      "equipment_word": "0x808A",
+      "name": "Efficiency",
+      "gear_type": "weapon",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "vampirism",
+      "default_id": 139,
+      "equipment_word": "0x808B",
+      "name": "Vampirism",
+      "gear_type": "weapon",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "follow_up",
+      "default_id": 140,
+      "equipment_word": "0x808C",
+      "name": "Follow Up",
+      "gear_type": "weapon",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "p_trade",
+      "default_id": 141,
+      "equipment_word": "0x808D",
+      "name": "P-Trade",
+      "gear_type": "armor",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "m_trade",
+      "default_id": 142,
+      "equipment_word": "0x808E",
+      "name": "M-Trade",
+      "gear_type": "armor",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "hero_caution",
+      "default_id": 143,
+      "equipment_word": "0x808F",
+      "name": "Hero's Caution",
+      "gear_type": "armor",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "mp_regen",
+      "default_id": 144,
+      "equipment_word": "0x8090",
+      "name": "MP Regen",
+      "gear_type": "armor",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "elude",
+      "default_id": 145,
+      "equipment_word": "0x8091",
+      "name": "Elude",
+      "gear_type": "armor",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "energy_wall",
+      "default_id": 146,
+      "equipment_word": "0x8092",
+      "name": "Energy Wall",
+      "gear_type": "armor",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "energy_barrier",
+      "default_id": 147,
+      "equipment_word": "0x8093",
+      "name": "Energy Barrier",
+      "gear_type": "armor",
+      "source": "MOD-002 initial",
+      "payload_mode": "hook_only",
+      "allowed_owners": null
+    },
+    {
+      "key": "aeon_break_hp_mp_limit",
+      "default_id": 148,
+      "equipment_word": "0x8094",
+      "name": "Aeon Break HP/MP Limit",
+      "gear_type": "armor",
+      "source": "Aeon Ascension",
+      "payload_mode": "hook_only",
+      "allowed_owners": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "workshop_only": true
+    },
+    {
+      "key": "aeon_break_damage_limit",
+      "default_id": 149,
+      "equipment_word": "0x8095",
+      "name": "Aeon Break Damage Limit",
+      "gear_type": "weapon",
+      "source": "Aeon Ascension",
+      "payload_mode": "hook_only",
+      "allowed_owners": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "workshop_only": true
+    },
+    {
+      "key": "spira_mana_spring",
+      "default_id": 150,
+      "equipment_word": "0x8096",
+      "name": "Mana Spring",
+      "gear_type": "weapon",
+      "source": "Spira Reforge additive",
+      "payload_mode": "hook_only",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_break_limits",
+      "default_id": 151,
+      "equipment_word": "0x8097",
+      "name": "Break Limits",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_devils_bargain",
+      "default_id": 152,
+      "equipment_word": "0x8098",
+      "name": "Devil's Bargain",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "hook_only",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_wardens_oath",
+      "default_id": 153,
+      "equipment_word": "0x8099",
+      "name": "Warden's Oath",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "hook_only",
+      "allowed_owners": [
+        2
+      ],
+      "workshop_only": false
+    },
+    {
+      "key": "spira_arcane_focus",
+      "default_id": 154,
+      "equipment_word": "0x809A",
+      "name": "Arcane Focus",
+      "gear_type": null,
+      "source": "Spira Reforge additive",
+      "payload_mode": "hook_only",
+      "allowed_owners": [
+        5
+      ],
+      "workshop_only": false
+    },
+    {
+      "key": "spira_double_drop",
+      "default_id": 155,
+      "equipment_word": "0x809B",
+      "name": "Double Drop",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "hook_marker",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_triple_drop",
+      "default_id": 156,
+      "equipment_word": "0x809C",
+      "name": "Triple Drop",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "hook_marker",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_element_eater",
+      "default_id": 157,
+      "equipment_word": "0x809D",
+      "name": "Element Eater",
+      "gear_type": "weapon",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_hpmp_10",
+      "default_id": 158,
+      "equipment_word": "0x809E",
+      "name": "HPMP +10%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_hpmp_20",
+      "default_id": 159,
+      "equipment_word": "0x809F",
+      "name": "HPMP +20%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_hpmp_40",
+      "default_id": 160,
+      "equipment_word": "0x80A0",
+      "name": "HPMP +40%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_hpmp_60",
+      "default_id": 161,
+      "equipment_word": "0x80A1",
+      "name": "HPMP +60%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_aio_3",
+      "default_id": 162,
+      "equipment_word": "0x80A2",
+      "name": "AIO +3%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_aio_6",
+      "default_id": 163,
+      "equipment_word": "0x80A3",
+      "name": "AIO +6%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_aio_9",
+      "default_id": 164,
+      "equipment_word": "0x80A4",
+      "name": "AIO +9%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_aio_12",
+      "default_id": 165,
+      "equipment_word": "0x80A5",
+      "name": "AIO +12%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_str_mag_10",
+      "default_id": 166,
+      "equipment_word": "0x80A6",
+      "name": "STR MAG +10%",
+      "gear_type": "weapon",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_str_mag_20",
+      "default_id": 167,
+      "equipment_word": "0x80A7",
+      "name": "STR MAG +20%",
+      "gear_type": "weapon",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_def_mdef_10",
+      "default_id": 168,
+      "equipment_word": "0x80A8",
+      "name": "DEF MDEF +10%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_def_mdef_20",
+      "default_id": 169,
+      "equipment_word": "0x80A9",
+      "name": "DEF MDEF +20%",
+      "gear_type": "armor",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_foolstrike",
+      "default_id": 170,
+      "equipment_word": "0x80AA",
+      "name": "Foolstrike",
+      "gear_type": "weapon",
+      "source": "Spira Reforge additive",
+      "payload_mode": "hook_only",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_fooltouch",
+      "default_id": 171,
+      "equipment_word": "0x80AB",
+      "name": "Fooltouch",
+      "gear_type": "weapon",
+      "source": "Spira Reforge additive",
+      "payload_mode": "hook_only",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_fourstrike",
+      "default_id": 172,
+      "equipment_word": "0x80AC",
+      "name": "Fourstrike",
+      "gear_type": "weapon",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native_base_hook_pending",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_fourtouch",
+      "default_id": 173,
+      "equipment_word": "0x80AD",
+      "name": "Fourtouch",
+      "gear_type": "weapon",
+      "source": "Spira Reforge additive",
+      "payload_mode": "native_base_hook_pending",
+      "allowed_owners": null,
+      "workshop_only": false
+    },
+    {
+      "key": "spira_spell_spring",
+      "default_id": 174,
+      "equipment_word": "0x80AE",
+      "name": "Spell Spring",
+      "gear_type": null,
+      "source": "Spira Reforge additive",
+      "payload_mode": "hook_only",
+      "allowed_owners": null,
+      "workshop_only": false
+    }
+  ]
+}

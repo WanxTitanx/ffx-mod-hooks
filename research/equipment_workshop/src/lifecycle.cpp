@@ -20,9 +20,11 @@ bool Lifecycle::Observe(InventoryEvent event,unsigned first,unsigned second,unsi
     State next=state_;
     switch(event){
     case InventoryEvent::Created:{
-        Request r{};r.op=Op::Create;r.slot=static_cast<std::uint16_t>(first);r.revision=state_.revision;
-        r.pieceId=state_.pieces[first].id;std::memcpy(r.gearTemplate,after+first*22,22);
-        Plan plan{};if(Preview(state_,r,plan)!=Error::Ok)return reject();next=plan.after;break;
+        if(next.pieces[first].id||!after[first*22+2])return reject();
+        auto& p=next.pieces[first];p=Piece{};std::memcpy(p.native,after+first*22,22);
+        p.id=next.nextId++;p.fifth=Empty;
+        for(unsigned i=0;i<4;++i)if(Ability(p,i)!=Empty)p.abilities[i]=next.nextId++;
+        ++next.revision;break;
     }
     case InventoryEvent::Swapped:
         if(second>=GearCount || first==second)return reject();
@@ -45,6 +47,20 @@ bool Lifecycle::Observe(InventoryEvent event,unsigned first,unsigned second,unsi
     case InventoryEvent::Unequipped:
         if(owner>=18 || !next.pieces[first].id || next.pieces[first].native[6]!=owner)return reject();
         next.pieces[first].native[6]=255;++next.revision;break;
+    case InventoryEvent::LegendAbilities:{
+        auto& p=next.pieces[first];
+        if(!p.id||p.native[4]!=owner||p.native[5]||!(p.native[3]&4)||
+           std::memcmp(p.native,after+first*22,14))return reject();
+        // The native altar replaces four words. Retain identity/ranks only for
+        // unchanged abilities, and preserve the independently stored fifth slot.
+        if(p.mode==1){for(unsigned i=0;i<5;++i)p.ranks[i]=Ability(p,i)==Empty?0:p.rank;p.mode=2;p.rank=0;}
+        for(unsigned i=0;i<4;++i){
+            const auto old=Ability(p,i);std::memcpy(p.native+14+2*i,after+first*22+14+2*i,2);
+            if(IsAeon(p)&&old==0x807B&&Ability(p,i)!=old)return reject();
+            if(Ability(p,i)!=old){p.abilities[i]=Ability(p,i)==Empty?0:next.nextId++;p.ranks[i]=0;}
+        }
+        ++next.revision;break;
+    }
     default:return reject();
     }
     for(unsigned i=0;i<GearCount;++i)if(std::memcmp(after+i*22,next.pieces[i].native,22)!=0)return reject();

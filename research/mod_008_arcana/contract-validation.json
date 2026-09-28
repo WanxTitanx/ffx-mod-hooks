@@ -1,0 +1,18 @@
+{
+  "result": "PASS_RT0_MODEL_ONLY",
+  "checks": 76469,
+  "three_card_combinations": 76076,
+  "catalog_sha256": "6f1dbd1c764bd1e30a42bd2caba51cf43f65b19ebc2ee80741e472435d96c22d",
+  "cards": 78,
+  "major": 22,
+  "minor": 56,
+  "court_cards_unnumbered": 16,
+  "game_io": false,
+  "native_functions_executed": false,
+  "limits": [
+    "No native Equip injection",
+    "No gameplay effects",
+    "No native save writer or crash consistency proof",
+    "No graphics upload or RT2"
+  ]
+}

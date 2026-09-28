@@ -7,6 +7,7 @@
 #include "../hooks/EquipmentWorkshopRuntime.h"
 #include "../hooks/RonsoPoolRuntime.h"
 #include "../hooks/RonsoPoolSave.h"
+#include "../hooks/NativeSaveEvents.h"
 #include "PrivatePeFixture.h"
 #include "WorkshopEconomyFixture.h"
 #include <cstdio>
@@ -55,6 +56,7 @@ bool Write(const std::wstring& path,SaveImage& bytes){void* file=openFile(path.c
 void Apply(SaveImage& image){reinterpret_cast<int(__cdecl*)(void*,const void*)>(base+0x4B5450)(reinterpret_cast<void*>(base+0xD2CA90),image.data());}
 uint16_t ChecksumAndClear(SaveImage& image){return reinterpret_cast<uint16_t(__cdecl*)(void*)>(base+0x248030)(image.data());}
 void Log(const char* s){std::fputs(s,stdout);}
+void LostPostWrite(const wchar_t*,const unsigned char*,std::size_t) noexcept {}
 }
 int main(int argc,char** argv){
     if(argc!=5)return 2;
@@ -128,7 +130,16 @@ int main(int argc,char** argv){
     const auto gilAfterFusion=WorkshopEconomyFixture::Gil(base);
     Check(gilBeforeFusion-gilAfterFusion==20000,"fusion debits actual native Gil in the same transaction");
     SaveImage saved=disk;std::memcpy(saved.data()+64,reinterpret_cast<void*>(base+0xD2CA90),0x68C0);RonsoPool::SealSave(saved);
-    Check(Write(path,saved),"actual native fwrite persists the matching extension");
+    // Simulate process loss after successful native fwrite but before the
+    // post-write metadata callback. The pre-write journal must already exist.
+    const NativeSaveEvents::Observer* observer=nullptr;
+    for(const auto& entry:NativeSaveEvents::observers){const auto* value=entry.load();if(value&&value->selectRead)observer=value;}
+    Check(observer!=nullptr,"the paid checkpoint selector remains registered alongside other save observers");if(!observer)return 1;
+    NativeSaveEvents::Observer lostPostWrite=*observer;lostPostWrite.write=LostPostWrite;
+    NativeSaveEvents::Unsubscribe(observer);Check(NativeSaveEvents::Subscribe(&lostPostWrite),"post-write interruption fixture replaces only its own observer");
+    const bool nativeWritten=Write(path,saved);
+    NativeSaveEvents::Unsubscribe(&lostPostWrite);Check(NativeSaveEvents::Subscribe(observer),"the original checkpoint observer is restored");
+    Check(nativeWritten,"actual native fwrite succeeds with its completion callback interrupted");
     Check(Read(path,loaded),"actual read reopens the saved version");ChecksumAndClear(loaded);Apply(loaded);
     Check(EquipmentWorkshop::Capture(state)&&state.pieces[slot].id==identity&&state.pieces[slot].mode==2&&workshop::AbilityRank(state.pieces[slot],2)==1&&state.items[73]==afterFusionSpheres&&WorkshopEconomyFixture::Gil(base)==gilAfterFusion,"native read/checksum/apply roundtrip restores the same extension identity and native Gil");
     Check(!state.pieces[donorSlot].id&&!state.pieces[donorSlot].native[2],"native reload preserves donor consumption");
@@ -144,6 +155,29 @@ int main(int argc,char** argv){
     Check(EquipmentWorkshop::Capture(state)&&state.pieces[slot].mode==0,"reused buffer binds the latest completed file, not another slot's extension");
     Check(Read(path,loaded),"the original slot is observed again");ChecksumAndClear(loaded);Apply(loaded);
     Check(EquipmentWorkshop::Capture(state)&&state.pieces[slot].id==identity&&state.pieces[slot].mode==2&&workshop::AbilityRank(state.pieces[slot],2)==1&&WorkshopEconomyFixture::Gil(base)==gilAfterFusion,"returning to the original slot restores its own extension and native Gil");
+    const auto checkpoint=state;const auto checkpointGil=WorkshopEconomyFixture::Gil(base);
+    WorkshopEconomyFixture::Mode(2);
+    workshop::Request replay{};replay.op=workshop::Op::Refine;replay.slot=static_cast<uint16_t>(slot);
+    replay.pieceId=identity;replay.revision=state.revision;workshop::Plan firstRoll{};
+    Check(EquipmentWorkshop::Preview(replay,firstRoll)==workshop::Error::Ok&&EquipmentWorkshop::Commit(replay,firstRoll)&&EquipmentWorkshop::Capture(state),
+          "unsaved random refinement commits its outcome and resources together");
+    Check(state.rolls==checkpoint.rolls+1&&WorkshopEconomyFixture::Gil(base)==checkpointGil-firstRoll.gilDebit,
+          "the unsaved outcome has exactly one generator advance and one debit");
+    const auto accepted=state;const auto acceptedGil=WorkshopEconomyFixture::Gil(base);
+    NativeSaveEvents::ResetCompleted();
+    Check(!EquipmentWorkshop::Capture(state),"native reset retires unsaved Workshop admission");
+    Check(Read(path,loaded),"post-reset reload observes the actual saved checkpoint");ChecksumAndClear(loaded);Apply(loaded);
+    Check(EquipmentWorkshop::Capture(state)&&state.rng==accepted.rng&&state.rolls==accepted.rolls&&
+          std::memcmp(state.pieces,accepted.pieces,sizeof(state.pieces))==0&&
+          std::memcmp(state.items,accepted.items,sizeof(state.items))==0&&WorkshopEconomyFixture::Gil(base)==acceptedGil,
+          "reload recovers the accepted paid outcome and RNG, not a refundable opportunity to choose another roll");
+    Check(!EquipmentWorkshop::Commit(replay,firstRoll),"a pre-reset confirmation cannot replay a durable accepted transaction");
+    replay.revision=state.revision;workshop::Plan repeatedRoll{};
+    Check(EquipmentWorkshop::Preview(replay,repeatedRoll)==workshop::Error::Ok&&
+          repeatedRoll.after.rolls==accepted.rolls+1&&state.rng==accepted.rng&&
+          std::memcmp(repeatedRoll.after.items,accepted.items,sizeof(accepted.items))!=0&&repeatedRoll.gilDebit>0,
+          "a post-reload refinement must pay again and advance beyond the accepted roll");
+    WorkshopEconomyFixture::Mode(1);
     Check(Read(path,loaded),"fresh file observation precedes the negative load case");ChecksumAndClear(loaded);loaded[0x44DC+22*slot]^=1;
     Apply(loaded);Check(!EquipmentWorkshop::Capture(state),"a non-checksum payload change cannot borrow the observed save's identity");
     Check(Read(path,loaded),"fresh observation precedes a change outside the CRC-covered region");ChecksumAndClear(loaded);loaded.back()^=1;

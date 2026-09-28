@@ -11,7 +11,10 @@ import time
 from bridge import Core, OPS, Request, ROOT, WorkshopError, ability, Policy, Economy
 from store import Store, native_gil, native_story
 
-OWNERS = ["Tidus", "Yuna", "Auron", "Kimahri", "Wakka", "Lulu", "Rikku"]
+OWNERS = ["Tidus", "Yuna", "Auron", "Kimahri", "Wakka", "Lulu", "Rikku", "Seymour",
+          "Valefor", "Ifrit", "Ixion", "Shiva", "Bahamut", "Anima", "Yojimbo", "Cindy", "Sandy", "Mindy"]
+AEON_REQUIREMENTS = {8:'Nirvana with its Crest applied',9:'World Champion with its Crest applied',
+                     10:'Spirit Lance with its Crest applied',11:'Onion Knight with its Crest applied',14:'Masamune with its Crest applied'}
 
 class Workshop:
     def __init__(self, store: Store, policy: Policy | None = None):
@@ -39,10 +42,12 @@ class Workshop:
                 key = f'{n[4]}:{n[5]}:{int.from_bytes(n[12:14],"little")}'
                 self.templates.setdefault(key, n)
 
-    def piece(self, piece, slot):
+    def piece(self, piece, slot, progression=None):
         if not piece.id:
             return None
         n = piece.native
+        aeon = 8 <= n[4] < 18 and n[5] < 2
+        aeon_locked = aeon and (progression is None or self.store.core.aeon_access(piece, slot, progression) != 0)
         abilities = []
         for i in range(4 + piece.fifthUnlocked):
             word = ability(piece, i)
@@ -51,17 +56,19 @@ class Workshop:
                               'name':row['ability'] if row else 'Empty' if word==255 else f'Ability {word:04X}',
                               'rank':piece.rank if piece.mode==1 and word!=255 else piece.ranks[i],
                               'supported':word==255 or 0x8000 <= word <= 0x8082,
-                              'available':i < n[11] or i==4})
-        return {'slot':slot,'id':str(piece.id),'owner':OWNERS[n[4]] if n[4]<7 else 'Special',
+                              'locked':aeon and word==0x807B, 'available':i < n[11] or i==4})
+        return {'slot':slot,'id':str(piece.id),'owner':OWNERS[n[4]] if n[4]<18 else 'Special',
                 'kind':'Weapon' if n[5]==0 else 'Armor','equipped':n[6]!=255,
-                'protected':bool(n[3]&0x0C) or n[4]>6,'capacity':n[11],
+                'aeon':aeon,'requirement':AEON_REQUIREMENTS.get(n[4],'Obtain this Aeon'),
+                'protected':bool(aeon_locked) if aeon else bool(n[3]&0x0C) or n[4]>6,'capacity':n[11],
                 'mode':piece.mode,'rank':piece.rank,'total':sum(a['rank'] for a in abilities),
-                'maximum':10*sum(x['id']!=255 for x in abilities),
+                'maximum':10*sum(x['id']!=255 and not x['locked'] for x in abilities),
                 'fifth':bool(piece.fifthUnlocked),'abilities':abilities,
                 'fifth_choices':[0x8000+i for i in self.catalog if self.store.core.can_customize(piece,4,0x8000+i)]}
 
     def view(self):
         raw, _, s, identity = self.store.load()
+        progression = self.store.core.aeon_progress(raw)
         choices = []
         for index in sorted(self.catalog):
             kinds = [name for kind, name in enumerate(('Weapon', 'Armor'))
@@ -70,7 +77,7 @@ class Workshop:
                 choices.append({'id':0x8000+index,'name':self.catalog[index]['ability'],'kinds':kinds})
         return {'revision':s.revision,'identity':identity[:8], 'token':self.token,
                 'refinement_mode':self.policy.mode, 'gil':native_gil(raw),
-                'pieces':[self.piece(p,i) for i,p in enumerate(s.pieces) if p.id],
+                'pieces':[self.piece(p,i,progression) for i,p in enumerate(s.pieces) if p.id and (not 8<=p.native[4]<18 or progression.obtained & (1<<p.native[4]))],
                 'materials':[{'id':i,'name':self.items.get(i,f'Item {i}'),'quantity':q} for i,q in enumerate(s.items) if q],
                 'fifth_choices':choices,
                 'templates':[{'id':key,'name':f'{OWNERS[n[4]]} · {"Weapon" if n[5]==0 else "Armor"} · style {index+1}'} for index,(key,n) in enumerate(self.templates.items())],
@@ -104,7 +111,8 @@ class Workshop:
             for i,part in enumerate(transfers):
                 r.fromSlots[i]=self.number(part,'from',0,4);r.to[i]=self.number(part,'to',0,4)
         if data['op']=='evolve':r.to[0]=self.number(data,'ability_slot',0,4)
-        plan=self.store.core.preview(s,r,Economy(native_gil(raw),self.policy,self.store.core.customize_unlocked(native_story(raw))))
+        progression=self.store.core.aeon_progress(raw)
+        plan=self.store.core.preview(s,r,Economy(native_gil(raw),self.policy,self.store.core.customize_unlocked(native_story(raw)),progression))
         confirmation=secrets.token_urlsafe(24)
         self.pending=(confirmation,time.monotonic()+300,raw,meta,plan.after,plan.gilDebit,bytes(self.policy))
         random=data['op']=='refine' and plan.policy.mode==2
@@ -112,7 +120,7 @@ class Workshop:
         costs=[{'id':i,'name':self.items.get(i,f'Item {i}'),'amount':n,'have':s.items[i]} for i,n in enumerate(displayed) if n]
         result={'confirmation':confirmation,'costs':costs,'operation':data['op'],
                 'development_free_materials':bool(plan.policy.devFreeMaterials),'development_free_gil':bool(plan.policy.devFreeGil),'gil_debit':plan.gilDebit,'requirements_only':random,'gil_cost':plan.gilCost,'gil_have':plan.gilBefore,
-                'before':self.piece(s.pieces[slot],slot),'after':self.piece(plan.after.pieces[slot],slot)}
+                'before':self.piece(s.pieces[slot],slot,progression),'after':self.piece(plan.after.pieces[slot],slot,progression)}
         if random:
             # A random refinement preview discloses price and eligibility, not the
             # selected winner. Cancelling never advances the stored generator.

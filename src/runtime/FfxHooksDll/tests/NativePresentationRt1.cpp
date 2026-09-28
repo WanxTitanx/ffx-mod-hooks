@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "../hooks/EquipmentWorkshopRuntime.h"
 #include "../hooks/EquipmentWorkshopNativeUi.h"
+#include "../hooks/ArcanaNativeUi.h"
 #include "../hooks/ElementHook.h"
 #include "../hooks/ElementScanSettings.h"
 #include "../hooks/NativePresentationEvidence.h"
@@ -44,6 +45,10 @@ static void Redirect(unsigned rva,const void* destination){
     std::memcpy(jump+1,&delta,4);if(!Write(patch.at,jump,5))throw std::runtime_error("Private fixture patch failed");
 }
 static void Log(const char* text){std::fputs(text,stdout);}
+static bool NoArcanaSave(FfxHooks::Arcana::State&,std::uint64_t&) noexcept {return false;}
+static FfxHooks::Arcana::Error NoArcanaEquip(std::uint64_t,std::uint64_t,unsigned,unsigned,std::int16_t,bool) noexcept {return FfxHooks::Arcana::Error::InvalidState;}
+static FfxHooks::Arcana::Error NoArcanaMode(std::uint64_t,std::uint64_t,FfxHooks::Arcana::Mode,bool) noexcept {return FfxHooks::Arcana::Error::InvalidState;}
+static void NoArcanaImages(const FfxHooks::Arcana::NativeUi::Images&) noexcept {}
 static float viewportWidth=512.f,viewportHeight=416.f;
 static float __cdecl ScaleX(float value){return value*(viewportWidth/1920.f);}
 static float __cdecl ScaleY(float value){return value*(viewportHeight/1080.f);}
@@ -119,12 +124,14 @@ static DWORD WINAPI ForeignScan(void*){reinterpret_cast<int(__cdecl*)(int,int,in
 #include "WorkshopCustomizeNativeCases.inl"
 #include "WorkshopExtendedUiCases.inl"
 #include "FullScanCoverageCases.inl"
+#include "ElementalNumericScanCases.inl"
 int main(int argc,char** argv){
     std::setvbuf(stdout,nullptr,_IONBF,0);
     AddVectoredExceptionHandler(1,Diagnostic);
     if(argc!=5&&argc!=6)return 2;
     const unsigned scanMode=argc==6?static_cast<unsigned>(std::strtoul(argv[5],nullptr,10)):3u;
-    if(scanMode>3)return 2;
+    if(scanMode>4)return 2;
+    const bool scanNumeric=scanMode==4;
     const bool scanElements=(scanMode&1)!=0,scanExpanded=(scanMode&2)!=0;
     const auto image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES);if(!image)return 2;
     imageBase=reinterpret_cast<std::uintptr_t>(image);Check(PrivatePeFixture::NormalizeRelocations(image),"private PE relocations match runtime semantics");if(failures)return 2;
@@ -150,8 +157,17 @@ int main(int argc,char** argv){
     Check(Write(reinterpret_cast<std::uintptr_t>(signature),&bad,1)&&!W::NativeUi::Start(imageBase,true,false,Log),"unmatched drawing profile installs nothing");
     Check(Write(reinterpret_cast<std::uintptr_t>(signature),&original,1),"private signature restored after negative control");
     Check(W::NativeUi::Start(imageBase,true,false,Log)&&W::NativeUi::Active(),"native detail hooks install on the supported image");
+    if(scanNumeric)NumericScanTest::Configure(0);
     Check(FfxHooks::StartElementHook(imageBase,scanElements,scanExpanded,false,Log)&&
           FfxHooks::IsElementHookInstalled()==scanElements&&FfxHooks::IsScanExpandedInstalled()==scanExpanded,"Scan startup exposes the two independently selected features");
+    const auto nativeX=reinterpret_cast<float(__cdecl*)(float)>(imageBase+0x244990);
+    const auto nativeY=reinterpret_cast<float(__cdecl*)(float)>(imageBase+0x2449D0);
+    const float beforeX=nativeX(740.f),beforeY=nativeY(552.f);
+    const FfxHooks::Arcana::NativeUi::Callbacks arcana{NoArcanaSave,NoArcanaEquip,NoArcanaMode,NoArcanaImages};
+    Check(FfxHooks::Arcana::NativeUi::Start(imageBase,true,false,arcana,Log),"Arcana installs after Scan has admitted its unmodified shared scale dependencies");
+    Check(std::fabs(nativeX(740.f)-beforeX)<.001f&&std::fabs(nativeY(552.f)-beforeY)<.001f,"Arcana scale hooks preserve native Scan coordinates outside Equip");
+    Check(FfxHooks::StartElementHook(imageBase,scanElements,scanExpanded,false,Log)&&
+          FfxHooks::IsElementHookInstalled()==scanElements&&FfxHooks::IsScanExpandedInstalled()==scanExpanded,"later startup reuses the admitted Scan hooks after Arcana owns shared scales");
     if(failures)return 1;
     std::ifstream kernelFile(argv[4],std::ios::binary);std::vector<unsigned char> kernel((std::istreambuf_iterator<char>(kernelFile)),{});if(kernel.size()<14000)return 2;
     const auto kernelAddress=reinterpret_cast<std::uintptr_t>(kernel.data());std::memcpy(reinterpret_cast<void*>(imageBase+0xD2A944),&kernelAddress,4);
@@ -180,10 +196,13 @@ int main(int argc,char** argv){
     workshop::Piece shown{};Check(!W::ReadPresentation(gear,shown),"identical bytes at a foreign pointer cannot borrow the equipped identity");
     ExtendedEquipmentCases(store,savePath,native,state);
     auto empty=state;empty.pieces[0].fifth=255;empty.pieces[0].abilities[4]=0;empty.pieces[0].ranks[4]=0;
-    Check(store.Write(savePath,native,empty)&&W::LoadForTests(savePath.c_str(),native,native)&&W::CommitLoadForTests(native),"empty fifth fixture reloads through real save association");
+    // Independently authored UI fixtures cannot replace one path/revision with
+    // divergent extension bytes under the new anti-replay storage contract.
+    const auto emptyPath=directory+L"\\ffx_089",fourPath=directory+L"\\ffx_088";
+    Check(store.Write(emptyPath,native,empty)&&W::LoadForTests(emptyPath.c_str(),native,native)&&W::CommitLoadForTests(native),"empty fifth fixture reloads through its own real save association");
     ResetDraw();field();Check(frames==5&&labels.size()==3&&HasRank(3),"empty unlocked fifth retains an empty native row");
     auto four=empty;four.pieces[0].fifthUnlocked=0;
-    Check(store.Write(savePath,native,four)&&W::LoadForTests(savePath.c_str(),native,native)&&W::CommitLoadForTests(native),"four-slot refined fixture reloads");
+    Check(store.Write(fourPath,native,four)&&W::LoadForTests(fourPath.c_str(),native,native)&&W::CommitLoadForTests(native),"four-slot refined fixture reloads through its independent save path");
     ResetDraw();custom(0);Check(frames==4&&labels.size()==3&&HasRank(1)&&HasRank(3),"four-slot equipment gets rank labels without an extra row");
     W::NativeUi::Stop();ResetDraw();field();Check(frames==4&&labels.size()==3&&!HasRank(1),"stopping native details immediately restores vanilla four-slot presentation");
     // Restore the panel entry trampoline before exercising the Scan caller gate.
@@ -207,24 +226,26 @@ int main(int argc,char** argv){
     panelSite=Callsite(0x493B88,5);resistanceSite=Callsite(0x49414B,9);
     sensorBandSite=Callsite(0x493E59,9);
     const auto scan=reinterpret_cast<int(__cdecl*)(int,int,int)>(imageBase+0x4939A0);
+    if(scanNumeric){NumericScanTest::Run(scan);FfxHooks::RemoveElementHook();
+        std::printf("ELEMENTAL_NUMERICAL_SCAN_RT1 %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     const E::Settings palette{};
     if(scanElements){
     std::puts("CASE native Scan adapter");ResetDraw();Check(scan(0x1000,0,0)==23,"Scan detour preserves the original environment return value");
     Check(std::fabs(lastWidth-ScaleX(E::PanelWidth))<.01f&&HasColor(palette.rgb[0])&&HasColor(palette.rgb[1])&&HasColor(palette.rgb[2]),"native Scan panel and all three colored columns are rendered");
     Check(rectangles==0&&sprites.size()==6,"extra affinities reuse original sphere artwork instead of rectangle bands");
     Check(maskCalls[0]&&maskCalls[1]&&maskCalls[2]&&maskCalls[3],"Weak Absorb Null and inline Resist all use their actual masks");
-    for(unsigned third:{32u,64u})for(unsigned selected=0;selected<8;++selected){
+    for(unsigned third:{32u,64u})for(unsigned selected=0;selected<16;++selected){
         char settings[200]{};_snprintf_s(settings,sizeof(settings),_TRUNCATE,
-            "[element_scan]\nholy_enabled=%u\ndark_enabled=%u\nextra_enabled=%u\nextra_bit=%u\n",
-            selected&1,(selected>>1)&1,(selected>>2)&1,third);
+            "[element_scan]\nholy_enabled=%u\ndark_enabled=%u\nextra_enabled=%u\nextra_bit=%u\nother_enabled=%u\n",
+            selected&1,(selected>>1)&1,(selected>>2)&1,third,(selected>>3)&1);
         FfxHooks::Config::LoadTextForTests(settings,"C:\\private-scan-visibility.ini");
-        for(auto& mask:affinity)mask=0x90|third;
+        for(auto& mask:affinity)mask=0xF0;
         for(auto& calls:maskCalls)calls=0;
         ResetDraw();const int result=scan(0x1000,0,0);
-        const unsigned count=(selected&1)+((selected>>1)&1)+((selected>>2)&1);
-        const float expectedWidth=count?560.f-63.f*(3-count):385.f;
+        const unsigned count=(selected&1)+((selected>>1)&1)+((selected>>2)&1)+((selected>>3)&1);
+        const float expectedWidth=count?371.f+63.f*count:385.f;
         Check(result==23&&std::fabs(lastWidth-ScaleX(expectedWidth))<.01f,
-              "native Scan width follows zero one two or three selected extras");
+              "native Scan width follows zero through four selected extras");
         Check(bandWidths.size()==1&&std::fabs(bandWidths[0]-ScaleX(365+expectedWidth-385))<.01f,"Sensor band stretches to match the admitted extra columns");
         Check(rectangles==0&&sprites.size()==4*count,"native Scan emits one tinted original sphere per selected active column");
         for(const auto& sprite:sprites){
@@ -233,7 +254,7 @@ int main(int argc,char** argv){
                   std::fabs((last.x-first.x)-ScaleX(32.7f))<.001f&&std::fabs((last.y-first.y)-ScaleY(32.7f))<.001f,
                   "extra sprite samples the original silver sphere at native mask dimensions");
         }
-        for(unsigned i=0;i<3;++i)Check(HasColor(palette.rgb[i])==bool(selected&(1u<<i)),"independent native toggles preserve the selected color identities");
+        for(unsigned i=0;i<4;++i)Check(HasColor(palette.rgb[i])==bool(selected&(1u<<i)),"independent native toggles preserve all four selected color identities");
         Check(maskCalls[0]==(count?2u:1u)&&maskCalls[1]==(count?2u:1u)&&maskCalls[2]==(count?2u:1u)&&maskCalls[3]==(count?1u:0u),
               "zero extras add no speculative affinity reads and selected extras cover all four categories");
     }
