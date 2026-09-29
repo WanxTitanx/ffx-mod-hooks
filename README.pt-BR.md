@@ -437,6 +437,10 @@ dotnet build src\sin\SinScaleInject\SinScaleInject.csproj -c Release
   do jogo: ele causa crash no menu. `build_hooks.ps1 -Deploy` recusa deploy de
   laboratório sem `-LabDeploy -GameRoot <cópia descartável>`.
 
+O CI executa um único build nativo quando o código relacionado muda e ignora
+documentação comum. A matriz completa de contexto e o pacote grande do Arcana
+são manuais. Veja os [controles de execução e custo do CI](.github/CI.md).
+
 ## Deploy
 
 ```powershell

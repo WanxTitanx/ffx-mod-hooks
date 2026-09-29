@@ -1,0 +1,47 @@
+name: build-sin
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/sin/**'
+      - '!**/*.md'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'NuGet.Config'
+      - 'global.json'
+      - '.github/workflows/build-sin.yml'
+  pull_request:
+    paths:
+      - 'src/sin/**'
+      - '!**/*.md'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'NuGet.Config'
+      - 'global.json'
+      - '.github/workflows/build-sin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Compilation is portable; running the injector still requires Windows.
+  build-sin:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build SinScaleInject
+        run: dotnet build src/sin/SinScaleInject/SinScaleInject.csproj -c Release

@@ -2,17 +2,17 @@ name: text-languages
 
 on:
   push:
-    branches: [main, codex/mod-006-readiness-20260928]
-    paths: ['src/runtime/**', 'research/equipment_workshop/**', 'tools/text_languages/**', '.github/workflows/text-languages.yml']
+    branches: [main]
+    paths: ['src/runtime/**', 'contracts/**', 'research/equipment_workshop/**', 'tools/text_languages/**', '!**/*.md', '.github/workflows/text-languages.yml']
   pull_request:
-    paths: ['src/runtime/**', 'research/equipment_workshop/**', 'tools/text_languages/**', '.github/workflows/text-languages.yml']
+    paths: ['src/runtime/**', 'contracts/**', 'research/equipment_workshop/**', 'tools/text_languages/**', '!**/*.md', '.github/workflows/text-languages.yml']
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: text-languages-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -26,59 +26,13 @@ jobs:
       - name: Portable contracts and memory sanitizers
         run: python3 tools/text_languages/run_checks.py --output work/mod006-ci --sanitizers
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           name: mod006-portable-${{ github.sha }}
           path: |
             work/mod006-ci/*.log
             work/mod006-ci/*.json
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 3
 
-  msvc-x86:
-    runs-on: windows-2022
-    timeout-minutes: 40
-    defaults:
-      run:
-        shell: pwsh
-    steps:
-      - name: Preserve source line endings
-        run: git config --global core.autocrlf false
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: MSVC x86 adapters, bounded file IO and F8 regressions
-        run: ./src/runtime/FfxHooksDll/text_languages_rt1.ps1
-      - uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-          vcpkgGitCommitId: '10ceb139a610ebf3c6aa49cdc4a4b7f3db5d3f2b'
-      - name: Prepare pinned x86 dependencies
-        run: |
-          Push-Location $env:VCPKG_ROOT
-          ./vcpkg install --triplet x86-windows-static polyhook2 zydis
-          if ($LASTEXITCODE -ne 0) { throw 'Pinned vcpkg dependencies failed' }
-          Pop-Location
-          $destination = 'src/runtime/FfxHooksDll/vcpkg_installed'
-          New-Item -ItemType Directory -Force $destination | Out-Null
-          Copy-Item (Join-Path $env:VCPKG_ROOT 'installed/x86-windows-static') $destination -Recurse -Force
-      - name: Full MSVC x86 Release DLL without deployment
-        run: ./src/runtime/FfxHooksDll/build_hooks.ps1 -WithPolyHook -Release
-      - name: Record candidate identity
-        run: |
-          Get-FileHash -Algorithm SHA256 src/runtime/FfxHooksDll/bin/Release/ffx-hooks.dll | Format-List | Out-File src/runtime/FfxHooksDll/obj/text-languages-rt1/candidate.txt
-          git rev-parse HEAD | Out-File src/runtime/FfxHooksDll/obj/text-languages-rt1/commit.txt
-          Write-Host 'RT0/RT1 only. Private PE, game resources and live RT2 are not supplied by public CI.'
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: mod006-msvc-${{ github.sha }}
-          path: |
-            src/runtime/FfxHooksDll/obj/text-languages-rt1/*.log
-            src/runtime/FfxHooksDll/obj/text-languages-rt1/*.json
-            src/runtime/FfxHooksDll/obj/text-languages-rt1/*.txt
-            src/runtime/FfxHooksDll/obj/text-languages-rt1/*.exe
-            src/runtime/FfxHooksDll/obj/equipment-workshop-menu-rt1/*.exe
-            src/runtime/FfxHooksDll/bin/Release/ffx-hooks.dll
-          if-no-files-found: error
-          retention-days: 14
+# Native MSVC checks and the DLL build live in build.yml, once per revision.

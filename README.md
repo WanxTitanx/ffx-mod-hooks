@@ -415,6 +415,10 @@ Notes:
   directory — it crashes the menu. `build_hooks.ps1 -Deploy` refuses lab deploys without
   `-LabDeploy -GameRoot <disposable copy>`.
 
+CI runs one native build for relevant source changes, skips ordinary documentation,
+and keeps full context matrices and large Arcana packages manual. See the
+[CI execution and cost controls](.github/CI.md).
+
 ## Deploy
 
 ```powershell

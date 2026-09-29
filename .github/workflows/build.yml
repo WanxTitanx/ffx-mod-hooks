@@ -3,63 +3,100 @@ name: build
 on:
   push:
     branches: [main]
+    paths:
+      - 'src/runtime/**'
+      - 'contracts/**'
+      - 'research/equipment_workshop/**'
+      - 'tools/text_languages/**'
+      - '!**/*.md'
+      - '.github/workflows/build.yml'
+  pull_request:
+    paths:
+      - 'src/runtime/**'
+      - 'contracts/**'
+      - 'research/equipment_workshop/**'
+      - 'tools/text_languages/**'
+      - '!**/*.md'
+      - '.github/workflows/build.yml'
   workflow_dispatch:
+    inputs:
+      package_arcana:
+        description: 'Also package and upload the large standalone Arcana bundle'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  # One Windows runner owns both the native regressions and the full DLL build.
   build-hooks:
-    runs-on: windows-latest
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: 'false'
     defaults:
       run:
         shell: pwsh
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup vcpkg
+        with:
+          persist-credentials: false
+      - name: MSVC x86 adapters, bounded file IO and F8 regressions
+        run: ./src/runtime/FfxHooksDll/text_languages_rt1.ps1
+      - name: Setup pinned vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
           vcpkgGitCommitId: '10ceb139a610ebf3c6aa49cdc4a4b7f3db5d3f2b'
-
       - name: Install vcpkg deps (x86 static)
         run: |
-          cd $env:VCPKG_ROOT
+          Push-Location $env:VCPKG_ROOT
           ./vcpkg install --triplet x86-windows-static polyhook2 zydis
-        shell: pwsh
-
-      - name: Copy vcpkg_installed into project (expected location)
-        run: |
-          $vcpkgInstalled = Join-Path $env:VCPKG_ROOT 'installed'
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned vcpkg dependencies failed' }
+          Pop-Location
           $dest = 'src/runtime/FfxHooksDll/vcpkg_installed'
-          if (-not (Test-Path $dest)) { New-Item -ItemType Directory -Force $dest | Out-Null }
-          Copy-Item (Join-Path $vcpkgInstalled 'x86-windows-static') $dest -Recurse -Force
-
-      - name: Build ffx-hooks.dll (PolyHook, Release)
+          New-Item -ItemType Directory -Force $dest | Out-Null
+          Copy-Item (Join-Path $env:VCPKG_ROOT 'installed/x86-windows-static') $dest -Recurse -Force
+      - name: Build ffx-hooks.dll (PolyHook, Release, no deployment)
         run: ./src/runtime/FfxHooksDll/build_hooks.ps1 -WithPolyHook -Release
-
-      - name: Package standalone Arcana module
-        run: python research/mod_008_arcana/package_runtime.py --dll src/runtime/FfxHooksDll/bin/Release/ffx-hooks.dll --output work/packages/ffx-hooks-arcana.zip
-
-      - name: Upload standalone Arcana package
+      - name: Record candidate identity
+        run: |
+          Get-FileHash -Algorithm SHA256 src/runtime/FfxHooksDll/bin/Release/ffx-hooks.dll | Format-List | Out-File src/runtime/FfxHooksDll/obj/text-languages-rt1/candidate.txt
+          git rev-parse HEAD | Out-File src/runtime/FfxHooksDll/obj/text-languages-rt1/commit.txt
+          Write-Host 'RT0/RT1 only. Private PE, game resources and live RT2 are not supplied by public CI.'
+      - name: Upload native validation logs
         uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
-          name: ffx-hooks-arcana
-          path: work/packages/ffx-hooks-arcana.zip
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Upload artifact
+          name: native-validation-${{ github.sha }}
+          path: |
+            src/runtime/FfxHooksDll/obj/text-languages-rt1/*.log
+            src/runtime/FfxHooksDll/obj/text-languages-rt1/*.json
+            src/runtime/FfxHooksDll/obj/text-languages-rt1/*.txt
+          if-no-files-found: warn
+          retention-days: 3
+      - name: Upload DLL
         uses: actions/upload-artifact@v4
         with:
           name: ffx-hooks-dll
           path: src/runtime/FfxHooksDll/bin/Release/ffx-hooks.dll
           if-no-files-found: error
-
-  build-sin:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+          retention-days: 7
+      - name: Package standalone Arcana module
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.package_arcana }}
+        run: python research/mod_008_arcana/package_runtime.py --dll src/runtime/FfxHooksDll/bin/Release/ffx-hooks.dll --output work/packages/ffx-hooks-arcana.zip
+      - name: Upload standalone Arcana package
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.package_arcana }}
+        uses: actions/upload-artifact@v4
         with:
-          dotnet-version: '8.0.x'
-      - name: Build SinScaleInject
-        run: dotnet build src/sin/SinScaleInject/SinScaleInject.csproj -c Release
+          name: ffx-hooks-arcana
+          path: work/packages/ffx-hooks-arcana.zip
+          if-no-files-found: error
+          retention-days: 3
