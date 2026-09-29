@@ -1,5 +1,6 @@
 // The native producer, Nul entry, queue finish and actor clear prefix execute.
 // Formula and graphical suffixes use the existing isolated fixture endpoints.
+#include "../hooks/NulElementCommands.h"
 static LONG WINAPI NulCompositionCrash(EXCEPTION_POINTERS* fault){
     std::printf("NUL_NATIVE_EXCEPTION code=%08lX rva=%08lX\n",fault->ExceptionRecord->ExceptionCode,
         static_cast<unsigned long>(reinterpret_cast<std::uintptr_t>(fault->ExceptionRecord->ExceptionAddress)-coreImage));
@@ -11,13 +12,18 @@ static std::string NulCompositionPack(std::vector<unsigned char>& bank){
         row[0x23]=id<320?1:0;row[0x28]=4;row[0x2A]=16;
         row[0x2D]=static_cast<unsigned char>(id==101?16:id==102?17:id==103?144:0);
     }
+    for(const auto& command:FfxHooks::NulElements::Commands){
+        auto* row=bank.data()+20+96*command.id;std::memset(row,0,96);
+        W16(row+16,command.animation);row[23]=row[24]=4;row[25]=1;row[26]=5;row[37]=2;row[43]=1;
+    }
     auto json=TacticsPack(bank);std::string commands;
-    json.replace(json.find("\"last\":319"),10,"\"last\":321");
+    json.replace(json.find("\"last\":319"),10,"\"last\":373");
     for(unsigned id:{101u,102u,103u})commands+=",{\"key\":\"nul.mixed"+std::to_string(id)+
         "\",\"bank\":\"table.command\",\"index\":"+std::to_string(id)+",\"row_sha256\":\""+
         Hash(bank.data()+20+96*id,96)+"\",\"elements\":[{\"key\":\"tests.e4\",\"weight\":1},{\"key\":\"tests.e"+
         std::string(id==101?"8":id==102?"0":"7")+"\",\"weight\":1}]}";
-    json.insert(json.find("],\"profiles\""),commands);return json;
+    json.insert(json.find("],\"profiles\""),commands);
+    ReplaceText(json,"tests.e8","spira.poison");ReplaceText(json,"tests.e9","spira.gravity");return json;
 }
 static void NulCompositionCases(std::uintptr_t base,std::vector<unsigned char>& actors,std::vector<unsigned char>& bank){
     coreImage=base;tacticsActors=actors.data();amount=100;
@@ -54,6 +60,14 @@ static void NulCompositionCases(std::uintptr_t base,std::vector<unsigned char>& 
           "legacy native-slot option cannot overwrite timers or existing native Nul charges");
     Check(hit(84)==0&&hit(84)==150,"Radiant Ward blocks Holy exactly once through shared Nul");
     grant(321);Check(hit(87)==0&&hit(87)==150,"Umbral Ward blocks Dark exactly once");
+    for(const auto& pair:{std::array<unsigned,2>{{370,85}},std::array<unsigned,2>{{371,86}},
+                          std::array<unsigned,2>{{372,88}},std::array<unsigned,2>{{373,89}}}){
+        const int baseline=hit(pair[1]);grant(pair[0]);
+        Check(hit(pair[1])==0&&hit(pair[1])==baseline,"each new native/external Nul protects its own element exactly once");
+    }
+    grant(372);Check(hit(101)==150,"a Poison charge alone cannot cover a mixed Holy/Poison hit");
+    grant(320);Check(hit(101)==0,"explicit Holy and Poison spell charges compose through one shared resolver");
+    Check(hit(84)==150&&hit(88)==100,"the mixed hit consumes both participating spell charges exactly once");
     grant(320);Check(hit(102)==150&&hit(84)==0,"an uncovered Fire component preserves the Holy charge");
     grant(320);Check(hit(103)==150,"mixed Holy Dark requires both charges");
     grant(321);Check(hit(103)==0&&hit(84)==150&&hit(87)==150,"full mixed coverage spends each ward exactly once");

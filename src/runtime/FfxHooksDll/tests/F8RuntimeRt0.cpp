@@ -598,11 +598,18 @@ bool ReplaceFirstSourceToken(std::string& source, const char* from, const char* 
 
 bool ValidateTask6DetachBody(const std::string& body) {
     return CompactSourceCode(body) ==
-           "caseDLL_PROCESS_DETACH:FfxHooks::Arcana::NativeUi::Stop();FfxHooks::Arcana::Combat::Stop();FfxHooks::SetSupplementalDropProvider(nullptr);FfxHooks::Arcana::Assets::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::ElementalDominion::RequestDetachStop();FfxHooks::SpiraAbilities::RequestDetachStop();FfxHooks::MonsterRewards::RequestStop();FfxHooks::RequestNulWardDetachStop();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::Vanguard::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::NativeLanguage::RequestStop();FfxHooks::TextLanguage::Native::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
+           "caseDLL_PROCESS_DETACH:FfxHooks::Arcana::NativeUi::Stop();FfxHooks::Arcana::Combat::Stop();FfxHooks::SetSupplementalDropProvider(nullptr);FfxHooks::Arcana::Assets::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::ElementalDominion::RequestDetachStop();FfxHooks::SpiraAbilities::RequestDetachStop();FfxHooks::MonsterRewards::RequestStop();FfxHooks::WeaponStrikeVfx::RequestStop();FfxHooks::RequestNulWardDetachStop();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::Vanguard::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::ElementNameInput::Abort();FfxHooks::NativeLanguage::RequestStop();FfxHooks::TextLanguage::Native::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
+           "FfxHooks::SeymourMenuList::RequestStop();"
+           "FfxHooks::SeymourPersistentRoster::RequestStop();"
+           "FfxHooks::SeymourSession::RequestStop();"
+           "FfxHooks::SphereGridProgress8Runtime::RequestStop();"
+           "FfxHooks::RequestNativeSaveLoadEventsStop();"
            "FfxHooks::F7_RequestStop();"
            "FfxHooks::F7AiSwap_RequestStop();"
            "FfxHooks::RequestSpeedHackStop();"
-           "FfxHooks::RequestDialogSkipStop();FfxHooks::RequestUnXBoosterStop();";
+           "FfxHooks::RequestDialogSkipStop();FfxHooks::RequestUnXBoosterStop();"
+           "FfxHooks::RequestNulWardStop();FfxHooks::RequestGridTeachStop();"
+           "FfxHooks::RequestFieldProbeStop();PhotoMode::RequestStop();";
 }
 
 bool ValidateLoaderLockSafeAttachBody(const std::string& body) {
@@ -2064,6 +2071,14 @@ void TestTask6DllmainIntegrationContracts() {
            nativeUiSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos&&
            elementSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos,
            "new drawing detach stops are proven atomic stores without removal or locking");
+    std::string strikeSource;
+    Expect(ReadWholeFile(RuntimeSourcePath("hooks/WeaponStrikeVfxRuntime.cpp"),strikeSource),
+           "weapon VFX stop source is readable");
+    const auto strikeStop=SourceFunctionBody(strikeSource,"void RequestStop() noexcept");
+    Expect(strikeStop.Valid()&&CompactSourceCode(strikeStop.body)=="stopRequested=true;status=Status::Stopped;"&&
+               strikeSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos&&
+               strikeSource.find("std::atomic<Status>::is_always_lock_free")!=std::string::npos,
+           "weapon VFX detach only stores lock-free stop state; native cleanup stays on the owner thread");
     for (const char* relative : {"hooks/ElementalRuntime.cpp", "hooks/SpiraRuntime.cpp"}) {
         std::string runtimeSource;
         Expect(ReadWholeFile(RuntimeSourcePath(relative), runtimeSource),
@@ -2074,6 +2089,17 @@ void TestTask6DllmainIntegrationContracts() {
                    runtimeSource.find("std::atomic<bool>::is_always_lock_free") != std::string::npos,
                "integrated mod detach closes admission using only proven lock-free boolean stores");
     }
+    std::string elementInputSource;
+    Expect(ReadWholeFile(RuntimeSourcePath("hooks/ElementNameInput.h"),elementInputSource),
+           "element-name capture teardown source is readable");
+    const auto nameAbort=SourceFunctionBody(elementInputSource,"inline void Abort() noexcept");
+    Expect(nameAbort.Valid()&&CompactSourceCode(nameAbort.body)==
+               "InterlockedExchange(&active,0);InterlockedExchange(&confirmed,0);InterlockedExchange(&cancelled,0);InterlockedExchange(&rejected,0);",
+           "name capture detach only clears atomic admission/events without waiting or locking");
+    const auto nameMessage=SourceFunctionBody(elementInputSource,"inline bool Message(UINT message,WPARAM value) noexcept");
+    Expect(nameMessage.Valid()&&nameMessage.body.find("Config::")==std::string::npos&&
+               nameMessage.body.find("SaveName")==std::string::npos,
+           "typing and focus notifications cannot persist names from WndProc");
     std::string wardSource;
     Expect(ReadWholeFile(RuntimeSourcePath("hooks/NulWardHook.cpp"),wardSource),"ward detach source is readable");
     const auto wardStop=SourceFunctionBody(wardSource,"void RequestNulWardDetachStop() noexcept");
@@ -2284,10 +2310,12 @@ void TestTask6SourceValidatorMutationPressure() {
         "FfxHooks::ElementalDominion::RequestDetachStop();\n"
         "FfxHooks::SpiraAbilities::RequestDetachStop();\n"
         "FfxHooks::MonsterRewards::RequestStop();\n"
+        "FfxHooks::WeaponStrikeVfx::RequestStop();\n"
         "FfxHooks::RequestNulWardDetachStop();\n"
         "FfxHooks::EquipmentWorkshop::RequestStop();\n"
         "FfxHooks::Vanguard::RequestStop();\n"
         "FfxHooks::NativePorts::RequestStop();\n"
+        "FfxHooks::ElementNameInput::Abort();\n"
         "FfxHooks::NativeLanguage::RequestStop();\n"
         "FfxHooks::TextLanguage::Native::RequestStop();\n"
         "FfxHooks::SinAi::RequestStop();\n"
@@ -2295,11 +2323,20 @@ void TestTask6SourceValidatorMutationPressure() {
         "FfxHooks::Fastload::RequestFastloadStop();\n"
         "FfxHooks::RequestNovaSuperDamageStop();\n"
         "FfxHooks::RequestSeymourBattleStop();\n"
+        "FfxHooks::SeymourMenuList::RequestStop();\n"
+        "FfxHooks::SeymourPersistentRoster::RequestStop();\n"
+        "FfxHooks::SeymourSession::RequestStop();\n"
+        "FfxHooks::SphereGridProgress8Runtime::RequestStop();\n"
+        "FfxHooks::RequestNativeSaveLoadEventsStop();\n"
         "FfxHooks::F7_RequestStop();\n"
         "FfxHooks::F7AiSwap_RequestStop();\n"
         "FfxHooks::RequestSpeedHackStop();\n"
         "FfxHooks::RequestDialogSkipStop();\n"
-        "FfxHooks::RequestUnXBoosterStop();\n";
+        "FfxHooks::RequestUnXBoosterStop();\n"
+        "FfxHooks::RequestNulWardStop();\n"
+        "FfxHooks::RequestGridTeachStop();\n"
+        "FfxHooks::RequestFieldProbeStop();\n"
+        "PhotoMode::RequestStop();\n";
     const std::string heavyDetach =
         validDetach + "RemoveHooks();\n";
     Expect(ValidateTask6DetachBody(validDetach),
@@ -4400,8 +4437,8 @@ void TestCatalogMetadataAndInvariants() {
                trackedIniSource.find("max_speed = 8.0") != std::string::npos,
            "Speed Hack defaults must document the fixed cycle, legacy keys, and 8x safety cap");
 
-    Expect(FfxHooks::F8FlagCount() == 88 && FfxHooks::Vanguard::FeatureCount == 31,
-           "catalog preserves50 established rows and31 Vanguard identities, then six mod gates and the independent reward gate");
+    Expect(FfxHooks::F8FlagCount() == 90 && FfxHooks::Vanguard::FeatureCount == 31,
+           "catalog preserves established rows and appends independent weapon VFX and Nul spell gates");
     Expect(sizeof(expected) / sizeof(expected[0]) == 50,
            "the hand-derived legacy fixture still covers every established row");
     Expect(FfxHooks::F8TabCount() == 7, "catalog must expose exactly seven tabs");
@@ -4498,6 +4535,12 @@ void TestCatalogMetadataAndInvariants() {
                !reward.gate.defaultValue&&reward.activation==F8Activation::RestartRequired&&reward.applyMode==F8ApplyMode::None&&
                FfxHooks::FindF8Flag("cheats.monster_rewards")==&reward,
            "per-monster rewards append one default-OFF identity without renumbering existing flags");
+    const auto& strikes=FfxHooks::F8FlagAt(88);
+    Expect(SameNullable(strikes.gate.canonicalKey,"weapon_strike_vfx.enabled")&&
+               SameNullable(strikes.gate.authorityKey,"f8_authority.weapon_strike_vfx")&&
+               !strikes.gate.defaultValue&&strikes.activation==F8Activation::RestartRequired&&
+               strikes.applyMode==F8ApplyMode::None&&FfxHooks::FindF8Flag("weapon_strike_vfx.enabled")==&strikes,
+           "Holy/Shadow VFX is a separate default-OFF gate, appended after existing reward identity");
 
     const FfxHooks::F8FlagSpec* seymour = FfxHooks::FindF8Flag("boosters.playable_seymour");
     const FfxHooks::F8FlagSpec* compose = FfxHooks::FindF8Flag("arena_plus.compose_f7");
@@ -5626,7 +5669,7 @@ void TestLabCatalogAndRestartControls() {
         {"labs.item_stack_cap","f8_authority.lab_item_stack_cap","FFXHOOKS_ENABLE_ITEM_STACK_CAP","item_stack_cap_255.flag","ItemStackCapFlagEnabled"},
         {"labs.double_triple_drop","f8_authority.lab_double_triple_drop","FFXHOOKS_ENABLE_DOUBLE_TRIPLE_DROP","double_triple_drop.flag","DoubleTripleDropEnabled"},
     };
-    Expect(FfxHooks::F8FlagCount()==88&&FfxHooks::F8TabCount()==7&&
+    Expect(FfxHooks::F8FlagCount()==90&&FfxHooks::F8TabCount()==7&&
                strcmp(FfxHooks::F8TabName(6),"Reforge")==0,"Reforge retains existing rows and adds both optional drawing gates");
     std::string source;
     Expect(ReadWholeFile(RuntimeSourcePath("dllmain.cpp"),source),"Lab install source readable");
@@ -5747,8 +5790,9 @@ void TestLabCatalogAndRestartControls() {
                    FfxHooks::ResolveF8Flag(*nova).value,
                "Ronso OFF cannot be re-enabled by old Apply settings or Nova ON");
     }
-    Expect(source.find("else if (!GridTeachEnabled())")!=std::string::npos&&
-               source.find("grid_teach.flag off")!=std::string::npos,"Lancet still refuses an absent GridTeach dependency");
+    Expect(source.find("else if (!FfxHooks::IsGridTeachHookInstalled())")!=std::string::npos&&
+               source.find("else if (!GridTeachEnabled())")==std::string::npos,
+           "Lancet requires the installed GridTeach dependency, not merely its requested flag");
     Expect(source.find("GetInt(\"labs.item_stack_cap_value\", 255)")!=std::string::npos&&
                source.find("EnvInt(\"FFXHOOKS_ITEM_STACK_CAP\"")!=std::string::npos,
            "native item-cap installation consumes the saved scalar with its existing environment override");
@@ -5784,7 +5828,7 @@ void TestMultiplierCatalogAndTransactions() {
     const FfxHooks::F8FlagSpec* ap = FfxHooks::FindF8Flag("cheats.ap_100x");
     const FfxHooks::F8FlagSpec* gil = FfxHooks::FindF8Flag("cheats.gil_100x");
     Expect(ap && gil, "AP and Gil legacy boolean rows must remain in the catalog");
-    Expect(FfxHooks::F8FlagCount() == 88,
+    Expect(FfxHooks::F8FlagCount() == 90,
            "general scalar metadata adds no boolean rows beyond the explicit independent monster gate");
     Expect(ap && ap->scalar && strcmp(ap->scalar->canonicalKey, "cheats.ap_multiplier") == 0 &&
                ap->scalar->defaultValue == 100 && ap->scalar->minimum == 1 &&
@@ -11877,7 +11921,7 @@ void TestMaechenDefaultOffAndLocaleContracts() {
     const size_t defaultBegin = config.find("\"[maechen]\\n\"");
     const size_t defaultEnd = defaultBegin == std::string::npos
                                   ? std::string::npos
-                                  : config.find(';', defaultBegin);
+                                  : (std::min)(config.find("\"[", defaultBegin + 1), config.find(';', defaultBegin));
     const std::string defaultSection =
         defaultBegin == std::string::npos || defaultEnd == std::string::npos
             ? std::string{}

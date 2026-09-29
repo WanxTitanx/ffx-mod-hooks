@@ -5,6 +5,13 @@
 #include "F7DifficultyCore.h"
 #include "MinHookBatchCoordinator.h"
 #include "SharedBattleRuntime.h"
+#include "RecoveryBattleEpoch.h"
+#include "SeymourCompatibilityHook.h"
+#include "SeymourOverdriveHook.h"
+#include "SeymourGearPresentationHook.h"
+#include "SeymourGearSortHook.h"
+#include "SeymourPersistentRosterHook.h"
+#include "SeymourMenuListHook.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -81,6 +88,8 @@ std::atomic<uint32_t> g_producer{
 AtomicCommandMailbox g_commands{};
 AtomicAdmission g_admission{};
 AtomicTelemetryMailbox g_telemetry{};
+// Published only after a proved owned entry, invalidated before native exit.
+std::atomic<std::uint64_t> g_compatibilityEpoch{0};
 Ownership g_ownership{};
 ExitDetourOwner g_exitOwner{};
 TeardownMachine g_teardown{};
@@ -449,6 +458,8 @@ void SeymourEntryComposer(
         return;
     }
 
+    (void)SeymourCompatibility::RestoreAtBattleBoundary();
+    g_compatibilityEpoch.store(0,std::memory_order_release);
     const Command command = ReadCommand(&g_commands);
     uint8_t discriminator = 0u;
     if (!GuardedRead(adapter->discriminator, &discriminator, sizeof(discriminator))) {
@@ -468,6 +479,11 @@ void SeymourEntryComposer(
     telemetry.returnAddress = static_cast<uint32_t>(returnRva);
     telemetry.battleDiscriminator = discriminator;
     PublishTelemetry(&g_telemetry, telemetry);
+    if(serviced.outcome==ServiceOutcome::Applied){
+        const auto epoch=RecoveryBattleEpoch::Read();
+        if(RecoveryBattleEpoch::OwnedBy(epoch,GetCurrentThreadId()))
+            g_compatibilityEpoch.store((std::uint64_t(epoch.generation)<<32)|epoch.thread,std::memory_order_release);
+    }
     (void)serviced;
     LeaveCallback(&g_admission, ticket);
 }
@@ -494,6 +510,8 @@ void __cdecl SeymourExitShim() {
         return;
     }
 
+    (void)SeymourCompatibility::RestoreAtBattleBoundary();
+    g_compatibilityEpoch.store(0,std::memory_order_release);
     const Command command = ReadCommand(&g_commands);
     Telemetry telemetry{};
     (void)ServiceExit(command, RuntimeServiceIo(adapter),
@@ -919,6 +937,12 @@ bool StartSeymourBattleHook(
         "entry_return_rva=0x%08X exit_target_rva=0x%08X default=OFF\n",
         static_cast<unsigned>(moduleBase), kSeymourBattleEntryReturnRva,
         kExitTargetRva);
+    SeymourCompatibility::Start(moduleBase,false,log);
+    SeymourOverdrive::Start(moduleBase,false,log);
+    SeymourGearPresentation::Start(moduleBase,false,log);
+    SeymourGearSort::Start(moduleBase,false,log);
+    SeymourPersistentRoster::Start(moduleBase,false,log);
+    SeymourMenuList::Start(moduleBase,false,log);
     if (statusOut) *statusOut = SeymourBattleInstallStatus::Installed;
     return true;
 }
@@ -955,6 +979,12 @@ void NotifySeymourBattlePresentProducer(bool ready, bool terminalFailure) {
 }
 
 void SeymourBattlePresentTick() {
+    SeymourCompatibility::PresentTick();
+    SeymourOverdrive::PresentTick();
+    SeymourGearPresentation::PresentTick();
+    SeymourGearSort::PresentTick();
+    SeymourPersistentRoster::PresentTick();
+    SeymourMenuList::PresentTick();
     if (g_publication.load(std::memory_order_acquire) !=
             static_cast<uint32_t>(AdapterPublication::Installed) ||
         g_producer.load(std::memory_order_acquire) !=
@@ -1019,11 +1049,23 @@ void SeymourBattlePresentTick() {
 }
 
 void RequestSeymourBattleStop() {
+    SeymourMenuList::RequestStop();
+    SeymourPersistentRoster::RequestStop();
+    SeymourGearSort::RequestStop();
+    SeymourGearPresentation::RequestStop();
+    SeymourOverdrive::RequestStop();
+    SeymourCompatibility::RequestStop();
     SeymourBattle::RequestStop(&g_commands);
     CloseAdmission(&g_admission);
 }
 
 bool RemoveSeymourBattleHook() {
+    if(!SeymourMenuList::Remove())return false;
+    if(!SeymourPersistentRoster::Remove())return false;
+    if(!SeymourGearSort::Remove())return false;
+    if(!SeymourGearPresentation::Remove())return false;
+    if(!SeymourOverdrive::Remove())return false;
+    if(!SeymourCompatibility::Remove())return false;
     if (g_teardown.phase == TeardownPhase::Complete) return true;
     if (g_teardown.phase == TeardownPhase::Inactive) {
         const AdapterPublication publication = static_cast<AdapterPublication>(
@@ -1081,6 +1123,27 @@ bool RemoveSeymourBattleHook() {
         AdapterPublicationName(g_teardownTerminal),
         static_cast<unsigned>(g_teardownTerminal));
     return true;
+}
+
+bool CaptureSeymourCompatibilityScope(SeymourCompatibility::Scope* output,bool cleanup) noexcept {
+    if(!output)return false;
+    *output={};
+    const auto packed=g_compatibilityEpoch.load(std::memory_order_acquire);
+    const auto epoch=RecoveryBattleEpoch::Read();
+    const auto thread=GetCurrentThreadId();
+    if(!packed||!RecoveryBattleEpoch::OwnedBy(epoch,thread)||
+       packed!=((std::uint64_t(epoch.generation)<<32)|epoch.thread)||
+       !g_adapterPublicationPtr.load(std::memory_order_acquire))return false;
+    Telemetry telemetry{};
+    if(!ReadTelemetry(&g_telemetry,&telemetry)||telemetry.threadId!=thread||
+       telemetry.callback!=CallbackKind::Entry||telemetry.state!=State::AppliedBattleRoster||
+       telemetry.outcome!=ServiceOutcome::Applied)return false;
+    const auto command=ReadCommand(&g_commands);
+    if(!cleanup&&(!F7_DifficultyInBattle()||!command.requested||command.stopping||command.generation!=telemetry.generation||
+       g_producer.load(std::memory_order_acquire)!=static_cast<std::uint32_t>(ProducerPublication::Ready)))return false;
+    if(g_compatibilityEpoch.load(std::memory_order_acquire)!=packed)return false;
+    *output={packed,telemetry.generation,thread};
+    return output->Valid();
 }
 
 SeymourBattleRuntimeSnapshot GetSeymourBattleRuntimeSnapshot() {

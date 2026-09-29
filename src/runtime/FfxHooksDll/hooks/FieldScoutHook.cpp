@@ -1,5 +1,6 @@
 #include "FieldScoutHook.h"
 #include "FieldScoutAdmissionCore.h"
+#include "FieldScoutDedupe.h"
 #include "MinHookBatchCoordinator.h"
 #include "../shared/ffx_addresses.h"
 
@@ -51,7 +52,7 @@ static FILE*                g_traceSession = nullptr;
 static char                 g_sessionPath[512] = {};
 static char                 g_tracePath[512] = {};
 static CRITICAL_SECTION     g_lock;
-static volatile LONG        g_lockInit = 0;
+static INIT_ONCE            g_lockInit = INIT_ONCE_STATIC_INIT;
 static volatile LONG        g_totalHits = 0;
 static volatile LONG        g_uniqueAssets = 0;
 static volatile LONG        g_droppedDedupe = 0;
@@ -68,8 +69,7 @@ static bool                 g_fieldScoutRestartRequired = false;
 static bool                 g_fieldScoutCoordinatorPoisoned = false;
 
 static unsigned             g_maxUniquePaths = 250000u;
-static constexpr unsigned   kSeenEntryBytes = 384u;
-static char*                g_seenBlob = nullptr;
+static FieldScout::BoundedDedupe g_seenStore;
 static unsigned             g_seenCount = 0;
 
 static void WriteJsonLine(const char* jsonLine);
@@ -156,10 +156,12 @@ static uint64_t                   g_wireInstanceTrampolineVa = 0;
 static uint64_t                   g_commitMappingsTrampolineVa = 0;
 #endif
 
+static BOOL CALLBACK InitializeScoutLock(PINIT_ONCE, PVOID, PVOID*) {
+    InitializeCriticalSection(&g_lock);
+    return TRUE;
+}
 static void EnsureLock() {
-    if (InterlockedCompareExchange(&g_lockInit, 1, 0) == 0) {
-        InitializeCriticalSection(&g_lock);
-    }
+    InitOnceExecuteOnce(&g_lockInit, InitializeScoutLock, nullptr, nullptr);
 }
 
 static void HookLog(const char* fmt, ...) {
@@ -928,13 +930,15 @@ static void* ResolvePNodeFromContainer(void* container, int index) {
 
 static bool ComposeWorldTranslationFromNode(void* node, float* wx, float* wy, float* wz) {
     if (!node || !wx || !wy || !wz) return false;
-    /* ComposeWorldMatrix trampoline removed (was naked-jmp passthrough, zero data value,
-       and interfered with MH_ApplyQueued). Fall back to local matrix translation only. */
-    return ReadMatrixTranslation(
-        reinterpret_cast<const char*>(node) + FFX_PNODE_LOCAL_MATRIX_OFFSET,
-        wx,
-        wy,
-        wz);
+    // World coordinates require the actual world matrix, including parent transforms.
+    __try {
+        const void* world = *reinterpret_cast<void* const*>(
+            reinterpret_cast<const char*>(node) + FFX_PNODE_WORLD_MATRIX_PTR_OFFSET);
+        if (!IsPlausiblePtr(world)) return false;
+        return ReadMatrixTranslation(world, wx, wy, wz);
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        return false;
+    }
 }
 
 static void ParseSceneLayerFromName(const char* name, int* sceneOut, int* layerOut) {
@@ -1168,68 +1172,41 @@ static void ScanActiveChrInstances() {
 }
 
 /* Caller must hold g_lock. */
-static bool SeenStoreContainsLocked(const char* path) {
-    if (!g_seenBlob || !path) return false;
-    const unsigned n = g_seenCount;
-    for (unsigned i = 0; i < n; ++i) {
-        if (_stricmp(g_seenBlob + (i * kSeenEntryBytes), path) == 0) return true;
-    }
-    return false;
-}
-
-/* Atomic check-then-insert under g_lock; returns true if the path is NEW
- * (i.e. caller should emit). Returns false if already seen OR store is full.
- * Fixes P0 (race/TOCTOU heap-overflow) + the check-then-add window. */
+static bool SeenStoreContainsLocked(const char* path) { return g_seenStore.Contains(path); }
 static bool RememberPathIfNew(const char* path) {
     if (!path) return false;
     EnterCriticalSection(&g_lock);
-    if (!g_seenBlob || FieldScoutAdmission::IsShuttingDown(g_captureAdmission)) {
+    if (FieldScoutAdmission::IsShuttingDown(g_captureAdmission)) {
         LeaveCriticalSection(&g_lock);
         return false;
     }
-    if (SeenStoreContainsLocked(path)) {
-        LeaveCriticalSection(&g_lock);
-        return false;
-    }
-    if (g_seenCount >= g_maxUniquePaths) {
+    const auto result = g_seenStore.Remember(path);
+    const bool inserted = result == FieldScout::RememberResult::Inserted;
+    if (inserted) {
+        g_seenCount = static_cast<unsigned>(g_seenStore.Size());
+        InterlockedIncrement(&g_uniqueAssets);
+    } else if (result != FieldScout::RememberResult::Duplicate) {
         InterlockedIncrement(&g_droppedDedupe);
-        LeaveCriticalSection(&g_lock);
-        return false;
     }
-    const unsigned slotIndex = g_seenCount;            // single read under lock
-    char* slot = g_seenBlob + (slotIndex * kSeenEntryBytes);
-    _snprintf_s(slot, kSeenEntryBytes, _TRUNCATE, "%s", path);
-    g_seenCount = slotIndex + 1;                        // publish after write
-    InterlockedIncrement(&g_uniqueAssets);
     LeaveCriticalSection(&g_lock);
-    return true;
+    return inserted;
 }
-
-/* Thin wrappers kept for any non-paired call sites: both serialize on g_lock. */
 static bool PathAlreadySeen(const char* path) {
     EnterCriticalSection(&g_lock);
     const bool seen = SeenStoreContainsLocked(path);
     LeaveCriticalSection(&g_lock);
     return seen;
 }
-
-static bool RememberPath(const char* path) {
-    return RememberPathIfNew(path);
-}
-
+static bool RememberPath(const char* path) { return RememberPathIfNew(path); }
 static bool EnsureSeenStore() {
-    if (g_seenBlob) return true;
-    const SIZE_T bytes = static_cast<SIZE_T>(g_maxUniquePaths) * kSeenEntryBytes;
-    g_seenBlob = static_cast<char*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, bytes));
-    return g_seenBlob != nullptr;
+    if (g_seenStore.Capacity()) return true;
+    if (!g_seenStore.Initialize(g_maxUniquePaths)) return false;
+    g_maxUniquePaths = static_cast<unsigned>(g_seenStore.Capacity());
+    return true;
 }
-
 static void FreeSeenStore() {
     EnterCriticalSection(&g_lock);
-    if (g_seenBlob) {
-        HeapFree(GetProcessHeap(), 0, g_seenBlob);
-        g_seenBlob = nullptr;
-    }
+    g_seenStore.Release();
     g_seenCount = 0;
     LeaveCriticalSection(&g_lock);
 }
@@ -1782,7 +1759,11 @@ static char* __fastcall GetInstanceNameByIndex_FieldScoutHook(
             void* node = ResolvePNodeFromContainer(container, index);
             if (node && ComposeWorldTranslationFromNode(node, &wx, &wy, &wz)) {
                 hasWorld = true;
-                RecordSceneNodePlaced(name, index, wx, wy, wz, hasWorld, "instance_index");
+                RecordSceneNodePlaced(name, index, wx, wy, wz, hasWorld, "instance_world_matrix");
+            } else if (node && ReadMatrixTranslation(
+                    reinterpret_cast<const char*>(node) + FFX_PNODE_LOCAL_MATRIX_OFFSET,
+                    &wx, &wy, &wz)) {
+                RecordSceneNodePlaced(name, index, wx, wy, wz, false, "instance_local_matrix");
             }
         }
     }

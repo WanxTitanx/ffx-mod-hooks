@@ -4,6 +4,8 @@
 #include "ElementalRuntime.h"
 #include "ModFeatureCatalog.h"
 #include "ElementPackAdmission.h"
+#include "ElementBuiltinPack.h"
+#include "ArcanaElemental.h"
 #include "ElementMonsterProof.h"
 #include "ElementBattleState.h"
 #include "ElementalScanView.h"
@@ -40,6 +42,7 @@ Pack pack;
 PackAdmission admitted;
 std::atomic<RuntimeCode> code{RuntimeCode::Disabled};
 std::atomic<bool> configured{false},armed{false},ready{false},terminal{false};
+std::atomic<bool> builtinSource{false};
 std::atomic<DWORD> ownerThread{0};
 std::atomic<std::uint64_t> generation{1};
 std::atomic<unsigned> bindingCount{0};
@@ -159,8 +162,19 @@ void SyncStatusActors() noexcept;
 bool ResetStatusState() noexcept;
 bool StartTactics();
 void StopTactics() noexcept;
+unsigned CardElement(unsigned kind) noexcept {
+    const char* primary=kind==Arcana::Elemental::Poison?"spira.poison":"spira.gravity";
+    const char* builtin=kind==Arcana::Elemental::Poison?"hook.custom03":"hook.custom04";
+    auto index=pack.registry.Index(primary);
+    if(index==InvalidElement)index=pack.registry.Index(builtin);
+    const auto* item=pack.registry.At(index);
+    return item&&!item->nativeBit?index:InvalidElement;
+}
 bool Affinities(unsigned target,const void* actor,std::array<AffinityValue,ElementLimit>& values,
-                const ActionToken* action=nullptr,bool live=false) noexcept {
+                const ActionToken* action=nullptr,bool live=false,
+                Arcana::Elemental::Snapshot* cardSnapshot=nullptr,
+                Arcana::Elemental::Provider* cardSource=nullptr) noexcept {
+    if(cardSnapshot)*cardSnapshot={};if(cardSource)*cardSource=nullptr;
     Byte flags[4]{};
     if(!Actor(target,actor)||!Copy(flags,static_cast<const Byte*>(actor)+0x5DA,4))return false;
     const NativeMasks masks{flags[3],flags[2],flags[1],flags[0]};
@@ -170,6 +184,11 @@ bool Affinities(unsigned target,const void* actor,std::array<AffinityValue,Eleme
     if(!EquipmentDeltas(target,actor,equipment))return false;
     F7Elements::Selection difficulty{};
     const bool hasDifficulty=F7Elements::Read(target,reinterpret_cast<std::uintptr_t>(actor),difficulty);
+    Arcana::Elemental::Snapshot card{};
+    const auto provider=Arcana::Elemental::provider.load(std::memory_order_acquire);
+    const bool hasCard=options.core&&provider&&Arcana::Elemental::Read(target,card);
+    const unsigned poison=hasCard&&(card.wards&Arcana::Elemental::Poison)?CardElement(Arcana::Elemental::Poison):InvalidElement;
+    const unsigned gravity=hasCard&&(card.wards&Arcana::Elemental::Gravity)?CardElement(Arcana::Elemental::Gravity):InvalidElement;
     for(unsigned i=0;i<pack.registry.Size();++i){
         const auto* descriptor=pack.registry.At(i);AffinitySources source{};
         source.equipment=equipment[i];
@@ -181,6 +200,12 @@ bool Affinities(unsigned target,const void* actor,std::array<AffinityValue,Eleme
         if(options.tactics){const auto timed=Timed(target,i,action,live);
             if(timed.valid){source.imperil=timed.imperil;source.ward=timed.ward;}}
         values[i]=Effective(source);if(values[i].error!=Error::Ok)return false;
+        const auto beforeCard=values[i].value;
+        values[i].value=Arcana::Elemental::WardExposure(beforeCard,i==poison||i==gravity,source.locked);
+        if(values[i].value!=beforeCard){
+            if(cardSnapshot)*cardSnapshot=card;
+            if(cardSource)*cardSource=provider;
+        }
     }
     return true;
 }
@@ -201,14 +226,22 @@ struct HitFrame {
     std::array<unsigned,ElementLimit> elements{};
     std::array<AffinityPart,ElementLimit> parts{};
     std::array<Byte,108> command{};
+    bool cardNative=false;
+    Arcana::Elemental::Snapshot card{};
+    Arcana::Elemental::Provider cardProvider=nullptr;
+    Arcana::Elemental::Snapshot cardTarget{};
+    Arcana::Elemental::Provider cardTargetProvider=nullptr;
+    std::array<Byte,96> cardRow{};
 };
 thread_local std::array<HitFrame,Bus::MaximumDepth> frames{};
+#include "ElementalArcana.inl"
 void* EnterHit(const Bus::DamageCall& call,const void*& forward) noexcept {
     if(!CurrentData()||!Bus::currentDamage||!Bus::currentDamage->depth||
        Bus::currentDamage->depth>frames.size()||!call.info||
        !Actor(call.user,call.userActor)||!Actor(call.target,call.targetActor))return nullptr;
     const auto* expected=admitted.ExpectedCommand(call.commandId);
-    if(!expected||expected->address!=call.command)return nullptr;
+    if(!expected)return EnterCardWeapon(call,forward);
+    if(expected->address!=call.command)return nullptr;
     std::array<Byte,108> bytes{};
     if(!Copy(bytes.data(),call.command,expected->width)||
        !admitted.Command(call.commandId,call.command,bytes.data(),expected->width))return nullptr;
@@ -232,20 +265,16 @@ void* EnterHit(const Bus::DamageCall& call,const void*& forward) noexcept {
     }
     if((options.core||options.tactics)&&binding.policy!=MixPolicy::NativeExact){
         std::array<AffinityValue,ElementLimit> values{};
-        if(!Affinities(call.target,call.targetActor,values,action.Valid()?&action:nullptr))return nullptr;
+        if(!Affinities(call.target,call.targetActor,values,action.Valid()?&action:nullptr,false,
+                       &frame.cardTarget,&frame.cardTargetProvider))return nullptr;
         frame.policy=binding.policy;
-        const auto add=[&](unsigned element,unsigned weight){
-            for(unsigned i=0;i<frame.count;++i)if(frame.elements[i]==element)return;
-            if(element>=pack.registry.Size()||frame.count>=ElementLimit)return;
-            frame.elements[frame.count]=element;
-            frame.parts[frame.count++]={values[element].value,weight};
-            frame.nativeMask|=pack.registry.At(element)->nativeBit;
-        };
+        const auto add=[&](unsigned element,unsigned weight){AddHitElement(frame,values,element,weight);};
         for(const auto& part:binding.parts)add(part.element,part.weight);
         if(binding.augment){
             unsigned mask=bytes[0x2D];std::uint32_t flags=0;std::memcpy(&flags,bytes.data()+0x1C,4);
             if(flags&0x40000u){Byte weapon=0;if(!Copy(&weapon,static_cast<const Byte*>(call.userActor)+0x5D9,1))return &frame;mask|=weapon;}
             for(unsigned i=0;i<pack.registry.Size();++i)if(mask&pack.registry.At(i)->nativeBit)add(i,1);
+            AddCardStrikes(frame,call,bytes.data(),values);
         }
         frame.command=bytes;frame.command[0x2D]=static_cast<Byte>(frame.nativeMask);
         frame.core=true;forward=frame.command.data();
@@ -295,11 +324,12 @@ const HitFrame* CurrentFrame(const void* command=nullptr,const void* target=null
     if(scope->listeners[slot]!=&observer||!scope->participating[slot]||
        Bus::observers[slot].load()!=&observer||(target&&scope->call.targetActor!=target))return nullptr;
     const auto* frame=static_cast<const HitFrame*>(scope->tokens[slot]);
-    if(!frame||frame->generation!=generation.load()||!frame->row||
+    if(!frame||frame->generation!=generation.load()||(!frame->row&&!frame->cardNative)||
        (command&&command!=frame->command.data()&&command!=scope->call.command))return nullptr;
     std::array<Byte,108> copy{};
-    if(!Copy(copy.data(),scope->call.command,frame->row->width)||
-       !admitted.Command(scope->call.commandId,scope->call.command,copy.data(),frame->row->width))return nullptr;
+    if(frame->row&&(!Copy(copy.data(),scope->call.command,frame->row->width)||
+       !admitted.Command(scope->call.commandId,scope->call.command,copy.data(),frame->row->width)))return nullptr;
+    if(!CurrentCardHit(*frame,scope->call))return nullptr;
     return frame;
 }
 bool ResolveAffinity(const Byte* target,const Byte* command,unsigned,int amount,int* output) noexcept {
@@ -326,7 +356,8 @@ bool ResolveNul(unsigned argument,unsigned,void* info,int& result) noexcept {
     const unsigned available=SharedNul::AvailableWards(scope->call);unsigned wardMask=0,nativeMask=0;
     for(unsigned i=0;i<frame->count;++i){
         const unsigned bit=pack.registry.At(frame->elements[i])->nativeBit;
-        if(bit&&(available&bit)){wardMask|=bit;continue;}
+        const unsigned protection=bit?bit:SharedNul::ExternalWardMask(pack.registry.At(frame->elements[i])->key.c_str());
+        if(protection&&(available&protection)){wardMask|=protection;continue;}
         const unsigned offset=bit==1?0xEu:bit==2?0x10u:bit==4?0xFu:bit==8?0xDu:0u;
         Byte charge=0;if(!offset||!Copy(&charge,static_cast<const Byte*>(info)+offset,1)||!charge)return true;
         nativeMask|=bit;
@@ -378,13 +409,16 @@ bool ReadScanSnapshot(unsigned actor,unsigned page,ElementalScanView::Snapshot& 
         if(visible){visibleElements[total]=i;colors[total++]=rgb;}}
     const unsigned count=ElementalScanView::VisibleCount(total,page);if(!count)return false;
     ElementalScanView::Snapshot snapshot{};snapshot.generation=epoch;snapshot.total=total;snapshot.page=page;snapshot.count=count;
+    const auto displayNames=ElementMenu::Read();
     for(unsigned i=0;i<count;++i){
         const unsigned visible=page*ElementalScanView::PageSize+i;
         ElementalView value{};if(!ReadElement(actor,visibleElements[visible],value))return false;
         auto& row=snapshot.rows[i];const char* label=value.label?value.label:"Element";
         bool plain=true;for(const char* p=label;*p;++p)if(static_cast<unsigned char>(*p)<32||static_cast<unsigned char>(*p)>126){plain=false;break;}
         if(!plain&&value.key)label=value.key;
-        std::snprintf(row.label,sizeof(row.label),"%.63s",label);
+        const auto* descriptor=pack.registry.At(visibleElements[visible]);
+        const auto named=ElementMenu::Find(displayNames,descriptor->nativeBit,value.key);
+        std::snprintf(row.label,sizeof(row.label),"%s",named<ElementMenu::Count?displayNames[named].label:label);
         row.baseBp=value.baseBp;row.effectiveBp=value.effectiveBp;row.equipmentBp=value.equipmentBp;row.rgb=colors[visible];
         row.imperil=value.imperil;row.ward=value.ward;row.nul=value.nul;
         row.imperilTurns=value.imperilTurns;row.wardTurns=value.wardTurns;row.nulTurns=value.nulTurns;
@@ -395,10 +429,9 @@ bool ReadScanSnapshot(unsigned actor,unsigned page,ElementalScanView::Snapshot& 
 }
 const ElementalScanView::Provider scanProvider{ReadScanSnapshot};
 
-bool ReadManifest(std::string& output){
+bool ReadManifest(std::string& output,const std::string& selected){
     const std::string loaded=Config::GetLoadedPath();if(loaded.empty())return false;
     const std::filesystem::path ini=std::filesystem::u8path(loaded);
-    const std::string selected=Config::GetString("elemental.pack","elemental-pack.json");
     const auto relative=std::filesystem::u8path(selected);
     if(selected.empty()||selected.size()>200||relative.is_absolute())return false;
     for(const auto& part:relative)if(part==".."||part==".")return false;
@@ -416,7 +449,7 @@ bool PrepareText(std::uintptr_t image,RuntimeOptions selected,std::string_view m
     if(!selected.core&&!selected.tactics&&!selected.gravity&&!selected.magicBdl){code=RuntimeCode::Disabled;return false;}
     try {
         Pack candidate;PackProblem problem{};
-        if(!LoadPack(manifest,availableCapabilities,candidate,problem)){
+        if(!LoadPack(manifest,availableCapabilities,candidate,problem)||!EnsureHookSlots(candidate)){
             code=RuntimeCode::PackInvalid;if(log)log("[ffx-hooks] Elemental pack rejected: schema/capability mismatch\n");return false;
         }
         if(!Profile(image,candidate)){code=RuntimeCode::Unsupported;return false;}
@@ -440,7 +473,24 @@ bool Prepare(std::uintptr_t image,bool validateOnly,RuntimeLog log){
     if(validateOnly||(!selected.core&&!selected.tactics&&!selected.gravity&&!selected.magicBdl))
         return PrepareText(image,selected,{},validateOnly,log);
     try {
-        std::string manifest;if(!ReadManifest(manifest)){code=RuntimeCode::PackMissing;return false;}
+        const std::string selection=Config::GetString("elemental.pack","");
+        bool defaultExists=false;
+        if(selection.empty()){
+            const std::string loaded=Config::GetLoadedPath();
+            if(!loaded.empty()){
+                std::error_code error;
+                defaultExists=std::filesystem::exists(std::filesystem::u8path(loaded).parent_path()/"elemental-pack.json",error);
+                if(error){code=RuntimeCode::PackMissing;return false;}
+            }
+        }
+        if(UseBuiltinElements(selection,defaultExists)){
+            const bool prepared=PrepareText(image,selected,BuiltinPackText(),false,log);
+            builtinSource.store(prepared,std::memory_order_release);
+        if(log)log(prepared?"[ffx-hooks] Built-in elements registered: eight native, Poison, Gravity\n":
+                                "[ffx-hooks] Built-in element startup rejected\n");
+            return prepared;
+        }
+        std::string manifest;if(!ReadManifest(manifest,selection.empty()?"elemental-pack.json":selection)){code=RuntimeCode::PackMissing;return false;}
         return PrepareText(image,selected,manifest,false,log);
     }catch(...){code=RuntimeCode::PackMissing;return false;}
 }
@@ -538,7 +588,8 @@ bool ReadElement(unsigned slot,unsigned element,ElementalView& output) noexcept 
 const char* RuntimeDetail() noexcept {
     switch(code.load()){
     case RuntimeCode::Disabled:return "Disabled";case RuntimeCode::ValidationOnly:return "Validation only";
-    case RuntimeCode::WaitingForData:return "Waiting for native battle data";case RuntimeCode::Ready:return "Ready";
+    case RuntimeCode::WaitingForData:return builtinSource.load()?"Built-in elements; waiting for battle":"Waiting for native battle data";
+    case RuntimeCode::Ready:return builtinSource.load()?"Built-in elements ready":"Ready";
     case RuntimeCode::Unsupported:return "Unsupported profile or consumer";case RuntimeCode::PackMissing:return "Manifest missing or unreadable";
     case RuntimeCode::PackInvalid:return "Manifest schema or capability mismatch";case RuntimeCode::DataMismatch:return "Loaded data or language mismatch";
     case RuntimeCode::Conflict:return "Shared runtime ownership conflict";case RuntimeCode::Stopped:return "Stopped";

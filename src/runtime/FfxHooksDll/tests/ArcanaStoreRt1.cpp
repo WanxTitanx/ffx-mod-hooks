@@ -1,4 +1,6 @@
 #include "../hooks/ArcanaStore.h"
+#include "../hooks/ArcanaCatalog.generated.h"
+#include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <chrono>
@@ -55,6 +57,17 @@ int main(){
     const Hash foreign[]={Digest(7)};
     Check(store.ReadCompatible(saveAs,second.nativeHash,newPack,foreign,1,read,migrated)==StoreCode::Foreign&&!migrated,"unknown pack identities remain rejected");
     Check(store.ReadCompatible(saveAs,Digest(9),newPack,known,1,read,migrated)==StoreCode::Foreign&&!migrated,"balance migration never bypasses native-save identity");
+    auto v4=first;v4.state.slots[0]={{18,12,kEmpty}};
+    v4.packHash={0xc6,0xfe,0x69,0xe9,0xf9,0x6c,0xf7,0x76,0xa9,0x43,0xeb,0xeb,0xa7,0x25,0xed,0x65,0xdc,0x18,0x72,0xcc,0x6e,0x8e,0x0e,0x15,0x39,0x96,0x3c,0x16,0x4d,0xf2,0x45,0x3e};
+    const auto v4Path=dir/"ffx_v4";
+    Check(store.Prepare(v4Path,v4)&&store.Commit(v4Path,v4.nativeHash),"prior deployed v4 catalog has a real stored extension fixture");
+    Hash currentPack{};std::copy(std::begin(kPackHash),std::end(kPackHash),currentPack.begin());
+    std::array<Hash,std::size(kCompatiblePackHashes)> compatibility{};
+    for(unsigned i=0;i<compatibility.size();++i)std::copy(std::begin(kCompatiblePackHashes[i]),std::end(kCompatiblePackHashes[i]),compatibility[i].begin());
+    Check(store.ReadCompatible(v4Path,v4.nativeHash,currentPack,compatibility.data(),compatibility.size(),read,migrated)==StoreCode::Recovered&&
+          migrated&&read.state.acquired==v4.state.acquired&&read.state.slots==v4.state.slots&&read.resources.hp==v4.resources.hp,
+          "the deployed v4 catalog migrates to elemental strikes without losing cards, loadouts or current resources");
+    Check(store.Read(v4Path,v4.nativeHash,v4.packHash,read)==StoreCode::Found&&Same(v4,read),"v4 migration remains read-only until a real save commits");
     std::ifstream f(native,std::ios::binary);std::string contents((std::istreambuf_iterator<char>(f)),{});f.close();
     Check(contents=="untouched native fixture","extension store never opens native save for writing");
     const auto backup=Store::Extension(native,".arcana.previous.v1");

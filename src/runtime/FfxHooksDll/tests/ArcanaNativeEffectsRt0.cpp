@@ -48,5 +48,19 @@ int main(){
     N::Battle status{};N::MergeBattle(status,newStatus);
     Check(status[0x101]==255&&status[0x101+24]==255,"Death/Slow proofs map to native resistances");
     Check(status[0x9E + 2]==30&&status[0x9E + 8]==50&&(status[0x9C]&16),"Stone/Confuse touches and Holy Ward use native channels");
+    state.slots[0]={{18,kEmpty,kEmpty}};N::Battle moon{};moon[0x99]=1;moon[0x9C]=2;
+    const auto moonEffects=Aggregate(state,0);N::MergeBattle(moon,moonEffects);
+    Check(moon[0x99]==0x81&&moon[0x9C]==0x82,"Moon adds Shadowstrike and Shadow Ward without replacing native elements");
+    Check(moon[0x9E + 14]==0&&moon[0x9E + 3]==0,"elemental Shadow never injects blindness or Poison status");
+    Check(moonEffects.Get(EffectKind::AutoReflect)&&moonEffects.Get(EffectKind::EvadeCounter)&&
+          moonEffects.Get(EffectKind::EvasionFlat)==30&&moonEffects.Get(EffectKind::ProofSleep)&&
+          moonEffects.Get(EffectKind::ProofConfuse)&&moonEffects.Get(EffectKind::TouchSleep)==100&&
+          moonEffects.Get(EffectKind::TouchConfuse)==50&&moonEffects.Get(EffectKind::IncomingDamage)==-10,
+          "all eight original Moon bonuses survive the two additional elemental effects");
+    for(const auto entry:{std::array<unsigned,2>{{3,0x20}},std::array<unsigned,2>{{7,0x40}},std::array<unsigned,2>{{19,0x10}}}){
+        state.slots[0]={{static_cast<std::int16_t>(entry[0]),kEmpty,kEmpty}};N::Battle elemental{};
+        N::MergeBattle(elemental,Aggregate(state,0));
+        Check((elemental[0x99]&entry[1])&&(elemental[0x9C]&entry[1]),"Empress, Chariot and Sun pair weapon elements with their matching Wards");
+    }
     std::printf("ArcanaNativeEffectsRt0 %u/%u passed\n",checks-failures,checks);return failures?1:0;
 }

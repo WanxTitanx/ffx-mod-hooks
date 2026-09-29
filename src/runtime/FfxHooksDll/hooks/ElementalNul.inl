@@ -60,7 +60,8 @@ bool ResolveTacticsNul(const HitFrame& frame,const Bus::DamageCall& call,
     const auto wards=SharedNul::AvailableWards(call);
     for(unsigned i=0;i<frame.count;++i){
         const unsigned element=frame.elements[i],bit=pack.registry.At(element)->nativeBit;
-        if(bit&&(wards&bit)){wardMask|=bit;continue;}
+        const unsigned protection=bit?bit:SharedNul::ExternalWardMask(pack.registry.At(element)->key.c_str());
+        if(protection&&(wards&protection)){wardMask|=protection;continue;}
         const unsigned offset=bit==1?0xEu:bit==2?0x10u:bit==4?0xFu:bit==8?0xDu:0u;
         Byte nativeCharge=0;
         if(offset&&Copy(&nativeCharge,static_cast<const Byte*>(info)+offset,1)&&nativeCharge){nativeMask|=bit;continue;}

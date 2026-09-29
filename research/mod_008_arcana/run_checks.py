@@ -15,6 +15,8 @@ CASES = {
     "ArcanaAcquisitionRt0": ["ArcanaCore", "ArcanaAcquisition"],
     "ArcanaUiRt0": ["ArcanaCore", "ArcanaUiCore"],
     "ArcanaNativeEffectsRt0": ["ArcanaCore", "ArcanaNativeEffects"],
+    "ArcanaElementalRt0": ["ArcanaCore"],
+    "ElementNameDefaultsRt0": [],
     "ArcanaCombatCoreRt0": ["ArcanaCore", "ArcanaCombatCore"],
     "ArcanaStoreRt1": ["ArcanaCore", "ArcanaStore"],
     "NativeSaveEventsRt0": [],

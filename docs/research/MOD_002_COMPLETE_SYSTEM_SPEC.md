@@ -16,7 +16,7 @@
 >
 > *# MOD-002 — Mudanças de combate e mecânicas*
 >
-> *Seleção das ideias de Kari AP e demais participantes, registradas entre 14/01/2025 e 04/11/2025. Cada caixa acompanha uma proposta; não indica implementação. As propostas de auto-habilidades de equipamento estão em [PARTE 2 MOD 002.md](<../mod-ideas/PARTE 2 MOD 002.md>), e a discussão sobre patches reutilizáveis está em [PARTE 3 MOD 002.md](<../mod-ideas/PARTE 3 MOD 002.md>).*
+> *Seleção das ideias de Kari AP e demais participantes, registradas entre 14/01/2025 e 04/11/2025. Cada caixa acompanha uma proposta; não indica implementação. As propostas de auto-habilidades de equipamento estão em [PARTE 2 MOD 002.md](<PARTE 2 MOD 002.md>), e a discussão sobre patches reutilizáveis está em [PARTE 3 MOD 002.md](<PARTE 3 MOD 002.md>).*
 >
 > *## Fórmulas, dano e balanceamento*
 >
@@ -50,11 +50,11 @@
 > *- **Fahrenheit:** `/home/wanderson/Documents/external-compare/fahrenheit`, branch `main`, commit `c149c847b3a24a66114956f87f1b008599736f75` no levantamento.*
 > *- **FFX Steam:** `/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/`.*
 > *- **FFX Extracted:** `/home/wanderson/Documents/ffx-editor-main/docs/history/DOSSIÊ FFX 01-06-2026/ffx-editor-pt29__PT29_DOSSIE_COMPLETO_CHAT/dependencies/D/FFX Extracted/FFX/ffx_ps2/ffx/master/`.*
-> *- **Spira Reforge:** `/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/data/mods/ffx_ps2/ffx/master/`. A [Parte 2](<../mod-ideas/PARTE 2 MOD 002.md>) relaciona os novos IDs hook-only a esses arquivos.*
+> *- **Spira Reforge:** `/home/wanderson/Documents/ffx-editor-main/mods/Spira Reforge/data/mods/ffx_ps2/ffx/master/`. A [Parte 2](<PARTE 2 MOD 002.md>) relaciona os novos IDs hook-only a esses arquivos.*
 >
 > *# PARTE 2 MOD 002 — Habilidades de armas e armaduras*
 >
-> *As propostas abaixo foram apresentadas como auto-habilidades de equipamento. Algumas condições e interações são ideias iniciais, não regras fechadas. [Voltar à parte principal](<../mod-ideas/MOD 002.md>).*
+> *As propostas abaixo foram apresentadas como auto-habilidades de equipamento. Algumas condições e interações são ideias iniciais, não regras fechadas. [Voltar à parte principal](<MOD 002.md>).*
 >
 > *## Armas*
 >

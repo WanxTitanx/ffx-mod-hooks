@@ -10,7 +10,7 @@ New-Item -ItemType Directory -Force -Path $obj | Out-Null
 $cases = @('ElementRegistryRt0','ElementAffinityRt0','ElementScanCoreRt0',
     'ElementScanSettingsContractRt0','BattleDamagePolicyRt0','CombatExtensionBusRt0',
     'ElementPackJsonRt0','ElementPackCoreRt0','ElementBattleStateRt0','ElementPackAdmissionRt0',
-    'ElementMonsterProofRt0','SpiraAbilityCatalogRt0','SpiraRulesRt0','ElementalScanViewRt0')
+    'ElementMonsterProofRt0','SpiraAbilityCatalogRt0','SpiraRulesRt0','ElementalScanViewRt0','ElementBuiltinCoreRt0')
 foreach ($case in $cases) {
     $source = Join-Path $here ('tests\' + $case + '.cpp')
     $binary = Join-Path $obj ($case + '.exe')

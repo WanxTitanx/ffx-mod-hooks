@@ -20,6 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_TESTS = {
+    "weapon_strike_vfx_rt1.ps1",
     "monster_rewards_rt1.ps1",
     "f7_runtime_rt0.ps1",
     "f7_runtime_rt1.ps1",
@@ -133,7 +134,7 @@ def main() -> int:
     for test in args.test:
         if not (ROOT / "src/runtime/FfxHooksDll" / test).is_file():
             parser.error("The selected checked-in runner is missing: " + test)
-    if any(test != "nova_super_damage_rt1.ps1" for test in args.test) and args.ability_kernel is None:
+    if any(test not in {"nova_super_damage_rt1.ps1", "weapon_strike_vfx_rt1.ps1"} for test in args.test) and args.ability_kernel is None:
         parser.error("These native tests require an explicit --ability-kernel fixture")
     if args.ability_kernel is not None and not args.ability_kernel.is_file():
         parser.error("The explicit ability kernel is not a readable local file")

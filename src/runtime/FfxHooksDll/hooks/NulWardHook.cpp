@@ -1,4 +1,5 @@
 #include "NulWardHook.h"
+#include "NulElementCommands.h"
 #include "SharedNulRuntime.h"
 #include "SharedActionRuntime.h"
 #include "SharedActorRuntime.h"
@@ -18,6 +19,7 @@ std::atomic<DWORD> ownerThread{0};
 std::atomic<std::uint64_t> resetEpoch{1};
 std::uintptr_t image=0;
 bool applying=false;
+std::atomic<bool> expanded{false};
 std::uint64_t observedEpoch=0,nextSerial=0;
 struct ActorState {
     Byte* pointer=nullptr;std::uint32_t file=0;std::uint16_t identity=0;
@@ -137,7 +139,7 @@ bool Reserved(const Bus::DamageCall& call) noexcept {
         reservation.source==call.user&&reservation.sub==sub&&reservation.command==call.commandId;
 }
 bool ResolveNative(unsigned argument,unsigned mask,void* info,int& output) noexcept {
-    if(!(mask&0x90)||mask>255||!Context())return false;
+    if(!(mask&(expanded.load()?NulElements::Native:0x90u))||mask>255||!Context())return false;
     std::uint32_t pool=0;if(!Read(image+0xD334CC,pool))return false;
     const auto pointer=reinterpret_cast<std::uintptr_t>(info);
     if(pointer<pool||pointer>=std::uintptr_t(pool)+ActorCount*0xF90u)return false;
@@ -151,7 +153,7 @@ bool ResolveNative(unsigned argument,unsigned mask,void* info,int& output) noexc
     Byte flags[2]{};if(!Copy(flags,row+0x20,1)||!Copy(flags+1,row+0x23,1)||!(flags[1]&1)||(flags[0]&0x10))return false;
     Bus::DamageCall call{header[2],actors[header[2]].pointer,target,actor->pointer,row,command,info};
     if(Reserved(call)){output=-1;return true;}
-    const unsigned wardMask=mask&0x90;output=0;
+    const unsigned wardMask=mask&(expanded?NulElements::Native:0x90u);output=0;
     if((Available(call)&wardMask)!=wardMask)return true;
     unsigned nativeMask=0;
     for(unsigned bit=1;bit<=128;bit<<=1)if((mask&bit)&&!(wardMask&bit)){
@@ -196,15 +198,15 @@ void AfterResult(void* token,const SharedAction::ResultCall& call,int,bool compl
             landed=landed||code==0;
         }
     }
-    const unsigned grant=frame->command==0x3140?16:frame->command==0x3141?128:0;
-    const Byte* row=nullptr;Byte flags=255;
-    if(!applying||!landed||!grant||(action->granted[call.target]&grant)||!CommandRow(frame->command,row)||
-       !Copy(&flags,row+0x23,1)||(flags&1))return;
+    const Byte* row=nullptr;std::array<Byte,96> bytes{};
+    if(!applying||!landed||!CommandRow(frame->command,row)||!Copy(bytes.data(),row,bytes.size()))return;
+    const unsigned grant=NulElements::Grant(frame->command,bytes.data(),bytes.size(),expanded);
+    if(!grant||(action->granted[call.target]&grant))return;
     target->charges|=grant;action->granted[call.target]|=grant;
     // Old Ward payloads reused Water/Lightning. Preserve the pre-existing
     // native charge instead of zeroing it or occupying status timer bytes.
     if(grant==16)Copy(target->pointer+0x60E,&frame->tide,1);
-    else Copy(target->pointer+0x610,&frame->shock,1);
+    else if(grant==128)Copy(target->pointer+0x610,&frame->shock,1);
 }
 void* BeforeFinish(const SharedAction::FinishCall& call) noexcept {
     if(!Context()||!SharedAction::finishDepth||SharedAction::finishDepth>finishes.size())return nullptr;
@@ -223,7 +225,8 @@ void ResetWards(Bus::ResetReason) noexcept {resetEpoch.fetch_add(1);}
 void NewBattle() noexcept {ResetWards(Bus::ResetReason::BattleStart);}
 const SharedAction::Observer actionObserver{BeforeResult,AfterResult,BeforeFinish,AfterFinish};
 const SharedActor::Observer actorObserver{BeforeActor,nullptr};
-const SharedNul::Wards wardProvider{ResolveNative,Available,Reserve,Reserved};
+unsigned ExternalMask(const char* key) noexcept {return running.load()&&expanded.load()?NulElements::KeyMask(key):0;}
+const SharedNul::Wards wardProvider{ResolveNative,Available,Reserve,Reserved,ExternalMask};
 const Bus::Observer combatObserver{nullptr,nullptr,nullptr,ResetWards,nullptr};
 const SharedBattleRuntime::ActionObserver battleObserver{NewBattle};
 } // namespace
@@ -237,7 +240,7 @@ NulWardInstallResult InstallNulWardHook(std::uintptr_t base,bool apply,bool logE
     if(options&&(options->nativeSlots||options->experimentP16||options->p16Apply)&&log)
         log("[ffx-hooks] NulWard legacy options use shared external charge ownership\n");
     if(!SharedNul::Start(base)||!SharedAction::Start(base)||!SharedActor::Start(base))return result;
-    image=base;applying=apply;resetEpoch.fetch_add(1);ownerThread=0;
+    image=base;applying=apply;expanded=options&&options->allElements;resetEpoch.fetch_add(1);ownerThread=0;
     if(!SharedAction::Subscribe(SharedAction::Slot::NulWard,&actionObserver)||
        !SharedActor::Subscribe(SharedActor::Slot::NulWard,&actorObserver)||!SharedNul::RegisterWards(&wardProvider)||
        !Bus::Subscribe(Bus::Slot::NulWard,&combatObserver)||
@@ -250,6 +253,8 @@ NulWardInstallResult InstallNulWardHook(std::uintptr_t base,bool apply,bool logE
 }
 static_assert(std::atomic<bool>::is_always_lock_free,"NulWard detach gate must not lock");
 void RequestNulWardDetachStop() noexcept {running=false;}
+// Compatibility with recovery callers; shared native owners remain authoritative.
+void RequestNulWardStop() noexcept {RequestNulWardDetachStop();}
 bool RemoveNulWardHook(NulWardLogFn log){
     RequestNulWardDetachStop();
     SharedNul::UnregisterWards(&wardProvider);SharedAction::Unsubscribe(SharedAction::Slot::NulWard,&actionObserver);

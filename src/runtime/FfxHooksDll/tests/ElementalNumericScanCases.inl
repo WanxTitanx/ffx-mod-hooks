@@ -38,8 +38,8 @@ static void CheckRows(unsigned count){
     }
 }
 static bool NumberValue(int value){for(const auto& drawn:numberDraws)if(drawn.value==value)return true;return false;}
-static void Run(int(__cdecl* sensor)(int,int,int)){
-    FullScanTest::Run(false,false);
+static void Run(int(__cdecl* sensor)(int,int,int),bool legacyElements=false){
+    FullScanTest::Run(legacyElements,false);
     static const S::Provider source{Source};
     Check(S::Register(&source),"the renderer receives a separately owned numerical provider");
     const auto frame=reinterpret_cast<int(__cdecl*)()>(imageBase+0x49BBF0);

@@ -190,6 +190,7 @@ static void Check(bool ok,const char* name){++checks;if(!ok){++failures;std::pri
 #include "AeonAscensionMenuCases.inl"
 #include "ModFeatureMenuCases.inl"
 #include "ExtendedElementMenuCases.inl"
+#include "ElementNameMenuCases.inl"
 #include "MonsterRewardMenuCases.inl"
 static void FullFifthPickerCases(){
     using A=EquipmentMenu::Action;
@@ -254,6 +255,7 @@ int main(){
     AeonAscensionMenuCases();
     ModFeatureMenuCases();
     ExtendedElementMenuCases();
+    ElementNameMenuCases();
     NestedFeatureMenuCases();
     MonsterRewardMenuCases();
     TestHost::nativeDetails=false;Check(WorkshopTestOpen(),"native display status fixture opens");

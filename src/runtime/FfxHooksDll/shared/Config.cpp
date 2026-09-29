@@ -253,6 +253,7 @@ const char kDefaultIni[] =
     "locale = pt\n"
     "\n"
     "[elemental]\n"
+    "nul_spells = 0\n"
     "# Independent modes; a matching OnlyMod pack is required. Restart after edits.\n"
     "core = 0\n"
     "tactics = 0\n"
@@ -266,6 +267,10 @@ const char kDefaultIni[] =
     "\n"
     "[aeon_ascension]\n"
     "# Exact paid upgrades through Equipment Workshop; no free cap or healing.\n"
+    "enabled = 0\n"
+    "\n"
+    "[weapon_strike_vfx]\n"
+    "# Optional Holy/Shadow weapon visuals. No elements or abilities are granted.\n"
     "enabled = 0\n";
 
 class SharedPairsLock {

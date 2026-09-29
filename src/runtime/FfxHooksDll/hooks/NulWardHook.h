@@ -12,6 +12,7 @@ namespace FfxHooks {
         bool nativeSlots = false;   /* compatibility option; external charges only */
         bool experimentP16 = false; /* compatibility option; shared Nul entry */
         bool p16Apply = false;      /* compatibility option; shared Nul entry */
+        bool allElements = false;  /* six explicit command rows; private external-key charges */
     };
 
     struct NulWardInstallResult {
@@ -33,5 +34,6 @@ namespace FfxHooks {
     bool RemoveNulWardHook(NulWardLogFn log);
     void RequestNulWardDetachStop() noexcept;
     bool IsNulWardHookInstalled();
+    void RequestNulWardStop() noexcept;
 
 } // namespace FfxHooks

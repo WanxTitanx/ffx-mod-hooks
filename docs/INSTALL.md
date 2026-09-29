@@ -1,4 +1,4 @@
-# Install FFX Hooks v0.6.0-beta.1
+# Install FFX Hooks v0.6.0-beta.2
 
 The package targets the supported Steam **FFX.exe (Windows x86)**. FFX-2 support
 is not implied. A legal game installation and a working FFX DINPUT8 module loader
@@ -7,15 +7,15 @@ same Windows DLL and the same paths relative to the game directory.
 
 ## Download and verify
 
-Download `ffx-hooks-release-v0.6.0-beta.1.zip` and `ffx-hooks-v0.6.0-beta.1.sha256`
-from the [release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1).
-The matching `ffx-hooks-source-v0.6.0-beta.1.tar.gz` contains the public tagged source.
+Download `ffx-hooks-release-v0.6.0-beta.2.zip` and `ffx-hooks-v0.6.0-beta.2.sha256`
+from the [release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2).
+The matching `ffx-hooks-source-v0.6.0-beta.2.tar.gz` contains the public tagged source.
 Verify the downloaded file hashes against the checksum file. The ZIP also has
 `CHECKSUMS.sha256`, `SOURCE.md` and `release-manifest.json` for its contents.
 
-The supplied DLL is 3,398,144 bytes, SHA-256
-`734a0bf94b56157648e5391ca06dfb1c60aad2c6bb27748762a67315c98b8ffc`.
-Its PE resource says 0.2.0.0; the public package/tag is v0.6.0-beta.1. A separately
+The supplied DLL is 4,011,008 bytes, SHA-256
+`5f6a76f3260a1aa0f5a36e0ff6e9f641f7d92e0dda969910d0d66a2debc3016e`.
+Its PE resource says 0.2.0.0; the public package/tag is v0.6.0-beta.2. A separately
 rebuilt DLL can have another hash and is not this tested binary.
 
 ## Install with the game closed
@@ -103,3 +103,16 @@ recorded validated DLL and a clean source commit. It rejects source or DLL drift
 `git archive` of the public release tag provides the corresponding source tree.
 Historical research receipts may name private local fixtures; default package
 creation does not read those paths or copy proprietary data.
+
+## Elemental Nul command assets
+
+The DLL includes six Nul spell consumers, separately OFF by default at
+F8 > Extras > Additional mods > Elemental Nul spells. Restart after enabling.
+The authored Spira bank provides NulHoly/NulShadow/Earth/Wind/Poison/Gravity in
+Yuna's White Magic+ after learning. The release does not grant commands or edit
+your saves. These commands and their private animation clones need local game
+assets; they are not proprietary files redistributed in this ZIP. Use the
+[recipe in the complete source](../tools/nul_elements/README.md) with your own
+matching bank and Holy animation donor. The source archive includes all recipe
+code, checks and rollback instructions. Live visual/gameplay acceptance remains
+pending.

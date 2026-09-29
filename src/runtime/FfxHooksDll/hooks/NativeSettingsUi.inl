@@ -2,7 +2,14 @@
 // The same menu object owns these choice pages; no second overlay is created.
 #include "EquipmentWorkshopSettings.h"
 #include "ElementScanSettings.h"
+#include "ElementNameInput.h"
 #include "ElementHook.h"
+#include "SeymourOverdriveHook.h"
+#include "SeymourGearPresentationHook.h"
+#include "SeymourGearSortHook.h"
+#include "SeymourPersistentRosterHook.h"
+#include "SeymourMenuListHook.h"
+#include "SphereGridProgress8Runtime.h"
 #include "F8FlagCatalog.h"
 #include "VanguardCatalog.h"
 #include "ModFeatureCatalog.h"
@@ -21,7 +28,8 @@ static bool F8NativeScanOwnsFlag(const FfxHooks::F8FlagSpec& flag){
 enum class NativeSettingsPage { None, Keyboard, Gamepad, Controller, ControllerPort, Mapping, Destination, KeyCapture, PadCapture, Languages, LanguageChoice, WorkshopRefinement, Workshop, WorkshopExpansion, ElementScan, ElementColor, ElementBit, ElementVisibility,
     ArenaOptions, Vanguard, VanguardDamage, VanguardMagic, VanguardStatus, VanguardFormation,
     VanguardWeapons, VanguardArmor, VanguardEquipment, VanguardMapping, Arena, VanguardMappingEdit, VanguardCommandBindings, VanguardCommandEdit, TextLanguages, AdditionalMods, FieldScout,
-    RewardMultipliers,MonsterRewardList,MonsterRewardDetail,RewardRate,MonsterRewardId };
+    RewardMultipliers,MonsterRewardList,MonsterRewardDetail,RewardRate,MonsterRewardId,
+    ElementNames,ElementNameEdit,ElementNameCapture, PhotoMode, Seymour };
 static bool F8RewardPage(NativeSettingsPage page){return page>=NativeSettingsPage::RewardMultipliers&&page<=NativeSettingsPage::MonsterRewardId;}
 static int F8RewardCount(NativeSettingsPage page);
 static const char* const kF8ArenaKeys[]={"arena_plus.master","arena_plus.compose_f7","arena_plus.unlock_all",
@@ -64,6 +72,9 @@ static unsigned g_vanguardBindingEffect=0,g_vanguardBindingCommand=0x3000,g_vang
 static std::uint64_t g_vanguardBindingStamp=0;
 static unsigned g_nativeElementIndex=0;
 static char g_nativeHookElementKey[65]{},g_nativeHookElementTitle[80]{};
+static unsigned g_nativeElementNameBit=0,g_nativeElementNameCharacter=1;
+static char g_nativeElementNameKey[65]{},g_nativeElementNameDraft[65]{};
+static constexpr char g_nativeElementNameAlphabet[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'()./";
 static void F8NativeScanElementName(unsigned index,char* out,size_t capacity){
     using namespace FfxHooks;
     const auto bit=Config::ReadIntExact(ElementScan::BitKey,32,64);
@@ -88,7 +99,8 @@ static int F8NativeSettingsCount(NativeSettingsPage page){
     if(F8RewardPage(page))return F8RewardCount(page);
     if(F8NativeVanguardGroup(page)){int rows=page==NativeSettingsPage::VanguardEquipment?2:1;
         const auto group=static_cast<FfxHooks::Vanguard::Group>(static_cast<int>(page)-static_cast<int>(NativeSettingsPage::VanguardDamage));
-        for(const auto& spec:FfxHooks::Vanguard::Features)if(spec.group==group)++rows;return rows;
+        for(const auto& spec:FfxHooks::Vanguard::Features){if(spec.group==group)++rows;}
+        return rows;
     }
     switch(page){
     case NativeSettingsPage::Arena:return 2;
@@ -110,11 +122,16 @@ static int F8NativeSettingsCount(NativeSettingsPage page){
     case NativeSettingsPage::WorkshopRefinement:return 3;
     case NativeSettingsPage::Workshop:return 6;
     case NativeSettingsPage::WorkshopExpansion:return 3;
-    case NativeSettingsPage::ElementScan:return 11;
+    case NativeSettingsPage::ElementScan:return 12;
+    case NativeSettingsPage::ElementNames:return 7;
+    case NativeSettingsPage::ElementNameEdit:return 8;
+    case NativeSettingsPage::ElementNameCapture:return 3;
     case NativeSettingsPage::ElementColor:return 5;
     case NativeSettingsPage::ElementBit:return 3;
     case NativeSettingsPage::ElementVisibility:return 7;
     case NativeSettingsPage::TextLanguages:return 4;
+    case NativeSettingsPage::PhotoMode:return PhotoMode::MenuCount()+1;
+    case NativeSettingsPage::Seymour:return FfxHooks::SeymourCompatibility::MenuCount()+13;
     default:return 0;
     }
 }
@@ -160,10 +177,10 @@ static void F8NativeSettingsPush(int obj,NativeSettingsPage page){
         g_nativeSettingsFrames[g_nativeSettingsDepth-1].selected=read.state==FfxHooks::Config::IntReadState::Valid&&read.value==64?1:0;}
     F8NativeSettingsSetGeometry(obj);
 }
-static void F8NativeSettingsReset(){g_nativeSettingsDepth=0;FfxHooks::NativePorts::CancelBindingCapture();g_nativeSettingsNotice[0]=0;}
+static void F8NativeSettingsReset(){g_nativeSettingsDepth=0;FfxHooks::NativePorts::CancelBindingCapture();FfxHooks::ElementNameInput::Abort();g_nativeSettingsNotice[0]=0;}
 static void F8NativeSettingsPop(int obj){
     if(!g_nativeSettingsDepth)return;
-    FfxHooks::NativePorts::CancelBindingCapture();--g_nativeSettingsDepth;
+    FfxHooks::NativePorts::CancelBindingCapture();FfxHooks::ElementNameInput::Abort();--g_nativeSettingsDepth;
     if(g_nativeSettingsDepth)F8NativeSettingsSetGeometry(obj);
     else {
         NativeMenu::WrW(obj,NativeMenu::O_COUNT,static_cast<int16_t>(g_f7RowCount));
@@ -202,9 +219,14 @@ static const char* F8NativeSettingsTitle(NativeSettingsPage page){
     case NativeSettingsPage::Workshop:return "Equipment Workshop";
     case NativeSettingsPage::WorkshopExpansion:return "Expansion recipe";
     case NativeSettingsPage::ElementScan:return "Scan settings";
+    case NativeSettingsPage::ElementNames:return "Element names";
+    case NativeSettingsPage::ElementNameEdit:return "Rename element";
+    case NativeSettingsPage::ElementNameCapture:return "Type element name";
     case NativeSettingsPage::ElementColor:return g_nativeHookElementTitle;
     case NativeSettingsPage::ElementBit:return "Custom element order";
     case NativeSettingsPage::ElementVisibility:return "Enabled Scan elements";
+    case NativeSettingsPage::PhotoMode:return "Battle Photo Mode";
+    case NativeSettingsPage::Seymour:return "Seymour compatibility";
     default:return "Settings";
     }
 }
@@ -253,11 +275,44 @@ static void F8NativeSettingsLabel(NativeSettingsPage page,int row,char* out,size
             runtime.hasAppliedValue?(runtime.appliedValue?"Running ON":"Running OFF"):
             flag->activation==F8Activation::RestartRequired?"Restart required":F8AvailabilityName(runtime.availability));return;
     }
+    if(page==NativeSettingsPage::PhotoMode){PhotoMode::MenuLabel(row,out,capacity);return;}
+    if(page==NativeSettingsPage::Seymour){
+        if(row<3)FfxHooks::SeymourCompatibility::MenuLabel(row,out,capacity);
+        else if(row==3)FfxHooks::SeymourOverdrive::MenuLabel(out,capacity);
+        else if(row==4)FfxHooks::SeymourOverdrive::Detail(out,capacity);
+        else if(row==5)FfxHooks::SeymourGearPresentation::MenuLabel(out,capacity);
+        else if(row==6)FfxHooks::SeymourGearPresentation::Detail(out,capacity);
+        else if(row==7)FfxHooks::SeymourGearSort::MenuLabel(out,capacity);
+        else if(row==8)FfxHooks::SeymourGearSort::Detail(out,capacity);
+        else if(row==9)FfxHooks::SeymourPersistentRoster::MenuLabel(out,capacity);
+        else if(row==10)FfxHooks::SeymourPersistentRoster::Detail(out,capacity);
+        else if(row==11)FfxHooks::SeymourMenuList::MenuLabel(out,capacity);
+        else if(row==12)FfxHooks::SeymourMenuList::Detail(out,capacity);
+        else if(row==13)FfxHooks::SphereGridProgress8Runtime::MenuLabel(out,capacity);
+        else FfxHooks::SphereGridProgress8Runtime::Detail(out,capacity);
+        return;
+    }
     if(page==NativeSettingsPage::KeyCapture||page==NativeSettingsPage::PadCapture){strncpy_s(out,capacity,"Clear this shortcut",_TRUNCATE);return;}
+    if(page==NativeSettingsPage::ElementNames){
+        const auto catalog=ElementMenu::Read();_snprintf_s(out,capacity,_TRUNCATE,"%.64s",catalog[4+row].label);return;
+    }
+    if(page==NativeSettingsPage::ElementNameEdit){
+        if(row==0)_snprintf_s(out,capacity,_TRUNCATE,"Name: %.40s",g_nativeElementNameDraft);
+        else if(row==1){const char ch=g_nativeElementNameAlphabet[g_nativeElementNameCharacter];
+            if(ch==' ')strncpy_s(out,capacity,"Character: (space)",_TRUNCATE);
+            else _snprintf_s(out,capacity,_TRUNCATE,"Character: %c",ch);}
+        else {const char* labels[]={"Add character","Delete last character","Clear draft","Save name","Restore default name"};strncpy_s(out,capacity,labels[row-2],_TRUNCATE);}
+        return;
+    }
+    if(page==NativeSettingsPage::ElementNameCapture){
+        if(row==0){char value[65]{};ElementNameInput::Copy(value);_snprintf_s(out,capacity,_TRUNCATE,"Name: %.40s_",value);}
+        else strncpy_s(out,capacity,"Use this name",_TRUNCATE);return;
+    }
     if(page==NativeSettingsPage::ElementScan){
+        if(row==10){strncpy_s(out,capacity,"Element names",_TRUNCATE);return;}
         if(row==8||row==9){
             const auto catalog=ElementMenu::Read();const auto& item=catalog[row];std::uint32_t rgb=0;bool visible=false;
-            if(!item.available)_snprintf_s(out,capacity,_TRUNCATE,"%s: matching pack required",item.label);
+            if(!item.available)_snprintf_s(out,capacity,_TRUNCATE,"%.32s: enable Core and restart",item.label);
             else if(!ElementScan::ReadHookPresentation(item,rgb,visible))_snprintf_s(out,capacity,_TRUNCATE,"%.48s color: INVALID",item.label);
             else _snprintf_s(out,capacity,_TRUNCATE,"%.48s color: #%06X",item.label,rgb);return;
         }
@@ -278,7 +333,9 @@ static void F8NativeSettingsLabel(NativeSettingsPage page,int row,char* out,size
         // navigation; append the complementary Custom color before Back.
         if(row==5)row=3;
         else if(row==3){const auto bit=Config::ReadIntExact(ElementScan::BitKey,32,64);const bool valid=bit.state==Config::IntReadState::Missing||(bit.state==Config::IntReadState::Valid&&(bit.value==32||bit.value==64));
-            _snprintf_s(out,capacity,_TRUNCATE,"Custom order: %s",!valid?"INVALID":bit.value==64?"0x40 then 0x20":"0x20 then 0x40");return;}
+            if(!valid)strncpy_s(out,capacity,"Custom order: INVALID",_TRUNCATE);
+            else {char first[65]{},second[65]{};F8NativeScanElementName(2,first,sizeof(first));F8NativeScanElementName(3,second,sizeof(second));
+                _snprintf_s(out,capacity,_TRUNCATE,"Custom order: %.24s / %.24s",first,second);}return;}
         if(row>=0&&row<4){char name[65]{};F8NativeScanElementName(static_cast<unsigned>(row),name,sizeof(name));const ElementScan::Settings defaults{};
             const auto read=Config::ReadIntExact(ElementScan::ColorKeys[row],0,0xFFFFFF);
             if(read.state==Config::IntReadState::Invalid)_snprintf_s(out,capacity,_TRUNCATE,"%.48s color: INVALID",name);
@@ -291,10 +348,11 @@ static void F8NativeSettingsLabel(NativeSettingsPage page,int row,char* out,size
         else if(row==2)_snprintf_s(out,capacity,_TRUNCATE,"Brightness: %u%%",g_nativeElementHsv.v);
         else strncpy_s(out,capacity,"Save color",_TRUNCATE);return;
     }
-    if(page==NativeSettingsPage::ElementBit){strncpy_s(out,capacity,row==0?"Custom element - bit 0x20":"Custom element - bit 0x40",_TRUNCATE);return;}
+    if(page==NativeSettingsPage::ElementBit){const auto catalog=ElementMenu::Read();const auto& item=catalog[6+row];
+        _snprintf_s(out,capacity,_TRUNCATE,"%.40s - bit 0x%02X",item.label,item.nativeBit);return;}
     if(page==NativeSettingsPage::ElementVisibility){
         if(row>=4){const auto catalog=ElementMenu::Read();const auto& item=catalog[8+row-4];std::uint32_t rgb=0;bool visible=false;
-            _snprintf_s(out,capacity,_TRUNCATE,"%.48s: %s",item.label,!item.available?"Matching pack required":
+            _snprintf_s(out,capacity,_TRUNCATE,"%.48s: %s",item.label,!item.available?"Core unavailable":
                 !ElementScan::ReadHookPresentation(item,rgb,visible)?"INVALID":visible?"ON":"OFF");return;}
         if(row<0||row>=4)return;
         char name[65]{};F8NativeScanElementName(static_cast<unsigned>(row),name,sizeof(name));const ElementScan::Settings defaults{};
@@ -358,6 +416,31 @@ static void F8NativeSettingsActivate(int obj,int row){
     const auto page=F8NativeSettingsPage();
     if(row<0||row>=F8NativeSettingsCount(page))return;
     if(row==F8NativeSettingsCount(page)-1){F8NativeSettingsPop(obj);return;}
+    if(page==NativeSettingsPage::ElementNames){
+        const auto catalog=ElementMenu::Read();const auto& item=catalog[4+row];
+        g_nativeElementNameBit=item.nativeBit;strncpy_s(g_nativeElementNameKey,item.key,_TRUNCATE);
+        strncpy_s(g_nativeElementNameDraft,item.label,_TRUNCATE);g_nativeElementNameCharacter=1;
+        g_nativeSettingsNotice[0]=0;F8NativeSettingsPush(obj,NativeSettingsPage::ElementNameEdit);return;
+    }
+    if(page==NativeSettingsPage::ElementNameEdit){
+        if(row==0){if(g_nativeSettingsDepth>=4)return;ElementNameInput::Begin(g_nativeElementNameDraft);F8NativeSettingsPush(obj,NativeSettingsPage::ElementNameCapture);return;}
+        if(row==1){g_nativeElementNameCharacter=(g_nativeElementNameCharacter+1)%(sizeof(g_nativeElementNameAlphabet)-1);return;}
+        if(row==2){const auto length=std::strlen(g_nativeElementNameDraft);
+            if(length<ElementNames::MaximumLength){g_nativeElementNameDraft[length]=g_nativeElementNameAlphabet[g_nativeElementNameCharacter];g_nativeElementNameDraft[length+1]=0;}
+            else strncpy_s(g_nativeSettingsNotice,ElementNames::Detail(ElementNames::Result::TooLong),_TRUNCATE);return;}
+        if(row==3){const auto length=std::strlen(g_nativeElementNameDraft);if(length)g_nativeElementNameDraft[length-1]=0;return;}
+        if(row==4){g_nativeElementNameDraft[0]=0;return;}
+        const auto result=ElementMenu::SaveName(g_nativeElementNameBit,g_nativeElementNameKey,g_nativeElementNameDraft,row==6);
+        strncpy_s(g_nativeSettingsNotice,ElementNames::Detail(result),_TRUNCATE);
+        if(result==ElementNames::Result::Saved)F8NativeSettingsPop(obj);return;
+    }
+    if(page==NativeSettingsPage::ElementNameCapture){
+        if(row==1){
+            if(!ElementNameInput::Acceptable()){strncpy_s(g_nativeSettingsNotice,"Input rejected. Backspace or Delete to correct the name.",_TRUNCATE);return;}
+            ElementNameInput::Copy(g_nativeElementNameDraft);F8NativeSettingsPop(obj);
+            strncpy_s(g_nativeSettingsNotice,"Name staged. Choose Save name to apply.",_TRUNCATE);}
+        return;
+    }
     if(F8RewardPage(page)){F8RewardActivate(obj,page,row);return;}
     if(page==NativeSettingsPage::VanguardEquipment&&row==2){F8NativeSettingsPush(obj,NativeSettingsPage::VanguardCommandBindings);return;}
     if(page==NativeSettingsPage::VanguardCommandBindings){
@@ -389,6 +472,46 @@ static void F8NativeSettingsActivate(int obj,int row){
         const bool saved=TextLanguage::Settings::Save(row);
         strncpy_s(g_nativeSettingsNotice,saved?"Saved. Restart FFX to apply text language. Audio is unchanged.":"Unable to save text language. Previous choice preserved.",_TRUNCATE);
         if(saved)F8NativeSettingsPop(obj);
+        return;
+    }
+    if(page==NativeSettingsPage::PhotoMode){
+        (void)PhotoMode::MenuAction(row);
+        PhotoMode::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));return;
+    }
+    if(page==NativeSettingsPage::Seymour){
+        if(row>=13){
+            if(row==14||SphereGridProgress8Runtime::MenuAction())SphereGridProgress8Runtime::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            else strncpy_s(g_nativeSettingsNotice,"Unable to persist Grid8 save setting.",_TRUNCATE);
+            return;
+        }
+        if(row>=11){
+            if(row==12||SeymourMenuList::MenuAction())SeymourMenuList::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            else strncpy_s(g_nativeSettingsNotice,"Unable to persist eight-character menu setting.",_TRUNCATE);
+            return;
+        }
+        if(row>=9){
+            if(row==10||SeymourPersistentRoster::MenuAction())SeymourPersistentRoster::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            else strncpy_s(g_nativeSettingsNotice,"Unable to persist permanent roster setting.",_TRUNCATE);
+            return;
+        }
+        if(row>=7){
+            if(row==8||SeymourGearSort::MenuAction())SeymourGearSort::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            else strncpy_s(g_nativeSettingsNotice,"Unable to persist equipment sorting setting.",_TRUNCATE);
+            return;
+        }
+        if(row>=5){
+            if(row==6||SeymourGearPresentation::MenuAction())SeymourGearPresentation::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            else strncpy_s(g_nativeSettingsNotice,"Unable to persist equipment presentation setting.",_TRUNCATE);
+            return;
+        }
+        if(row>=3){
+            if(row==4||SeymourOverdrive::MenuAction())SeymourOverdrive::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            else strncpy_s(g_nativeSettingsNotice,"Unable to persist Overdrive setting.",_TRUNCATE);
+            return;
+        }
+        const bool saved=SeymourCompatibility::MenuAction(row);
+        if(row==2||saved)SeymourCompatibility::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+        else strncpy_s(g_nativeSettingsNotice,"Unable to persist Seymour setting.",_TRUNCATE);
         return;
     }
     const auto action=static_cast<NativeBindings::Action>(g_nativeSettingsAction);
@@ -429,8 +552,9 @@ static void F8NativeSettingsActivate(int obj,int row){
         return;
     }
     if(page==NativeSettingsPage::ElementScan){
+        if(row==10){F8NativeSettingsPush(obj,NativeSettingsPage::ElementNames);return;}
         if(row==8||row==9){const auto catalog=ElementMenu::Read();const auto& item=catalog[row];
-            if(!item.available){strncpy_s(g_nativeSettingsNotice,"Enable Elemental Dominion with a matching element pack.",_TRUNCATE);return;}
+            if(!item.available){strncpy_s(g_nativeSettingsNotice,"Enable Elemental Core and restart. Built-in custom elements need no pack.",_TRUNCATE);return;}
             g_nativeElementIndex=4+static_cast<unsigned>(row-8);strncpy_s(g_nativeHookElementKey,item.key,_TRUNCATE);
             _snprintf_s(g_nativeHookElementTitle,sizeof(g_nativeHookElementTitle),_TRUNCATE,"%.64s color",item.label);
             F8NativeSettingsPush(obj,NativeSettingsPage::ElementColor);return;}
@@ -524,27 +648,41 @@ static void F8NativeSettingsActivate(int obj,int row){
 }
 static void F8NativeSettingsInput(int obj){
     using namespace NativeMenu;using namespace FfxHooks;
-    const auto page=F8NativeSettingsPage();const bool capturing=page==NativeSettingsPage::KeyCapture||page==NativeSettingsPage::PadCapture;
+    const auto page=F8NativeSettingsPage();const bool naming=page==NativeSettingsPage::ElementNameCapture;
+    const bool capturing=page==NativeSettingsPage::KeyCapture||page==NativeSettingsPage::PadCapture||naming;
     if(g_f7ConfirmTimer>0)--g_f7ConfirmTimer;
-    if(capturing){
+    if(naming){
+        char value[65]{};bool cancelled=false;
+        if(ElementNameInput::Consume(value,cancelled)){
+            if(!cancelled)strncpy_s(g_nativeElementNameDraft,value,_TRUNCATE);
+            F8NativeSettingsPop(obj);
+            strncpy_s(g_nativeSettingsNotice,cancelled?"Typing cancelled.":"Name staged. Choose Save name to apply.",_TRUNCATE);return;
+        }
+        if(!ElementNameInput::Acceptable())strncpy_s(g_nativeSettingsNotice,"Input rejected. Backspace or Delete to correct the name.",_TRUNCATE);
+    }
+    if(capturing&&!naming){
         bool done=false,saved=false,cancelled=false;
         if(page==NativeSettingsPage::KeyCapture){NativeBindings::BindResult result{};done=NativePorts::ConsumeBindingCapture(&result,&cancelled);saved=done&&!cancelled&&result==NativeBindings::BindResult::Ok;}
         else done=NativePorts::ConsumeGamepadCapture(&saved,&cancelled);
         if(done){strncpy_s(g_nativeSettingsNotice,cancelled?"Shortcut edit cancelled.":saved?"Shortcut saved.":"Shortcut not saved. Avoid reserved or duplicate combinations.",_TRUNCATE);F8NativeSettingsPop(obj);PlaySfx(saved?4:3);return;}
     }
     const auto mouse=F7ListMouseTick(obj,NX(0.250f),NY(F8NativeSettingsTop()+0.175f),NW(0.500f),NH(0.052f),NH(0.045f),RdW(obj,O_COUNT),9);
-    const int edge=PadEdge(),dir=capturing?0:F7Ui::ResolveDirectionalInput(PadDir(),mouse.ownsDirectionalFrame);
+    const int edge=PadEdge(),dir=capturing&&!naming?0:F7Ui::ResolveDirectionalInput(PadDir(),mouse.ownsDirectionalFrame);
     int selected=RdW(obj,O_SELECTED),top=RdW(obj,O_TOP),count=RdW(obj,O_COUNT);
     if(g_nativeElementRepeat>0)--g_nativeElementRepeat;
     if(page==NativeSettingsPage::ElementColor&&selected<3&&(dir&0xA000)&&!g_nativeElementRepeat){
         F8NativeElementAdjust(selected,(dir&0x8000)?-1:1);g_nativeElementRepeat=6;
     }
+    if(page==NativeSettingsPage::ElementNameEdit&&selected==1&&(dir&0xA000)&&!g_nativeElementRepeat){
+        const unsigned alphabetCount=static_cast<unsigned>(sizeof(g_nativeElementNameAlphabet)-1);
+        g_nativeElementNameCharacter=(g_nativeElementNameCharacter+((dir&0x8000)?alphabetCount-1:1))%alphabetCount;g_nativeElementRepeat=6;
+    }
     if(dir&0x1000){if(selected>0)--selected;}
     else if(dir&0x4000){if(selected+1<count)++selected;}
     if(selected<top)top=selected;else if(selected>=top+9)top=selected-8;
     WrW(obj,O_SELECTED,static_cast<int16_t>(selected));WrW(obj,O_TOP,static_cast<int16_t>(top));
-    const bool confirm=mouse.confirm||(!capturing&&(edge&0x20)&&!(g_nativeSettingsLastEdge&0x20));
-    const bool cancel=!capturing&&(edge&0x40)&&!(g_nativeSettingsLastEdge&0x40);
+    const bool confirm=mouse.confirm||((!capturing||naming)&&(edge&0x20)&&!(g_nativeSettingsLastEdge&0x20));
+    const bool cancel=(!capturing||naming)&&(edge&0x40)&&!(g_nativeSettingsLastEdge&0x40);
     g_nativeSettingsLastEdge=edge;
     if(g_f7ConfirmTimer==0 && (confirm||cancel)){
         if(cancel)F8NativeSettingsPop(obj);else F8NativeSettingsActivate(obj,selected);
@@ -598,8 +736,18 @@ static void F8NativeSettingsDraw(int obj,int frame){
         else help="Colors and choices apply next frame when elements are ON.";
     }
     else if(page==NativeSettingsPage::ElementColor)help="Left/Right: fine change. Enter: larger step. Save or Cancel.";
+    else if(page==NativeSettingsPage::ElementNames)help="Rename hook element labels. Item attributes keep their names.";
+    else if(page==NativeSettingsPage::ElementNameEdit)help="Type a name or use the character picker. Save applies; Back discards.";
+    else if(page==NativeSettingsPage::ElementNameCapture)help="Type up to 32 characters. Enter accepts; Esc cancels typing.";
     else if(page==NativeSettingsPage::ElementBit)help="Only changes the displayed bit; adds no gameplay effects.";
     else if(page==NativeSettingsPage::ElementVisibility)help="Independent choices. Scan Extra Elements must be ON.";
+    if(page==NativeSettingsPage::PhotoMode){
+        help="Controls below actions. All default OFF. Hold does not pause.";
+        PhotoMode::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+    }
+    if(page==NativeSettingsPage::Seymour){
+        help="All default OFF. Master required. First enable: restart.";
+    }
     text(help,NX(0.250f),NY(panelTop+0.106f));
     for(int row=top;row<count&&row<top+9;++row){
         const float y=NY(panelTop+0.175f+(row-top)*0.052f);

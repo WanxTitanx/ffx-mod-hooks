@@ -59,12 +59,26 @@ struct Observer {
     // Rejection is not a confirmed new-game/reset event. Consumers explicitly
     // close admission without replacing their current state with a fresh save.
     void (*rejectRead)() noexcept=nullptr;
+    // Recovery extensions are appended; main positional observer fields retain their ABI.
+    void (*readStarting)(const unsigned char*) noexcept=nullptr;
+    void (*writeStaged)(std::uint64_t,const wchar_t*,const unsigned char*,std::size_t) noexcept=nullptr;
+    void (*writeVerified)(std::uint64_t,const wchar_t*,const unsigned char*,std::size_t) noexcept=nullptr;
+    void (*writeAborted)(std::uint64_t) noexcept=nullptr;
+    void (*loadStarting)(std::uint64_t,void*,const void*) noexcept=nullptr;
+    void (*loadCompleted)(std::uint64_t,bool) noexcept=nullptr;
 };
 inline constexpr std::size_t kMaximumObservers=8;
 inline std::array<std::atomic<const Observer*>,kMaximumObservers> observers{};
 inline std::mutex registrationMutex;
+inline bool ValidObserver(const Observer* value) noexcept {
+    if(!value||!value->read||!value->write||bool(value->selectRead)!=bool(value->checkpointRead))return false;
+    const bool writes=value->writeStaged||value->writeVerified||value->writeAborted;
+    const bool loads=value->loadStarting||value->loadCompleted;
+    return (!writes||(value->writeStaged&&value->writeVerified&&value->writeAborted))&&
+           (!loads||(value->loadStarting&&value->loadCompleted));
+}
 inline bool Subscribe(const Observer* value) noexcept {
-    if(!value || !value->read || !value->write || bool(value->selectRead)!=bool(value->checkpointRead))return false;
+    if(!ValidObserver(value))return false;
     // Registration happens outside callbacks/teardown. Serializing registrations
     // prevents the same permanent observer from acquiring two different slots.
     try {
@@ -128,6 +142,41 @@ inline void WriteCompleted(const wchar_t* path,const unsigned char* actual,
 }
 inline void ResetCompleted() noexcept {Dispatch([](const Observer& value){if(value.reset)value.reset();});}
 inline void ReadRejected() noexcept {Dispatch([](const Observer& value){if(value.rejectRead)value.rejectRead();});}
+
+// One shared registry serves Workshop, Arcana, checkpoints and recovery.
+// These names retain source compatibility, not a second primary/additional registry.
+inline constexpr std::size_t kAdditionalObserverCapacity=kMaximumObservers;
+inline bool SubscribeAdditional(const Observer* value) noexcept {return Subscribe(value);}
+inline void UnsubscribeAdditional(const Observer* value) noexcept {Unsubscribe(value);}
+using DispatchSnapshot=std::array<const Observer*,kMaximumObservers>;
+inline DispatchSnapshot CaptureObservers() noexcept {
+    DispatchSnapshot result{};
+    for(std::size_t i=0;i<result.size();++i){
+        const auto* value=observers[i].load(std::memory_order_acquire);
+        bool duplicate=false;
+        for(std::size_t j=0;j<i;++j)duplicate=duplicate||result[j]==value;
+        if(!duplicate)result[i]=value;
+    }
+    return result;
+}
+inline void ReadStarting(const unsigned char* buffer) noexcept {
+    if(buffer)Dispatch([&](const Observer& value){if(value.readStarting)value.readStarting(buffer);});
+}
+inline bool VerifiedRequested() noexcept {
+    bool requested=false;
+    Dispatch([&](const Observer& value){requested=requested||value.writeVerified!=nullptr;});
+    return requested;
+}
+inline void WriteStaged(std::uint64_t cookie,const wchar_t* path,const unsigned char* image,std::size_t size) noexcept {
+    if(cookie)Dispatch([&](const Observer& value){if(value.writeStaged)value.writeStaged(cookie,path,image,size);});
+}
+inline void WriteVerified(std::uint64_t cookie,const wchar_t* path,const unsigned char* image,std::size_t size) noexcept {
+    if(cookie)Dispatch([&](const Observer& value){if(value.writeVerified)value.writeVerified(cookie,path,image,size);});
+}
+inline void WriteAborted(std::uint64_t cookie) noexcept {
+    if(cookie)Dispatch([&](const Observer& value){if(value.writeAborted)value.writeAborted(cookie);});
+}
+
 struct WriteTransaction {
     struct Participant {const Observer* observer=nullptr;void* cookie=nullptr;};
     std::array<Participant,kMaximumObservers> participants{};

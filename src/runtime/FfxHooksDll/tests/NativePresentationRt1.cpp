@@ -130,8 +130,8 @@ int main(int argc,char** argv){
     AddVectoredExceptionHandler(1,Diagnostic);
     if(argc!=5&&argc!=6)return 2;
     const unsigned scanMode=argc==6?static_cast<unsigned>(std::strtoul(argv[5],nullptr,10)):3u;
-    if(scanMode>4)return 2;
-    const bool scanNumeric=scanMode==4;
+    if(scanMode>5)return 2;
+    const bool scanNumeric=scanMode>=4;
     const bool scanElements=(scanMode&1)!=0,scanExpanded=(scanMode&2)!=0;
     const auto image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES);if(!image)return 2;
     imageBase=reinterpret_cast<std::uintptr_t>(image);Check(PrivatePeFixture::NormalizeRelocations(image),"private PE relocations match runtime semantics");if(failures)return 2;
@@ -157,7 +157,8 @@ int main(int argc,char** argv){
     Check(Write(reinterpret_cast<std::uintptr_t>(signature),&bad,1)&&!W::NativeUi::Start(imageBase,true,false,Log),"unmatched drawing profile installs nothing");
     Check(Write(reinterpret_cast<std::uintptr_t>(signature),&original,1),"private signature restored after negative control");
     Check(W::NativeUi::Start(imageBase,true,false,Log)&&W::NativeUi::Active(),"native detail hooks install on the supported image");
-    if(scanNumeric)NumericScanTest::Configure(0);
+    if(scanMode==5)Check(FfxHooks::Config::LoadTextForTests("[f8_authority]\nelemental_core=1\n[elemental]\ncore=1\n","C:\\private-auto-elements.ini"),"Core configuration has no hidden numerical-Scan flag");
+    else if(scanNumeric)NumericScanTest::Configure(0);
     Check(FfxHooks::StartElementHook(imageBase,scanElements,scanExpanded,false,Log)&&
           FfxHooks::IsElementHookInstalled()==scanElements&&FfxHooks::IsScanExpandedInstalled()==scanExpanded,"Scan startup exposes the two independently selected features");
     const auto nativeX=reinterpret_cast<float(__cdecl*)(float)>(imageBase+0x244990);
@@ -226,7 +227,7 @@ int main(int argc,char** argv){
     panelSite=Callsite(0x493B88,5);resistanceSite=Callsite(0x49414B,9);
     sensorBandSite=Callsite(0x493E59,9);
     const auto scan=reinterpret_cast<int(__cdecl*)(int,int,int)>(imageBase+0x4939A0);
-    if(scanNumeric){NumericScanTest::Run(scan);FfxHooks::RemoveElementHook();
+    if(scanNumeric){NumericScanTest::Run(scan,scanElements);FfxHooks::RemoveElementHook();
         std::printf("ELEMENTAL_NUMERICAL_SCAN_RT1 %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     const E::Settings palette{};
     if(scanElements){

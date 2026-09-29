@@ -1,3 +1,12 @@
+# v0.6.0-beta.2 — 2026-09-29
+
+- Integrate the published recovery, Seymour and Sphere Grid work with the current runtime.
+- Add NulHoly/NulShadow/NulEarth/NulWind/NulPoison/NulGravity, a separate default-OFF gate, save-bound learning and hash-pinned private FX authoring recipes.
+- Include built-in element names and preserved aliases, Arcana elemental major-card effects and independent Holy/Shadow weapon visuals.
+- Preserve general/per-monster AP/Gil composition, previous gameplay options and native widths/defaults.
+- Ship the matching tested DLL and complete public source, English/PT-BR documentation and donation links.
+- New visuals and full live save/battle acceptance remain pending; no proprietary game assets or personal-save unlocks are distributed.
+
 # Changelog
 
 All notable changes to ffx-hooks are documented here. The project uses independent SemVer

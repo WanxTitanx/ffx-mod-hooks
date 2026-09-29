@@ -4,25 +4,23 @@
 
 <div align="center">
 
-![ffx-mod-hooks logo](assets/logo.png)
+![ffx-hooks logo](assets/logo.png)
 
 **Runtime engine hooks for FINAL FANTASY X HD Remaster (Steam, PC)**
 
 [![Status](https://img.shields.io/badge/status-BETA-red)](#beta-status)
-[![Version](https://img.shields.io/badge/version-0.6.0--beta.1-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1)
+[![Build](https://img.shields.io/badge/build-consolidated%20main-informational)](#current-dll)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20x86-lightgrey)](#compatibility)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wandersonwpires%40hotmail.com&currency_code=USD)
 
 </div>
 
-`ffx-mod-hooks` is the public source and release repository for `ffx-hooks`,
-the behavior layer of FFX Mod Studio, by Brazilian developer **WanxTitanx**. It combines native game
+`ffx-hooks` is the behavior layer of FFX Mod Studio. It combines native game
 menus, optional combat rules, equipment systems, languages, diagnostics and
 runtime configuration in one `ffx-hooks.dll`. This inventory describes the
 consolidated **FFX** build; it does not claim equivalent FFX-2 support.
 
-- [Download and install](#download-and-install)
 - [Current DLL](#current-dll)
 - [F8 menus and controls](#f8-dashboard)
 - [Combat, equipment and cards](#combat-equipment-and-cards)
@@ -36,6 +34,12 @@ consolidated **FFX** build; it does not claim equivalent FFX-2 support.
 
 ## Beta status
 
+The 2026-09-29 integration joins the published recovery/Seymour/Sphere Grid lane
+with main's current elements, Arcana, rewards, languages and weapon effects.
+It also adds six learned **Elemental Nul spells**. See the
+[integration and asset receipt](docs/ai/NUL_ELEMENTS_INTEGRATION_2026_09_29.md)
+for tested source, installation identity and remaining live checks.
+
 Features are opt-in. Every editable boolean in the current F8 catalog defaults
 OFF; the dashboard itself defaults ON. A package, compatible executable, restart
 or additional gate may be required before an enabled option becomes effective.
@@ -47,55 +51,29 @@ visual and save-lifecycle acceptance of this exact candidate is still pending;
 deployment alone does not promote it to Production. Known issues are tracked in
 [KNOWN_BUGS](docs/KNOWN_BUGS.md) and the [current roadmap](docs/ROADMAP.md).
 
-## Download and install
-
-The **v0.6.0-beta.1** release contains the consolidated x86 DLL, all 78 selected
-Arcana cards plus the icon/back, third-party licenses, OFF configuration examples,
-installation instructions, provenance and SHA-256 checksums. The matching source
-archive contains the public tagged tree, including build/test and artwork inputs.
-
-This documentation revision restores the donation section and adds a complete
-PT-BR README. The DLL and its hash are unchanged from v0.6.0-beta.
-
-Get the binary ZIP, source archive and checksum file from the
-[v0.6.0-beta.1 release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1).
-Read [English installation](docs/INSTALL.md) or
-[instalação em português](docs/INSTALACAO_PT-BR.md).
-
-With FFX closed, place `ffx-hooks.dll` and `mods/` from the ZIP in the game's
-`modules/` directory. Preserve the previous DLL and your settings/sidecars. Merge
-only desired settings from the examples; do not overwrite an existing INI.
-The normal FFX module loader and a supported legal game installation are required
-and are not bundled. Gameplay options remain OFF by default.
-
-Arcana's own runtime art is included. Translated game resources, Elemental packs,
-custom ability/game-data tables and private S.I.N. AI packs are separate authoring
-products; their loader support does not mean those game-derived assets are
-redistributed here. The README inventory and roadmap describe these dependencies.
-
 ## Current DLL
 
-Jarvis-HOOK checkpoint: **2026-09-28**, implemented and deployed from `main`.
+Jarvis-HOOK checkpoint: **2026-09-29**, implemented and deployed from `main`.
 
 | Identity | Recorded value |
 |---|---|
-| Runtime source commit | `dda5cb45305448d761e5412f3b265e58213d8ce2` |
+| Runtime source commit | `2787386a7144af04c16f194029a4a35616bf8dea` (development integration) |
 | Installed module | `<game>/modules/ffx-hooks.dll` |
-| DLL size | 3,398,144 bytes |
-| DLL SHA-256 | `734a0bf94b56157648e5391ca06dfb1c60aad2c6bb27748762a67315c98b8ffc` |
-| Deployment | 2026-09-28 22:28:57 UTC; verified backup and atomic replacement |
-| Source binding | 472 native inputs matched the tested build |
-| Protected installation scope | 178 inventoried files unchanged |
+| DLL size | 4,011,008 bytes |
+| DLL SHA-256 | `5f6a76f3260a1aa0f5a36e0ff6e9f641f7d92e0dda969910d0d66a2debc3016e` |
+| Deployment | 2026-09-29 10:28:24 UTC; verified backup and atomic replacement |
+| Source binding | 363 code/resource inputs match the recorded release build |
+| Protected installation scope | 1,116 inventoried files unchanged |
 | Supported executable | PE32/i386 `FFX.exe`, preferred image base `0x00400000` |
 | Executable SHA-256 | `78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced` |
 
-The v0.6.0-beta.1 package carries this already validated, hash-bound DLL. Its PE
-resource still reports `0.2.0.0`; the package/tag version is **v0.6.0-beta.1**.
-`SOURCE.md` and the release manifest bind the binary to the public source commit.
-This beta release is not a Production/RT2 promotion.
-The [deployment and validation record](docs/research/F8_F7_ELEMENTS_MONSTER_REWARDS_2026_09_28.md)
-and [prior integration matrix](docs/research/INTEGRATION_FINALIZATION_2026_09_28.md)
-record the exact evidence and limits.
+This local deployment includes the six Nuls, private animations and published
+recovery/Seymour/Sphere Grid integration alongside the existing main features.
+See the [source/build/deployment evidence](docs/ai/NUL_ELEMENTS_INTEGRATION_2026_09_29.md).
+The public [v0.6.0-beta.2](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2)
+archives identify the preceding DLL and remain unchanged. The PE resource still
+reports `0.2.0.0`; use the source and artifact hashes above for this deployment.
+Live RT2 acceptance and Production promotion remain separate.
 
 ## What this is
 
@@ -103,7 +81,7 @@ record the exact evidence and limits.
 |---|---|---|
 | `ffx-hooks.dll` (FfxHooksDll) | Engine hooks, native UI, shared combat/save consumers and the optional systems below | Consolidated beta candidate, deployed |
 | F7 In-Live menu | Difficulty, S.I.N. RAM, Force Last Battle, music, Monster AI observer and Arena+ CustomMix | Offline candidate: source/RT0/build and isolated runtime/policy RT1 pass; live machine-callback RT1 and user-run RT2 pending for the Difficulty acceptance matrix |
-| F8 Dashboard | Seven tabs, nested settings and 88 canonical boolean controls | 25 LIVE, 59 RESTART REQUIRED, 4 READ ONLY; counts describe activation, not gameplay acceptance |
+| F8 Dashboard | Seven tabs, nested settings and 90 canonical boolean controls | 25 LIVE, 61 RESTART REQUIRED, 4 READ ONLY; counts describe activation, not gameplay acceptance |
 | F9 Maechen | Native question/answer UI and bounded service client | Earlier transport/UI observations; current-build acceptance and service grounding remain separate |
 | `ffx-probe.dll` (FfxDinput8Probe) | Separate main-thread READ / WRITE / CALL probe through the DINPUT8 seam | Optional, default OFF; not included by enabling a Hooks gameplay feature |
 | `SinScaleInject` + `SinCoreLib` | Offline S.I.N. research/materialization tools | Legacy disk-writing runtime route remains quarantined; the current S.I.N. RAM route is separate |
@@ -121,14 +99,14 @@ overridden or failed changes instead of silently claiming success.
 | System | 10 | Borderless window, cursor confinement/idle hiding, performance display, free battle camera, field freeze; four informational module rows; Audio languages and Text languages |
 | Boosters | 5 | Permanent Sensor, experimental Playable Seymour, Speed Hack, optional FMV acceleration, Entire Party Earns AP |
 | Cheats | 9 | Invincible Party/Enemies, Always Overdrive/Critical, Damage 99999, Always Rare Drop; AP/Gil Multipliers submenu |
-| Extras | 37 | Additional mods: Elemental Core/Tactics/Gravity/Magic BDL, Spira Reforge and Aeon Ascension; separate Vanguard Combat Engine hierarchy with 31 controls |
+| Extras | 38 | Additional mods: Elemental Core/Tactics/Gravity/Magic BDL, Spira Reforge, Aeon Ascension and optional Holy/Shadow weapon effects; separate Vanguard Combat Engine hierarchy with 31 controls |
 | Input | 4 | Windows-key blocking, background-input fix, IME filter, Dialog Skip; keyboard/gamepad shortcuts and controller/button mapping |
 | Dev | 6 | FieldScout submenu (Master/Heavy/Max/Ultra), Fastload Autosave, Arcana full-deck development option; Equipment Workshop development settings |
 | Reforge | 17 | Arcana, Nova Super Damage, Ronso Mana, Equipment Workshop/native equipment details, Scan settings, Grid Teach, Lancet Dual Grant, item-stack cap, Double/Triple Drop, Arena+ submenu |
 
 The counts include controls moved into submenus. Navigation rows, colors,
 language selectors, mappings and numeric editors are additional settings, not
-additional boolean flags. The [complete 88-entry catalog](docs/ROADMAP.md#complete-f8-control-inventory)
+additional boolean flags. The [complete 89-entry catalog](docs/ROADMAP.md#complete-f8-control-inventory)
 records every label, canonical key, default and activation class.
 
 ### AP/Gil Multipliers
@@ -161,15 +139,37 @@ separate system. See the [format and native consumer evidence](docs/research/F8_
 
 Both interfaces use the same element identities: **eight native bits plus two
 Hook-only slots**. Fire, Ice, Thunder, Water, Holy, Darkness and both native Custom
-bits remain distinct; registered external elements use stable keys rather than
-invented bits in the game's native BYTE mask. Unavailable Hook-only slots show
-an unavailable state until a compatible pack supplies them.
+bits remain distinct; external elements use stable keys rather than invented
+bits in the game's native BYTE mask. Core now includes **Poison** and
+**Gravity** when no external pack is selected or present. Enable Core and
+restart to register them. An explicitly selected missing/invalid pack still
+reports an error; it is never silently replaced. Existing valid packs retain
+all bindings and gain any missing unused external slot.
 
 `F8 > Reforge > Scan settings` includes expanded stats/MP, native extra-element
 colors, both external colors, and per-element visibility. F7 weak/resist/absorb
 controls cover all ten slots. External gameplay affinities publish only after a
 successful Difficulty Apply/Restore transaction; Save alone does not apply them.
 Scan visibility and colors change presentation only.
+
+`F8 > Reforge > Scan settings > Element names` edits **Holy, Darkness, Earth,
+Wind, Poison and Gravity**. Use keyboard entry or the controller-friendly
+character picker, then Save; Cancel/focus loss preserves the prior name. Reset
+inherits the canonical label. Names accept up to 32 supported ASCII characters;
+empty, duplicate and unsafe names are rejected.
+
+Valid saved aliases take priority over the four newly named defaults; a colliding
+default keeps its previous numbered Custom label. Aliases follow native bits or stable external keys and update the hook's F7,
+Scan, color, visibility and order labels. **Item/equipment attributes, ability
+and spell names, status names and native data remain unchanged.** Affinity and
+color preferences survive renaming. Core/Tactics plus Scan Extra Elements now
+turn on the numerical element view by default, without a second hidden option;
+an explicit `elemental.numeric_scan` preference still takes precedence.
+
+New external elements start neutral and unassigned. Authored command/profile/
+equipment bindings are still needed to make an attack use a new element; naming
+an element does not silently convert any native attack.
+
 
 ## Combat, equipment and cards
 
@@ -194,6 +194,35 @@ Damage, Magic, Status, Formation, Weapons, Armor, Equipment and Mapping:
 Default custom ability IDs are 135–147, separate from Spira/Aeon IDs 148–174.
 The [Editor dossier](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
 details IDs, payloads, owners, command encoding and validation requirements.
+
+### Elemental Nul spells
+
+`F8 > Extras > Additional mods > Elemental Nul spells` enables the independent
+`elemental.nul_spells` gate (OFF by default; restart required). The authored
+commands cost 2 MP, target the party and belong to Yuna's White Magic+ menu:
+
+| Command | ID | Private animation | Protected identity |
+|---|---:|---:|---|
+| NulHoly | 320 | 870 | Holy `0x10` |
+| NulShadow | 321 | 871 | Darkness `0x80` |
+| NulEarth | 370 | 872 | Earth `0x20` |
+| NulWind | 371 | 873 | Wind `0x40` |
+| NulPoison | 372 | 874 | `hook.custom03` / `spira.poison` |
+| NulGravity | 373 | 875 | `hook.custom04` / `spira.gravity` |
+
+Each spell grants one private protection charge per affected ally. Mixed attacks
+require coverage of every participating element; incomplete coverage spends no
+custom charge. Native Nuls, status timers and item ability names are preserved.
+Poison means the elemental identity, not immunity to the Poison status.
+
+Commands must be learned through authored Sphere Grid nodes. The feature starts
+the save-bound learning infrastructure; it never grants commands or changes a
+personal save by itself. The White Magic+ root is derived from learned children.
+Renaming an element in F8 changes display aliases, not these canonical spell IDs
+or names. All six animation DLLs and texture trees are private clones, with no
+vanilla replacement. Authoring/install tools require local game assets; proprietary
+DLLs/textures are not distributed as source. Live visual/battle acceptance remains
+pending. See the [asset recipe and rollback contract](tools/nul_elements/README.md).
 
 ### Elemental Dominion — MOD-007
 
@@ -263,6 +292,19 @@ pack contract. Arcana works without Spira Reforge. Use the
 [Arcana installation and acquisition guide](research/mod_008_arcana/README.md)
 for required artwork and package contents.
 
+The September 29 source candidate adds bonuses without removing existing ones:
+The Moon gains **Shadowstrike/Shadow Ward**, The Empress **Earthstrike/Earth Ward**,
+The Chariot **Aerostrike/Wind Ward**, Death **Biostrike/Poison Ward**, and The Hanged
+Man **Gravitystrike/Gravity Ward**. The Sun retains Holystrike/Holy Ward.
+Shadow is Darkness, not blindness; Bio uses the Poison element, not its status.
+Poison/Gravity require Elemental Dominion **Core ON** and Arcana. Their strikes
+retain normal weapon damage: Gravitystrike does not cast Demi. External card
+Wards halve positive exposure and preserve immunity, absorption and locked profiles.
+Holy/Shadow particles use the separate Weapon Strike VFX gate. Card capacity is
+now ten effects; save/card identities and custom names remain compatible.
+See the [integration contract](docs/ai/ARCANA_ELEMENTAL_STRIKES_2026_09_29.md).
+These source additions are separate from the older deployment identity above.
+
 ### Text languages — MOD-006
 
 `F8 > System > Text languages` selects native text or a separate compatible PT-BR
@@ -327,8 +369,8 @@ The [roadmap](docs/ROADMAP.md) keeps completed checkboxes and separates delivere
 source/deployment work from pending RT2, Editor authoring and release work.
 Current priorities are exact-candidate gameplay acceptance, the Editor exporters
 and dependency validation, remaining Spira definitions, and unresolved F7/probe
-work. The [2,017-line Editor dossier](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
-contains all 40 custom ability identities, 31 Vanguard rules, 88 F8 controls,
+work. The [complete Editor dossier](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
+contains all 40 custom ability identities, 31 Vanguard rules, 89 F8 controls,
 78 Arcana cards, formats/dependencies and 62 concrete Editor tasks. It is a
 handoff, not a claim that those Editor tasks are already implemented.
 
@@ -379,7 +421,7 @@ modules, config, modules\config, then root > unmarked canonical (only without an
 | F7 AI observer | `f7_aiswap.flag` / `FFXHOOKS_ENABLE_F7_AISWAP=1`, observe-only, restart required |
 | F8 | `[dashboard] enabled`; per-control keys/defaults in the complete roadmap catalog |
 | Vanguard | Independent `vanguard.*` gates and `vanguard_ids.*` / `vanguard_commands.*` mappings |
-| Elemental | `elemental.core`, `.tactics`, `.gravity`, `.magic_bdl`; admitted `elemental.pack` |
+| Elemental | `elemental.core`, `.tactics`, `.gravity`, `.magic_bdl`, `.nul_spells`; admitted `elemental.pack` |
 | Spira / Aeon | `spira.enabled`, `aeon_ascension.enabled`; identity/payload/owner and paid-receipt checks |
 | Arcana | `arcana.enabled`; separate `development.arcana_full_deck` development option |
 | Per-monster AP/Gil | `cheats.monster_rewards`, F8 authority and `monster-rewards-v1.tsv` |
@@ -463,8 +505,7 @@ only the selected case after the human-run session. No F8 case is promoted by th
 ## Versioning
 
 Independent SemVer, starting at `0.1.0-beta.1`. This project will stay below `1.0.0` while in
-beta. `MAJOR.MINOR.PATCH` with pre-release suffix; REVISION bumps are doc-only. The v0.6.0-beta.1 documentation revision uses the same validated DLL as
-v0.6.0-beta. See
+beta. `MAJOR.MINOR.PATCH` with pre-release suffix; REVISION bumps are doc-only. See
 [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits

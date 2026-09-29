@@ -98,3 +98,28 @@ the existing gap below Armor, including Empty/Locked states.
 [Acquisition rules](acquisition-v1.md) implement story/sidequest/challenge reconciliation. The separate Development option grants all cards immediately and is OFF by default. Native Equip contains the picker; it is not an F7 equipment replacement.
 
 The dated September 27 reports describe concept/research evidence. `cards.proposed.json` intentionally remains a design source, not a runtime parser contract. The compiled typed catalog and [runtime validation record](runtime-validation.json) describe this candidate. No independent review or live visual/gameplay result is claimed; source integration follows the user's later explicit PR/merge instruction. RT2 and Production promotion remain separate.
+
+
+## Elemental major-card additions (2026-09-29 source candidate)
+
+| Major card | Added effects |
+| --- | --- |
+| III — The Empress | Earthstrike, Earth Ward |
+| VII — The Chariot | Aerostrike, Wind Ward |
+| XII — The Hanged Man | Gravitystrike, Gravity Ward |
+| XIII — Death | Biostrike, Poison Ward |
+| XVIII — The Moon | Shadowstrike, Shadow Ward |
+| XIX — The Sun | Existing Holystrike and Holy Ward retained |
+
+Every previous bonus is retained. Cards now have a bounded ten-effect capacity;
+IDs, acquisition conditions, collection/loadouts and the stable save identity
+remain unchanged. Poison and Gravity need Elemental Dominion Core. Gravitystrike
+uses regular weapon damage, not fractional HP. Poison is an elemental affinity,
+not a poison-status proc. External Wards halve positive resolved exposure;
+locked profiles, immunity and absorption remain authoritative. The two extra
+strikes use the same F7/Scan affinities and mixed-element resolver as authored
+commands, without expanding native item/weapon fields. Holy/Shadow visuals are
+controlled by the independent Weapon Strike VFX setting. This source candidate
+requires its matching DLL; older packaged releases do not acquire it from JSON.
+
+[Implementation, validation and integration ledger](../../docs/ai/ARCANA_ELEMENTAL_STRIKES_2026_09_29.md).

@@ -1,4 +1,5 @@
 #include "ArcanaRuntime.h"
+#include "ArcanaElemental.h"
 #include "ArcanaAcquisition.h"
 #include "ArcanaCatalog.generated.h"
 #include "ArcanaRuntimeEvidence.generated.h"
@@ -66,6 +67,12 @@ bool InBattle() noexcept {unsigned char value=1;return !Copy(&value,reinterpret_
 bool OnOwner() noexcept {return ownerThread.load()==GetCurrentThreadId();}
 bool Development() noexcept {return settings.developmentEnabled?settings.developmentEnabled():settings.fullDeck;}
 void CacheEffects(){for(unsigned actor=0;actor<kActorCount;++actor)effects[actor]=Aggregate(state,actor);}
+std::uintptr_t BattleActor(unsigned actor);
+bool ReadElementalEffects(unsigned actor,Elemental::Snapshot& output) noexcept {
+    const auto* current=ActorEffects(actor);const auto battle=BattleGeneration();
+    if(!started.load()||!current||!battle||!InBattle()||!BattleActor(actor))return false;
+    output=Elemental::Collect(*current,battle,state.revision);return true;
+}
 void ReconcileNative(){
     std::array<unsigned char,Acquisition::kPayloadBytes> payload{};
     if(!enabled.load()||!ready.load()||!OnOwner()||!Copy(payload.data(),reinterpret_cast<void*>(base+saveRva),payload.size()))return;
@@ -349,10 +356,12 @@ bool Start(){
         if(!NativeUiSupport::Install(base,rvas,replacements,standaloneOriginals,MinHookBatch::Owner::ArcanaGameplay,reinterpret_cast<const void*>(&Start))){code=Code::Conflict;return false;}
         NativeGameplayEvents::provider=NativeGameplayEvents::Provider::Arcana;
     }
+    if(!Elemental::Register(&ReadElementalEffects)){Stop();code=Code::Conflict;return false;}
     started=true;return true;
 }
 void Stop() noexcept {
     enabled=false;ready=false;code=Code::Stopped;
+    Elemental::Unregister(&ReadElementalEffects);
     if(!appliedMask.load()){NativeSaveEvents::Unsubscribe(&saveObserver);NativeGameplayEvents::Unsubscribe(&gameplayObserver);}
 }
 void Tick() noexcept {

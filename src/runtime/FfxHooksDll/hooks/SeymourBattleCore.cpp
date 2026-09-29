@@ -8,6 +8,7 @@ namespace FfxHooks::SeymourBattle {
 namespace {
 
 using MembershipCounts = std::array<uint8_t, 256>;
+std::atomic<PermanentRosterProvider> permanentRosterProvider{nullptr};
 
 MembershipCounts CountMembership(const RosterImage& image) {
     MembershipCounts counts{};
@@ -18,6 +19,22 @@ MembershipCounts CountMembership(const RosterImage& image) {
 
 bool SameRoster(const RosterImage& lhs, const RosterImage& rhs) {
     return lhs.party == rhs.party && lhs.state == rhs.state && lhs.ability == rhs.ability;
+}
+
+std::uint64_t PermanentRosterRevision() noexcept {
+    const auto provider = permanentRosterProvider.load(std::memory_order_acquire);
+    try { return provider ? provider() : 0; }
+    catch (...) { return 0; }
+}
+
+bool ValidPermanentRoster(const RosterImage& image) {
+    if (image.party != 0x11u) return false;
+    const auto members = CountMembership(image);
+    if (members[kSeymourSlot] != 1u) return false;
+    for (unsigned id = 0; id < 255; ++id) {
+        if (members[id] && (id >= 18u || members[id] != 1u)) return false;
+    }
+    return true;
 }
 
 bool ValidServiceIo(const ServiceIo& io) {
@@ -41,6 +58,8 @@ bool ReadImage(const ServiceIo& io, RosterImage* image, uint32_t* hashOut) {
 
 bool CleanupPersistent(const ServiceIo& io, Ownership* ownership, Telemetry* telemetry) {
     if (!ownership || !ownership->hasBaseline) return false;
+    // A borrowed field roster is never this service's restoration target.
+    if (ownership->borrowedPermanent) return false;
     RosterImage current{};
     if (!ReadImage(io, &current, telemetry ? &telemetry->applyHash : nullptr)) return false;
     if (IsConservativeRestoredImage(ownership->baseline, current)) {
@@ -67,6 +86,7 @@ void ClearBattleOwnership(Ownership* ownership) {
     ownership->hasBaseline = false;
     ownership->battleRosterOwned = false;
     ownership->persistentMayContainSeymour = false;
+    ownership->borrowedPermanent = false;
 }
 
 bool ValidExitDetourIo(const ExitDetourIo& io) {
@@ -84,6 +104,14 @@ void RetainCreatedExitInert(ExitDetourOwner* owner) {
 }
 
 } // namespace
+
+bool RegisterPermanentRosterProvider(PermanentRosterProvider provider) noexcept {
+    if (!provider) return false;
+    PermanentRosterProvider expected = nullptr;
+    return permanentRosterProvider.compare_exchange_strong(
+               expected, provider, std::memory_order_release, std::memory_order_acquire) ||
+           expected == provider;
+}
 
 bool IsAdmittedEntryReturnRva(uintptr_t returnRva) noexcept {
     return returnRva == SharedBattleRuntime::kBattleStateInitSceneReturnRva;
@@ -312,6 +340,11 @@ EntryServiceResult ServiceEntry(
     }
 
     bool retiredPreviousBattle = false;
+    if (ownership->borrowedPermanent) {
+        // The exact next-battle caller retires only our local bookkeeping. The
+        // field lease and a newly loaded save retain all persistent ownership.
+        ClearBattleOwnership(ownership);
+    }
     if (ownership->battleRosterOwned || ownership->persistentMayContainSeymour) {
         // WHY: the game can skip the exit sync call at VA 0x00790F02. Reaching the exact
         // battle-state InitScene caller again proves that the prior local buffers have ended;
@@ -346,8 +379,29 @@ EntryServiceResult ServiceEntry(
     }
 
     RosterImage baseline{};
-    if (!ReadImage(io, &baseline, telemetry ? &telemetry->beforeHash : nullptr) ||
-        ValidatePreflight(baseline, battleDiscriminator) != PreflightResult::Ready) {
+    const bool baselineRead = ReadImage(io, &baseline, telemetry ? &telemetry->beforeHash : nullptr);
+    const auto permanentRevision = baselineRead && ValidPermanentRoster(baseline) ? PermanentRosterRevision() : 0;
+    if (permanentRevision &&
+        io.commandCurrent(io.context, &command)) {
+        ownership->baseline = baseline;
+        ownership->hasBaseline = true;
+        ownership->activeGeneration = command.generation;
+        // Set before native execution: exceptions must not turn borrowed bytes
+        // into temporary owned bytes on the next cleanup/entry attempt.
+        ownership->borrowedPermanent = true;
+        ownership->battleRosterOwned = true;
+        ownership->persistentMayContainSeymour = false;
+        callOriginal();
+        RosterImage observed{};
+        const bool current = ReadImage(io, &observed, telemetry ? &telemetry->applyHash : nullptr) &&
+            ValidPermanentRoster(observed) && CountMembership(observed) == CountMembership(baseline) &&
+            io.commandCurrent(io.context, &command) && PermanentRosterRevision() == permanentRevision;
+        ownership->state = current ? State::AppliedBattleRoster : State::RestorePending;
+        result.outcome = current ? ServiceOutcome::Applied : ServiceOutcome::RestorePending;
+        SetTelemetry(telemetry, command, *ownership, result.outcome);
+        return result;
+    }
+    if (!baselineRead || ValidatePreflight(baseline, battleDiscriminator) != PreflightResult::Ready) {
         ownership->state = State::RejectedPreflight;
         callOriginal();
         result.outcome = ServiceOutcome::RejectedPreflight;
@@ -439,6 +493,14 @@ ServiceOutcome ServiceExit(
         return ServiceOutcome::InvalidInput;
     }
     const bool requested = command.requested && !command.stopping;
+    if (ownership->borrowedPermanent) {
+        // Native sync has already run once. Removal belongs exclusively to the
+        // field lease on its validated session/thread, even after OFF or stop.
+        ClearBattleOwnership(ownership);
+        ownership->state = requested ? State::PendingBattle : State::Off;
+        SetTelemetry(telemetry, command, *ownership, ServiceOutcome::NoChange);
+        return ServiceOutcome::NoChange;
+    }
     if (!ownership->battleRosterOwned && !ownership->persistentMayContainSeymour) {
         ownership->state = requested ? State::PendingBattle : State::Off;
         SetTelemetry(telemetry, command, *ownership, ServiceOutcome::NoChange);

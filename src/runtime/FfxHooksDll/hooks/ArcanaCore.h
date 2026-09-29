@@ -5,6 +5,7 @@
 
 namespace FfxHooks::Arcana {
 inline constexpr unsigned kCardCount=78,kActorCount=7,kMaximumSlots=3;
+inline constexpr unsigned kMaximumCardEffects=10;
 inline constexpr std::int16_t kEmpty=-1;
 enum class Mode : std::uint8_t { Twin=0, Constellation=1 };
 enum class Error : std::uint8_t {
@@ -26,13 +27,15 @@ enum class EffectKind : std::uint8_t {
     IncomingDamage, ElementDamageFireIce, ElementDamageHoly, SurviveOnce, SurviveHeal, OverdriveDamage,
     CriticalChance, GilBonus, ApBonus, DropMultiplier, EncounterReduction,
     OpeningOverdrive, ProofDeath, ProofSlow, TouchStone, TouchConfuse, WardHoly,
-    ElementDamageLightningWater, CtbReduction, DeathImmuneDamage, Count
+    ElementDamageLightningWater, CtbReduction, DeathImmuneDamage,
+    StrikeShadow, WardShadow, StrikeEarth, WardEarth, StrikeWind, WardWind,
+    StrikeBio, WardBio, StrikeGravity, WardGravity, Count
 };
 struct Effect { EffectKind kind=EffectKind::None; std::int16_t value=0; };
 struct Card {
     std::uint8_t id=0; bool major=false;
     const char* key=nullptr; const char* name=nullptr; const char* description=nullptr; const char* asset=nullptr;
-    std::array<Effect,8> effects{};
+    std::array<Effect,kMaximumCardEffects> effects{};
 };
 using Slots=std::array<std::array<std::int16_t,kMaximumSlots>,kActorCount>;
 struct State {

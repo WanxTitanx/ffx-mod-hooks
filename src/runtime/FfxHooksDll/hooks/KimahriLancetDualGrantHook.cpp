@@ -1,4 +1,5 @@
 #include "KimahriLancetDualGrantHook.h"
+#include "GridTeachHook.h"
 #include "../shared/ffx_addresses.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -79,7 +80,7 @@ void KimahriLancetDualGrantOnRonsoLearn(
     int grantOk,
     void* retAddr,
     GrantCommandFn grantThrough) {
-    if (!g_installed || !g_armed || !grantOk)
+    if (!g_installed || !g_armed || !grantOk || !IsGridTeachLearningReady())
         return;
     if (charIdx != static_cast<int>(FFX_CHARACTER_KIMAHRI))
         return;
@@ -96,7 +97,9 @@ KimahriLancetDualGrantInstallResult InstallKimahriLancetDualGrantHook(
     bool armed,
     GrantCommandFn grantThrough,
     KimahriLancetDualGrantLogFn log) {
-    KimahriLancetDualGrantInstallResult result = { true, armed };
+    KimahriLancetDualGrantInstallResult result = { false, false };
+    if (!armed || !IsGridTeachHookInstalled()) return result;
+    result = { true, true };
     g_logFn = log;
     g_base = base;
     g_armed = armed;

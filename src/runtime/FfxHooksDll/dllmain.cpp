@@ -73,6 +73,12 @@
 #include "hooks/MinHookBatchCoordinator.h"
 #include "hooks/SharedBattleRuntime.h"
 #include "hooks/SeymourBattleHook.h"
+#include "hooks/SeymourCompatibilityHook.h"
+#include "hooks/SeymourGearSortHook.h"
+#include "hooks/SeymourSessionRuntime.h"
+#include "hooks/SeymourPersistentRosterHook.h"
+#include "hooks/SeymourMenuListHook.h"
+#include "hooks/SphereGridProgress8Runtime.h"
 #include "hooks/F8FlagCatalog.h"
 #include "hooks/F8FlagsUiState.h"
 #include "hooks/NativePortsHook.h"
@@ -84,12 +90,14 @@
 #include "hooks/VanguardRuntime.h"
 #include "hooks/ElementalRuntime.h"
 #include "hooks/ElementMenuCatalog.h"
+#include "hooks/ElementNameInput.h"
 #include "hooks/SpiraRuntime.h"
 #include "hooks/MonsterRewardsRuntime.h"
 #include "hooks/RonsoCommandCosts.h"
 #include "hooks/EquipmentWorkshopNativeUi.h"
 #include "hooks/NativeSaveEvents.h"
 #include "hooks/ArcanaRuntime.h"
+#include "hooks/WeaponStrikeVfxRuntime.h"
 #include "hooks/ArcanaCombat.h"
 #include "hooks/ArcanaAssets.h"
 #include <filesystem>
@@ -876,6 +884,8 @@ static F8StartupGateSnapshot g_f8StartupGates[] = {
     { "elemental.magic_bdl", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "spira.enabled", { false, FfxHooks::Config::BoolSource::DefaultValue } },
     { "aeon_ascension.enabled", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "weapon_strike_vfx.enabled", { false, FfxHooks::Config::BoolSource::DefaultValue } },
+    { "elemental.nul_spells", { false, FfxHooks::Config::BoolSource::DefaultValue } },
 };
 static int g_itemStackCapStartupValue = 255;
 static std::atomic<bool> g_f8StartupGatesCaptured{false};
@@ -2096,9 +2106,10 @@ static void ArenaMixRenameAbort();
 static LRESULT CALLBACK InGameMenuWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (FfxHooks::NativePorts::BindingCaptureMessage(msg, wParam)) return 0;
     if (ArenaMixRenameMessage(msg, wParam)) return 0;
+    if (FfxHooks::ElementNameInput::Message(msg, wParam)) return 0;
     LRESULT nativePortResult = 0;
     if (FfxHooks::NativePorts::HandleWindowMessage(hwnd, msg, wParam, lParam,
-        FfxHooks::NativePorts::BindingCaptureActive() || ArenaMixRenameInputActive(), &nativePortResult)) return nativePortResult;
+        FfxHooks::NativePorts::BindingCaptureActive() || ArenaMixRenameInputActive() || FfxHooks::ElementNameInput::Active(), &nativePortResult)) return nativePortResult;
     switch (msg) {
         case WM_ACTIVATEAPP:
             if (!wParam) {
@@ -5847,7 +5858,7 @@ static bool NativeMenuArmedFromConfig() {
     // data admission. Arming its infrastructure does not open any menu or turn
     // on Workshop editing; the Field Scout boundary above remains authoritative.
     for (const char* key : { "elemental.core", "elemental.tactics", "elemental.gravity",
-                            "elemental.magic_bdl", "spira.enabled", "aeon_ascension.enabled" }) {
+                            "elemental.magic_bdl", "spira.enabled", "aeon_ascension.enabled", "weapon_strike_vfx.enabled", "elemental.nul_spells" }) {
         if (F8CatalogGateEnabled(key)) return true;
     }
     return dashboardEnabled || maechenEnabled || envFlag || fileFlag || F8CatalogGateEnabled("labs.equipment_workshop");
@@ -13431,7 +13442,7 @@ static void NativeMenu_PresentTick() {
     static bool workshopHeld=false;
     const auto workshopShortcut=FfxHooks::NativePorts::SampleShortcut(FfxHooks::NativeBindings::Action::Workshop);
     const bool workshopDown=workshopShortcut.down&&!workshopShortcut.mismatch;
-    if(f7Foreground&&workshopDown&&!workshopHeld&&!FfxHooks::NativePorts::BindingCaptureActive()){
+    if(f7Foreground&&workshopDown&&!workshopHeld&&!FfxHooks::NativePorts::BindingCaptureActive()&&!FfxHooks::ElementNameInput::Active()){
         if(EquipmentMenu::Active())InterlockedExchange(&EquipmentMenu::wantClose,1);
         else if(!F7OwnsUiPublishedForPresent()&&!g_f8MenuOpen.Load()&&!FfxHooks::Maechen_BlocksNativeModalAllocation()&&
             *reinterpret_cast<volatile int*>(g_base+(0x13407E4u-0x400000u))==0){
@@ -13439,7 +13450,7 @@ static void NativeMenu_PresentTick() {
         }
     }
     workshopHeld=workshopDown;
-    if (FfxHooks::Dash_F8Pressed() && !FfxHooks::NativePorts::BindingCaptureActive() && !EquipmentMenu::Active()) {
+    if (FfxHooks::Dash_F8Pressed() && !FfxHooks::NativePorts::BindingCaptureActive() && !FfxHooks::ElementNameInput::Active() && !EquipmentMenu::Active()) {
         if (g_f8MenuOpen.Exchange(false)) {
             // F8 closes the menu, never commits an unfinished scalar draft.
             g_f8ScalarEditor.Cancel();
@@ -13476,7 +13487,7 @@ static void NativeMenu_PresentTick() {
         (GetAsyncKeyState(VK_MENU) & 0x8000) != 0 ||
         (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
     if (!down) s_hkChordSuppressed = false;
-    if (down && (modifiersDown || FfxHooks::NativePorts::BindingCaptureActive())) s_hkChordSuppressed = true;
+    if (down && (modifiersDown || FfxHooks::NativePorts::BindingCaptureActive() || FfxHooks::ElementNameInput::Active())) s_hkChordSuppressed = true;
     const bool edge = f7Foreground && down && !s_hk && !s_hkChordSuppressed && !EquipmentMenu::Active();
     // Sampling the held bit while backgrounded prevents a key held in another
     // application from becoming a fresh F7 edge when focus returns.
@@ -13620,6 +13631,10 @@ static int __cdecl NativeMenu_PumpHook(unsigned int a1) {
         FfxHooks::ElementalDominion::TickMainThread();
         FfxHooks::SpiraAbilities::TickMainThread();
         FfxHooks::MonsterRewards::TickMainThread();
+        FfxHooks::WeaponStrikeVfx::TickMainThread();
+        FfxHooks::SeymourMenuList::PumpTick();
+        FfxHooks::SeymourPersistentRoster::PumpTick();
+        FfxHooks::SphereGridProgress8Runtime::PresentTick();
         FfxHooks::Maechen_PumpTick(F7IsForegroundWindow());
         EquipmentMenu::Tick();
         // WHY: visible menu ownership and the one-shot reap wake are separate.
@@ -14065,7 +14080,7 @@ static void F7DiffToggleBit(int valIdx, int bit) {
     if(valIdx!=10&&bit>=8){
         const auto current=FfxHooks::ElementMenu::Read();
         if(!g_f7Elements[bit].available||!current[bit].available||std::strcmp(current[bit].key,g_f7Elements[bit].key)!=0){
-            F7DiffSetStatus("Hook element unavailable; enable its matching pack");PlaySfx(3);return;
+            F7DiffSetStatus("Element unavailable; enable Core and restart");PlaySfx(3);return;
         }
         int slot=F7ExtraSlot(bit);
         if(slot<0)for(unsigned i=0;i<g_f7ExtraAffinities.size();++i)if(!g_f7ExtraAffinities[i].key[0]){slot=static_cast<int>(i);break;}
@@ -14252,6 +14267,10 @@ static void F7_BuildRows(int kind) {
             g_f7Rows[g_f7RowCount++]={"AP/Gil Multipliers",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::RewardMultipliers),0,0,"Global and per-monster rewards, with separate AP and Gil previews."};
         if(strcmp(tabName,"Dev")==0)
             g_f7Rows[g_f7RowCount++]={"Equipment Workshop",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Workshop),0,0,"Refinement A/B and explicit development-only cost and progression overrides."};
+        if(strcmp(tabName,"Dev")==0 && g_f7RowCount<31)
+            g_f7Rows[g_f7RowCount++]={"Battle Photo Mode",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::PhotoMode),0,0,"Independent pose, camera-target and JSON controls; no simulation pause."};
+        if(strcmp(tabName,"Boosters")==0 && g_f7RowCount<31)
+            g_f7Rows[g_f7RowCount++]={"Seymour compatibility",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::Seymour),0,0,"Independent command and equipment guards. First enable requires restart."};
         if(strcmp(tabName,"Reforge")==0)
             g_f7Rows[g_f7RowCount++]={"Scan settings",F7RT_OPTIONS,static_cast<int>(NativeSettingsPage::ElementScan),0,0,"Scan Expanded, extra elements, colors and visibility."};
         if(strcmp(tabName,"Reforge")==0)
@@ -15995,10 +16014,7 @@ static void InstallHooks() {
     const FfxHooks::MusicHookTarget musicTarget = MusicHookTargetFromEnv();
     const bool enableFpsScout = FpsScoutEnabledFromConfig();
     const int initialOverride = EnvInt("FFXHOOKS_MUSIC_OVERRIDE_TRACK", -1);
-    if (g_block && initialOverride >= 0 && initialOverride <= 0xB5) {
-        g_block->musicOverrideTrackIndex = initialOverride;
-        Log("[ffx-hooks] initial music override armed from env: %d\n", initialOverride);
-    } else if (initialOverride != -1) {
+    if (initialOverride < -1 || initialOverride > 0xB5) {
         Log("[ffx-hooks] WARN ignoring out-of-range FFXHOOKS_MUSIC_OVERRIDE_TRACK=%d\n", initialOverride);
     }
 
@@ -16092,6 +16108,26 @@ static void InstallHooks() {
             Log("[ffx-hooks] MusicHook install result ok=%d trampoline=0x%llX\n",
                 result.ok ? 1 : 0, static_cast<unsigned long long>(result.trampoline));
         }
+        // Apply the optional boot default only after the block and hook exist.
+        // A Custom Mix/manual choice published during installation keeps priority;
+        // this one-shot initialization never continuously reasserts an override.
+        if (initialOverride >= 0 && initialOverride <= 0xB5) {
+            if (g_musicHookArmed && g_block) {
+                static_assert(sizeof(g_block->musicOverrideTrackIndex) == sizeof(LONG),
+                    "Music override must remain a 32-bit shared field");
+                const LONG previous = InterlockedCompareExchange(
+                    reinterpret_cast<volatile LONG*>(&g_block->musicOverrideTrackIndex),
+                    static_cast<LONG>(initialOverride), -1);
+                if (previous == -1) {
+                    Log("[ffx-hooks] initial music override armed from env: %d\n", initialOverride);
+                } else {
+                    Log("[ffx-hooks] initial music override skipped; existing choice retained: %d\n", static_cast<int>(previous));
+                }
+            } else {
+                Log("[ffx-hooks] initial music override unavailable: hook=%d block=%d\n",
+                    g_musicHookArmed ? 1 : 0, g_block ? 1 : 0);
+            }
+        }
     }
     LogF8CatalogGate("labs.nova_super_damage", "Lab startup");
     LogF8CatalogGate("labs.kimahri_ronso_mana", "Lab startup");
@@ -16099,45 +16135,9 @@ static void InstallHooks() {
     LogF8CatalogGate("labs.kimahri_lancet_dual_grant", "Lab startup");
     LogF8CatalogGate("labs.item_stack_cap", "Lab startup");
     LogF8CatalogGate("labs.double_triple_drop", "Lab startup");
-    const bool enableNovaBypass = NovaSuperDamageFlagEnabled();
     // The early worker owns Nova/pool publication before any automatic save read.
     StartNovaPoolEarlyIfRequested();
-    const bool enableNulWard = NulWardFlagEnabled() || NulWardApplyEnabled();
-    const bool enableNulWardApply = NulWardApplyEnabled();
-    const bool enableNulWardLog = NulWardLogFlagEnabled();
-    if (enableNulWard) {
-        if (validateOnly) {
-            Log("[ffx-hooks] NulWard install blocked by FFXHOOKS_VALIDATE_ONLY=1\n");
-        } else {
-            if (enableNulWardApply && enableNovaBypass) {
-                Log("[ffx-hooks] NulWard WARN: NovaClamp bypass active â€” writeback bytes may conflict; disable nova_super_damage.flag for full apply\n");
-            }
-            FfxHooks::NulWardInstallOptions nulOpts = {};
-            nulOpts.nativeSlots = NulWardNativeSlotsEnabled();
-            nulOpts.experimentP16 = NulWardP16Enabled() || NulWardP16ApplyEnabled();
-            nulOpts.p16Apply = NulWardP16ApplyEnabled();
-            const FfxHooks::NulWardInstallResult nulWardResult =
-                FfxHooks::InstallNulWardHook(
-                    g_base,
-                    enableNulWardApply,
-                    enableNulWardLog,
-                    LogLine,
-                    &nulOpts);
-            Log("[ffx-hooks] NulWard install result ok=%d stub=0x%08X aftermath=0x%08X hitLoop=0x%08X precheck=0x%08X apply=%d log=%d native=%d p16=%d\n",
-                nulWardResult.ok ? 1 : 0,
-                static_cast<unsigned>(nulWardResult.stubWriteback),
-                static_cast<unsigned>(nulWardResult.detourAftermath),
-                static_cast<unsigned>(nulWardResult.detourHitLoop),
-                static_cast<unsigned>(nulWardResult.detourPrecheck),
-                enableNulWardApply ? 1 : 0,
-                enableNulWardLog ? 1 : 0,
-                nulOpts.nativeSlots ? 1 : 0,
-                nulOpts.experimentP16 ? 1 : 0);
-        }
-    } else {
-        Log("[ffx-hooks] NulWard not armed (nul_ward.flag / nul_ward_apply.flag)\n");
-    }
-    if (GridTeachEnabled()) {
+    if (GridTeachEnabled() || FfxHooks::ModFeatures::Enabled(FfxHooks::ModFeatures::Feature::NulSpells)) {
         if (validateOnly) {
             Log("[ffx-hooks] GridTeach install blocked by FFXHOOKS_VALIDATE_ONLY=1\n");
         } else {
@@ -16164,7 +16164,7 @@ static void InstallHooks() {
     if (KimahriLancetDualGrantEnabled()) {
         if (validateOnly) {
             Log("[ffx-hooks] KimahriLancetDualGrant install blocked by FFXHOOKS_VALIDATE_ONLY=1\n");
-        } else if (!GridTeachEnabled()) {
+        } else if (!FfxHooks::IsGridTeachHookInstalled()) {
             Log("[ffx-hooks] KimahriLancetDualGrant WARN armed but grid_teach.flag off â€” dual grant needs GridTeach grant shim\n");
         } else {
             const FfxHooks::KimahriLancetDualGrantInstallResult dualResult =
@@ -16226,7 +16226,11 @@ static void InstallHooks() {
     LogF8CatalogGate("labs.element_scan_dark", "Scan Extra Elements");
     LogF8CatalogGate("labs.scan_expanded", "Scan Expanded");
     if (scanExtraElements || scanExpanded) {
-        FfxHooks::InstallElementHook(g_base, scanExtraElements, scanExpanded, LogLine);
+        if (validateOnly) {
+            Log("[ffx-hooks] ElementHook install blocked by FFXHOOKS_VALIDATE_ONLY=1\n");
+        } else {
+            FfxHooks::InstallElementHook(g_base, scanExtraElements, scanExpanded, LogLine);
+        }
     }
     const bool enableAbilitySfxLog = AbilitySfxLogFlagEnabled();
     if (enableAbilitySfxLog) {
@@ -16292,6 +16296,10 @@ static void InstallHooks() {
             if (validateOnly) {
                 Log("[ffx-hooks] FieldProbe install blocked by FFXHOOKS_VALIDATE_ONLY=1\n");
             } else {
+                if (!logTexture && (FieldProbeRt2FlagEnabled() || FieldProbeTextureOnlyFlagEnabled())) {
+                    Log("[ffx-hooks] FieldProbe texture suppressed: Scout requested=1 installed=%d; target ownership is not proven clear, avoiding duplicate interception\n",
+                        FfxHooks::IsFieldScoutHookInstalled() ? 1 : 0);
+                }
                 const FfxHooks::FieldProbeInstallResult probeResult =
                     FfxHooks::InstallFieldProbeHook(g_base, logEncounter, logTexture, LogLine);
                 Log("[ffx-hooks] FieldProbe install ok=%d hooks=%u encounter=%d texture=%d\n",
@@ -16596,6 +16604,20 @@ static void InstallHooks() {
  * Process termination discards process-owned state. Dynamic FreeLibrary is unsupported until that owner first stops
  * the Present producer, drains admitted frames, and restores every owned byte outside DllMain. */
 static void RemoveHooks() {
+    if(!FfxHooks::SphereGridProgress8Runtime::Remove()){
+        Log("[ffx-hooks] Grid8 save callback active; teardown deferred\n");
+        return;
+    }
+    // Restore the menu before changing its roster or retiring the owner pump.
+    if(!FfxHooks::SeymourMenuList::Remove()){
+        Log("[ffx-hooks] Seymour menu cleanup pending; teardown deferred\n");
+        return;
+    }
+    // Keep pump and load events available for owner-thread roster cleanup.
+    if(!FfxHooks::SeymourPersistentRoster::Remove()){
+        Log("[ffx-hooks] Seymour field roster cleanup pending; teardown deferred\n");
+        return;
+    }
 #ifdef FFXHOOKS_HAVE_POLYHOOK
     if(!EquipmentMenu::StopReady()){
         Log("[ffx-hooks] Workshop UI close queued on owner thread; hook teardown deferred\n");
@@ -16629,6 +16651,7 @@ static void RemoveHooks() {
         FfxHooks::F7_RemoveHooks();   // F7 In-Live: remove detours + clears music override
     } else {
         Log("[ffx-hooks] Seymour teardown deferred; shared F7 battle runtime retained\n");
+        return;
     }
     FfxHooks::F7AiSwap_Remove();  // disable observer; applied trampolines stay process-lifetime
     FfxHooks::RemoveSpeedHackHook();  // F8 speed: neutralize both timing backends first.
@@ -16640,6 +16663,15 @@ static void RemoveHooks() {
     FfxHooks::RemoveNovaSuperDamageHook(LogLine);
     FfxHooks::RemoveNulWardHook(LogLine);
     FfxHooks::RemoveGridTeachHook(LogLine);
+    if(!FfxHooks::SeymourSession::Remove()){
+        Log("[ffx-hooks] Seymour save-session retirement failed; teardown deferred\n");
+        return;
+    }
+    const bool nativeLoadRetired=FfxHooks::RemoveNativeSaveLoadEvents();
+    if(!nativeLoadRetired){
+        Log("[ffx-hooks] Native load gateways retained; teardown deferred\n");
+        return;
+    }
     FfxHooks::RemoveKimahriLancetDualGrantHook(LogLine);
     FfxHooks::RemoveNulWardTeachHook(LogLine);
     FfxHooks::RemoveElementHook();
@@ -16674,6 +16706,56 @@ static void StartNovaPoolEarlyIfRequested() {
     Log("[ffx-hooks] Nova/pool early startup ok=%d bypass=%d log=%d ronso=%d compatibility=%d\n",
         installed.ok ? 1 : 0, enableNovaBypass ? 1 : 0, enableNovaLog ? 1 : 0,
         enableRonsoMana ? 1 : 0, compatibility ? 1 : 0);
+}
+
+static void StartNulWardEarlyIfRequested() {
+    // Validate the untouched damage frame before Workshop owns its entry.
+    // NulWard's three targets are distinct; callbacks remain epoch-gated until
+    // the shared battle runtime publishes a valid battle/thread identity.
+    const auto base=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
+    if(!base)return;
+    const bool validateOnly=EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY");
+    const bool enableNovaBypass=NovaSuperDamageFlagEnabled();
+    const bool sixNuls=FfxHooks::ModFeatures::Enabled(FfxHooks::ModFeatures::Feature::NulSpells);
+    const bool enableNulWard = sixNuls || NulWardFlagEnabled() || NulWardApplyEnabled();
+    const bool enableNulWardApply = sixNuls || NulWardApplyEnabled();
+    const bool enableNulWardLog = NulWardLogFlagEnabled();
+    if (enableNulWard) {
+        if (validateOnly) {
+            Log("[ffx-hooks] NulWard install blocked by FFXHOOKS_VALIDATE_ONLY=1\n");
+        } else {
+            if (enableNulWardApply && enableNovaBypass) {
+                Log("[ffx-hooks] NulWard and Nova requested; independent HP consumers require their own profile gates\n");
+            }
+            FfxHooks::NulWardInstallOptions nulOpts = {};
+            nulOpts.allElements=sixNuls;
+            nulOpts.nativeSlots = NulWardNativeSlotsEnabled();
+            nulOpts.experimentP16 = NulWardP16Enabled() || NulWardP16ApplyEnabled();
+            nulOpts.p16Apply = NulWardP16ApplyEnabled();
+            const FfxHooks::NulWardInstallResult nulWardResult =
+                FfxHooks::InstallNulWardHook(
+                    base,
+                    enableNulWardApply,
+                    enableNulWardLog,
+                    LogLine,
+                    &nulOpts);
+            PublishResolvedF8Status("elemental.nul_spells",
+                nulWardResult.ok ? FfxHooks::F8RuntimeAvailability::Available : FfxHooks::F8RuntimeAvailability::ProducerUnavailable,
+                sixNuls && nulWardResult.ok);
+            Log("[ffx-hooks] NulWard install result ok=%d stub=0x%08X aftermath=0x%08X hitLoop=0x%08X precheck=0x%08X apply=%d log=%d native=%d p16=%d\n",
+                nulWardResult.ok ? 1 : 0,
+                static_cast<unsigned>(nulWardResult.stubWriteback),
+                static_cast<unsigned>(nulWardResult.detourAftermath),
+                static_cast<unsigned>(nulWardResult.detourHitLoop),
+                static_cast<unsigned>(nulWardResult.detourPrecheck),
+                enableNulWardApply ? 1 : 0,
+                enableNulWardLog ? 1 : 0,
+                nulOpts.nativeSlots ? 1 : 0,
+                nulOpts.experimentP16 ? 1 : 0);
+        }
+    } else {
+        Log("[ffx-hooks] NulWard not armed (nul_ward.flag / nul_ward_apply.flag)\n");
+    }
 }
 
 static void StartFastloadEarlyIfRequested() {
@@ -16757,9 +16839,17 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
         EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
     FfxHooks::MonsterRewards::Prepare(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),
         EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
+    FfxHooks::SeymourSession::PrimeSaveIo(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"));
+    FfxHooks::SphereGridProgress8Runtime::PrimeSaveIo(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"));
     StartupTiming("early-audio-ready");
+    if ((GridTeachEnabled() || FfxHooks::ModFeatures::Enabled(FfxHooks::ModFeatures::Feature::NulSpells)) && !EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY")) {
+        const bool gridSaveReady = FfxHooks::StartGridTeachSaveTracking(
+            reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)), LogLine);
+        Log("[ffx-hooks] GridTeach early save observer ready=%d\n", gridSaveReady ? 1 : 0);
+    }
     StartNovaPoolEarlyIfRequested();
     StartupTiming("nova-save-io-ready");
+    StartNulWardEarlyIfRequested();
     // Nova validates the original damage frame before Workshop owns its entry.
     // Both keep their independent damage behavior; the save imports have one owner.
     FfxHooks::EquipmentWorkshop::Start(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),
@@ -16776,6 +16866,13 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
         EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
     FfxHooks::ElementalDominion::Activate();
     FfxHooks::SpiraAbilities::Activate();
+    const bool strikeVfxReady = FfxHooks::WeaponStrikeVfx::Start(
+        reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)), F8CatalogGateEnabled("weapon_strike_vfx.enabled"),
+        EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"), LogLine);
+    PublishResolvedF8Status("weapon_strike_vfx.enabled",
+        strikeVfxReady ? FfxHooks::F8RuntimeAvailability::Available : FfxHooks::F8RuntimeAvailability::ProducerUnavailable,
+        strikeVfxReady);
+    Log("[ffx-hooks] Holy/Shadow VFX startup: %s\n", FfxHooks::WeaponStrikeVfx::Detail());
     // Scan verifies the original shared scale helpers. Arcana owns those
     // entrypoints once its Equip layout is installed, so admit Scan first.
     // Keep this outside the Arcana gate: Scan remains an independent feature.
@@ -16864,11 +16961,13 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID) {
             FfxHooks::RemoveElementHook();
             FfxHooks::ElementalDominion::RequestDetachStop();
             FfxHooks::SpiraAbilities::RequestDetachStop();
-            FfxHooks::MonsterRewards::RequestStop();
+        FfxHooks::MonsterRewards::RequestStop();
+        FfxHooks::WeaponStrikeVfx::RequestStop();
             FfxHooks::RequestNulWardDetachStop();
             FfxHooks::EquipmentWorkshop::RequestStop();
             FfxHooks::Vanguard::RequestStop();
             FfxHooks::NativePorts::RequestStop();
+            FfxHooks::ElementNameInput::Abort();
             FfxHooks::NativeLanguage::RequestStop();
             FfxHooks::TextLanguage::Native::RequestStop();
             FfxHooks::SinAi::RequestStop();
@@ -16876,11 +16975,20 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID) {
             FfxHooks::Fastload::RequestFastloadStop();
             FfxHooks::RequestNovaSuperDamageStop();
             FfxHooks::RequestSeymourBattleStop();
+            FfxHooks::SeymourMenuList::RequestStop();
+            FfxHooks::SeymourPersistentRoster::RequestStop();
+            FfxHooks::SeymourSession::RequestStop();
+            FfxHooks::SphereGridProgress8Runtime::RequestStop();
+            FfxHooks::RequestNativeSaveLoadEventsStop();
             FfxHooks::F7_RequestStop();
             FfxHooks::F7AiSwap_RequestStop();
             FfxHooks::RequestSpeedHackStop();
             FfxHooks::RequestDialogSkipStop();
             FfxHooks::RequestUnXBoosterStop();
+            FfxHooks::RequestNulWardStop();
+            FfxHooks::RequestGridTeachStop();
+            FfxHooks::RequestFieldProbeStop();
+            PhotoMode::RequestStop();  // Atomic only; no restoration under loader lock.
             break;
     }
     return TRUE;

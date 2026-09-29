@@ -1,0 +1,17 @@
+{
+  "producer": "Jarvis-HOOK",
+  "release": "v0.6.0-beta.2",
+  "runtime_evidence_reused": "Exact production inputs match the already tested Windows x86/Proton candidate; no new Windows build is needed for this source mirror.",
+  "public_copy_checks": {
+    "workshop": "C++ core/economy/progression/fifth/aeon/catalog normal and ASan/UBSan; Python 48 tests, 2 optional private fixtures skipped",
+    "arcana": "All 12 portable/isolated-store cases with ASan/UBSan passed",
+    "languages": "Core 2109, payload 73, field 48, normal/sanitized plus Python contracts; private pack not supplied",
+    "nul": "12 tests; actual menu 43/43",
+    "sphere_helpers": "122 tests",
+    "source_packet": "2 tests",
+    "packager_negative": "Wrong DLL and invalid version rejected without an archive"
+  },
+  "game_started": false,
+  "rt2": false,
+  "ci_policy": "This mirror commit uses [skip ci] to avoid duplicating paid hosted compilation. Three hosted checks passed on the source integration PR and on main; public portable checks ran locally. Main has no required branch protection/ruleset."
+}

@@ -3,11 +3,11 @@
 #include <array>
 
 namespace FfxHooks::ModFeatures {
-enum class Feature : unsigned { Core,Tactics,Gravity,MagicBdl,Spira,Ascension,Count };
+enum class Feature : unsigned { Core,Tactics,Gravity,MagicBdl,Spira,Ascension,WeaponStrikes,NulSpells,Count };
 struct Entry {const char* label;Config::BoolGateSpec gate;const char* help;};
 inline constexpr std::array<Entry,static_cast<unsigned>(Feature::Count)> Entries{{
     {"Elemental Dominion: Core",{"elemental.core","f8_authority.elemental_core",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
-     "RESTART REQUIRED - Extended elements; matching pack required."},
+     "RESTART REQUIRED - 8 native + 2 built-in custom elements."},
     {"Elemental Dominion: Tactics",{"elemental.tactics","f8_authority.elemental_tactics",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
      "RESTART REQUIRED - Imperil, Ward and Nul per target action."},
     {"Elemental Dominion: Gravity",{"elemental.gravity","f8_authority.elemental_gravity",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
@@ -17,7 +17,11 @@ inline constexpr std::array<Entry,static_cast<unsigned>(Feature::Count)> Entries
     {"Spira Reforge abilities",{"spira.enabled","f8_authority.spira_enabled",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
      "RESTART REQUIRED - Spira effects; Warden is Auron-only."},
     {"Aeon Ascension upgrades",{"aeon_ascension.enabled","f8_authority.aeon_ascension_enabled",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
-     "RESTART REQUIRED - Paid Aeon caps; no HP or MP refill."}
+     "RESTART REQUIRED - Paid Aeon caps; no HP or MP refill."},
+    {"Holy / Shadow weapon effects",{"weapon_strike_vfx.enabled","f8_authority.weapon_strike_vfx",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
+     "RESTART REQUIRED - Holy/Shadow VFX; no element granted."},
+    {"Elemental Nul spells",{"elemental.nul_spells","f8_authority.elemental_nul_spells",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
+     "RESTART REQUIRED - Six Nuls; learn through Sphere Grid."}
 }};
 inline bool Enabled(Feature feature){
     const auto index=static_cast<unsigned>(feature);

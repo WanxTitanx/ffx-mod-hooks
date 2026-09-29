@@ -9,16 +9,16 @@
 **Hooks de runtime para FINAL FANTASY X HD Remaster (Steam, PC)**
 
 [![Status](https://img.shields.io/badge/status-BETA-red)](#status-beta)
-[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.6.0--beta.1-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1)
+[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.6.0--beta.2-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2)
 [![Licença](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Plataforma](https://img.shields.io/badge/platform-Windows%20x86-lightgrey)](#compatibilidade)
 [![Doar](https://img.shields.io/badge/Doar-PayPal-blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wandersonwpires%40hotmail.com&currency_code=USD)
 
 </div>
 
-`ffx-mod-hooks` é o repositório público de código-fonte e releases do `ffx-hooks`,
-a camada de comportamento do FFX Mod Studio, desenvolvida pelo brasileiro
-**WanxTitanx**. Uma única `ffx-hooks.dll` reúne menus nativos, regras opcionais de
+`ffx-mod-hooks` é a camada pública de comportamento do FFX Mod Studio, desenvolvida pelo
+brasileiro **WanxTitanx**. O código-fonte público e as releases ficam em
+[ffx-mod-hooks](https://github.com/WanxTitanx/ffx-mod-hooks). Uma única `ffx-hooks.dll` reúne menus nativos, regras opcionais de
 combate, sistemas de equipamento, idiomas, diagnóstico e configuração em runtime.
 Este inventário descreve a versão consolidada para **FFX**; não implica suporte
 equivalente ao FFX-2.
@@ -34,6 +34,35 @@ equivalente ao FFX-2.
 - [Roadmap com checks](docs/ROADMAP.md)
 - [Dossiê completo de integração com o Editor](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
 - [Apoie o projeto](#apoie-o-projeto)
+
+## Nuls elementais e integração de 29/09/2026
+
+A integração reúne a branch publicada de recuperação/Seymour/Sphere Grid com os
+fixes atuais de elementos, Tarot, recompensas, idiomas e efeitos de armas da main.
+O novo controle `F8 > Extras > Additional mods > Elemental Nul spells` começa OFF
+e requer reinício. Os seis comandos custam 2 MP, protegem o grupo e entram na
+White Magic+ da Yuna depois de aprendidos no Sphere Grid:
+
+| Comando | ID | Animação própria | Elemento |
+|---|---:|---:|---|
+| NulHoly | 320 | 870 | Holy |
+| NulShadow | 321 | 871 | Darkness |
+| NulEarth | 370 | 872 | Earth |
+| NulWind | 371 | 873 | Wind |
+| NulPoison | 372 | 874 | Poison |
+| NulGravity | 373 | 875 | Gravity |
+
+Cada aliado recebe uma carga por elemento. Ataques mistos exigem cobertura de
+todos os elementos; cobertura parcial não gasta a carga custom. NulPoison bloqueia
+o elemento Poison, não o status de veneno. Nenhum desbloqueio é gravado
+automaticamente no save. As seis DLLs de animação e suas texturas são clones
+independentes, sem substituir efeitos vanilla. Os aliases do F8 não renomeiam os
+comandos canônicos nem atributos de itens.
+
+O [registro desta integração](docs/ai/NUL_ELEMENTS_INTEGRATION_2026_09_29.md)
+separa build/testes, instalação e o que ainda depende de observação em jogo.
+A [receita de assets](tools/nul_elements/README.md) usa os arquivos locais do
+usuário; DLLs/texturas proprietárias do jogo não entram no código-fonte público.
 
 ## Status beta
 
@@ -52,7 +81,11 @@ Os problemas conhecidos estão em [KNOWN_BUGS](docs/KNOWN_BUGS.md) e no
 
 ## Download e instalação
 
-A **v0.6.0-beta.1** inclui a DLL x86 consolidada, as 78 cartas selecionadas do
+A DLL de trabalho instalada em 2026-09-29 inclui o registro interno e o editor de
+nomes descritos abaixo. Os arquivos públicos v0.6.0-beta.2 indicados nesta seção
+continuam identificando a DLL anterior; a identidade atual está em **DLL atual**.
+
+A **v0.6.0-beta.2** inclui a DLL x86 consolidada, as 78 cartas selecionadas do
 Arcana, ícone e verso, licenças de terceiros, exemplos de configuração OFF,
 instruções, proveniência e checksums SHA-256. O arquivo de código-fonte contém
 a árvore pública da tag, incluindo os arquivos necessários para build, testes
@@ -62,9 +95,9 @@ Esta revisão de documentação restaura a seção de doações e acrescenta est
 README completo em PT-BR. A DLL e seu hash são os mesmos da v0.6.0-beta.
 
 Baixe o ZIP binário, o arquivo de fonte e os checksums na
-[release v0.6.0-beta.1](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1).
-Consulte o [guia de instalação em português](docs/INSTALACAO_PT-BR.md) ou o
-[guia em inglês](docs/INSTALL.md).
+[release v0.6.0-beta.2](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2).
+Consulte o [guia de instalação em português](https://github.com/WanxTitanx/ffx-mod-hooks/blob/v0.6.0-beta.2/docs/INSTALACAO_PT-BR.md) ou o
+[guia em inglês](https://github.com/WanxTitanx/ffx-mod-hooks/blob/v0.6.0-beta.2/docs/INSTALL.md).
 
 Com o FFX fechado, copie `ffx-hooks.dll` e `mods/` do ZIP para `modules/` na
 pasta do jogo. Preserve a DLL anterior, suas configurações e os sidecars.
@@ -81,27 +114,25 @@ redistribuídos aqui. O inventário e o roadmap descrevem essas dependências.
 
 ## DLL atual
 
-Checkpoint Jarvis-HOOK: **2026-09-28**, implementação e deploy feitos na `main`.
+Checkpoint Jarvis-HOOK: **2026-09-29**, implementação e deploy feitos na `main`.
 
 | Identidade | Valor registrado |
 |---|---|
-| Commit do código de runtime | `dda5cb45305448d761e5412f3b265e58213d8ce2` |
+| Commit do código de runtime | `2787386a7144af04c16f194029a4a35616bf8dea` (development integration) |
 | Módulo instalado | `<game>/modules/ffx-hooks.dll` |
-| Tamanho da DLL | 3.398.144 bytes |
-| SHA-256 da DLL | `734a0bf94b56157648e5391ca06dfb1c60aad2c6bb27748762a67315c98b8ffc` |
-| Deploy | 2026-09-28 22:28:57 UTC; backup verificado e substituição atômica |
-| Vínculo com o fonte | 472 entradas nativas conferidas com o build testado |
-| Escopo protegido da instalação | 178 arquivos inventariados permaneceram iguais |
+| Tamanho da DLL | 4.011.008 bytes |
+| SHA-256 da DLL | `5f6a76f3260a1aa0f5a36e0ff6e9f641f7d92e0dda969910d0d66a2debc3016e` |
+| Deploy | 2026-09-29 10:28:24 UTC; backup verificado e substituição atômica |
+| Vínculo com o fonte | 363 entradas de código/recursos conferidas com o build testado |
+| Escopo protegido da instalação | 1.116 arquivos inventariados permaneceram iguais |
 | Executável suportado | `FFX.exe` PE32/i386, image base preferida `0x00400000` |
 | SHA-256 do executável | `78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced` |
 
-O pacote v0.6.0-beta.1 distribui essa DLL já validada e identificada pelo hash.
-O recurso de versão do PE ainda informa `0.2.0.0`; a versão do pacote/tag é
-**v0.6.0-beta.1**. `SOURCE.md` e o manifesto da release vinculam o binário ao
-commit público. A publicação beta não equivale a uma promoção Production/RT2.
-O [registro de deploy e validação](docs/research/F8_F7_ELEMENTS_MONSTER_REWARDS_2026_09_28.md)
-e a [matriz anterior da integração](docs/research/INTEGRATION_FINALIZATION_2026_09_28.md)
-registram as evidências e seus limites.
+Esta DLL reúne os seis Nuls e a integração publicada de recuperação/Seymour/
+Sphere Grid com as funções já presentes na main. Veja o
+[registro de implementação, validação e instalação](docs/ai/NUL_ELEMENTS_INTEGRATION_2026_09_29.md).
+O recurso de versão do PE continua `0.2.0.0`; identifique este build pelo hash e
+pelo commit acima. A aceitação RT2 em jogo e a promoção Production são separadas.
 
 ## O que compõe o projeto
 
@@ -109,7 +140,7 @@ registram as evidências e seus limites.
 |---|---|---|
 | `ffx-hooks.dll` (FfxHooksDll) | Hooks de engine, UI nativa, consumidores compartilhados de combate/save e sistemas opcionais descritos abaixo | Candidata beta consolidada, com deploy realizado |
 | Menu F7 In-Live | Difficulty, S.I.N. RAM, Force Last Battle, música, observador de AI e Arena+ CustomMix | Candidata com fonte/RT0/build e RT1 isolado de runtime/política aprovados; RT1 do callback real e RT2 pelo jogador ainda pendentes na matriz de Difficulty |
-| Painel F8 | Sete abas, submenus e 88 controles booleanos canônicos | 25 LIVE, 59 RESTART REQUIRED e 4 READ ONLY; são classes de ativação, não provas de gameplay |
+| Painel F8 | Sete abas, submenus e 90 controles booleanos canônicos | 25 LIVE, 61 RESTART REQUIRED e 4 READ ONLY; são classes de ativação, não provas de gameplay |
 | Maechen F9 | UI nativa de perguntas/respostas e cliente de serviço com limites | Há observações anteriores de UI/transporte; aceitação da versão atual e qualidade das respostas do serviço são questões separadas |
 | `ffx-probe.dll` (FfxDinput8Probe) | Probe separado de READ / WRITE / CALL na thread principal pelo ponto DINPUT8 | Opcional, OFF por padrão; habilitar uma função de gameplay do Hooks não o habilita |
 | `SinScaleInject` + `SinCoreLib` | Ferramentas offline de pesquisa/materialização do S.I.N. | O caminho legado que escreve em disco continua em quarentena; o S.I.N. RAM atual é outro caminho |
@@ -129,14 +160,14 @@ Os nomes abaixo são mantidos como aparecem na interface do jogo.
 | System | 10 | Janela sem bordas, restrição/ocultação do cursor, desempenho, câmera livre de batalha e congelamento de cenário; quatro linhas informativas de módulos; Audio languages e Text languages |
 | Boosters | 5 | Permanent Sensor, Playable Seymour experimental, Speed Hack, aceleração opcional de FMV e Entire Party Earns AP |
 | Cheats | 9 | Invincible Party/Enemies, Always Overdrive/Critical, Damage 99999 e Always Rare Drop; submenu AP/Gil Multipliers |
-| Extras | 37 | Additional mods: Elemental Core/Tactics/Gravity/Magic BDL, Spira Reforge e Aeon Ascension; Vanguard Combat Engine separado com 31 controles |
+| Extras | 38 | Additional mods: Elemental Core/Tactics/Gravity/Magic BDL, Spira Reforge, Aeon Ascension e efeitos Holy/Shadow opcionais; Vanguard Combat Engine separado com 31 controles |
 | Input | 4 | Bloqueio da tecla Windows, correção de input em segundo plano, filtro IME e Dialog Skip; atalhos de teclado/controle e mapeamento de botões |
 | Dev | 6 | FieldScout (Master/Heavy/Max/Ultra), Fastload Autosave e opção de desenvolvimento para o baralho completo do Arcana; configurações de desenvolvimento do Equipment Workshop |
 | Reforge | 17 | Arcana, Nova Super Damage, Ronso Mana, Equipment Workshop/detalhes nativos, Scan settings, Grid Teach, Lancet Dual Grant, limite de pilha de itens, Double/Triple Drop e Arena+ |
 
 As contagens incluem controles movidos para submenus. Linhas de navegação,
 cores, seletores de idioma, mapeamentos e editores numéricos são configurações
-adicionais, não novos flags booleanos. O [catálogo completo de 88 entradas](docs/ROADMAP.md#complete-f8-control-inventory)
+adicionais, não novos flags booleanos. O [catálogo completo de 90 entradas](docs/ROADMAP.md#complete-f8-control-inventory)
 registra rótulos, chaves, valores padrão e classes de ativação.
 
 ### Multiplicadores de AP/Gil
@@ -173,14 +204,35 @@ de itens é outro sistema. Veja o [formato e o consumidor nativo](docs/research/
 As duas interfaces usam as mesmas identidades: **oito bits nativos e dois slots
 exclusivos do Hook**. Fire, Ice, Thunder, Water, Holy, Darkness e os dois bits
 Custom nativos permanecem distintos. Elementos externos registrados usam chaves
-estáveis; não inventam bits na máscara BYTE do jogo. Slots Hook-only sem pacote
-compatível são apresentados como indisponíveis.
+estáveis; não inventam bits na máscara BYTE do jogo. O Core agora inclui
+**Poison** e **Gravity** quando nenhum pacote externo está selecionado ou
+presente. Habilite Core e reinicie para registrá-los. Um pacote explicitamente
+selecionado, ausente ou inválido continua sendo recusado. Pacotes válidos preservam
+seus bindings e recebem os slots externos neutros que estiverem faltando.
 
 `F8 > Reforge > Scan settings` reúne stats/MP expandidos, cores dos elementos
 nativos extras, cores dos dois externos e visibilidade individual. Os controles
 weak/resist/absorb do F7 cobrem os dez slots. Afinidades externas de gameplay só
 são publicadas após uma transação Difficulty Apply/Restore bem-sucedida; Save
 sozinho não as aplica. Cor e visibilidade no Scan afetam apenas a apresentação.
+
+`F8 > Reforge > Scan settings > Element names` permite renomear **Holy, Darkness,
+Earth, Wind, Poison e Gravity**. Digite pelo teclado ou use o seletor
+de caracteres com o controle e confirme em Save. Cancelar/perder o foco preserva
+o nome anterior; Reset recupera o nome canônico. São aceitos até 32 caracteres
+ASCII suportados. Nomes vazios, duplicados ou inseguros são recusados.
+
+Os aliases acompanham o bit nativo ou a chave externa estável e atualizam os
+rótulos de elementos no F7, Scan, cores, visibilidade e ordem. **Atributos de itens/
+equipamentos, nomes de habilidades/magias/status e dados nativos permanecem
+iguais.** Afinidades e cores salvas sobrevivem à renomeação. Core/Tactics junto
+com Scan Extra Elements ativa a visão numérica por padrão, sem exigir outra opção
+interna; uma preferência explícita `elemental.numeric_scan` continua prevalecendo.
+
+Os novos elementos começam neutros e sem ataques associados. Bindings de comandos,
+perfis/equipamentos continuam necessários para um ataque usar um elemento novo;
+renomear não converte ataques nativos automaticamente.
+
 
 ## Combate, equipamentos e cartas
 
@@ -279,6 +331,22 @@ dinâmico de gameplay. Arcana funciona sem Spira Reforge. O [guia de instalaçã
 aquisição do Arcana](research/mod_008_arcana/README.md) descreve as artes necessárias
 e o conteúdo do pacote.
 
+A candidata de fonte de 29 de setembro acrescenta bônus sem retirar os atuais:
+The Moon ganha **Shadowstrike/Shadow Ward**; The Empress, **Earthstrike/Earth Ward**;
+The Chariot, **Aerostrike/Wind Ward**; Death, **Biostrike/Poison Ward**; The Hanged
+Man, **Gravitystrike/Gravity Ward**. The Sun mantém Holystrike/Holy Ward.
+Shadow é Darkness, não cegueira; Bio usa o elemento Poison, não o status Poison.
+Poison/Gravity exigem **Core ON** no Elemental Dominion e Arcana ativo. Os strikes
+mantêm o dano normal da arma: Gravitystrike não vira Demi. As Wards dos extras
+reduzem pela metade a exposição positiva e preservam imunidade, absorção e perfis
+travados. As partículas Holy/Shadow usam a opção separada Weapon Strike VFX.
+O limite passa a dez efeitos por carta, preservando IDs, coleção e nomes salvos.
+Veja o [contrato de integração](docs/ai/ARCANA_ELEMENTAL_STRIKES_2026_09_29.md).
+Essas adições de fonte são distintas da identidade do deploy anterior acima.
+
+Aliases salvos têm prioridade sobre os quatro novos padrões. Se houver colisão,
+o slot padrão mantém seu antigo nome Custom numerado; nenhuma preferência é sobrescrita.
+
 ### Idiomas de texto — MOD-006
 
 `F8 > System > Text languages` seleciona o texto nativo ou um pacote PT-BR
@@ -346,8 +414,8 @@ O [roadmap](docs/ROADMAP.md) preserva os checks concluídos e separa o que já f
 entregue em fonte/deploy do que ainda depende de RT2, authoring no Editor e release.
 As prioridades são aceitação em jogo da DLL exata, exportadores e validação de
 dependências no Editor, definições restantes do Spira e pendências F7/probe.
-O [dossiê do Editor com 2.017 linhas](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
-reúne 40 identidades custom de autoabilities, 31 regras Vanguard, 88 controles F8,
+O [dossiê completo do Editor](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
+reúne 40 identidades custom de autoabilities, 31 regras Vanguard, 90 controles F8,
 78 cartas Arcana, formatos/dependências e 62 tarefas concretas do Editor.
 É um handoff, não uma declaração de que essas tarefas do Editor já foram feitas.
 
@@ -490,7 +558,7 @@ sessão conduzida por uma pessoa. O script sozinho não promove nenhum caso F8.
 O projeto usa SemVer independente, iniciado em `0.1.0-beta.1`, e permanece abaixo
 de `1.0.0` enquanto beta. A versão segue `MAJOR.MINOR.PATCH` com sufixo de
 pré-release; revisões documentais não implicam mudança do código da DLL.
-A v0.6.0-beta.1 revisa a documentação da v0.6.0-beta, com o mesmo binário validado.
+A v0.6.0-beta.2 revisa a documentação da v0.6.0-beta, com o mesmo binário validado.
 Veja o [CHANGELOG](CHANGELOG.md).
 
 ## Créditos

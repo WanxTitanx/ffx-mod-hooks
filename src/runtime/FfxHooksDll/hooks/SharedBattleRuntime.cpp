@@ -1,5 +1,10 @@
 #include "SharedBattleRuntime.h"
 #include "NativeGameplayEvents.h"
+#include "RecoveryBattleEpoch.h"
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 namespace FfxHooks::SharedBattleRuntime {
 namespace {
@@ -18,6 +23,10 @@ int CallOriginalOnce(void* context) {
     ++guarded.attempts;
     if (guarded.called) return guarded.result;
     guarded.called = true;
+#ifdef _WIN32
+    if (guarded.returnRva == kBattleStateInitSceneReturnRva)
+        RecoveryBattleEpoch::Begin(GetCurrentThreadId());
+#endif
     if (guarded.reserved.beforeOriginal) {
         guarded.reserved.beforeOriginal(guarded.reserved.context, guarded.returnRva);
     }

@@ -16,6 +16,11 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn,PreparedRuntime*,
 bool InstallIoImports() noexcept;
 bool RestoreIoImports() noexcept;
 void ActivateRuntime() noexcept;
+// Published only after the existing owner installed native save/reset producers.
+// This is infrastructure readiness, not Ronso gameplay or an active save identity.
+bool IsSaveIoReady() noexcept;
+// Optional post-close/readback publication, not the buffered fwrite event.
+bool IsVerifiedSaveIoReady() noexcept;
 void RequestStop() noexcept;
 void DiscardUnpublishedRuntime() noexcept;
 #ifdef FFXHOOKS_TESTING

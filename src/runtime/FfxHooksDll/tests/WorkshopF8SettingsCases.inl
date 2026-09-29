@@ -1,4 +1,5 @@
-// Real F8 choice pages; only unrelated device APIs are substituted.
+// Real F8 choice pages; unrelated device and recovery endpoints are substituted.
+#include "RecoveryMenuBoundaries.inl"
 #include "../hooks/NativePortsHook.h"
 #include "../hooks/NativeGamepadHook.h"
 #include "../hooks/NativeLanguageCore.h"

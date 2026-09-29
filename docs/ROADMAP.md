@@ -1,7 +1,7 @@
 # Roadmap — what's done, what's not, what's pending
 
-Jarvis-HOOK — updated **2026-09-28** against consolidated `main`, runtime source
-`dda5cb45305448d761e5412f3b265e58213d8ce2` and the installed DLL below.
+Jarvis-HOOK — updated **2026-09-29** against runtime source `2787386a7144af04c16f194029a4a35616bf8dea`,
+merged into `main` by [PR #24](https://github.com/WanxTitanx/ffx-hooks/pull/24).
 
 **Keep completed checks.** `[x]` means the specific deliverable on that line is
 complete at its stated evidence level. Do not erase or uncheck it when follow-up
@@ -9,16 +9,44 @@ work appears: add a new pending item and link the regression/evidence. Source,
 deployment, player acceptance and Production promotion have separate checks.
 Historical observations retain their date/artifact boundary.
 
+## 2026-09-29 Nuls and large integration
+
+- [x] Publish and merge [PR #24](https://github.com/WanxTitanx/ffx-hooks/pull/24), with all three hosted checks passing; install/read back the combined DLL and private assets.
+
+- [x] Compose the published recovery/Seymour/Sphere Grid lane with current main, preserving native page/hook identities, recent Arcana strikes, element names, rewards, languages and VFX.
+- [x] Reuse Ward IDs 320/321 for NulHoly/NulShadow and append NulEarth/NulWind/NulPoison/NulGravity at 370–373, preserving the other 368 records and text-pool prefix.
+- [x] Author six private animation DLL/texture clones (870–875); native donor code and vanilla assets remain unchanged.
+- [x] Add default-OFF F8 `elemental.nul_spells`, save/character-bound learning, derived White Magic+ root and private charge consumption for all six identities.
+- [x] Validate both Nul/Elemental installation orders, incomplete mixed coverage, native status preservation, menu routing and no automatic save unlocks (RT0/RT1).
+- [x] Validate merged F8/Workshop, F7, Arcana/Spira, elemental, Ronso save and recovery adapter suites; preserve earlier completed checks below.
+- [ ] Observe the six cloned visuals, party casting, learning/load lifecycle and mixed attacks in a separately recorded live session.
+- [ ] Accept current-artifact Seymour and eight-character Grid restoration through full live save/menu/battle transitions.
+
+See [source, tests and installation receipts](ai/NUL_ELEMENTS_INTEGRATION_2026_09_29.md).
+
+## 2026-09-29 source update: built-in elements and display aliases
+
+- [x] Register Custom 03/04 from an internal ten-element manifest when the default pack is absent; keep explicit invalid packages fail-closed.
+- [x] Supply missing unused external slots in valid packs without changing existing keys, indices or bindings.
+- [x] Add F8 keyboard/controller name editing for Holy, Darkness and Custom 01–04, with stable identity, Save/Reset/Cancel and duplicate/input validation.
+- [x] Resolve aliases in F7, Scan, palette/visibility/order controls while preserving native item/ability/status names and data.
+- [x] Make numerical Scan follow Core/Tactics plus Scan Extra Elements by default, preserving an explicit override.
+
+These source deliveries supersede the earlier missing-pack prerequisite for the
+standard two slots. Earlier completed checks remain as the historical record.
+Runtime validation/deployment identity is recorded in the latest handoff; current
+live acceptance remains a separate gate.
+
 ## Current checkpoint and evidence
 
 | Item | Current evidence |
 |---|---|
-| Branch | `main`; selected integration and language work are merged |
-| DLL | 3,398,144 bytes; SHA-256 `734a0bf94b56157648e5391ca06dfb1c60aad2c6bb27748762a67315c98b8ffc` |
-| Deployment | 2026-09-28 22:28:57 UTC, atomic replacement, verified backup; 178 protected files unchanged |
-| Source binding | 472 native inputs match the tested build |
-| Latest focused matrix | Rewards core 45; native reward OFF/invalid/enabled 6/4/25; native menu 29,536; F8 4,595; F7 core 4,020 and native 176 |
-| Cross-environment check | 22 same-binary Proton cases, including the final DLL loader/worker |
+| Branch | `main`; published large recovery integration and six Nuls merged through PR #24 |
+| DLL | 4,011,008 bytes; SHA-256 `5f6a76f3260a1aa0f5a36e0ff6e9f641f7d92e0dda969910d0d66a2debc3016e` |
+| Deployment | 2026-09-29 10:28:24 UTC, 169 verified installed leaves; backup and 1,116 protected files unchanged |
+| Source binding | 355 production inputs match the tested build |
+| Latest focused matrix | Nul 40/40 in both orders; F8 4,621; menu 29,614; F7 4,020; Seymour 172 cases; Grid8 2,146 checks |
+| Cross-environment check | Same MSVC Nul/menu binaries and final DLL loader/worker pass in a private Proton prefix; prior checkpoints retain their own results |
 | Earlier integration | Shared Vanguard/Elemental/Spira/Aeon/Workshop/Arcana/save tests recorded with their exact source and binaries |
 | Live acceptance | Pending for this exact consolidated candidate; prior user screenshots/observations are not a complete new RT2 matrix |
 | Editor handoff | Complete dependency/contract dossier delivered; Editor implementation remains a separate backlog |
@@ -57,14 +85,15 @@ Evidence: [latest fixes, formats and deployment](research/F8_F7_ELEMENTS_MONSTER
 - [x] Add atomic, conflict-aware `monster-rewards-v1.tsv` persistence beside the active INI.
 - [x] Deliver the complete Editor dependency and implementation dossier after DLL deployment.
 - [x] Restore the donation section and add a complete PT-BR README with reciprocal language links; include both READMEs in the public release recipe.
+- [x] Publish [v0.6.0-beta](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta) with the validated DLL, complete tagged source, Arcana assets and checksums; public Windows CI and all download-back hashes pass.
 - [ ] Complete player acceptance of the exact consolidated DLL: menus, elements, rewards, combat coexistence and save/load lifecycle.
 - [ ] Complete independent release review and explicitly promote a validated public package; local deployment is not this gate.
 
 ## F8 Dashboard and native ports
 
-The current catalog has **88 boolean identities** across **seven tabs**:
+The current catalog has **90 boolean identities** across **seven tabs**:
 System, Boosters, Cheats, Extras, Input, Dev and Reforge. There are **25 LIVE**,
-**59 RESTART REQUIRED** and **4 READ ONLY** entries. All editable boolean defaults
+**61 RESTART REQUIRED** and **4 READ ONLY** entries. All editable boolean defaults
 are OFF. The dashboard defaults ON and fails closed on configuration-load error.
 Nested controls retain catalog membership for resolution and bulk actions.
 
@@ -82,7 +111,7 @@ Nested controls retain catalog membership for resolution and bulk actions.
 ### Boosters, cheats and rewards
 
 - [x] Permanent Sensor, Entire Party Earns AP, party/enemy invincibility, Overdrive, critical, 99999 damage and rare-drop consumers.
-- [x] Experimental Playable Seymour battle-roster consumer and exit cleanup; Sphere Grid remains unsupported.
+- [x] Experimental Playable Seymour battle-roster consumer and exit cleanup; later recovery/Grid work is tracked in the new integration checkpoint above.
 - [x] Global AP/Gil rate controls, independent enablement and 1–100 numeric factors.
 - [x] Default-OFF per-monster reward seam, IDs 0–4095 and independent integer AP/Gil factors 1–1000, neutral at 1.
 - [x] Normal/Overkill AP and Gil previews, missing-base disclosure and capped-result indication.
@@ -186,6 +215,21 @@ Contract: [MOD-006 Editor handoff](ai/MOD006_EDITOR_HANDOFF.md).
 New dubbing, arbitrary texture text and burned-in movie text are not implied.
 
 ## Spira: Arcana Fayth — MOD-008
+
+### Elemental major-card additions — 2026-09-29
+
+- [x] Preserve every existing major-card effect while adding Shadow, Earth, Wind,
+  Poison and Gravity strikes with matching Wards; retain Sun's Holy pair.
+- [x] Extend typed card capacity to ten without changing acquisition/save identity.
+- [x] Resolve Poison/Gravity weapon hits through the shared elemental/F7 affinity
+  owner, with signed absorption, native-element mixtures and bounded admission.
+- [x] Keep blindness/Poison statuses and Demi/fractional HP separate from these strikes.
+- [x] Use Earth, Wind, Poison and Gravity as default labels; preserve stable keys
+  and every explicitly saved alias, including former Custom names.
+- [ ] Reproduce the combined card strikes, affinity/Scan display and optional
+  Holy/Shadow visuals in live gameplay on the matching new DLL (RT2).
+
+Contract: [Arcana elemental strikes](ai/ARCANA_ELEMENTAL_STRIKES_2026_09_29.md).
 
 - [x] Compile all 78 cards, seven character loadouts, up to three slots, acquisition/collection and Twin/Constellation modes.
 - [x] Native Equip UI, Status/Auto-Abilities effects, card artwork, navigation audio and installed-package validation.
@@ -482,6 +526,8 @@ READ ONLY does not imply that the named external module is installed.
 | 85 | Extras | Spira Reforge abilities | `spira.enabled` | OFF | RESTART REQUIRED |
 | 86 | Extras | Aeon Ascension upgrades | `aeon_ascension.enabled` | OFF | RESTART REQUIRED |
 | 87 | Cheats | Per-monster AP/Gil | `cheats.monster_rewards` | OFF | RESTART REQUIRED |
+| 88 | Extras | Holy / Shadow weapon effects | `weapon_strike_vfx.enabled` | OFF | RESTART REQUIRED |
+| 89 | Extras | Elemental Nul spells | `elemental.nul_spells` | OFF | RESTART REQUIRED |
 
 Additional submenu parameters include general AP/Gil factors, item-stack value,
 per-monster factors, element RGB/visibility, languages, shortcuts/button maps,

@@ -25,7 +25,7 @@ try {
     if($LASTEXITCODE -ne 0){throw 'MinHook compilation failed'}
     & $env:ComSpec /d /s /c $compile
     if($LASTEXITCODE -ne 0){throw 'Elemental runtime compilation failed'}
-    foreach($mode in @('off','magic','core','tactics','monster','gravity','gravity-override','equipment')){
+    foreach($mode in @('off','magic','core','tactics','monster','gravity','gravity-override','equipment','builtin','builtin-all','arcana','arcana-pack','arcana-other','arcana-native-exact')){
         $case=Join-Path $obj ('private-'+[guid]::NewGuid().ToString('N'))
         & $exe $fixture $case $mode
         if($LASTEXITCODE -ne 0){throw ('Elemental runtime failed: '+$mode)}

@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#define FFX_SEYMOUR_PERMANENT_BATTLE 2
+
 namespace FfxHooks::SeymourBattle {
 
 inline constexpr uint8_t kSeymourSlot = 7u;
@@ -21,6 +23,14 @@ inline constexpr uintptr_t kBattleExitSyncReturnRva = 0x00390F07u;
 // state is allowed to enter roster behavior.
 bool IsAdmittedEntryReturnRva(uintptr_t returnRva) noexcept;
 bool IsAdmittedExitReturnRva(uintptr_t returnRva) noexcept;
+
+// The field roster owns its persistent bytes. Battle may borrow a confirmed
+// session, but never acquires permission to remove that roster on exit.
+// Registered code must have process lifetime; replacement is forbidden.
+// Zero means unavailable. A nonzero active-save revision must match again after
+// native InitScene; a different loaded save cannot validate an older battle.
+using PermanentRosterProvider = std::uint64_t (*)();
+bool RegisterPermanentRosterProvider(PermanentRosterProvider) noexcept;
 
 struct RosterImage {
     uint8_t party = 0;
@@ -127,6 +137,7 @@ struct Ownership {
     bool hasBaseline = false;
     bool battleRosterOwned = false;
     bool persistentMayContainSeymour = false;
+    bool borrowedPermanent = false;
 };
 
 enum class CallbackKind : uint8_t { None = 0, Entry, Exit };

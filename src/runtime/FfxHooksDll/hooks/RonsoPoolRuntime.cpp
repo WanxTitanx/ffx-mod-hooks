@@ -6,6 +6,7 @@
 #include "F8RuntimeCore.h"
 #include "NativeSaveEvents.h"
 #include "RonsoCommandCosts.h"
+#include "NativeSaveCommitAdapter.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -19,12 +20,15 @@
 namespace FfxHooks::RonsoPool {
 namespace {
 constexpr uint32_t kReadImport=0x0070C3F4u,kWriteImport=0x0070C428u;
+constexpr uint32_t kCloseImport=0x0070C3F0u;
 constexpr uint32_t kActorTable=0x00D334CCu,kLearnedBank=0x00D307FCu;
 using ReadFn=size_t(__cdecl*)(void*,size_t,size_t,void*);
 using WriteFn=size_t(__cdecl*)(const void*,size_t,size_t,void*);
 using FileNoFn=int(__cdecl*)(void*);
 using OsHandleFn=intptr_t(__cdecl*)(int);
 using TellFn=int64_t(__cdecl*)(void*);
+using CloseFn=int(__cdecl*)(void*);
+using ErrorNumberFn=int*(__cdecl*)();
 using AvailabilityFn=int(__cdecl*)(uint8_t,int16_t);
 using MenuReadyFn=int(__cdecl*)(int);
 using CostGateFn=int(__cdecl*)(int,const uint8_t*,int);
@@ -45,6 +49,11 @@ WriteFn writeOriginal=nullptr;
 FileNoFn fileNo=nullptr;
 OsHandleFn osHandle=nullptr;
 TellFn tell=nullptr;
+CloseFn closeOriginal=nullptr;
+ErrorNumberFn nativeErrorNumber=nullptr;
+bool verifiedSaveRequested=false;
+std::atomic<bool> verifiedSaveIoReady{false};
+NativeSaveCommit::Runtime verifiedSaveRuntime;
 void* menuReadyOriginal=nullptr;
 void* leftEntryOriginal=nullptr;
 std::atomic<uint32_t> leftInputNotices{0};
@@ -54,7 +63,7 @@ void* resetOriginal=nullptr;
 void* maxOriginal=nullptr;
 uint8_t* maxStub=nullptr;
 struct ImportPatch {bool owned=false,protectionPending=false;DWORD originalProtection=0;};
-ImportPatch readPatch{},writePatch{};
+ImportPatch readPatch{},writePatch{},closePatch{};
 #ifdef FFXHOOKS_TESTING
 ImportProtectFn protectForFixture=nullptr;
 #endif
@@ -179,6 +188,50 @@ bool StreamInfo(void* stream,wchar_t* path,DWORD capacity,int64_t* position) noe
         *position=tell(stream);return *position>=0;
     } __except(EXCEPTION_EXECUTE_HANDLER){return false;}
 }
+bool VerifiedSaveReady() noexcept {
+    return readiness.load(std::memory_order_acquire)==1&&verifiedSaveIoReady.load(std::memory_order_acquire);
+}
+uint32_t VerifiedSaveEpoch() noexcept {return stateEpoch.load(std::memory_order_acquire);}
+uint32_t VerifiedSaveThread() noexcept {return static_cast<uint32_t>(GetCurrentThreadId());}
+uint32_t VerifiedSaveError() noexcept {return static_cast<uint32_t>(GetLastError());}
+void RestoreVerifiedSaveError(uint32_t value) noexcept {SetLastError(static_cast<DWORD>(value));}
+int* VerifiedSaveErrorNumber() noexcept {return nativeErrorNumber?nativeErrorNumber():nullptr;}
+bool HandleIdentity(HANDLE file,NativeSaveCommit::FileIdentity& output) noexcept {
+    output={};BY_HANDLE_FILE_INFORMATION information{};
+    if(file==INVALID_HANDLE_VALUE||GetFileType(file)!=FILE_TYPE_DISK||
+       !GetFileInformationByHandle(file,&information)||
+       (information.dwFileAttributes&(FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_REPARSE_POINT)))return false;
+    output.volume=information.dwVolumeSerialNumber;
+    output.index=(static_cast<uint64_t>(information.nFileIndexHigh)<<32)|information.nFileIndexLow;
+    return output.Valid();
+}
+bool VerifiedStreamIdentity(void* stream,NativeSaveCommit::FileIdentity& output) noexcept {
+    output={};
+    __try {
+        if(!stream||!fileNo||!osHandle)return false;
+        const int descriptor=fileNo(stream);if(descriptor<0)return false;
+        const intptr_t handle=osHandle(descriptor);if(handle==-1)return false;
+        return HandleIdentity(reinterpret_cast<HANDLE>(handle),output);
+    } __except(EXCEPTION_EXECUTE_HANDLER){return false;}
+}
+bool VerifiedSaveReadback(const wchar_t* path,NativeSaveCommit::FileIdentity& identity,SaveImage& output) noexcept {
+    identity={};output={};
+    // Read only after original fclose. No extra flush or save rewrite.
+    // This verifies bytes, not power-loss durability.
+    const HANDLE file=CreateFileW(path,GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OPEN_REPARSE_POINT,nullptr);
+    if(file==INVALID_HANDLE_VALUE)return false;
+    LARGE_INTEGER length{};DWORD read=0;
+    bool ok=HandleIdentity(file,identity)&&GetFileSizeEx(file,&length)&&
+        length.QuadPart==static_cast<LONGLONG>(output.size())&&
+        ReadFile(file,output.data(),static_cast<DWORD>(output.size()),&read,nullptr)&&read==output.size();
+    if(!CloseHandle(file))ok=false;
+    return ok&&IsValidSave(output);
+}
+int __cdecl CloseShim(void* stream) {
+    if(!closeOriginal)return -1;
+    return verifiedSaveRuntime.Close(stream,closeOriginal);
+}
 uint16_t CurrentScene() noexcept {
     uint16_t scene=UINT16_MAX;
     Copy(&scene,reinterpret_cast<void*>(moduleBase+0xD2CA90),2);return scene;
@@ -204,6 +257,11 @@ size_t __cdecl ReadShim(void* data,size_t size,size_t count,void* stream) {
         return readOriginal(data,size,count,stream);
     const uint32_t epoch=stateEpoch.load();wchar_t path[4096]={};int64_t offset=-1;
     const bool candidate=StreamInfo(stream,path,4096,&offset)&&offset==0;
+    // Revoke provenance before a reused buffer is touched, including short or
+    // failed reads. Do not fabricate completion or alter the original I/O result.
+    const DWORD beforeNotification=GetLastError();
+    NativeSaveEvents::ReadStarting(static_cast<const unsigned char*>(data));
+    SetLastError(beforeNotification);
     const size_t result=readOriginal(data,size,count,stream);
     const DWORD nativeError=GetLastError();
     // This exact game call reads a complete save, not an arbitrary file. Without
@@ -303,6 +361,9 @@ size_t __cdecl WriteShim(const void* data,size_t size,size_t count,void* stream)
     const uintptr_t caller=reinterpret_cast<uintptr_t>(_ReturnAddress());
     const DWORD incomingError=GetLastError();
     if(!writeOriginal)return 0;
+    // Any later write to a tracked stream revokes its earlier candidate, even
+    // when this new call fails the save-size/caller/path preflight.
+    verifiedSaveRuntime.BeforeWrite(stream);
     const bool projectionRequired=NativeSaveEvents::ProjectionRequired();
     if((readiness.load()!=1&&!projectionRequired)||size!=1||count!=kSaveSize||!IoCaller(caller,true)||
        (storageFault.load()&&!NativeSaveEvents::Requested()))
@@ -354,11 +415,20 @@ size_t __cdecl WriteShim(const void* data,size_t size,size_t count,void* stream)
         SetLastError(ERROR_INVALID_DATA);return 0;
     }
     if(work)NativeSaveEvents::WritePrepared(work->path.c_str(),static_cast<const unsigned char*>(bytes),kSaveSize);
+    NativeSaveCommit::Ticket commit{};
+    if(work&&verifiedSaveIoReady.load(std::memory_order_acquire)) {
+        // The main projection is complete: verify exactly what fwrite receives.
+        SaveImage exact{};
+        if(Copy(exact.data(),bytes,kSaveSize))commit=verifiedSaveRuntime.Stage(stream,work->path,exact);
+    }
     // Never put this call inside a retry/catch path: an exception after fwrite
     // must not append a second save payload to the native stream.
     SetLastError(incomingError);
     const size_t result=writeOriginal(bytes,size,count,stream);
     const DWORD nativeError=GetLastError();
+    int* errorNumber=nativeErrorNumber?nativeErrorNumber():nullptr;
+    const int savedNumber=errorNumber?*errorNumber:0;
+    verifiedSaveRuntime.Finish(commit,result==count);
     if(work&&work->needsOwner&&result==count) {
         try {
             // Other save owners may project temporary fields after Ronso's
@@ -377,6 +447,7 @@ size_t __cdecl WriteShim(const void* data,size_t size,size_t count,void* stream)
     if(work)NativeSaveEvents::FinishWrite(work->transaction,static_cast<const unsigned char*>(bytes),kSaveSize,metadataPrepared&&result==count);
     if(work&&result==count)NativeSaveEvents::WriteCompleted(work->path.c_str(),
         static_cast<const unsigned char*>(bytes),kSaveSize);
+    if(errorNumber)*errorNumber=savedNumber;
     SetLastError(nativeError);return result;
 }
 Availability DecideAvailability(uint8_t slot,int16_t command,int vanilla) {
@@ -563,6 +634,7 @@ int __cdecl CostGateShim(int slot,const uint8_t* command,int extraMp) {
 int __cdecl ResetShim() {
     const auto original=reinterpret_cast<ResetFn>(resetOriginal);
     if(readiness.load()==1) {
+        verifiedSaveRuntime.Reset();
         const uint32_t epoch=stateEpoch.fetch_add(1)+1;
         activeActor.store(0);actorThread.store(0);storageFault.store(false);
         std::unique_lock<std::mutex> lock(stateMutex,std::try_to_lock);
@@ -672,6 +744,7 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
     }
     if(!store.Initialize(directory,gameplay||observerRequested||commandRequested))return false;
     HMODULE crt=GetModuleHandleW(L"msvcr110.dll");if(!crt)return false;
+    verifiedSaveRequested=NativeSaveEvents::VerifiedRequested();
     readOriginal=reinterpret_cast<ReadFn>(GetProcAddress(crt,"fread"));
     writeOriginal=reinterpret_cast<WriteFn>(GetProcAddress(crt,"fwrite"));
     fileNo=reinterpret_cast<FileNoFn>(GetProcAddress(crt,"_fileno"));
@@ -682,6 +755,14 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
         !Copy(&readEntry,reinterpret_cast<void*>(base+kReadImport),4)||
         !Copy(&writeEntry,reinterpret_cast<void*>(base+kWriteImport),4)||
         readEntry!=reinterpret_cast<void*>(readOriginal)||writeEntry!=reinterpret_cast<void*>(writeOriginal))return false;
+    if(verifiedSaveRequested){
+        closeOriginal=reinterpret_cast<CloseFn>(GetProcAddress(crt,"fclose"));
+        nativeErrorNumber=reinterpret_cast<ErrorNumberFn>(GetProcAddress(crt,"_errno"));
+        void* closeEntry=nullptr;
+        if(!closeOriginal||!nativeErrorNumber||!ImageRange(base+kCloseImport,4,false)||
+           !Copy(&closeEntry,reinterpret_cast<void*>(base+kCloseImport),4)||
+           closeEntry!=reinterpret_cast<void*>(closeOriginal))return false;
+    }
     if(gameplay) {
         if(!BuildMaximumStub())return false;
         result->hooks[result->count++]={base+0x39B5B7,maxStub,&maxOriginal};
@@ -692,6 +773,9 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
         result->hooks[result->count++]={base+0x38C750,reinterpret_cast<void*>(&CostGateShim),&costGateOriginal};
     }
     result->hooks[result->count++]={base+0x386BC0,reinterpret_cast<void*>(&ResetShim),&resetOriginal};
+    if(verifiedSaveRequested&&!verifiedSaveRuntime.Configure({VerifiedSaveReady,VerifiedSaveEpoch,
+        VerifiedSaveThread,VerifiedStreamIdentity,VerifiedSaveReadback,VerifiedSaveError,
+        RestoreVerifiedSaveError,VerifiedSaveErrorNumber}))return false;
     result->ioRequired=true;requestedGameplay=gameplay;preparedOnce=true;
     Log("[ffx-hooks] RonsoPool prepared; gameplay admission remains closed\n");
     return true;
@@ -704,6 +788,12 @@ bool InstallIoImports() noexcept {
     if(!PublishImport(kWriteImport,reinterpret_cast<void*>(writeOriginal),reinterpret_cast<void*>(&WriteShim),&writePatch)) {
         RestoreIoImports();return false;
     }
+    if(verifiedSaveRequested){
+        if(!PublishImport(kCloseImport,reinterpret_cast<void*>(closeOriginal),reinterpret_cast<void*>(&CloseShim),&closePatch)){
+            RestoreIoImports();return false;
+        }
+        verifiedSaveIoReady.store(true,std::memory_order_release);
+    }
     return true;
 }
 bool RestoreIoImports() noexcept {
@@ -711,9 +801,11 @@ bool RestoreIoImports() noexcept {
     // serialization projection must outlive those fields; do not expose them
     // to a later vanilla save by retiring the import first.
     if(NativeSaveEvents::ProjectionRequired())return false;
+    verifiedSaveIoReady.store(false,std::memory_order_release);
+    const bool close=RestoreImport(kCloseImport,reinterpret_cast<void*>(&CloseShim),reinterpret_cast<void*>(closeOriginal),&closePatch);
     const bool read=RestoreImport(kReadImport,reinterpret_cast<void*>(&ReadShim),reinterpret_cast<void*>(readOriginal),&readPatch);
     const bool write=RestoreImport(kWriteImport,reinterpret_cast<void*>(&WriteShim),reinterpret_cast<void*>(writeOriginal),&writePatch);
-    return read&&write;
+    return close&&read&&write;
 }
 void ActivateRuntime() noexcept {
     uint32_t expected=0;
@@ -725,7 +817,9 @@ void ActivateRuntime() noexcept {
         CommandCosts::gate.store(&EvaluateOwnedCost);CommandCosts::nativeReady.store(true);
     }
 }
-void RequestStop() noexcept {readiness.store(2);CommandCosts::nativeReady.store(false);CommandCosts::gate.store(nullptr);NativeSaveEvents::UnregisterCheckpointSerializer(&SerializeCheckpoint);}
+void RequestStop() noexcept {verifiedSaveRuntime.Stop();verifiedSaveIoReady.store(false);readiness.store(2);CommandCosts::nativeReady.store(false);CommandCosts::gate.store(nullptr);NativeSaveEvents::UnregisterCheckpointSerializer(&SerializeCheckpoint);}
+bool IsSaveIoReady() noexcept {return readiness.load(std::memory_order_acquire)==1;}
+bool IsVerifiedSaveIoReady() noexcept {return VerifiedSaveReady();}
 void DiscardUnpublishedRuntime() noexcept {
     if(readiness.load()==0&&maxStub){VirtualFree(maxStub,0,MEM_RELEASE);maxStub=nullptr;}
 }

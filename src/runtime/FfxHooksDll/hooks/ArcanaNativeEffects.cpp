@@ -53,8 +53,10 @@ void MergeBattle(Battle& data,const Effects& e) noexcept {
     // the native Half MP flag; pre-existing native battle flags remain owned.
     if(e.Get(EffectKind::HalfMp)&&!nativeHalf)Put(data.data()+0x17C,Get(data.data()+0x17C,2)&~0x4000u,2);
     struct Bit {EffectKind kind;unsigned bit;};
-    constexpr Bit strikes[]={{EffectKind::StrikeFire,1},{EffectKind::StrikeIce,2},{EffectKind::StrikeLightning,4},{EffectKind::StrikeWater,8},{EffectKind::StrikeHoly,16}};
-    constexpr Bit wards[]={{EffectKind::WardFire,1},{EffectKind::WardIce,2},{EffectKind::WardLightning,4},{EffectKind::WardWater,8},{EffectKind::WardHoly,16}};
+    constexpr Bit strikes[]={{EffectKind::StrikeFire,1},{EffectKind::StrikeIce,2},{EffectKind::StrikeLightning,4},{EffectKind::StrikeWater,8},{EffectKind::StrikeHoly,16},
+        {EffectKind::StrikeShadow,0x80},{EffectKind::StrikeEarth,0x20},{EffectKind::StrikeWind,0x40}};
+    constexpr Bit wards[]={{EffectKind::WardFire,1},{EffectKind::WardIce,2},{EffectKind::WardLightning,4},{EffectKind::WardWater,8},{EffectKind::WardHoly,16},
+        {EffectKind::WardShadow,0x80},{EffectKind::WardEarth,0x20},{EffectKind::WardWind,0x40}};
     for(const auto& bit:strikes)if(e.Get(bit.kind))data[0x99]|=static_cast<unsigned char>(bit.bit);
     for(const auto& bit:wards)if(e.Get(bit.kind))data[0x9C]|=static_cast<unsigned char>(bit.bit);
     constexpr Bit status[]={{EffectKind::AutoShell,3},{EffectKind::AutoProtect,4},{EffectKind::AutoReflect,5},

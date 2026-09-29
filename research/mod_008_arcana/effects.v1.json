@@ -88,9 +88,17 @@
         {
           "kind": "AutoRegen",
           "value": 1
+        },
+        {
+          "kind": "StrikeEarth",
+          "value": 1
+        },
+        {
+          "kind": "WardEarth",
+          "value": 1
         }
       ],
-      "description": "Max HP +40%; Auto-Regen",
+      "description": "Max HP +40%; Auto-Regen; Earthstrike; Earth Ward",
       "inspiration": [
         "Recovery Bracer"
       ]
@@ -204,9 +212,17 @@
         {
           "kind": "StrengthPercent",
           "value": 15
+        },
+        {
+          "kind": "StrikeWind",
+          "value": 1
+        },
+        {
+          "kind": "WardWind",
+          "value": 1
         }
       ],
-      "description": "Auto-Haste; First Strike; CTB recovery -10%; Strength +15%",
+      "description": "Auto-Haste; First Strike; CTB recovery -10%; Strength +15%; Aerostrike; Wind Ward",
       "inspiration": [
         "Speed Bracer"
       ]
@@ -321,9 +337,17 @@
         {
           "kind": "AutoProtect",
           "value": 1
+        },
+        {
+          "kind": "StrikeGravity",
+          "value": 1
+        },
+        {
+          "kind": "WardGravity",
+          "value": 1
         }
       ],
-      "description": "Incoming HP damage -20%; CTB recovery +25%; Defend restores 3% MP; Auto-Protect",
+      "description": "Incoming HP damage -20%; CTB recovery +25%; Defend restores 3% MP; Auto-Protect; Gravitystrike; Gravity Ward (Elemental Core)",
       "inspiration": [
         "Adamantite"
       ]
@@ -350,9 +374,17 @@
         {
           "kind": "KillMp",
           "value": 10
+        },
+        {
+          "kind": "StrikeBio",
+          "value": 1
+        },
+        {
+          "kind": "WardBio",
+          "value": 1
         }
       ],
-      "description": "Deathstrike 100%; Deathproof; HP damage +20% against Death-immune targets; a kill restores 20% HP and 10% MP once per action",
+      "description": "Deathstrike 100%; Deathproof; HP damage +20% against Death-immune targets; a kill restores 20% HP and 10% MP once per action; Biostrike; Poison Ward (Elemental Core)",
       "inspiration": [
         "Mortal Shock",
         "Angel Earrings"
@@ -492,9 +524,17 @@
         {
           "kind": "IncomingDamage",
           "value": -10
+        },
+        {
+          "kind": "StrikeShadow",
+          "value": 1
+        },
+        {
+          "kind": "WardShadow",
+          "value": 1
         }
       ],
-      "description": "Auto-Reflect; Evade and Counter; Evasion +30; Sleep/Confusion proof; Sleepstrike 100%; Confusetouch 50%; incoming HP damage -10%",
+      "description": "Auto-Reflect; Evade and Counter; Evasion +30; Sleep/Confusion proof; Sleepstrike 100%; Confusetouch 50%; incoming HP damage -10%; Shadowstrike; Shadow Ward",
       "inspiration": [
         "Star Bracer",
         "Black Choker",
@@ -1823,11 +1863,12 @@
       ]
     }
   ],
-  "balance_revision": 4,
+  "balance_revision": 5,
   "compatible_pack_hashes": [
     "53b3c692d78b846e0d2556d22717c0039f01f4d551fbcb3a56412724da4e163e",
     "b31ad58a8c3ee8e8989c3dea3487b418f11b3a3006974bb902a8e3134c489e75",
-    "c9a3b6349b274d2137e2b317eed244590e1920752849fbc72ce16a1bac51ce37"
+    "c9a3b6349b274d2137e2b317eed244590e1920752849fbc72ce16a1bac51ce37",
+    "c6fe69e9f96cf776a943ebeba725ed65dc1872cc6e8e0e1539963c164df2453e"
   ],
   "compatible_identity_sha256": "cb08ef54e21f1bae1b4b9cbd1d6b0f58be147fbd0063ceadee3093e6f34ef378"
 }

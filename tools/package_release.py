@@ -25,9 +25,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dll', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--version', default='v0.6.0-beta.1')
+    parser.add_argument('--version', default='v0.6.0-beta.2')
     args = parser.parse_args()
-    evidence = json.loads((ROOT / 'docs/releases/v0.6.0-beta.1-inputs.json').read_text())
+    if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+-beta(?:\.[0-9]+)?', args.version):
+        parser.error('Use an explicit supported beta version')
+    evidence = json.loads((ROOT / f'docs/releases/{args.version}-inputs.json').read_text())
     if args.version != evidence['release']:
         parser.error('This release recipe is bound to its recorded version')
     dll = args.dll.read_bytes()
@@ -102,12 +104,12 @@ PE resource version: 0.2.0.0; package/tag version: {args.version}.
 This is the previously validated Windows x86 Release DLL, also verified under
 Proton. Its production inputs are byte-identical to the public source entries
 recorded in docs/releases/{args.version}-inputs.json. Public documentation, packaging
-metadata, bilingual READMEs and one test-only whitespace correction are not DLL code changes.
+metadata and bilingual READMEs are not DLL code changes.
 The source archive contains the exact public tagged tree. A new compiler/linker
 run may produce a different PE hash; that does not identify this tested binary.
 
-Windows RT0/RT1 and 22 same-binary Proton cases passed for the candidate; the
-public source also has portable/sanitized Workshop, Arcana and text checks.
+Validation: {evidence['evidence']}.
+The public source also has portable Workshop, Arcana, Nul and text checks.
 This beta release does not assert complete live RT2 or Production acceptance.
 Game executable, native save/PE fixtures, loaders and game-derived mod/translation
 packs are not redistributed. Arcana's original selected runtime artwork is included.

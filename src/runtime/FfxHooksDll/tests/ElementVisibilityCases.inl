@@ -25,13 +25,13 @@ static void ElementVisibilityCases(){
     C::SetProvidersForTests({nullptr,nullptr,nullptr,WorkshopF8Persist});f8AllowWrite=true;f8Writes=0;
     F8NativeSettingsReset();const int obj=NativeMenu::Alloc();if(!obj){Check(false,"individual elements menu allocates");return;}
     F8NativeSettingsPush(obj,NativeSettingsPage::ElementScan);
-    Check(F8NativeSettingsCount(F8NativeSettingsPage())==11,"Scan settings retain all native controls and expose two Hook color entries");
+    Check(F8NativeSettingsCount(F8NativeSettingsPage())==12,"Scan settings retain all native controls, two Hook colors and name editing");
     F8NativeSettingsActivate(obj,6);
     const bool opened=F8NativeSettingsActive()&&std::strcmp(F8NativeSettingsTitle(F8NativeSettingsPage()),"Enabled Scan elements")==0;
     Check(opened,"individual switches open under the Scan settings page");
     if(opened){
         NativeMenu::rendered.clear();F8NativeSettingsDraw(obj,1);
-        Check(WorkshopRendered("Holy")&&WorkshopRendered("Darkness")&&WorkshopRendered("Custom 2")&&
+        Check(WorkshopRendered("Holy")&&WorkshopRendered("Darkness")&&WorkshopRendered("Wind")&&
               F8NativeSettingsCount(F8NativeSettingsPage())==7,"four native extras and two Hook-only slots have separate visibility rows");
         F8NativeSettingsActivate(obj,1);
         Check(C::ReadIntExact("element_scan.dark_enabled",0,1).value==0&&f8Writes==1,"Darkness OFF is persisted exactly once");

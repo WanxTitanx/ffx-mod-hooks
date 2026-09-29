@@ -4,6 +4,7 @@
 #include "PrivatePeFixture.h"
 #include "ArcanaFieldFixture.h"
 #include "../hooks/ArcanaRuntime.h"
+#include "../hooks/ArcanaElemental.h"
 #include "../hooks/ArcanaCombat.h"
 #include "../hooks/EquipmentWorkshopRuntime.h"
 #include "../hooks/EquipmentWorkshopStore.h"
@@ -62,10 +63,13 @@ int main(int argc,char** argv){
         ||argc==6
 #endif
         ;
-    const bool development=workshop||std::strcmp(argv[4],"development")==0;
     const bool priorBalance=std::strcmp(argv[4],"v2")==0;
     const bool priorStatus=std::strcmp(argv[4],"v3")==0;
-    const bool legacy=priorBalance||priorStatus||std::strcmp(argv[4],"legacy")==0;
+    const bool priorElements=std::strcmp(argv[4],"v4")==0;
+    const bool legacy=priorBalance||priorStatus||priorElements||std::strcmp(argv[4],"legacy")==0;
+    // Migration fixtures retain their saved loadout; the separate development
+    // cases intentionally equip World/Empress and exercise field-stat changes.
+    const bool development=!legacy&&(workshop||std::strcmp(argv[4],"development")==0);
     Runtime::Settings settings;
     Check(!Runtime::Prime(base,settings,false,Log)&&!FfxHooks::NativeSaveEvents::Requested(),"module OFF leaves native save infrastructure unrequested");
     settings.enabled=true;settings.fullDeck=development;
@@ -109,6 +113,9 @@ int main(int argc,char** argv){
     if(spiraFirst)Check(FfxHooks::Vanguard::Start(base,false,Log),"Vanguard starts before Arcana combat");
 #endif
     Check(Runtime::Start(),"native session/field provider installs after preflight");
+    Elemental::Snapshot extra{};
+    Check(Elemental::provider.load()!=nullptr&&!Elemental::Read(0,extra)&&!extra.battle,
+          "real Arcana registers the elemental provider but exposes nothing before an admitted battle");
     Check(Combat::Start(base,true,false,Log)&&Combat::Active(),"profile-gated combat consumers install alongside the session provider");
 #ifdef FFXHOOKS_SPIRA_COMPOSITION
     if(!spiraFirst)Check(FfxHooks::Vanguard::Start(base,false,Log),"Vanguard starts after Arcana combat");
@@ -133,6 +140,7 @@ int main(int argc,char** argv){
         Record previous;previous.packHash={0x53,0xb3,0xc6,0x92,0xd7,0x8b,0x84,0x6e,0x0d,0x25,0x56,0xd2,0x27,0x17,0xc0,0x03,0x9f,0x01,0xf4,0xd5,0x51,0xfb,0xcb,0x3a,0x56,0x41,0x27,0x24,0xda,0x4e,0x16,0x3e};
         if(priorBalance)previous.packHash={0xb3,0x1a,0xd5,0x8a,0x8c,0x3e,0xe8,0xe8,0x98,0x9c,0x3d,0xea,0x34,0x87,0xb4,0x18,0xf1,0x1b,0x3a,0x30,0x06,0x97,0x4b,0xb9,0x02,0xa8,0xe3,0x13,0x4c,0x48,0x9e,0x75};
         if(priorStatus)previous.packHash={0xc9,0xa3,0xb6,0x34,0x9b,0x27,0x4d,0x21,0x37,0xe2,0xb3,0x17,0xee,0xd2,0x44,0x59,0x0e,0x19,0x20,0x75,0x28,0x49,0xfb,0xc7,0x2c,0xe1,0x6a,0x1b,0xac,0x51,0xce,0x37};
+        if(priorElements)previous.packHash={0xc6,0xfe,0x69,0xe9,0xf9,0x6c,0xf7,0x76,0xa9,0x43,0xeb,0xeb,0xa7,0x25,0xed,0x65,0xdc,0x18,0x72,0xcc,0x6e,0x8e,0x0e,0x15,0x39,0x96,0x3c,0x16,0x4d,0xf2,0x45,0x3e};
         previous.state.mode=Mode::Constellation;AwardAll(previous.state,0);
         Equip(previous.state,previous.state.revision,0,0,21);Equip(previous.state,previous.state.revision,1,0,13);
         Equip(previous.state,previous.state.revision,2,0,18);Equip(previous.state,previous.state.revision,3,0,71);
@@ -154,6 +162,10 @@ int main(int argc,char** argv){
         Check(Runtime::ActorEffects(0)->Get(EffectKind::OverdriveDamage)==50&&Runtime::ActorEffects(1)->Get(EffectKind::DeathImmuneDamage)==20&&Runtime::ActorEffects(2)->Get(EffectKind::TouchConfuse)==50&&Runtime::ActorEffects(3)->Get(EffectKind::ApBonus)==75,"legacy ownership receives the current World, Death, Moon and Eight effects");
         Check(state.slots[4][0]==0&&Runtime::ActorEffects(4)->Get(EffectKind::FirstStrike)==1&&Runtime::ActorEffects(4)->Get(EffectKind::FirstCtbReduction)==35,"prior catalog versions preserve the equipped Fool and its opening benefits");
         Check(state.slots[5][0]==12&&state.slots[6][0]==9&&Runtime::ActorEffects(5)->Get(EffectKind::DefendMp)==3&&Runtime::ActorEffects(6)->Get(EffectKind::MpPerTurn)==1&&Runtime::ActorEffects(1)->Get(EffectKind::KillMp)==10,"migration keeps the loadout while applying lower repeatable MP recovery and preserving kill recovery");
+    }
+    if(priorElements){
+        Check(Runtime::ActorEffects(1)->Get(EffectKind::StrikeBio)==1&&Runtime::ActorEffects(2)->Get(EffectKind::StrikeShadow)==1&&
+              Runtime::ActorEffects(5)->Get(EffectKind::StrikeGravity)==1,"v4 migration preserves equipped cards and supplies their additional elemental effects");
     }
     Check(Runtime::EquipCard(generation-1,state.revision,0,0,0,false)==Error::Stale,"save-generation mismatch rejects old UI intent");
     if(development){
@@ -198,6 +210,7 @@ int main(int argc,char** argv){
     Check(!Runtime::Capture(state,generation),"a rejected native read cannot mint a fresh admitted Arcana session");
 #endif
     Runtime::Stop();Check(!Runtime::Capture(state,generation),"logical stop closes new equipment mutations");
+    Check(Elemental::provider.load()==nullptr&&!Elemental::Read(0,extra),"logical stop retires the external-element provider with the session");
     if(development){
         FfxHooks::NativeSaveEvents::WriteTransaction stopped;
         Check(FfxHooks::NativeSaveEvents::ProjectionRequired()&&FfxHooks::NativeSaveEvents::ProjectWrite(path.c_str(),save.data(),projected.data(),save.size(),stopped),"logical stop retains projection while temporary native fields remain");

@@ -2,6 +2,7 @@
 #include "ElementScanSettings.h"
 #include "ElementScanSprites.h"
 #include "ElementalScanView.h"
+#include "ModFeatureCatalog.h"
 #include "NativeUiHookSupport.h"
 #include "NativePresentationEvidence.h"
 #include <atomic>
@@ -114,7 +115,8 @@ int __cdecl InfoShim(int actor,int a,int b){
 }
 }
 bool StartElementHook(std::uintptr_t base,bool extraElements,bool expandedStats,bool validateOnly,void(*log)(const char*)){
-    const bool numeric=Config::GetBool("elemental.numeric_scan",false);
+    const bool implicitNumeric=extraElements&&(ModFeatures::Enabled(ModFeatures::Feature::Core)||ModFeatures::Enabled(ModFeatures::Feature::Tactics));
+    const bool numeric=Config::GetBool("elemental.numeric_scan",implicitNumeric);
     if((!extraElements&&!expandedStats&&!numeric)||validateOnly)return false;
     if(attempted.load())return active.load();
     if(!NativeUiSupport::Profile(base,NativePresentationEvidence::scan)){

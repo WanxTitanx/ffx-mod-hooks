@@ -1,0 +1,78 @@
+{
+  "producer": "Jarvis-HOOK",
+  "donor_magic": 146,
+  "dll_sha256": "1219d07a4e8776021fc43e3e191ce92a136f3f29d12f975a79003dbc8b50dfd4",
+  "dll_bytes": 489984,
+  "text_section": {
+    "offset": 1024,
+    "bytes": 33792,
+    "sha256": "19e67249af3d52727fcf3ee295fc931c456338b94195227bc247e6bd8252dcd1"
+  },
+  "textures": [
+    {
+      "path": "tex/d3d11/13648_19_0_0_256_512.dds.phyre",
+      "sha256": "7cf7e38535be48239c337fdd2ec82bdf961e6f33096465263b6486214ac9c564",
+      "width": 512,
+      "height": 1024,
+      "payload": 2684,
+      "bytes": 701772
+    },
+    {
+      "path": "tex/d3d11/14160_19_0_0_128_64.dds.phyre",
+      "sha256": "dac82a0b8f97f8cb2c57ffd2a1ccf507151abde8980db63d59abadb0233a14d5",
+      "width": 256,
+      "height": 128,
+      "payload": 2684,
+      "bytes": 46412
+    },
+    {
+      "path": "tex/d3d11/13440_19_0_0_128_64.dds.phyre",
+      "sha256": "0fd3a28b8f6c11a46b21179571683aff5d838a4b1b67fe3d7f5d2e51bb5a7ee9",
+      "width": 256,
+      "height": 128,
+      "payload": 2684,
+      "bytes": 46412
+    },
+    {
+      "path": "tex/d3d11/13312_19_0_0_128_128.dds.phyre",
+      "sha256": "e7c56480768bb3006fe4d6420846c775f8f4a1ef89439c3d9d4cca5b0bf4b6f3",
+      "width": 256,
+      "height": 256,
+      "payload": 2684,
+      "bytes": 90092
+    },
+    {
+      "path": "tex/d3d11/13520_19_0_0_256_128.dds.phyre",
+      "sha256": "e1d1314e90a78cacdd6588c1611328e8f3d975f236ad30df2986182281975f9f",
+      "width": 512,
+      "height": 256,
+      "payload": 2684,
+      "bytes": 177484
+    },
+    {
+      "path": "tex/d3d11/13472_19_0_0_128_32.dds.phyre",
+      "sha256": "0ed0743c740b5ca2eb87d95e12a1be973f9e324b5fba010e72e7fed84736d4c4",
+      "width": 256,
+      "height": 64,
+      "payload": 2684,
+      "bytes": 24588
+    },
+    {
+      "path": "tex/d3d11/13488_19_0_0_128_64.dds.phyre",
+      "sha256": "54954e1f3db40bbd1d683729c608379d6a197470eef4cdbb9595f8efc611d509",
+      "width": 256,
+      "height": 128,
+      "payload": 2684,
+      "bytes": 46412
+    },
+    {
+      "path": "tex/d3d11/13376_19_0_0_128_128.dds.phyre",
+      "sha256": "a4c3eeeb3a582c4fe63bf101a5e6763c0ee873bfddc8741dbf7d9ff08cdda063",
+      "width": 256,
+      "height": 256,
+      "payload": 2684,
+      "bytes": 90092
+    }
+  ],
+  "provenance": "Layout read with FFXProjectEditor Ps3MagicTextureWriter; complete-mip DXT5 tint adapted from Ps3MagicWindTextureWriter.cs, GPL-3.0, 2026-09-29. No game bytes distributed."
+}

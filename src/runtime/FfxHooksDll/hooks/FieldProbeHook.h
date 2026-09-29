@@ -21,6 +21,10 @@ namespace FfxHooks {
         bool enableTextureLog,
         FieldProbeLogFn log);
 
+    // Atomic admission closure only; safe for the loader-lock fallback.
+    void RequestFieldProbeStop() noexcept;
+    // False means physical retirement is unproven; pinned forwarding remains
+    // until process exit. Never treat this as permission to unload the module.
     bool RemoveFieldProbeHook(FieldProbeLogFn log);
     bool IsFieldProbeHookInstalled();
 

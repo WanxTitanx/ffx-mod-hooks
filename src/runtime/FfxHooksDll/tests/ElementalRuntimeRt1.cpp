@@ -56,6 +56,8 @@ static unsigned __cdecl Endpoint(unsigned user,void*,unsigned,void*,const void*,
 #include "ElementalMonsterCases.inl"
 #include "ElementalGravityCases.inl"
 #include "ElementalEquipmentCases.inl"
+#include "ElementalBuiltinCases.inl"
+#include "ElementalArcanaCases.inl"
 #ifdef FFXHOOKS_NUL_COMPOSITION
 #include "../hooks/NulWardHook.h"
 #include "NulWardCompositionCases.inl"
@@ -64,12 +66,18 @@ int main(int argc,char** argv){
 #ifdef FFXHOOKS_NUL_COMPOSITION
     if(argc!=4)return 2;
     const bool nulFirst=std::strcmp(argv[3],"nul-first")==0;
-    constexpr unsigned CommandCount=322;
+    constexpr unsigned CommandCount=374;
 #else
     constexpr unsigned CommandCount=320;
-    if(argc!=4||(std::strcmp(argv[3],"off")&&std::strcmp(argv[3],"magic")&&std::strcmp(argv[3],"core")&&std::strcmp(argv[3],"tactics")&&std::strcmp(argv[3],"monster")&&std::strcmp(argv[3],"gravity")&&std::strcmp(argv[3],"gravity-override")&&std::strcmp(argv[3],"equipment")))return 2;
+    if(argc!=4||(std::strcmp(argv[3],"off")&&std::strcmp(argv[3],"magic")&&std::strcmp(argv[3],"core")&&std::strcmp(argv[3],"tactics")&&std::strcmp(argv[3],"monster")&&std::strcmp(argv[3],"gravity")&&std::strcmp(argv[3],"gravity-override")&&std::strcmp(argv[3],"equipment")&&std::strcmp(argv[3],"builtin")&&std::strcmp(argv[3],"builtin-all")&&std::strcmp(argv[3],"arcana")&&std::strcmp(argv[3],"arcana-pack")&&std::strcmp(argv[3],"arcana-other")&&std::strcmp(argv[3],"arcana-native-exact")))return 2;
 #endif
     const bool equipment=std::strcmp(argv[3],"equipment")==0;
+    const bool arcanaNativeExact=std::strcmp(argv[3],"arcana-native-exact")==0;
+    const bool arcanaPack=arcanaNativeExact||std::strcmp(argv[3],"arcana-pack")==0;
+    const bool arcanaOther=std::strcmp(argv[3],"arcana-other")==0;
+    const bool arcana=arcanaPack||arcanaOther||std::strcmp(argv[3],"arcana")==0;
+    const bool builtinAll=std::strcmp(argv[3],"builtin-all")==0;
+    const bool builtin=builtinAll||std::strcmp(argv[3],"builtin")==0||(arcana&&!arcanaPack&&!arcanaOther);
     const bool gravityOverride=std::strcmp(argv[3],"gravity-override")==0;
     const bool gravity=gravityOverride||std::strcmp(argv[3],"gravity")==0;
     const bool tactics=std::strcmp(argv[3],"tactics")==0
@@ -78,7 +86,7 @@ int main(int argc,char** argv){
 #endif
         ;
     const bool monster=std::strcmp(argv[3],"monster")==0;
-    const bool core=equipment||monster||tactics||std::strcmp(argv[3],"core")==0;
+    const bool core=equipment||monster||tactics||builtin||arcana||std::strcmp(argv[3],"core")==0;
     std::setvbuf(stdout,nullptr,_IONBF,0);
     const auto image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES);if(!image)return 2;
     Check(PrivatePeFixture::NormalizeRelocations(image),"private PE relocates without running its entry point");
@@ -110,7 +118,8 @@ int main(int argc,char** argv){
     if(equipment){const auto address=reinterpret_cast<std::uintptr_t>(abilityBank.data());
         std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&address,4);
         W16(reinterpret_cast<unsigned char*>(base+0xD2A970),static_cast<unsigned>(abilityBank.size()));}
-    auto json=equipment?EquipmentPack(bank,abilityBank):gravity?GravityPack(bank,monsterFile,gravityOverride):monster?MonsterPack(bank,monsterFile):tactics?TacticsPack(bank):core?CorePack(bank):Pack(bank);
+    if(arcana)CardRows(bank);
+    auto json=arcanaPack?CardPack(bank,arcanaNativeExact):builtin?E::BuiltinPackText():equipment?EquipmentPack(bank,abilityBank):gravity?GravityPack(bank,monsterFile,gravityOverride):monster?MonsterPack(bank,monsterFile):tactics?TacticsPack(bank):core?CorePack(bank):Pack(bank);
 #ifdef FFXHOOKS_NUL_COMPOSITION
     json=NulCompositionPack(bank);
 #endif
@@ -121,12 +130,13 @@ int main(int argc,char** argv){
     Check(!std::memcmp(original,reinterpret_cast<void*>(base+0x38E680),16),"OFF and validate-only preserve native bytes");
 #ifdef FFXHOOKS_NUL_COMPOSITION
     FfxHooks::NulWardInstallOptions nulOptions{};nulOptions.nativeSlots=true;
+    nulOptions.allElements=true;
     if(nulFirst)Check(FfxHooks::InstallNulWardHook(base,true,false,Log,&nulOptions).ok,"NulWard can prepare before Elemental");
 #endif
     if(!std::strcmp(argv[3],"off")){
         std::printf("ELEMENTAL_RUNTIME_OFF %u/%u passed\n",checks-failures,checks);return failures?1:0;
     }
-    Check(E::PrepareText(base,options,json,false,Log)&&B::Required(),"the manifest primes independent Magic BDL");
+    Check((builtin?PrepareBuiltinCases(base,argv[2],builtinAll):E::PrepareText(base,options,json,false,Log))&&B::Required(),"selected definitions prime shared native consumers");
     Check(FfxHooks::InstallNovaSuperDamageHook(base,false,false,false,Log).ok,"the existing clamp owner accepts the finite-policy request");
     const std::wstring directory(argv[2],argv[2]+std::strlen(argv[2]));
     Check(W::StartForTests(base,false,directory.c_str(),Log)&&W::CombatProducerReady()&&!W::Requested(),"shared producer works with Workshop gameplay OFF");
@@ -141,6 +151,10 @@ int main(int argc,char** argv){
         std::printf("NUL_WARD_COMPOSITION %s %u/%u passed\n",argv[3],checks-failures,checks);return failures?1:0;}
 #endif
     if(failures)return 1;
+    if(arcana){ArcanaCases(base,actors,bank,arcanaPack,arcanaOther,arcanaNativeExact);W::RequestStop();FfxHooks::RemoveNovaSuperDamageHook(Log);
+        std::printf("ELEMENTAL_RUNTIME_ARCANA %s %u/%u passed\n",argv[3],checks-failures,checks);return failures?1:0;}
+    if(builtin){BuiltinCases(base,actors,bank);W::RequestStop();FfxHooks::RemoveNovaSuperDamageHook(Log);
+        std::printf("ELEMENTAL_RUNTIME_BUILTIN %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     if(equipment){EquipmentCases(base,actors,bank,abilityBank);W::RequestStop();FfxHooks::RemoveNovaSuperDamageHook(Log);
         std::printf("ELEMENTAL_RUNTIME_EQUIPMENT %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     if(gravity){GravityCases(base,actors,bank,gravityOverride);W::RequestStop();FfxHooks::RemoveNovaSuperDamageHook(Log);

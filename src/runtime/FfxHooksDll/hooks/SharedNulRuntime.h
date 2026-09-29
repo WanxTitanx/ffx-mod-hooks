@@ -15,6 +15,7 @@ struct Wards {
     unsigned (*available)(const CombatExtensions::DamageCall&) noexcept=nullptr;
     bool (*reserve)(const CombatExtensions::DamageCall&,unsigned) noexcept=nullptr;
     bool (*reserved)(const CombatExtensions::DamageCall&) noexcept=nullptr;
+    unsigned (*keyMask)(const char*) noexcept=nullptr;
 };
 inline std::atomic<Resolve> elemental{nullptr};
 inline std::atomic<const Wards*> wards{nullptr};
@@ -37,6 +38,9 @@ inline bool RegisterWards(const Wards* callback) noexcept {
 inline void UnregisterWards(const Wards* callback) noexcept {wards.compare_exchange_strong(callback,nullptr);}
 inline unsigned AvailableWards(const CombatExtensions::DamageCall& call) noexcept {
     const auto* callback=wards.load();return callback?callback->available(call):0;
+}
+inline unsigned ExternalWardMask(const char* key) noexcept {
+    const auto* callback=wards.load();return callback&&callback->keyMask?callback->keyMask(key):0;
 }
 inline bool ReserveWards(const CombatExtensions::DamageCall& call,unsigned mask) noexcept {
     if(!mask)return true;const auto* callback=wards.load();return callback&&callback->reserve(call,mask);

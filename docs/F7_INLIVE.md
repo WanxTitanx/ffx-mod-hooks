@@ -5,6 +5,21 @@ Gate: `[f7] inlive=1`, `modules\config\f7_inlive.flag`,
 The feature is OFF by default. The default hotkey is F7 (overridable with
 `FFXHOOKS_NATIVE_MENU_HOTKEY`).
 
+## Built-in custom elements and names (2026-09-29)
+
+Core's default registry contains eight native bits and `hook.custom03` /
+`hook.custom04`. No external manifest is required to configure these two in F7;
+Core still needs its explicit gate, matching executable and restart. A selected
+invalid/missing authored pack is never silently bypassed. Unused external
+identities are neutral until F7/profile configuration and command bindings use them.
+
+Rename Holy, Darkness and Custom 01–04 under F8 > Reforge > Scan settings >
+Element names. F7 resolves these display aliases while retaining the native BYTE
+masks and the external keys in `diff_elemExtra` / `elemExtra`. Renaming does not
+change a saved affinity, item/ability/status name or native game data. The existing
+Apply/Restore transaction and actor/generation checks still govern gameplay;
+merely saving a name or desired preset does not publish a new battle override.
+
 ## Custom Mix and Ultra (offline candidate)
 
 Custom Mix x3/x4/x5 and Custom Mix Ultra share the RAM-only Arena+ editor. Turn Arena+ Master

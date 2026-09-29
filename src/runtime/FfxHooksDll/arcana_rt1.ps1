@@ -63,7 +63,7 @@ try {
     }
     if($Cases -contains 'combat'){RunFixture 'ArcanaCombatRt1' @($GameExecutable)}
     if($Cases -contains 'assets'){RunFixture 'ArcanaAssetsRt1' @($AssetsRoot)}
-    if($Cases -contains 'runtime'){foreach($mode in @('development','normal','workshop','legacy','v2','v3')) {
+    if($Cases -contains 'runtime'){foreach($mode in @('development','normal','workshop','legacy','v2','v3','v4')) {
         $data=Join-Path $OutputDirectory ('session-'+[guid]::NewGuid().ToString('N'))
         [IO.Directory]::CreateDirectory($data) | Out-Null
         RunFixture 'ArcanaRuntimeRt1' @($GameExecutable,$NativeSaveFixture,$data,$mode)

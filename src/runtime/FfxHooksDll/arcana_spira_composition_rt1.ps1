@@ -25,7 +25,7 @@ try{
  & $env:ComSpec /d /s /c $compileC;if($LASTEXITCODE -ne 0){throw 'MinHook compilation failed'}
  & $env:ComSpec /d /s /c $compile;if($LASTEXITCODE -ne 0){throw 'Spira compilation failed'}
  $failed=$false
- foreach($mode in @('spira-first','arcana-first','shared-only')){
+ foreach($mode in @('spira-first','arcana-first','shared-only','v4')){
   $data=Join-Path $obj ('private-'+[guid]::NewGuid().ToString('N'));New-Item -ItemType Directory -Path $data | Out-Null
   & $exe $fixture (Join-Path $repo 'native-fixtures\ffx_000') $data $mode (Join-Path $repo 'sin-fixtures\a_ability.bin')
   Write-Output ('ARCANA_SPIRA_RESULT {0} exit={1}' -f $mode,$LASTEXITCODE)

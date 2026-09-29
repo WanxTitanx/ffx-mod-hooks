@@ -1,4 +1,4 @@
-# Instalação do FFX Hooks v0.6.0-beta.1
+# Instalação do FFX Hooks v0.6.0-beta.2
 
 O pacote atende ao **FFX.exe Steam, Windows x86**, no perfil suportado. Não implica
 suporte equivalente ao FFX-2. Você precisa do jogo e do carregador de módulos FFX
@@ -7,15 +7,15 @@ DLL de Windows e os mesmos caminhos relativos à pasta do jogo.
 
 ## Download e conteúdo
 
-Baixe `ffx-hooks-release-v0.6.0-beta.1.zip` e `ffx-hooks-v0.6.0-beta.1.sha256` na
-[release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1).
-O arquivo `ffx-hooks-source-v0.6.0-beta.1.tar.gz` contém o código-fonte da mesma tag.
+Baixe `ffx-hooks-release-v0.6.0-beta.2.zip` e `ffx-hooks-v0.6.0-beta.2.sha256` na
+[release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2).
+O arquivo `ffx-hooks-source-v0.6.0-beta.2.tar.gz` contém o código-fonte da mesma tag.
 Compare os hashes dos downloads com o arquivo SHA-256. O ZIP inclui também
 `SOURCE.md`, `release-manifest.json` e `CHECKSUMS.sha256` para conferir seu conteúdo.
 
-A DLL tem 3.398.144 bytes e SHA-256
-`734a0bf94b56157648e5391ca06dfb1c60aad2c6bb27748762a67315c98b8ffc`.
-A versão interna do PE ainda é 0.2.0.0; a versão do pacote/tag é v0.6.0-beta.1.
+A DLL tem 4.011.008 bytes e SHA-256
+`5f6a76f3260a1aa0f5a36e0ff6e9f641f7d92e0dda969910d0d66a2debc3016e`.
+A versão interna do PE ainda é 0.2.0.0; a versão do pacote/tag é v0.6.0-beta.2.
 Uma recompilação pode produzir outro hash e não identifica esse binário testado.
 
 ## Instale com o jogo fechado
@@ -82,3 +82,15 @@ Visual Studio C++ x86 e dependências estáticas. O SIN offline usa .NET 8.
 verificando hashes; o arquivo de fonte corresponde à árvore pública da tag.
 As instruções detalhadas de instalação e ferramentas estão também no
 [guia em inglês](INSTALL.md).
+
+## Assets dos Nuls elementais
+
+A DLL possui seis Nuls, com controle separado inicialmente OFF em
+F8 > Extras > Additional mods > Elemental Nul spells. Reinicie após habilitar.
+O banco Spira preparado oferece NulHoly/NulShadow/Earth/Wind/Poison/Gravity na
+White Magic+ da Yuna após o aprendizado. A release não libera comandos nem
+altera seus saves automaticamente. Os comandos e clones de animação precisam
+dos arquivos locais do jogo: assets proprietários não são redistribuídos neste
+ZIP. Use a [receita no código-fonte completo](../tools/nul_elements/README.md)
+com seu banco compatível e o efeito Holy doador. O fonte contém receitas, testes
+e instruções de rollback. Validação visual e de gameplay ao vivo continua pendente.

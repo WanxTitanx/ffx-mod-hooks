@@ -275,11 +275,14 @@ const F8FlagSpec kFlags[] = {
     VANGUARD_GATE(30,"equipment_partial_overdrive","Display and debit the same partial fee."),
 #define MOD_FEATURE(index) {"Extras",ModFeatures::Entries[index].label,ModFeatures::Entries[index].gate,ModFeatures::Entries[index].help,F8Activation::RestartRequired,F8ApplyMode::None}
     MOD_FEATURE(0),MOD_FEATURE(1),MOD_FEATURE(2),MOD_FEATURE(3),MOD_FEATURE(4),MOD_FEATURE(5),
-#undef MOD_FEATURE
     {"Cheats", "Per-monster AP/Gil",
      {"cheats.monster_rewards", "f8_authority.monster_rewards", nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, false},
      "RESTART REQUIRED - Per-monster AP/Gil before native bonuses.",
      F8Activation::RestartRequired, F8ApplyMode::None},
+    // Append the new identity; existing catalog row numbers remain stable.
+    MOD_FEATURE(6),
+    MOD_FEATURE(7),
+#undef MOD_FEATURE
 };
 #undef VANGUARD_GATE
 

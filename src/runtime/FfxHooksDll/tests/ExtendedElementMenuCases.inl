@@ -12,9 +12,9 @@ static void ExtendedElementMenuCases(){
     F8NativeSettingsReset();const int obj=NativeMenu::Alloc();if(!obj){Check(false,"extended menu allocates");return;}
     const auto defaults=ElementMenu::Read();unsigned bits=0;
     for(unsigned i=0;i<8;++i){Check(defaults[i].available&&defaults[i].nativeBit&&!(bits&defaults[i].nativeBit),"eight native rows each own a distinct bit");bits|=defaults[i].nativeBit;}
-    Check(bits==255&&!defaults[8].available&&!defaults[9].available,"missing pack keeps explicit external placeholders without invented native bits");
+    Check(bits==255&&!defaults[8].available&&!defaults[9].available,"Core OFF keeps external gameplay admission closed without inventing native bits");
     F8NativeSettingsPush(obj,NativeSettingsPage::ElementScan);char text[128]{};
-    F8NativeSettingsLabel(F8NativeSettingsPage(),8,text,sizeof(text));Check(std::strstr(text,"pack required")!=nullptr,"Scan explains a missing ninth descriptor");
+    F8NativeSettingsLabel(F8NativeSettingsPage(),8,text,sizeof(text));Check(std::strstr(text,"Core")!=nullptr,"Scan explains that a disabled ninth descriptor needs Core");
     F8NativeSettingsActivate(obj,8);Check(F8NativeSettingsPage()==NativeSettingsPage::ElementScan&&f8Writes==0,"unavailable external entry cannot enable gameplay or write a made-up key");
     const ElementMenu::Provider provider{SampleElementMenu};Check(ElementMenu::Register(&provider),"test pack publishes one shared menu catalog");
     F8NativeSettingsLabel(F8NativeSettingsPage(),9,text,sizeof(text));Check(std::strstr(text,"Void")&&std::strstr(text,"ABCDEF"),"tenth descriptor supplies the real label and default color");
@@ -42,7 +42,7 @@ static void NestedFeatureMenuCases(){
         NativeMenu::WrW(obj,NativeMenu::O_SELECTED,3);NativeMenu::WrW(obj,NativeMenu::O_TOP,1);
         const auto before=f8Writes;F8NativeSettingsPush(obj,page);
         Check(f8Writes==before,"opening a group never changes any settings");
-        const int leaves=page==NativeSettingsPage::AdditionalMods?6:4;
+        const int leaves=page==NativeSettingsPage::AdditionalMods?8:4;
         Check(F8NativeSettingsCount(page)==leaves+1,"each group exposes its complete set of controls and Back");
         for(int row=0;row<leaves;++row){const auto* flag=F8NativeNestedSpec(page,row);
             Check(flag&&F8NativeNestedFlag(*flag),"nested leaf is hidden at the tab root but stays in the authority catalog");

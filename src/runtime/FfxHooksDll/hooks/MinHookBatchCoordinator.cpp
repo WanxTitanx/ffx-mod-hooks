@@ -40,7 +40,17 @@ bool ValidTargets(Owner owner, const uintptr_t* targets, size_t targetCount) {
                             owner == Owner::SharedCombat ||
                             owner == Owner::ArcanaUi ||
                             owner == Owner::ArcanaGameplay ||
-                            owner == Owner::TextLanguage || owner == Owner::MonsterRewards;
+                            owner == Owner::TextLanguage || owner == Owner::MonsterRewards ||
+                            owner == Owner::WeaponStrikeVfx ||
+                            owner == Owner::NulWardRecovery ||
+                            owner == Owner::GridTeachSave ||
+                            owner == Owner::GridTeachRecovery ||
+                            owner == Owner::SphereGridRecovery ||
+                            owner == Owner::SeymourCompatibility ||
+                            owner == Owner::SeymourOverdrive ||
+                            owner == Owner::SeymourGearPresentation ||
+                            owner == Owner::SeymourGearSort ||
+                            owner == Owner::SeymourMenuList;
     if (!knownOwner || !targets || targetCount == 0u ||
         targetCount > kMaximumTargets) {
         return false;

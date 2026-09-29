@@ -4,10 +4,10 @@ static void ElementColorSettingsCases(){
     C::SetProvidersForTests({nullptr,nullptr,nullptr,WorkshopF8Persist});f8AllowWrite=true;f8Writes=0;
     F8NativeSettingsReset();const int obj=NativeMenu::Alloc();if(!obj){Check(false,"color page allocates a menu object");return;}
     F8NativeSettingsPush(obj,NativeSettingsPage::ElementScan);
-    Check(F8NativeSettingsCount(F8NativeSettingsPage())==11,"Scan page preserves native rows and adds both Hook-only color controls");
+    Check(F8NativeSettingsCount(F8NativeSettingsPage())==12,"Scan page preserves native rows, both Hook colors and name editing");
     char bitLabel[128]{};F8NativeSettingsLabel(NativeSettingsPage::ElementScan,5,bitLabel,sizeof(bitLabel));
-    Check(std::strstr(bitLabel,"Custom")&&std::strstr(bitLabel,"0x20"),
-          "third column defaults to a mask identifier without inventing an element name");
+    Check(std::strstr(bitLabel,"Earth")&&std::strstr(bitLabel,"Wind"),
+          "custom order describes the current element names instead of stale hardcoded labels");
     E::Settings before{};Check(E::ReadSettings(before),"default palette loads independently of the enable gate");
     F8NativeSettingsActivate(obj,2);F8NativeElementAdjust(0,15);
     E::Settings current{};Check(E::ReadSettings(current)&&current.rgb[0]==before.rgb[0]&&f8Writes==0,"color preview changes no saved setting");
@@ -24,9 +24,8 @@ static void ElementColorSettingsCases(){
     Check(E::ReadSettings(current)&&current.rgb[0]==exact,"opening and saving without edits preserves the exact RGB24 value");
     F8NativeSettingsActivate(obj,5);
     for(int row=0;row<2;++row){F8NativeSettingsLabel(NativeSettingsPage::ElementBit,row,bitLabel,sizeof(bitLabel));
-        Check(std::strstr(bitLabel,"Custom")&&std::strstr(bitLabel,row==0?"0x20":"0x40")&&
-              !std::strstr(bitLabel,"Earth")&&!std::strstr(bitLabel,"Wind"),
-              "extra-bit choices use neutral names for unassigned gameplay meanings");}
+        Check(std::strstr(bitLabel,row==0?"Earth":"Wind")&&std::strstr(bitLabel,row==0?"0x20":"0x40"),
+              "extra-bit choices use the approved names while preserving their native identities");}
     F8NativeSettingsActivate(obj,1);
     Check(E::ReadSettings(current)&&current.extraBit==64,"third-column custom bit persists without changing Holy or Darkness");
     Check(C::ReadIntExact("labs.element_scan_dark",0,1).state==C::IntReadState::Missing,"palette editing never implicitly enables the Scan hook");

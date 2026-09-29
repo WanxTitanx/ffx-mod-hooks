@@ -1,3 +1,97 @@
+## Adendo vigente: seis Nuls e integração publicada — 2026-09-29
+
+Este adendo é posterior ao checkpoint original abaixo. Implementação e assets
+possuem validação offline/isolada; não presumir aceitação visual ou de gameplay.
+O [registro de integração](NUL_ELEMENTS_INTEGRATION_2026_09_29.md) identifica o
+artefato e os backups, e a [receita reproduzível](../../tools/nul_elements/README.md)
+contém os comandos de geração/instalação a partir dos arquivos locais.
+
+### Registros que o Editor precisa preservar e produzir
+
+| Nome canônico | ID decimal / codificado | `Anim1Id` | Identidade protegida |
+|---|---|---:|---|
+| NulHoly | 320 / `0x3140` | 870 | `0x10` |
+| NulShadow | 321 / `0x3141` | 871 | `0x80` |
+| NulEarth | 370 / `0x3172` | 872 | `0x20` |
+| NulWind | 371 / `0x3173` | 873 | `0x40` |
+| NulPoison | 372 / `0x3174` | 874 | `hook.custom03` ou `spira.poison` |
+| NulGravity | 373 / `0x3175` | 875 | `hook.custom04` ou `spira.gravity` |
+
+- A base auditada possui 370 registros de 96 bytes. Reutilizar Radiant Ward/Umbral
+  Ward em 320/321; não duplicar essas identidades. Anexar 370–373, chegando a 374.
+- Preservar 366 (White Magic+), 367–369 (Aero/Aerora/Aeroga) e todos os outros
+  registros existentes. O limite exclusivo do menu passa a 374.
+- Receita padrão: Yuna (`CharacterUser=1`), categorias 4/4, `TargetFlgs=5`
+  (grupo aliado), custo MP 2, uma ocorrência, `Anim2Id=0`, zero dano/poder,
+  zero máscara elemental nativa no próprio comando e zero payload de status.
+- Campo de texto: offsets WORD relativos ao pool, não ao começo de `command.bin`.
+  Preservar os quatro pares de texto/ScriptId do registro, todos os campos não
+  alterados e o prefixo completo do pool antigo; acrescentar os novos textos.
+- Alterar payload/efeito fora do contrato pode fazer o hook recusar a concessão.
+  Não representar Poison/Gravity com bits inventados no BYTE nativo. Os bits
+  privados `0x100/0x200` existem apenas na implementação das cargas do hook.
+- `NulElementCommands.h` é a tabela autoritativa do runtime. Nomes de apresentação
+  em F7/Scan podem mudar; IDs/chaves e nomes canônicos de comandos/itens não são
+  renomeados por substituição global.
+
+### Aprendizado e persistência
+
+- Nova opção independente `elemental.nul_spells`, autoridade
+  `f8_authority.elemental_nul_spells`, OFF por padrão, reinício obrigatório.
+- O controle solicita o produtor de ensino/leitura de saves do GridTeach. Não
+  concede as habilidades automaticamente e não cria nós do Sphere Grid sozinho.
+- O Editor pode criar/atribuir nós de comando com as identidades codificadas acima
+  na malha escolhida pelo usuário. Não alterar uma malha ou save apenas ao abrir
+  o projeto, habilitar o painel ou instalar o pacote.
+- Usar o estado aprendido do hook, ligado ao save e ao personagem. Ele cobre
+  comandos 96–383 em 18 WORDs por personagem; o banco vanilla continua com seu
+  tamanho nativo. Nunca ampliar o save vanilla ou escrever o bit 373 fora dele.
+- O submenu White Magic+ aparece derivado dos filhos aprendidos; o hook não
+  precisa gravar um desbloqueio artificial de 366. A menuização não grava estado.
+- A integração publicada usa a mesma infraestrutura de eventos de save para
+  Arcana, Ronso, GridTeach e Grid8. Não introduzir um segundo fread/fwrite nem
+  publicar identidades a partir de uma leitura incompleta, preview ou hash sem
+  proveniência de buffer. Checkpoints pagos continuam selecionados antes de LoadPool.
+
+### Assets e exportação em três raízes
+
+- Clones privados `magic_0870.dll`–`magic_0875.dll`, com oito texturas próprias por
+  efeito. Doador compatível: `magic_0146.dll`; três strings UTF-16 de identidade
+  são reescritas e a seção `.text` permanece idêntica.
+- O `holy_donor_recipe.json` fixa SHA-256, tamanho e layout dos oito DXT5, incluindo
+  todos os mipmaps. Não clonar cegamente NulTide/NulShock removendo seus statuses:
+  o histórico do Editor registra incompatibilidade nesse caminho.
+- Exportar `jppc` e `new_uspc` para Steam e Spira em
+  `data/mods/ffx_ps2/ffx/master/<locale>/battle/kernel/command.bin`; Extracted usa
+  `ffx_ps2/ffx/master/<locale>/battle/kernel/command.bin`.
+- DLLs em `magicFiles/FFX` nas três raízes. Texturas em
+  `data/mods/FFX_Data/GameData/PS3Data/magic` na Steam/Spira e
+  `ffx_data/gamedata/ps3data/magic` no Extracted. Não escrever em FFX-2 ou outros
+  idiomas extraídos por analogia.
+- Prévia totaliza 168 arquivos: seis bancos e 162 arquivos de FX. Recusar IDs
+  ocupados, symlinks, hashes alterados ou stage incompleto; criar backup antes de
+  publicar e verificar cada SHA-256 depois. A reinstalação idêntica é no-op.
+- Rollback só restaura/remove arquivos que ainda correspondem ao recibo da
+  instalação; preservar alterações posteriores de outra ferramenta/usuário.
+- Não distribuir bytes proprietários dos donors no repositório ou release de
+  fontes. Distribuir receita, proveniência e hashes; o usuário fornece os assets.
+
+### Critérios de aceitação do Editor
+
+- [x] Parser real do Editor lê 374 registros, os seis nomes/FX/custos e as seis
+  raízes das DLLs de animação produzidas nesta rodada.
+- [x] Todos os registros e scripts referenciados sobrevivem ao round-trip; o
+  writer do Editor zera 149 bytes órfãos dos textos substituídos. Esse buffer
+  reescrito não foi usado como arquivo de instalação.
+- [x] Receita recusa colisões e drift e conserva os outros 368 registros.
+- [ ] Oferecer autoria visual dos nós/IDs e validação do contrato Nul na UI do Editor.
+- [ ] Integrar geração/preview dos seis FX e publicação transacional nos destinos
+  escolhidos, sem desbloqueios automáticos.
+- [ ] Observar aprendizado, save/load, conjuração no grupo, cores, consumo de carga
+  e retorno ao estado original em uma sessão RT2 separada.
+
+---
+
 # Dossiê completo de integração Hooks → Editor
 
 **Jarvis-HOOK · 28/09/2026 · entrega após o deploy da rodada F7/F8/elementos/AP/Gil**
@@ -12,6 +106,44 @@ Não execute prompts históricos simplesmente porque são citados aqui. A tarefa
 Editor deve partir do código e dos contratos desta revisão. Este dossiê não altera
 o repositório do Editor, não concede autorização para editar saves pessoais e não
 transforma validação offline em comprovação de gameplay.
+
+## Atualização de contrato — 2026-09-29: registro interno e nomes
+
+A implementação posterior à identidade de 2026-09-28 acrescenta um registro
+interno de dez elementos. Os hashes e resultados históricos deste dossiê continuam
+identificando seu checkpoint original; o handoff atual registra a nova DLL.
+
+- Sem `elemental.pack` explícito e sem `elemental-pack.json` no diretório do INI,
+  o Core usa o registro interno. `elemental.pack=builtin` o seleciona explicitamente.
+  Arquivo externo existente inválido, ou caminho explicitamente selecionado ausente,
+  permanece erro. O fallback não mascara um pacote recusado.
+- Os oito bits nativos são preservados. As chaves externas internas são
+  `hook.custom03` e `hook.custom04`, com nomes padrão Poison/Gravity, afinidade neutra
+  e nenhum comando associado automaticamente. Pacotes válidos com menos de dois
+  externos recebem descritores neutros sem reindexar os bindings existentes.
+- `F8 > Reforge > Scan settings > Element names` fornece editor de nomes com
+  teclado/seletor de caracteres. Os seis padrões são Holy, Darkness, Earth, Wind, Poison e Gravity.
+  O limite dos aliases é 32 caracteres ASCII suportados: letras, números, espaços,
+  hífen, sublinhado, apóstrofo, ponto, parênteses e barra. Há trim nas extremidades,
+  recusa de duplicados sem distinguir maiúsculas/minúsculas e cancelamento seguro.
+- Aliases são preferências do hook, fora do manifesto e dos assets. As chaves
+  nativas são `element_names.native_10`, `element_names.native_80`, `element_names.native_20`,
+  `element_names.native_40`.
+  As duas internas são `element_names.hook.custom03` e `element_names.hook.custom04`;
+  para qualquer externo usa-se `element_names.<chave-estável>`. Valor vazio é Reset
+  para o rótulo canônico. Precedência: alias válido > rótulo do registro/pacote.
+- Cores externas continuam em `element_scan.hook.<chave>.rgb/.enabled`; portanto
+  a cor interna 03 fica em `element_scan.hook.hook.custom03.rgb`. Renomear nunca
+  altera essas chaves nem as entradas `diff_elemExtra`/`elemExtra` do F7.
+- F7/Scan e seus controles usam os aliases. Nomes canônicos de habilidades, magias,
+  status e atributos de itens/equipamentos não passam por substituição textual.
+- O Scan numérico agora é solicitado por padrão quando Scan Extra Elements e
+  Core/Tactics estão habilitados. Uma configuração explícita `elemental.numeric_scan`
+  conserva sua prioridade. O registro e os hooks continuam OFF por padrão.
+
+O Editor deve separar **nome de apresentação** de **identidade/binding** e nunca
+regravar `a_ability.bin`, nomes de comandos ou arquivos de monstros ao exportar
+esses aliases. Criar/renomear um descritor continua sem atribuí-lo a um ataque.
 
 ## Navegação
 
@@ -45,7 +177,7 @@ transforma validação offline em comprovação de gameplay.
 - [27. Definição de pronto para a frente Editor](#27-definição-de-pronto-para-a-frente-editor)
 - [Apêndice A. As 40 identidades de autoability](#apêndice-a-as-40-identidades-de-autoability)
 - [Apêndice B. As 31 regras do Vanguard](#apêndice-b-as-31-regras-do-vanguard)
-- [Apêndice C. Inventário das 88 identidades F8](#apêndice-c-inventário-das-88-identidades-f8)
+- [Apêndice C. Inventário das 89 identidades F8](#apêndice-c-inventário-das-89-identidades-f8)
 - [Apêndice D. Catálogo Arcana compilado](#apêndice-d-catálogo-arcana-compilado)
 - [Apêndice E. Dependências diretas de build do Editor](#apêndice-e-dependências-diretas-de-build-do-editor)
 - [Apêndice F. Mapa de artefatos e fontes canônicas](#apêndice-f-mapa-de-artefatos-e-fontes-canônicas)
@@ -443,9 +575,10 @@ implicitamente quando o usuário escolhe um comando.
 
 ## 09. Elemental Dominion: modelo e arquivo
 
-O manifesto é `ffx.mod007.elements.v1`. Por padrão, o Hook procura
-`elemental-pack.json` ao lado do INI ativo; `elemental.pack` pode selecionar outro
-caminho relativo seguro. Caminho absoluto, `.`/`..`, nome excessivo e arquivo
+O manifesto externo é `ffx.mod007.elements.v1`. O Hook respeita
+`elemental-pack.json` ao lado do INI ativo e `elemental.pack` pode selecionar outro
+caminho relativo seguro. Na ausência de seleção/arquivo padrão, há agora o registro
+interno de dez elementos descrito na atualização de contrato acima. Caminho absoluto, `.`/`..`, nome excessivo e arquivo
 maior que 1 MiB são recusados pelo leitor atual.
 
 O Editor deve gerar os dados primeiro, calcular os hashes sobre os bytes finais e
@@ -1494,7 +1627,7 @@ canônico é `vanguard.`; a autoridade F8 é `f8_authority.vanguard_<chave>`.
 | equipment_active_commands | Equipment | Equipped active commands | Only verified equipped bindings may add battle commands. |
 | equipment_partial_overdrive | Equipment | Partial Overdrive costs | The displayed partial OD fee must equal the one-time debit. |
 
-## Apêndice C. Inventário das 88 identidades F8
+## Apêndice C. Inventário das 89 identidades F8
 
 A tabela foi extraída da declaração atual, expandindo os catálogos Vanguard e
 ModFeatures. Ela descreve a aba de autoridade/catalogação, não obriga o Editor a
@@ -1597,6 +1730,7 @@ switch de loader.
 | 85 | Extras | Spira Reforge abilities | spira.enabled | f8_authority.spira_enabled | false | RestartRequired | None |
 | 86 | Extras | Aeon Ascension upgrades | aeon_ascension.enabled | f8_authority.aeon_ascension_enabled | false | RestartRequired | None |
 | 87 | Cheats | Per-monster AP/Gil | cheats.monster_rewards | f8_authority.monster_rewards | false | RestartRequired | None |
+| 88 | Extras | Holy / Shadow weapon effects | weapon_strike_vfx.enabled | f8_authority.weapon_strike_vfx | false | RestartRequired | None |
 
 ### C.1 Parâmetros que não são novos flags booleanos
 
@@ -1629,22 +1763,22 @@ posse e efeitos temporários continuam pertencendo ao runtime.
 | 0 | Major | major.the_fool | 0 - The Fool - Tidus | 000-major-the_fool.png | FirstStrike=1; FirstCtbReduction=35; EvasionFlat=20; Sensor=1 |
 | 1 | Major | major.the_magician | I - The Magician - Lulu | 001-major-the_magician.png | MagicPercent=30; HalfBlackMp=1; ElementDamageFireIce=10; WardFire=1; WardIce=1 |
 | 2 | Major | major.the_high_priestess | II - The High Priestess - Yuna | 002-major-the_high_priestess.png | WhiteHealing=40; HalfWhiteMp=1; ProofSilence=1 |
-| 3 | Major | major.the_empress | III - The Empress - Moonflow | 003-major-the_empress.png | HpPercent=40; AutoRegen=1 |
+| 3 | Major | major.the_empress | III - The Empress - Moonflow | 003-major-the_empress.png | HpPercent=40; AutoRegen=1; StrikeEarth=1; WardEarth=1 |
 | 4 | Major | major.the_emperor | IV - The Emperor - Bevelle | 004-major-the_emperor.png | AutoProtect=1; AutoShell=1; DefensePercent=20; MagicDefensePercent=20 |
 | 5 | Major | major.the_hierophant | V - The Hierophant - Yevon | 005-major-the_hierophant.png | ProofDark=1; ProofSilence=1; ProofSleep=1; ProofPoison=1; ProofConfuse=1; ProofDeath=1; FocusOnStart=5; DefendMp=3 |
 | 6 | Major | major.the_lovers | VI - The Lovers - Macalania Spring | 006-major-the_lovers.png | LoversHealing=25; LoversCapHp=10; WhiteMpReduction=25; WhiteHealing=15 |
-| 7 | Major | major.the_chariot | VII - The Chariot - Calm Lands | 007-major-the_chariot.png | AutoHaste=1; FirstStrike=1; CtbReduction=10; StrengthPercent=15 |
+| 7 | Major | major.the_chariot | VII - The Chariot - Calm Lands | 007-major-the_chariot.png | AutoHaste=1; FirstStrike=1; CtbReduction=10; StrengthPercent=15; StrikeWind=1; WardWind=1 |
 | 8 | Major | major.strength | VIII - Strength - Ifrit | 008-major-strength.png | StrengthPercent=30; Piercing=1; CriticalChance=10 |
 | 9 | Major | major.the_hermit | IX - The Hermit - Auron | 009-major-the_hermit.png | MpPercent=60; MpPerTurn=1; AutoShell=1 |
 | 10 | Major | major.wheel_of_fortune | X - Wheel of Fortune - Al Bhed | 010-major-wheel_of_fortune.png | LuckFlat=20; DropMultiplier=2; ApBonus=25; GilBonus=25 |
 | 11 | Major | major.justice | XI - Justice - Bevelle Guardians | 011-major-justice.png | Counter=1; MagicCounter=1; DefensePercent=20; AccuracyFlat=20 |
-| 12 | Major | major.the_hanged_man | XII - The Hanged Man - Fayth | 012-major-the_hanged_man.png | IncomingDamage=-20; CtbIncrease=25; DefendMp=3; AutoProtect=1 |
-| 13 | Major | major.death | XIII - Death - Farplane | 013-major-death.png | TouchDeath=100; KillHp=20; ProofDeath=1; DeathImmuneDamage=20; KillMp=10 |
+| 12 | Major | major.the_hanged_man | XII - The Hanged Man - Fayth | 012-major-the_hanged_man.png | IncomingDamage=-20; CtbIncrease=25; DefendMp=3; AutoProtect=1; StrikeGravity=1; WardGravity=1 |
+| 13 | Major | major.death | XIII - Death - Farplane | 013-major-death.png | TouchDeath=100; KillHp=20; ProofDeath=1; DeathImmuneDamage=20; KillMp=10; StrikeBio=1; WardBio=1 |
 | 14 | Major | major.temperance | XIV - Temperance - Moonflow | 014-major-temperance.png | HalfMp=1; ItemHealing=50; WhiteHealing=15; ProofPoison=1 |
 | 15 | Major | major.the_devil | XV - The Devil - Anima | 015-major-the_devil.png | OutgoingDamage=40; IncomingDamage=25; KillHp=10 |
 | 16 | Major | major.the_tower | XVI - The Tower - Bevelle Temple | 016-major-the_tower.png | TouchArmorBreak=50; TouchMentalBreak=50; StrengthPercent=15; MagicPercent=15; Piercing=1 |
 | 17 | Major | major.the_star | XVII - The Star - Macalania Lake | 017-major-the_star.png | AutoRegen=1; MpPerTurn=1; MagicDefensePercent=20; WhiteHealing=20 |
-| 18 | Major | major.the_moon | XVIII - The Moon - Macalania Woods | 018-major-the_moon.png | AutoReflect=1; EvadeCounter=1; EvasionFlat=30; ProofSleep=1; ProofConfuse=1; TouchSleep=100; TouchConfuse=50; IncomingDamage=-10 |
+| 18 | Major | major.the_moon | XVIII - The Moon - Macalania Woods | 018-major-the_moon.png | AutoReflect=1; EvadeCounter=1; EvasionFlat=30; ProofSleep=1; ProofConfuse=1; TouchSleep=100; TouchConfuse=50; IncomingDamage=-10; StrikeShadow=1; WardShadow=1 |
 | 19 | Major | major.the_sun | XIX - The Sun - Chocobo | 019-major-the_sun.png | StrikeHoly=1; ElementDamageHoly=25; WardHoly=1; MagicPercent=20; AutoProtect=1 |
 | 20 | Major | major.judgement | XX - Judgement - Sending | 020-major-judgement.png | SurviveOnce=1; SurviveHeal=25; OverdriveDamage=30; ProofDeath=1 |
 | 21 | Major | major.the_world | XXI - The World - Spira | 021-major-the_world.png | BreakHp=1; BreakDamage=1; HpPercent=50; MpPercent=40; OverdriveDamage=50; CtbReduction=15; IncomingDamage=-10; AutoRegen=1 |
@@ -2015,3 +2149,60 @@ quais etapas de instalação/RT2 ainda dependem de autorização ou observação
 
 Este dossiê encerra o levantamento desta revisão. Ele não altera o estado de
 conclusão de outra tarefa que esteja modificando o Editor simultaneamente.
+
+
+## Adendo — strikes elementais do Arcana (2026-09-29)
+
+O Editor deve preservar os IDs/keys/artefatos das 78 cartas e a identidade de save.
+A capacidade de cada carta passa a **10 efeitos**, definida em
+`ArcanaCore.h::kMaximumCardEffects`. `compile_catalog.py` e `check_balance.py`
+consomem esse limite; não escrever uma tabela nativa de autoabilities ou uma
+quinta WORD de equipamento para representar esses bônus.
+
+| Papel | Identidade existente | Efeito tipado | Defesa tipada |
+| --- | --- | --- | --- |
+| Holy | bit 0x10 / native.holy | StrikeHoly | WardHoly |
+| Shadow / Darkness | bit 0x80 / native.darkness | StrikeShadow | WardShadow |
+| Earth | bit 0x20 / native.custom01 | StrikeEarth | WardEarth |
+| Wind / Aero | bit 0x40 / native.custom02 | StrikeWind | WardWind |
+| Poison / Bio | hook.custom03; pack semântico spira.poison | StrikeBio | WardBio |
+| Gravity | hook.custom04; pack semântico spira.gravity | StrikeGravity | WardGravity |
+
+`StrikeShadow` não é `TouchDark`/blindness; `StrikeBio` não é `TouchPoison`.
+Gravitystrike preserva a fórmula e o cap da arma e não ativa a política de Demi.
+Os novos nomes padrão são Earth, Wind, Poison e Gravity; aliases gravados pelo
+usuário têm precedência e nunca reescrevem identidade, item, ability ou status.
+Poison/Gravity exigem `arcana.enabled=1` e `elemental.core=1`, com os reinícios
+exigidos pelos respectivos módulos. O toggle de VFX Holy/Shadow é independente.
+
+O catálogo canônico é `effects.v1.json`; `cards.proposed.json` fornece a identidade
+visual e a descrição. A DLL consome `ArcanaCatalog.generated.h`, não JSON arbitrário.
+Os bônus adicionais estão em Empress (3), Chariot (7), Hanged Man (12), Death (13)
+e Moon (18); Sun (19) mantém o par Holy existente. Não substituir efeitos antigos.
+As Wards externas reduzem pela metade a exposição positiva após afinidades,
+preservando imunidade, absorção e perfis travados. Elas não criam stacks temporários.
+
+A ponte `ArcanaElemental.h` publica snapshots limitados ao ator/epoch/revisão;
+`ElementalArcana.inl` valida o endereço/shape da linha nativa e revalida a linha
+original antes do consumo. Bindings de pack sem `augment` ou `native_exact`
+continuam autoritativos; índices externos arbitrários nunca são tomados por Poison
+ou Gravity. Não habilitar packs inválidos, gravar em bytes de comando ou inventar
+bits 0x100/0x200 na máscara BYTE do jogo. Consumir as afinidades/nomes pelos
+contratos F7/Scan existentes. Fonte e testes isolados não substituem aceitação RT2.
+
+
+O fingerprint do catálogo tipado muda porque os efeitos mudam. A DLL admite
+explicitamente o catálogo v4 `c6fe69e9f96cf776a943ebeba725ed65dc1872cc6e8e0e1539963c164df2453e`
+para migração ao novo `9ffaa68fd969de9598684e813e570afd5c8ef30e702522f477d4e4cf78ec6ca7`,
+além das revisões antigas já admitidas. IDs/keys, hash do save nativo, CRC,
+propriedade única e limites de recursos continuam obrigatórios. A leitura da
+migração não reescreve o sidecar; isso aguarda o próximo save nativo concluído.
+Não remover a lista compilada de compatibilidade nem aceitar qualquer hash externo.
+
+
+Na promoção dos quatro nomes padrão, aliases válidos já salvos têm precedência.
+Se um alias de outro elemento já ocupa `Earth`, `Wind`, `Poison` ou `Gravity`,
+apenas o slot sem alias usa seu antigo `Custom 01`–`Custom 04` na apresentação.
+O descritor canônico e a configuração não são reescritos; Restore default segue
+essa mesma regra. Colisões entre dois aliases manuais inválidos continuam sendo
+recusadas. O Editor deve distinguir nome canônico, alias salvo e nome de exibição.

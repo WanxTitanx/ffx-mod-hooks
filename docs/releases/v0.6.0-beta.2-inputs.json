@@ -1,0 +1,1834 @@
+{
+  "schema": "ffx.public-release-inputs.v1",
+  "producer": "Jarvis-HOOK",
+  "release": "v0.6.0-beta.2",
+  "runtime_source_commit": "2787386a7144af04c16f194029a4a35616bf8dea",
+  "source_documentation_checkpoint": "500682ec3a4af1f8d7c07b83db87bd87fe00b731",
+  "dll_bytes": 4011008,
+  "dll_sha256": "5f6a76f3260a1aa0f5a36e0ff6e9f641f7d92e0dda969910d0d66a2debc3016e",
+  "supported_executable_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+  "evidence": "Windows x86 Release and isolated RT0/RT1; both Nul orders and menu under Proton; exact DLL loader/worker smoke; live RT2 pending",
+  "production_input_policy": "All C/C++/header/include/resource/definition inputs in the verified runtime packet, excluding tests; includes Workshop src/include. Build scripts/projects are in the source tree.",
+  "test_only_changes": [],
+  "readme_languages": [
+    "en",
+    "pt-BR"
+  ],
+  "production_inputs": [
+    {
+      "path": "research/equipment_workshop/include/customize_constraints.h",
+      "bytes": 3115,
+      "sha256": "e62c877fb5da36eca1e16240a82a6ad3b0504059d4968e3cf4d1d6e5c9dd4aae"
+    },
+    {
+      "path": "research/equipment_workshop/include/customize_recipes.h",
+      "bytes": 3354,
+      "sha256": "29a2e0193fcc09f987caabea1a6828358775a8f82260507ed5eba6ad3f14414c"
+    },
+    {
+      "path": "research/equipment_workshop/include/effects.h",
+      "bytes": 919,
+      "sha256": "268fc5e55100ce2e14db8daeccf4e94869b3252c78434135ffb98ec922e48f97"
+    },
+    {
+      "path": "research/equipment_workshop/include/lifecycle.h",
+      "bytes": 783,
+      "sha256": "555a9ce362d8063e2ecf85beff2160514d4a9b4516e68b627c8904a12e2e4ba4"
+    },
+    {
+      "path": "research/equipment_workshop/include/workshop.h",
+      "bytes": 6885,
+      "sha256": "ecd29807ba0992ac0c0166c2f86b45f51632a44583c9171e0ee61d9131faab7c"
+    },
+    {
+      "path": "research/equipment_workshop/src/effects.cpp",
+      "bytes": 2830,
+      "sha256": "0d2dd34ade4f66e397058d0fb55cbea3b7c19da5cee9bb6b73207e1704d6d250"
+    },
+    {
+      "path": "research/equipment_workshop/src/lifecycle.cpp",
+      "bytes": 3994,
+      "sha256": "1c52fa4e838112f2f0105cb150f07a6f377b5d04f2f0476c63b11d6aa54e6ac0"
+    },
+    {
+      "path": "research/equipment_workshop/src/workshop.cpp",
+      "bytes": 31321,
+      "sha256": "60760c856535ca0152e52ab8ec7ca36e98a4c9d8282797cdf0b1076267bebaf0"
+    },
+    {
+      "path": "src/runtime/BattlePhotoMode/PhotoModeActions.h",
+      "bytes": 19753,
+      "sha256": "2a602e628e8fb4efac1150a305e38ce2ff159f06ac93849796f85a7725f791f9"
+    },
+    {
+      "path": "src/runtime/BattlePhotoMode/PhotoModeCore.h",
+      "bytes": 15796,
+      "sha256": "7547bd0b082978b92696c90d614ecc55c4ac545e2a7c82ceb13292c51b2aadac"
+    },
+    {
+      "path": "src/runtime/FfxDinput8Probe/ffx-probe.c",
+      "bytes": 36584,
+      "sha256": "1b1ce7fa5dd814874ccb2d34a782fc8db10ae5c90737ca7b9456370ae173f941"
+    },
+    {
+      "path": "src/runtime/FfxDinput8Probe/ffx_probe_block.h",
+      "bytes": 6236,
+      "sha256": "6e9d6adbb9ec1657ba6c6398e5c49311fdb2a2c3aa45f94fddcc9a199986697d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/deploy/load_preflight_wine.c",
+      "bytes": 1837,
+      "sha256": "33930ddafaaed595b8e987ed3418c0f908aa64573a2989feb5df535971ad169e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/dllmain.cpp",
+      "bytes": 796662,
+      "sha256": "f9bf61be40c128a7795ebc1ec8a43fb0fd8c942a98d491acc56058f3377cdcfb"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/fase0_stub.cpp",
+      "bytes": 4113,
+      "sha256": "1628a8b2b3447ebf1dd418c26d61966ae68eef50053beeeba70a6873352f0dba"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/AbilitySfxHook.cpp",
+      "bytes": 6484,
+      "sha256": "b41e3cb2213fc8969f05bc3e7dd23b20fd593b5241d7643376d206418976a437"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/AbilitySfxHook.h",
+      "bytes": 688,
+      "sha256": "25be93c4adbc8e74737f939e5d894b94e3e9fb30bc6afd1cee0af069ceb431d5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/AeonAscensionBridge.h",
+      "bytes": 972,
+      "sha256": "ea76927b8d4f4e75c64f8182fd5865ce94bdaffcd6a5992d25eede9e260ce608"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/AeonAscensionCore.h",
+      "bytes": 12885,
+      "sha256": "3837fbe052a51dd4792f08d62fcb316748cf1016a86f98ab071ef841dd73d70a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaAcquisition.cpp",
+      "bytes": 3312,
+      "sha256": "a31b9fba34beb068cf033bf0b220d03eeea94f0535a81f9af0cca005924b8fcc"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaAcquisition.h",
+      "bytes": 270,
+      "sha256": "d2863f5e6666a0b2f7d50ee9974f7d1e775dc5a789e829246015ca8e8cf8dc82"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaAssets.cpp",
+      "bytes": 15228,
+      "sha256": "6230f6274ce66faec40b8da271375f1b0e5cf8e68e722e5c9b2616737567e461"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaAssets.h",
+      "bytes": 516,
+      "sha256": "e365be112b868b0cae77bf92b36801b058a26164049199665b8d9765e164d7f3"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaCatalog.generated.h",
+      "bytes": 21390,
+      "sha256": "e19f58e15fb3b30bb7c5a33e2995686a07bf35fe18302bad6392f8106c431b36"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaCombat.cpp",
+      "bytes": 23750,
+      "sha256": "c62fbd14abd7bd1e4e0f70375123ef5b25f0fdcfef3e5b6f751c8c8f3bde8b19"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaCombat.h",
+      "bytes": 243,
+      "sha256": "37a1bd57b71fdc26412a4dca2da1eba2ce1dccfba7007405f648066c58c851ee"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaCombatCore.cpp",
+      "bytes": 2115,
+      "sha256": "2324b5089020ce8727555ace95fac261a7044843cab16b2719835213597eece5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaCombatCore.h",
+      "bytes": 1031,
+      "sha256": "edc54594ea076880d20a92a4a618f3d31e9bc511f764bb1454bdbb4d3734a229"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaCombatEvidence.generated.h",
+      "bytes": 2423,
+      "sha256": "34f36cea6166cc8fc936c59187e60b48fa67914e6a9d54910b8ac50d47e12e05"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaCore.cpp",
+      "bytes": 8219,
+      "sha256": "043c940c3db94135f1a382b4b4a178e0fe4d4bb6454bb06fc7b2c21b86aa6e1b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaCore.h",
+      "bytes": 4045,
+      "sha256": "b7be35864379656be4e76dce9e8f6b2fc2aa6e9aab59058ca834fceaf570eb6d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaElemental.h",
+      "bytes": 2441,
+      "sha256": "dd570e9eea02589f59a24fd1822868ce45acc349bc0cfba1142d4ecf58df0fe9"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaEvidence.generated.h",
+      "bytes": 4972,
+      "sha256": "23f46cbb68a252757e70e1cb95d3fc4e6c2801abf6161082662ca3ab7981307a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaNativeEffects.cpp",
+      "bytes": 6461,
+      "sha256": "80a35435d5ec97346cfbd0b60c6c4465daf3ab220aba9d0fe8d72ae537e1104c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaNativeEffects.h",
+      "bytes": 752,
+      "sha256": "e8bf33c63b8f378722dfdcb9d9c002924cd18e7c0c12c9135d632152e26ea639"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaNativeUi.cpp",
+      "bytes": 28370,
+      "sha256": "12c8dd94affb71f40890621e6d3594311b5621bf4442c185b602d67e34ead6e6"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaNativeUi.h",
+      "bytes": 901,
+      "sha256": "64734986b460f8a8c911d010a035a96f673a1528779e5482d01abcdd511a41bd"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaRuntime.cpp",
+      "bytes": 25812,
+      "sha256": "d9c7d118c477b71eb484c9f2eb4c5ecdf548efaf3d884bdd296db1b7b21aef4a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaRuntime.h",
+      "bytes": 1091,
+      "sha256": "7f8e7c7bb263bd6a132061815a365da38878e6046b900e276f5f687d7e64d0d9"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaRuntimeEvidence.generated.h",
+      "bytes": 1149,
+      "sha256": "69aeadee784432d96f65f7843b7f618feb5d11b2a079a49ebc3e86fe93d52378"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaStore.cpp",
+      "bytes": 10795,
+      "sha256": "fe42a3082fe2582f141f0ca1316fe6df877efe9e79f57a71becf6058cf609e89"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaStore.h",
+      "bytes": 1335,
+      "sha256": "5b212ce0d80377c02ba53714eeec00dcc06903f3f19dbd9b4ba7e56247afcb3a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaUiCore.cpp",
+      "bytes": 16222,
+      "sha256": "3f1e646d33f0a9d12f5dc5743bc45ea92e889ad9c7cb2f39441694e13b4e6abc"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArcanaUiCore.h",
+      "bytes": 2200,
+      "sha256": "e312a76fabd1990a0899f573d7bf4603f136fd44d91d769f6e82c2b19a7ba71c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaBattleProgram.cpp",
+      "bytes": 14067,
+      "sha256": "bf3caae4f81dec627d7f1e9604859645ff2a92219827b425d1472efca8c5909b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaBattleProgram.h",
+      "bytes": 2282,
+      "sha256": "b0ddd5805bfadc220f86f33a81a1af1fdb3dc880219b412dc591899a6b79077d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaBrowserCore.h",
+      "bytes": 1901,
+      "sha256": "63dc2a0dfbe3b05451011aa820fd035b52e79e0bfe4ebacf2a056ac568321111"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaComposeRestore.cpp",
+      "bytes": 84479,
+      "sha256": "11e6329c58d424d5abc086c907323329bf6d81ffc286f4ac64492b16626733f8"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaComposeRestore.h",
+      "bytes": 4454,
+      "sha256": "178fecaabb2487eb5d7bc9b4eb4b4b694b28f296a9ca9d54ba06162604fe4b3d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaLegacyProgramHashes.h",
+      "bytes": 1880,
+      "sha256": "bb785fd7d608832434adb12bef0cefec6b0a2327e1bc54fa62ab9a22810a7c41"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaMixLibrary.cpp",
+      "bytes": 36826,
+      "sha256": "8b6234bdf8091d1b4163cf765c26c8f9523229f1472a6f5880c0d17f95fb0ade"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaMixLibrary.h",
+      "bytes": 1495,
+      "sha256": "08323d400db9dceaa4c6aed6792585a94edfe9a545d02b492f271fecade96547"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaMixPolicy.h",
+      "bytes": 3134,
+      "sha256": "dbf6c4ec84156dcb1a2a2015fd52e7326bb0f8572c9f7415056f1929bd77fd37"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaMonsterCatalog.h",
+      "bytes": 40647,
+      "sha256": "ec894d18b940cf071e80db8678ff81a0b9d2cc45910a284d7c9226cef584090b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaPlusComposePick.cpp",
+      "bytes": 111155,
+      "sha256": "9f8de4fcdde06a3120dcea13a51e15dfc03bf901ada690ddeb3ef367ec727cf8"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaPlusComposePick.h",
+      "bytes": 1420,
+      "sha256": "e925f7f382b2bef4f61ab74bfc06cec674a5d0793002bc02c301c4c96b373650"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaPlusGil.h",
+      "bytes": 467,
+      "sha256": "09c985633eff3863ba178e1b430bf70083559edaf6eec2eab9f4b87d7a714a45"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaPositionLayout.h",
+      "bytes": 4264,
+      "sha256": "3f3d1bcf9d31806ccaf894f74b2ae44b684ffb3c8fee7e78fbf0f90ab67ef435"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaProgressSidecar.cpp",
+      "bytes": 17007,
+      "sha256": "ce22a63e4e1ff04e6767ecbfb83141b2fe0df1ecdf3321b265b92dd2cf95d8c0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaProgressSidecar.h",
+      "bytes": 2523,
+      "sha256": "c451d06fe0dd68769fd6d82edeffe783c336309e0372d67b4c68e610a2d0f6f0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaScenery.h",
+      "bytes": 4124,
+      "sha256": "ef4c12a7c769a7f916d82736b319577a34e96c502caa79543cca1bb38869c39d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaSceneryCatalog.inc",
+      "bytes": 5855,
+      "sha256": "0ffb7ce247c019af9e994e4235dc48a52c677c72f5810569ca7807bc407ecc74"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ArenaSoundtrack.h",
+      "bytes": 3010,
+      "sha256": "a871f3bbf8e397c45fbabeedebd94e424415e4774fd4bc9a1157e533ea0fb9c5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/AutoAbilitySlots.h",
+      "bytes": 767,
+      "sha256": "e689c0e2fd19271af3236a5b2cc224e89371e4ed4a6103b2189dd0f0c89d4601"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/BattleDamagePolicy.h",
+      "bytes": 3160,
+      "sha256": "12a760a9eb409f3c522ba207f1ff8446194e6c51e398a2f60c17f0e77382dfe8"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/BattleEndHook.cpp",
+      "bytes": 5989,
+      "sha256": "c3f6d2b3db162384db84694cb77acf86024112e7bba53ccfaaf38377204e4d3a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/BattleEndHook.h",
+      "bytes": 3346,
+      "sha256": "1b1ef263186cfd9248cfe9963c26382c8688e7066547322c5e66511d4a5025e6"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/BootSkipHook.cpp",
+      "bytes": 24063,
+      "sha256": "29c3028d48eeeeaa897b606a51007f95f55b9f28dcd5c50136f0ad9c7cc8e624"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/BootSkipHook.h",
+      "bytes": 35072,
+      "sha256": "bf0762616194d19e84b5b53aae74741c716c9b92295698d2f033410c4151f6e0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/CombatExtensionBus.h",
+      "bytes": 7000,
+      "sha256": "ba1693f72cfacc93ff715adaceb93a6a4421c9621f2a0cb59e6e2257806ea76d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/CustomMixRuntime.cpp",
+      "bytes": 36926,
+      "sha256": "6fe8cf4e5648faedea790f0a4f1401cfb66329f88ceec02f69039ed8ae02670d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/CustomMixRuntime.h",
+      "bytes": 7458,
+      "sha256": "ba7eff54ca8fe702f85646a0caf6a2aaf0854b3421ccf0b60ec36eaac39dc1c8"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/CustomMixUltraCore.cpp",
+      "bytes": 17580,
+      "sha256": "c8c07ae6882e948a58b740680eda93ecccc50125b25d02d8a362e369e690675c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/CustomMixUltraCore.h",
+      "bytes": 6101,
+      "sha256": "6b77375a06c9f276779c15c118d5988047421095f55947660d9e62660dacf21f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/CustomMixWindowsAdapter.cpp",
+      "bytes": 8614,
+      "sha256": "77e0f1e1e0b4bf5a089c3361b43187c5fb6c6ab035ccad8e45e65e9f83ba3549"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/CustomMixWindowsAdapter.h",
+      "bytes": 5328,
+      "sha256": "fada220e48b7af31681f41d336432cde3acba7834dffa69f0a9be06e3db30dae"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/DialogSkipHook.cpp",
+      "bytes": 10270,
+      "sha256": "9265860bc9f37624048ced37b9d835f424a07c6e956aba18e256b95317a5c36d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/DialogSkipHook.h",
+      "bytes": 5662,
+      "sha256": "d3e746d6afbba4407ef82bb3d63992daa9251f41fc34ba8b852c735a512a3984"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/DoubleTripleDropHook.cpp",
+      "bytes": 7529,
+      "sha256": "e5a102d5e19420ea304879e2fcb4329584145c1ff064966eb66684e4609ac6c7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/DoubleTripleDropHook.h",
+      "bytes": 1616,
+      "sha256": "146a5558f1ea984afb79e7b08921bebb5c3d7e848cc5fd68a397cfc17b2e8ef4"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementAffinity.h",
+      "bytes": 5364,
+      "sha256": "5329ee59560ed87ad879e9f772a8999df1ce03d6f754494b7b3f2714b6aae046"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementBattleState.h",
+      "bytes": 10534,
+      "sha256": "ea75dedf97f1423f1ed27957eb917a3a79da576b66cfc491552712c8a86f22cb"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementBuiltinPack.h",
+      "bytes": 1820,
+      "sha256": "874765a2a1364db2176f5dc76c1879434e471566ed701525f61475f69ab8df2f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementHook.cpp",
+      "bytes": 10266,
+      "sha256": "864928b4d030fbdefa7630ca37640e1ec217c3123a7a84e4c45785c9ff86e05a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementHook.h",
+      "bytes": 766,
+      "sha256": "7c5a2ca1b620fecc447da3877c047a1769d47edfac63ad85a4930c902ca6b902"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementIdentity.h",
+      "bytes": 889,
+      "sha256": "ce15b8988008ce9be19a30fdec8188da252e59417a7dd39a427ec145a95327f8"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementMenuCatalog.h",
+      "bytes": 4449,
+      "sha256": "1623f3d9cf37148dfca4f5be45ac3a799d6a54b3f93ca49736b347810634df3d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementMonsterProof.h",
+      "bytes": 3851,
+      "sha256": "a2195600d296198262d3e6340ab3fc4a4cc1716de54fb12c9d05f7cbb65c6412"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementNameInput.h",
+      "bytes": 2755,
+      "sha256": "bb32f6fef53be549acd4567cedf0c013d700a4cbe9681f802f51e69c7caf638c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementNameSettings.h",
+      "bytes": 5446,
+      "sha256": "16f6dba2ff8f968d869e5f9fb08b6b9f99eeeabedacca90e1dbcbd6c9790866b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementPackAdmission.h",
+      "bytes": 9232,
+      "sha256": "08aadf8d1369f38a9a840fb1eb9287014896c96f46c7742ae12ff837e25b7208"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementPackCore.h",
+      "bytes": 25236,
+      "sha256": "666ef3f1ced40e34cd0065c21f1eaf7b9d4689d248ee466796b60d2a0259b972"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementPackJson.h",
+      "bytes": 9847,
+      "sha256": "adba204c972c1f9a7847451143067045d6422346a5fc81cc8e2ba23060d78b6c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementRegistry.h",
+      "bytes": 2800,
+      "sha256": "cdbcc702315144bf1569fa29950a943687e03065540d3d9003361c9043d5bb58"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementScanCore.h",
+      "bytes": 2823,
+      "sha256": "9c3f82e1caa4504a6a0d034d9c791ede0c9dffd32cf6bfeb984225d487ffe8c7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementScanDetails.inl",
+      "bytes": 10168,
+      "sha256": "c786f41eabe09adec6365e9b54b914136b224a2a780fbee5d050633c916b5845"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementScanSettings.h",
+      "bytes": 4480,
+      "sha256": "0c57894e0b54f6b577c4dc988a2969d1a6bd3e41585b7481bb9e4514b3f0627d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementScanSprites.h",
+      "bytes": 764,
+      "sha256": "58bd027b3b64eb2c880dfab7d3fd6b09566e2f4fa1ad3ea80119014203b7aa1e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalArcana.inl",
+      "bytes": 5249,
+      "sha256": "e3ee780a10a5716c4cd1cb1dc5798821922b52324d6d0b09c5e6b6e2e7f194d8"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalEquipment.inl",
+      "bytes": 1717,
+      "sha256": "c52dbee334b70c211af74b052846bba054110777e2d1a60e2cac0db9fda3e3c7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalGravity.inl",
+      "bytes": 2015,
+      "sha256": "38d65b2699794e504bd2a07dd191946aae706112bcae33749b37a76f6c8b26f7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalMonsterProfiles.inl",
+      "bytes": 4474,
+      "sha256": "a82746ac1fa4205bba49a229f14571dd41f57428ebea59d551e8ca34d55df92a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalNul.inl",
+      "bytes": 5936,
+      "sha256": "952acc05e4eb81298b65d1d5e4bb4c0f6941ccf6b16909e5a6179131df9f07c6"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalRuntime.cpp",
+      "bytes": 35404,
+      "sha256": "3f0b308f0098616e08e07dcb8202925da2034d0dc9ff6a73f7782ec4b8059876"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalRuntime.h",
+      "bytes": 1623,
+      "sha256": "afd797def5589004e747b0b1b813baadbc3a077509ca768d8f3468806fbfd4d5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalScanDraw.inl",
+      "bytes": 3291,
+      "sha256": "845022c859062911ac819eafdc4c873a47d4cd2e96741d6daec8afbc6d86ad62"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalScanView.h",
+      "bytes": 3612,
+      "sha256": "dea774649f4f8481d696ffac9af3b790e596e7430c26878578c23a1320ba47a9"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ElementalTactics.inl",
+      "bytes": 12317,
+      "sha256": "6a1f66101b7caa91e4a9bcc8527563dd2eba10f122cfd485a22a6b8cb170524a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentEffectBridge.h",
+      "bytes": 2082,
+      "sha256": "5af6600dea9361b75c895b2cb5d2144731cb8ca69211b2459fcff7e1daa2151e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentEffects.h",
+      "bytes": 2835,
+      "sha256": "7e272ce0875e9fa460fcfaadc89b578e2a458abc2a8aa097970fe3aefc155e49"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopCatalogBridge.h",
+      "bytes": 1101,
+      "sha256": "0b2f9009d212964a6153d367ac1399ccded2b79ab3ab26f195cc22755acc943f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopDraw.inl",
+      "bytes": 9616,
+      "sha256": "dd3c0649dc59d00d3c43e1bef5677dea35f853de1ba16a3b9c235e821a3cbe5f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopEvidence.h",
+      "bytes": 4333,
+      "sha256": "7a1e4f62783799b5fb6e29c6b2cd7b959c9bfbcafa84dd58bd8497b2ef324fc1"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopExtendedUi.inl",
+      "bytes": 4599,
+      "sha256": "0c0686470c4b9a811c7a524609e8718f9b0c5ba8f4f7e6e68ce5743ee88801c9"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopMenu.inl",
+      "bytes": 28829,
+      "sha256": "971d18f21936a83868e2b368715b25f5890adf007204160ea85da6c04f26fc9f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopNames.h",
+      "bytes": 4606,
+      "sha256": "5dfae501bb8686d639877ef7185de652f62ef830c1c20a9e3f5fece6c978f0ca"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopNativeUi.cpp",
+      "bytes": 9444,
+      "sha256": "0ae521e7db1b4cb6bdfa577da8ab438135f3042f13210007e1f0656b6f895ae7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopNativeUi.h",
+      "bytes": 574,
+      "sha256": "5e948ba9c662261721cdbcecd65bd6f22df669bf97e56fb6704a49b9d5b9fe2d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopPresentationCore.h",
+      "bytes": 2052,
+      "sha256": "9983e3fb4980d86d9fc8be22e53ac17689dcd8cb7020caf3bda5fc9d6c1ad206"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopRuntime.cpp",
+      "bytes": 48675,
+      "sha256": "aae32fa7f4ab9e3692d6fe2639663aeeb8ca918914e315d7550c7fbe7376582f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopRuntime.h",
+      "bytes": 2009,
+      "sha256": "78853d9abead84ff1ef288b37a67594d83c4af3d7c94b657b4f79c58e9d177f0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopSettings.h",
+      "bytes": 3161,
+      "sha256": "42fcba7925781c3cfcf19f091439e8c6eabbc6618dba2b1965be39e6dc4ae9c1"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopStore.cpp",
+      "bytes": 30074,
+      "sha256": "706ad7e1665d91a5b1adcb18b213d96cbeefb05ff8e1fb4c82c31432205fe023"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/EquipmentWorkshopStore.h",
+      "bytes": 3693,
+      "sha256": "519bae8bf75f0aeaa7b312727f0e3aaad1f1468f8e2c1c59120c3cb41c16c959"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7AiSwap.cpp",
+      "bytes": 51108,
+      "sha256": "d62843acc51354cc11800ba62a07d0c01bd556255e869091282269b6ccf379fa"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7AiSwap.h",
+      "bytes": 988,
+      "sha256": "63d313b158e134d506c35a1c634a41d6719cc696247363351d92da9a5e7dd39b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7ConfigState.cpp",
+      "bytes": 4564,
+      "sha256": "970679c89a72e00ba7669c5d2f48ba430d36b6fb2360ced5a280c1e849c41d47"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7DifficultyCore.cpp",
+      "bytes": 95672,
+      "sha256": "74b75d287fd8753f08ac07d3fafc454e4457edb1ef55e81777e537c8ab6b8b69"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7DifficultyCore.h",
+      "bytes": 22853,
+      "sha256": "3a1494f431208eeba785075ea74d0263c01bdd3575ebcc3ae28923b09a3b14f3"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7ElementAffinities.h",
+      "bytes": 3646,
+      "sha256": "73eb292e5a5367162b60cc1bb6efe7085e6a67b1e7f292b6a5fe51a9cf5e07ba"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7InLive.cpp",
+      "bytes": 104423,
+      "sha256": "c87c9008b0fa233af76eea2ca1e9554cdadf89fcedd7ac34e4356db767d09331"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7InLive.h",
+      "bytes": 8074,
+      "sha256": "d134150e038e1b74492ddc0ffdd591df3584d3c663ca91599cae0608fc8b5ece"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7UiCore.cpp",
+      "bytes": 9433,
+      "sha256": "76fe6c495e2d15a166f2253398bca043a9e2ceb3913ee684c6672d1d17a7dce7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7UiCore.h",
+      "bytes": 4230,
+      "sha256": "ce9e2a27d47d1a580d4562fea17ece1a8a99b73d5e366a98d6f8dfd3e62e06d9"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F7UnsafePrototypePolicy.h",
+      "bytes": 1614,
+      "sha256": "7076fe93dbfcc7778609a5ffb2d9d800de78e3c9d04fbe5e7b0f45d7d08c658d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F8FlagCatalog.cpp",
+      "bytes": 37830,
+      "sha256": "f8e4306a9eb3c443ee9be76af3db1f0e91e458f05723865e0f3938a4e9b6b856"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F8FlagCatalog.h",
+      "bytes": 4606,
+      "sha256": "a530721d4a937e6e9053de54c76860e3c367effc8f5f53587749dbabbf4b0b2a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F8FlagsUiState.h",
+      "bytes": 13844,
+      "sha256": "c906f3cd2125cbe4a90c8998a37fa73096532b5fe1ddb4f40e1f8f25d68eaef5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F8RuntimeCore.cpp",
+      "bytes": 70210,
+      "sha256": "9bd270298a156635ccaecded023aaefe7412db664fa2cae371ff5a3dcf62a08b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/F8RuntimeCore.h",
+      "bytes": 12103,
+      "sha256": "bd597663743eac7dbe06e7c192369aad42a15b1079388c70a64e4d14cce29ceb"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FieldProbeEvidence.h",
+      "bytes": 1587,
+      "sha256": "dbbb5f7d2a041e4e6e49f6cf5ad85123995663dedd44d74d3cca4ad989cf6253"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FieldProbeHook.cpp",
+      "bytes": 14977,
+      "sha256": "772acd8144da2aec84b1a09e411aebb4b2be1b3fc1ac178b02c20e71ebd780cc"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FieldProbeHook.h",
+      "bytes": 1009,
+      "sha256": "0325a002ed11370a18dad44e6047367826f5754099a651bc8ae16fb0b538d50c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FieldScoutAdmissionCore.cpp",
+      "bytes": 3922,
+      "sha256": "b76f361557bfccadd5207bca292c1b6e6f2b9e330507ae3ee0767890d49e80d6"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FieldScoutAdmissionCore.h",
+      "bytes": 1748,
+      "sha256": "ade3bd090c6a3ec1fb212838175fbe1112b3f0a48d6f87cc826c091b0bc780d5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FieldScoutDedupe.h",
+      "bytes": 4634,
+      "sha256": "3731d52d384266a4fe9765e9024cd9087e613c84a55190e1120905a89886aad0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FieldScoutHook.cpp",
+      "bytes": 97498,
+      "sha256": "1fb5282c88ad8a4011300e99ebc36b90d43a05ffc6b5c66048eabb786fafe4e3"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FieldScoutHook.h",
+      "bytes": 2100,
+      "sha256": "fff233d4dd8d2cca3585fc1112adbb23f5303231f5d08b670024ac62fdbfd468"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FmvSpeedCore.h",
+      "bytes": 1406,
+      "sha256": "73a7d6c75da4dca409e9107eeac245118e01c57f51013138de2399dde5e923a0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FmvSpeedHook.cpp",
+      "bytes": 11662,
+      "sha256": "d541d4718af31f8fb599c9adb8fc7bea761167298958f82e555210eebc9fb160"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/FmvSpeedHook.h",
+      "bytes": 956,
+      "sha256": "d5dace297e8bef365ddec5cb3a47195131c2be1e3beee3c3164a424fb0eb702a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/GridLearnedCore.h",
+      "bytes": 4862,
+      "sha256": "d67088c486a142048945d7ccfa783511a8ea411d45a62d2fcc885c0f9cd6de25"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/GridLearnedRuntime.h",
+      "bytes": 15843,
+      "sha256": "eee3a739b2ea85558bb0bb36685a8f2a1610ed28aa01eb2a5ae8bb8b190a1177"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/GridLearnedStore.h",
+      "bytes": 6531,
+      "sha256": "186c09ec8236a4febd104c33ed8ce401869a48a087a1a6df4afac648881f5552"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/GridTeachHook.cpp",
+      "bytes": 16966,
+      "sha256": "3925bbd8a541d878ccbdbda5b0ac22211528fb5079778e34e6bf31f1f5d960dd"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/GridTeachHook.h",
+      "bytes": 1162,
+      "sha256": "d02f91b7fb055309064fceeaa280dbd08b31204136083f40b5dfdf9b7a00430a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/InGameMenuDashboard.cpp",
+      "bytes": 2259,
+      "sha256": "8d37cde2d80689594a4001a2ccf19a9e37c89af65daccd648be987c659bcf953"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/InGameMenuDashboard.h",
+      "bytes": 934,
+      "sha256": "1f5e7f1bc352b5ce788f0c57addd806589f3600f29b58c2ec9af5063b4411856"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ItemStackCapHook.cpp",
+      "bytes": 10994,
+      "sha256": "75cd79d13dde5eb1271186c08d1bcd154b65d06a072ed3224ff3be4f449342d2"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ItemStackCapHook.h",
+      "bytes": 1271,
+      "sha256": "d22f163a7a9b43b5e6e2fc617b665861a84a4947b1005b9f7248b9de65e760a4"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/KimahriLancetDualGrantHook.cpp",
+      "bytes": 4449,
+      "sha256": "a2482d18943f5c2a8acd827f4e44388c2457492275eb73739e428cc8c0cf0880"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/KimahriLancetDualGrantHook.h",
+      "bytes": 1080,
+      "sha256": "2133dc428b8a6ac122fd02fb368d3dd3469a35ca019110a8824f62db15100316"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MaechenCore.cpp",
+      "bytes": 15414,
+      "sha256": "5dbc8a0cf119c783f0390ae180209ae1540749d37063a6c761c65ddbf49b45b7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MaechenCore.h",
+      "bytes": 3028,
+      "sha256": "82c0202d62f940fdfb851e371f1d8c289f94cba20a4720bc8e4aa562e36d8b9d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MaechenHook.cpp",
+      "bytes": 63822,
+      "sha256": "ae138008ac2b52b52fdb6718dd1d7316448a82ec7448f6dbd1559795368ae73e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MaechenHook.h",
+      "bytes": 5533,
+      "sha256": "6103402a5208b9f224471fec346ec03eea16536c9ea90a0583a9bee963f65181"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MinHookBatchCoordinator.cpp",
+      "bytes": 11662,
+      "sha256": "cc618b42c3bdea6d2172a9c528a163022daff05d1a6bda0cb899108c99c9469c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MinHookBatchCoordinator.h",
+      "bytes": 4814,
+      "sha256": "d40b886c82298f5a132ce6352c448e3e588e42ba4f2d4caebdee3e954c0a4b7e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ModFeatureCatalog.h",
+      "bytes": 2272,
+      "sha256": "3ef3ab20295ea4b7e6dcf184f5245d5136c574ddedc61ae46677174d6f91f091"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterAiDispatchShadow.cpp",
+      "bytes": 4241,
+      "sha256": "5f792d4528cf7efca186a060fbf8e2f5e7f36ff827b3a9cb2d95ac9b2e138f3d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterAiDispatchShadow.h",
+      "bytes": 3612,
+      "sha256": "1d0c805802c2927920b557ed1ef946d52c3cdeaab8e508c2eaec1454cc8600f0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterAiDispatchTelemetry.cpp",
+      "bytes": 7845,
+      "sha256": "45b44423079ceb7b0245da72b0209abbc61913b37d673bc0b7565aa4ecd0a3aa"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterAiDispatchTelemetry.h",
+      "bytes": 2888,
+      "sha256": "70ce7d1b7716e8c54b6d0a541653fd2012a3dfcd5e7c73c400d01c73db68940d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterAiObserverCore.cpp",
+      "bytes": 23763,
+      "sha256": "b86a90811a5691c0dd357d9920108f3b520d913e374ce86d27a0d368c358ad46"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterAiObserverCore.h",
+      "bytes": 6141,
+      "sha256": "0bec70434f09784dfbf3839bf2183d96c0010f5f109fb0b80f0f2e473e4be3c4"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterRewardEvidence.inc",
+      "bytes": 267,
+      "sha256": "51c8937f4ce14e59a3b185780ffb6698f0c2aca290954742322aabd8c30d4d3f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterRewardNames.inc",
+      "bytes": 7744,
+      "sha256": "d8199ee1e5eab7a3ea08834552d653f68ce056e6831ae89d26eabbc30e6cbfa7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterRewardSettings.h",
+      "bytes": 2529,
+      "sha256": "726b460d97cff7151ec06cf39c373f78086dfeafaae7684707788ac45b0bb85a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterRewardStore.inl",
+      "bytes": 3130,
+      "sha256": "39cc3b7d09c6de7e99856b50a1708d50fae3c2bd2b2b775c2c2649e348a4d3c3"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterRewardsCore.h",
+      "bytes": 2818,
+      "sha256": "22956fabf80856d21260673a2963d8ff1656d6c4c6aa66c520a0b62145119f65"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterRewardsRuntime.cpp",
+      "bytes": 11008,
+      "sha256": "2968cf7579ce8a698ab7b9db4a110079962aa9a5566508e5278d6a3c4fbe1028"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MonsterRewardsRuntime.h",
+      "bytes": 896,
+      "sha256": "aee8f5fa5ff9e564cf337431647494fbae09a7e56061f8b0a50def921feb101e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MusicHook.cpp",
+      "bytes": 29587,
+      "sha256": "9f61d3a1492ea482963ac17d7ed177546c4424d7c69c7591cf4c054b442c4896"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/MusicHook.h",
+      "bytes": 2039,
+      "sha256": "7f38f1520c5a7069dfc27c1ad72697213f3663c8863efd41c2daaaeb296cbcfe"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeBindingsCore.h",
+      "bytes": 5941,
+      "sha256": "baf05556420a274e4f7de4b2237b85a43d50959ea1e0fa55be70f0fe2bcfa4a5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeGamepadCore.h",
+      "bytes": 4218,
+      "sha256": "72d54f8ab07b4999cceefcaf6eca38646cc4c167b162de1cf7df7318aadf8629"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeGamepadHook.cpp",
+      "bytes": 7826,
+      "sha256": "59226513fb20d940382d04f81991c6fab8d8ebfc1307d5c9672d394750547fce"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeGamepadHook.h",
+      "bytes": 617,
+      "sha256": "4efb49854b9e643c8d1f4ef03155b3564d89400014816bf2fd2f4481dde35339"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeGameplayEvents.h",
+      "bytes": 2462,
+      "sha256": "893839e8ee42bf08bb2bade8216b73aa809c7f9a98f8bebeab476c5eaba70681"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeLanguageCore.h",
+      "bytes": 2743,
+      "sha256": "02cf86e225fee51577e2e81ea8b408a77bbbbffde9328612489456ac964a71e3"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeLanguageHook.cpp",
+      "bytes": 8895,
+      "sha256": "13198f550bc303c6c7acc5536130fdb2056d9a4cb8836f31cf9d729674d86c2d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeLanguageHook.h",
+      "bytes": 338,
+      "sha256": "3ca8f4d0cef32df008159dea89b87511192eedbc25ce4e328d43fa3e87f1bd4f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativePortsCore.h",
+      "bytes": 2582,
+      "sha256": "d5b6295f6e10f24bf53be1d5d5b531a8fb84c67eb41f2fe90dbe9a81b711cfb2"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativePortsHook.cpp",
+      "bytes": 31606,
+      "sha256": "0251f23eed3f17c0ea366ed8c00a340ed29d436dc7e29ac49c2b4960517dbc6f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativePortsHook.h",
+      "bytes": 1787,
+      "sha256": "22ae5fa9d24c1253a9e31475e296a9918b7a8a3e4381447a6b53a8f5846aa766"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativePresentationEvidence.h",
+      "bytes": 13329,
+      "sha256": "d91a613dda8a7be59350cb586ab35d0dc41b427354e5a985d1d05452c1880037"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeRewardSettings.inl",
+      "bytes": 8930,
+      "sha256": "335bc83971859299aff7a876f54eaa6f7c7b55c4a4dee9820ebb7ec77e3af951"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeSaveCommitAdapter.h",
+      "bytes": 5646,
+      "sha256": "a6714f8956bf2fbb6a1d358a767636417c7484ab90f70f9e1c51eceb6aa24b87"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeSaveCommitCore.h",
+      "bytes": 5827,
+      "sha256": "b1b72f0f30f07db1cbc1954ee995426cec6c1aeeea5c10b98981af68f1428fa2"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeSaveEvents.h",
+      "bytes": 12602,
+      "sha256": "cdfcd4aae06547d5a6cf52b027e227dd34967964db0846a755268cd8a718f17f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeSaveLoadEvents.h",
+      "bytes": 1669,
+      "sha256": "a1eb8d095b569476a6a30a50a46737ef174f72a81dd79e0d6d800969e3f36621"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeSettingsUi.inl",
+      "bytes": 60604,
+      "sha256": "39b30608e97df875df400643fe43481c830aeebc62371737dde9854bd0d3e468"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NativeUiHookSupport.h",
+      "bytes": 2689,
+      "sha256": "ecbe0ed1ad506804e06ad07c570d91a440edad8565491df7a5372773a2e4eedf"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NovaSuperDamageHook.cpp",
+      "bytes": 15461,
+      "sha256": "3d418f3ef9515139d29b53f2ad979652e957f6c51949e2e64797f2810056f064"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NovaSuperDamageHook.h",
+      "bytes": 1174,
+      "sha256": "726af587fe3d5873767f6356e082cd3222e010df5b654c139376f275e91c692e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NulElementCommands.h",
+      "bytes": 2199,
+      "sha256": "b12888070da1dddd0003d75280aa1292a75f28d91812710c8edf3ab0ea8d7e70"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NulWardCore.h",
+      "bytes": 4445,
+      "sha256": "1c88e519eecded6ce31a33bc95d946262fad76bc30132f269631a90ae233cf4f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NulWardHook.cpp",
+      "bytes": 16616,
+      "sha256": "04f95410350fdaeaa81aff85d11d2b5b84fa8edb31852577bc5ee4252215125d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NulWardHook.h",
+      "bytes": 1348,
+      "sha256": "840abe5b1c9c18da7c931fff5112350d5e645a825b1414fc5f5964b959d395d7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NulWardTeachHook.cpp",
+      "bytes": 18462,
+      "sha256": "a1f2fe82520ea0de4241204ae8c625f70894989d5531b3f2e5990e11f7ac043b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/NulWardTeachHook.h",
+      "bytes": 577,
+      "sha256": "a82b6ff5cf82490d19d5921191e814d3d2d764bd5ac7f4354ea6e70274bf9c9f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/PhaseTurnEdgeHook.cpp",
+      "bytes": 3081,
+      "sha256": "01113d9a57b913edcad3ef35305d7cab7292b48ca4872097dbd49209a923ed81"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/PhaseTurnEdgeHook.h",
+      "bytes": 2500,
+      "sha256": "d0aa3f3fd8389a62b9655e48a25adcbd8f4a796f91ecf9843445a4c486ad0623"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/PhaseTurnEdgeSidecar.cpp",
+      "bytes": 1995,
+      "sha256": "810dd8f05fa35f90193c80919a7422e6fd0d6bc3c3ae376856941ca1247818a6"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/PhaseTurnEdgeSidecar.h",
+      "bytes": 1344,
+      "sha256": "34a0de00b673d6e5f5e8e4e983fd7717056af5d56a14e953fb34153047e504fd"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RecoveryBattleEpoch.h",
+      "bytes": 1263,
+      "sha256": "a272a859f6226bf388c2eb44598667d751e4ef3c789bdf9be6b1059ce49cd7ca"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RecoveryEvidence.generated.h",
+      "bytes": 7839,
+      "sha256": "05be210e74536dfcaad22ff398a3d48e13250da3a135c8cd47f34d6de1f2f085"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RecoveryNative.h",
+      "bytes": 6814,
+      "sha256": "99e311b6aaa76a4e1ca6c22601121da8d1f5ffd095335f28cfb3538896d1c2d3"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ResolverLogHook.cpp",
+      "bytes": 9933,
+      "sha256": "9cbc0621065397599f261be9f5f455a1dc836765b69b4e9822eb6c5fcb67cc41"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ResolverLogHook.h",
+      "bytes": 3257,
+      "sha256": "1731bdddbf0bd7fa88bfd125c0136a34f2e21ab93cf2a477a2714c6271bab07c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/ResolverOwnerPolicy.h",
+      "bytes": 2906,
+      "sha256": "543db21ac069b13f1af3e53d234743c93a3c49079a9f3af2fdf4a1a93da51d61"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoCommandCosts.h",
+      "bytes": 1706,
+      "sha256": "961ff868d46b9caa784a60f8d10cfef3e6317afb094db2a9ab1d1abdcd136ea9"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoManaHook.cpp",
+      "bytes": 98958,
+      "sha256": "630943d3dd47ccd2fccdf176c3a6eabe68bc7e1b07abb0b2f50cfe2273d4df55"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoManaHook.h",
+      "bytes": 941,
+      "sha256": "bc6d089e4d36f607d9537f13ef89093aefdfdcad5c6430a5ab1bd54f6f2ed604"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoPoolCore.cpp",
+      "bytes": 1729,
+      "sha256": "831c0b4402692cab4e3e020658fed7c4f3c2e3d430fd101463179bd656aa5948"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoPoolCore.h",
+      "bytes": 993,
+      "sha256": "a27a2f93bf2b22a3ab835582911b5aec76f1d3360f799b77e07d6b4c664cd332"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoPoolEvidence.h",
+      "bytes": 15087,
+      "sha256": "ff3310db572c8ddea7e3a226572037577f84feb41d5cb5e5220b97e5ee2ad49f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoPoolRuntime.cpp",
+      "bytes": 47657,
+      "sha256": "aaaf46998c1d94d00d93828b7f476990d304ee60052ce548850ee4500c8ed1a6"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoPoolRuntime.h",
+      "bytes": 1170,
+      "sha256": "fa8c03fe70565d3ac146a87d30ff36bcbf427ff8356b85997634e658e8befcc7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoPoolSave.cpp",
+      "bytes": 4166,
+      "sha256": "408fd848bff35e890f8d443faf4f3dbaf84a1768e9e56468153ba5389d94c66c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoPoolSave.h",
+      "bytes": 1065,
+      "sha256": "460ad83b2f8ca8c91167294e3b92f4c93c028c3520c697932a87695dc061c8a5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoPoolStore.cpp",
+      "bytes": 7699,
+      "sha256": "a342b07cdedbca028b8c7c4d5f5bf82426aa0e2df6ece64f9514a936cf05e731"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/RonsoPoolStore.h",
+      "bytes": 615,
+      "sha256": "1a24de9a030a7cc03fd14767d649bd1a48d68f74d4d1bfb9af5731165761c944"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourActiveLoadCore.h",
+      "bytes": 3794,
+      "sha256": "53c4e04307b29e94f4617110e60036cc09b8ff684a76f6f1cd6e45883ceca65d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourBattleCore.cpp",
+      "bytes": 32172,
+      "sha256": "152362a44acce6667358465e290767e41e1a0a64594e155ab6c7c0d66e137183"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourBattleCore.h",
+      "bytes": 9283,
+      "sha256": "a82cc3035d6011486497aed6ba42f5e80ea8e89a71fc17fad8253660d2054b1d"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourBattleHook.cpp",
+      "bytes": 51420,
+      "sha256": "d2dc736e10a951f96be988f1368c14665e271e7749ed3254bac09ebd3c07c762"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourBattleHook.h",
+      "bytes": 4079,
+      "sha256": "e7df007aa9d7a9c919b7a640a4563b44034fcb17643964bcfbb9b0176f646b82"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourCompatibilityCore.h",
+      "bytes": 4998,
+      "sha256": "204d90a03e712ac0ffbc079dc1d2b120fc574c9ad816e3d6069791e7102f368a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourCompatibilityHook.cpp",
+      "bytes": 12598,
+      "sha256": "5e67904a83c388e9329cda0bad1bd044b4fa8731be4604da4125ff76da57f40f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourCompatibilityHook.h",
+      "bytes": 1200,
+      "sha256": "9692c49c5d4112bc4404f0720ba270eecd1968892e58737b6f4b40e74c15801e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourCompatibilityService.h",
+      "bytes": 4645,
+      "sha256": "a8057fc6a16a08b493a7b17957ff3178bd7d3e1c54bb2b8bfec6a6c59406b0cf"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourGearPresentationCore.h",
+      "bytes": 17910,
+      "sha256": "f789bf1919fc77e9eb6d13ddf56e8e7a0c4629c7e491eb6acbb26afaaa3388ba"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourGearPresentationEvidence.h",
+      "bytes": 813,
+      "sha256": "c36cdd64e3988034a3bb4eaf102445dc28c7414f68d4d3dbd3c48f5e70819371"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourGearPresentationHook.cpp",
+      "bytes": 7442,
+      "sha256": "3de02c6e75d22a40c82bde2503ee782e61181907b35dc4d8074cfba9348727ab"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourGearPresentationHook.h",
+      "bytes": 403,
+      "sha256": "8ab498bb572586f2746ac0611e72185b58e3ea26e0e48040a4cec39ea999124e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourGearPresentationService.h",
+      "bytes": 1025,
+      "sha256": "156cd148efbd91dcc485368207f63f25d0ebd8b277c50378bf28626faacc31cc"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourGearSortCore.h",
+      "bytes": 7652,
+      "sha256": "45b6aeb901f4d62d46dd17c62b9c2d935d075d77513b788f4ed3d2e03a192581"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourGearSortHook.cpp",
+      "bytes": 13618,
+      "sha256": "06a91f9a862f74e747165e8d889b866398b1bd3ebf38c2b58c768dfaf118fea6"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourGearSortHook.h",
+      "bytes": 295,
+      "sha256": "a17377efe85c6d5d3e0bbff73f11acb01b65ff3161c87cd15b7e6d61da997544"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourGearWithinCore.h",
+      "bytes": 3759,
+      "sha256": "bbca1c4ea122756e4b9f1063da58e3533072fe86740c82e9035f37976561def4"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourMenuListCore.h",
+      "bytes": 3451,
+      "sha256": "f12c93588c9a9359df0b84a556e9ebd1beab43e4cba23279470391bb355cc6ca"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourMenuListHook.cpp",
+      "bytes": 11472,
+      "sha256": "3e948a6102989959a234df832e8dda242b0ccb3dd8f237ca6990acde63b7dbec"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourMenuListHook.h",
+      "bytes": 373,
+      "sha256": "40d79ce0cdad71e9cf4f4943065828a060a61a034d2d8a7129b74c5958466572"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourMenuListService.h",
+      "bytes": 3291,
+      "sha256": "2e786bd2a7658e28474cd9ac81fb8f4115323b30cbcc3411686f115b04690338"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourOverdriveControl.h",
+      "bytes": 1170,
+      "sha256": "93dc325d33e394dee90782a59fd7af104b71d1b43ae8b00bda91e0c0388e0b4a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourOverdriveEvidence.generated.h",
+      "bytes": 10134,
+      "sha256": "66144a9b72663d18b8f734f7f9b33d1bca66eb93f11ca05e84ebac0dc54fb065"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourOverdriveHook.cpp",
+      "bytes": 11803,
+      "sha256": "934b9972fff489af19418e1fdb7267b2896aa3ba4020c9b39cedf3aa326506cf"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourOverdriveHook.h",
+      "bytes": 398,
+      "sha256": "11daf55f90a414d49de87a7120a85969182ec70df986b54d0be899b52c6a2577"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourOverdrivePlan.h",
+      "bytes": 2678,
+      "sha256": "e676762d7ef86f5aa45a1e0ace0b33792953923ae10c8bb7d9af69fce3e047e0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourPersistentRosterCore.h",
+      "bytes": 5136,
+      "sha256": "689bd79a1c9ee647f866bedc239a973e80cdbab02900cf2c43b9f60d38831e72"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourPersistentRosterHook.cpp",
+      "bytes": 7191,
+      "sha256": "d6fabf27573ca2e33b7b4fb035f746b3dd0d74e283c5d6c630239f084ef3eece"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourPersistentRosterHook.h",
+      "bytes": 390,
+      "sha256": "e3553ae075122446ac9f2db2244e692f8bfd7b54dd892f26342797133ffbf2e3"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourSessionCore.h",
+      "bytes": 3143,
+      "sha256": "d235652ef90e4672510422f484f597ccda16ae4fb0e20be9a29270836345f419"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourSessionRuntime.cpp",
+      "bytes": 5452,
+      "sha256": "c9afec29e77a2e9444a2e378769c534d7c73268cfd3ca6f3636664ee5446a1a7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SeymourSessionRuntime.h",
+      "bytes": 326,
+      "sha256": "c47d27303bd3d8772995c983b0060ed22dca6175c208f0497f786a2b6872c929"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedActionRuntime.h",
+      "bytes": 7536,
+      "sha256": "1c854b2559c25f2a56ac98781ec76abf24655d2c49f10f057d68a8022a7f6dba"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedActorRuntime.h",
+      "bytes": 5034,
+      "sha256": "c796ccaf478829252806d94276a61f52444ae0499e566424338e3f094ec791d5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedBattleRuntime.cpp",
+      "bytes": 4291,
+      "sha256": "9181bc9b974aa4720c9f6563ca431133d6a721073d5e4b70936a686f4e763747"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedBattleRuntime.h",
+      "bytes": 5175,
+      "sha256": "cb50609eada9aafba466751e3b53d87e7eacfa3f6e42fef7ecae21c58bb55f9f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedClampRuntime.h",
+      "bytes": 3145,
+      "sha256": "dab0972837cd36206de35a56fa636c01bb524cc475bf29da23adb114242a8745"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedCombatRuntime.h",
+      "bytes": 4104,
+      "sha256": "4be70bed52fd3052aa06180e0090a265d2e28ce908fe48f50031c356fa65f6bc"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedDamageRuntime.h",
+      "bytes": 6753,
+      "sha256": "02bee90539ec3ff4f72c2069b19da75ec26d98cd61bfe7770bc9d8071b2adecb"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedElementRuntime.h",
+      "bytes": 4791,
+      "sha256": "5dabd27860c2205045f8dddf8dc6f6f7250a9701cb26e725419c11f9cdaca315"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedNulRuntime.h",
+      "bytes": 4297,
+      "sha256": "85a671b6ae858c404505ba1f7aee074cf28ff125e6a38964025d4dbc67a5e3aa"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SharedTurnRuntime.h",
+      "bytes": 4267,
+      "sha256": "d0cac91430d2d755ea38db375b0e0e016b20d5f33958ce3b5477586a39c09028"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinAiCore.h",
+      "bytes": 6517,
+      "sha256": "453bda51b87a5f556fc83e13734fe5e9de9204c24fe4023b5acfbdc4c6675c31"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinAiHook.cpp",
+      "bytes": 18834,
+      "sha256": "b4d7b560acb8ba9de4cac7848ae487fffaac9365063a2db286bdc8818c9f0fdf"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinAiHook.h",
+      "bytes": 1438,
+      "sha256": "495dbc5bb16550b0a2e91ecca91deec643480b7bf22c992aa085f438ca415b95"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinAiProfiles.generated.h",
+      "bytes": 4055,
+      "sha256": "a4cb112e93fc24c96271b38be211d5428f58f64c6390a4835147f62a29a8e8cb"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinCurseHook.cpp",
+      "bytes": 1239,
+      "sha256": "55882a7408d929d56e66bfadb381ff8653a681ef49f966d1ae8c25a5710bb24a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinCurseHook.h",
+      "bytes": 962,
+      "sha256": "58819c036557e2cba0929b68fab36c6032e00c16012a6bc49a2cc44101b25826"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinMetadataCore.h",
+      "bytes": 2574,
+      "sha256": "e2303a58e70e53245cb3264f14717a3ad9c0417499f9e799a3303adfee1fa440"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinNaturalCore.h",
+      "bytes": 1135,
+      "sha256": "6eed4b08ad4181adc67df1ab1e55d252a3da4a55bdb8d14478ceab698cfb6106"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinRamConfigCore.cpp",
+      "bytes": 18460,
+      "sha256": "4300336470964e77621a4ffd7cbd134b4b9b10107f726284cda828ab8a8e19c8"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinRamConfigCore.h",
+      "bytes": 1310,
+      "sha256": "5c5bc8fa8bd71b659af8cb8c5daac3920966984ab8a5e1a8346065820da8c013"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinRamScalingCore.cpp",
+      "bytes": 10169,
+      "sha256": "60554e4be72a220cec213becf574e19138043cbd5598ea8c9781edd539952c98"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinRamScalingCore.h",
+      "bytes": 5232,
+      "sha256": "81851faa6aa55853ad5d9da1a8b437c7f6cd0dae2c0df232caab724b7c73045e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinSpreadCore.h",
+      "bytes": 5794,
+      "sha256": "3e85b8f11e5adf44cd9e8d5e540e4b8054b29a09beaab0a95d83c4f6d703bd35"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinTransitionPublication.cpp",
+      "bytes": 6709,
+      "sha256": "18567e8b383f5f993ee2df15fffd6eb967270db69868b8e6effeddd7ff1111ff"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SinTransitionPublication.h",
+      "bytes": 2694,
+      "sha256": "063c0e05574ae9356ad2657668a69f12c33f1d8b9b84204eaa5a5a04e2835c67"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SpeedHackHook.cpp",
+      "bytes": 42041,
+      "sha256": "e1f9bd36d9b2dee2e173b3fdd033294b4f1a1e9deb7806fbc519d0aa436e90c1"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SpeedHackHook.h",
+      "bytes": 24110,
+      "sha256": "5b8f42b34919f42ed5d1227166bcc5f45b73ddec7cb9d3cc6321d13fcf2d893c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgress8CommitCore.h",
+      "bytes": 5126,
+      "sha256": "1d28ccf5b90c48862a362dd2560e4446de0db60d9f366545d9da3a90c24c5b28"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgress8Core.h",
+      "bytes": 5993,
+      "sha256": "702efa5386df0b1c44da139741c0d2670292faac43259fc22455a4552195da56"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgress8LoadCore.h",
+      "bytes": 7901,
+      "sha256": "49cb6dd855441b9502404e0b3cc9b802b2c0071d3982d94e5e334fcfa0464252"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgress8RestoreCore.h",
+      "bytes": 1160,
+      "sha256": "64520f634d848bd4d3da3baaac4c1b79e44ee13349e5913d7c5032ef1cab3a7f"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgress8Runtime.cpp",
+      "bytes": 11132,
+      "sha256": "1325574e17f3dc5c5dfd9a7ee192e20ec31aa09537c9c9dfe698e505f8f6417c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgress8Runtime.h",
+      "bytes": 1205,
+      "sha256": "aabf34793df1cd8bb70c9606fe6c98127838bef8c40f7fcc433f41d223815187"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgress8SaveService.h",
+      "bytes": 6408,
+      "sha256": "43c5b504b87b0abc90321aed26599187180c4d91aa0c73e14768bec255e49cba"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgress8Store.cpp",
+      "bytes": 12249,
+      "sha256": "f4b11cb90aefa0e4ba2e9e9ace59e4e0fadc968a58a94b8a208b8d01cc5531d4"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgress8Store.h",
+      "bytes": 1866,
+      "sha256": "7ee2b9c682e30475a4697b7ce950d12fc728285a7c44b0e65ad3a811d48e67ff"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SphereGridProgressCore.h",
+      "bytes": 7510,
+      "sha256": "48ae2fba426e39b4770d7602aa0ef1adcc13aa8098db78564a627798036b5e21"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SpiraAbilityCatalog.h",
+      "bytes": 7951,
+      "sha256": "6baee1f31b7d8a04916870cacef327cb3fd2a48d43205845a48a53d69bc89a8b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SpiraRules.h",
+      "bytes": 1416,
+      "sha256": "cb2cfceac873fd7069ea3825b5aa12cc6b1278d64a6561d49151f39026c8b0aa"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SpiraRuntime.cpp",
+      "bytes": 19625,
+      "sha256": "915e332bdb07ecf2ed6247107c3764b2469d635ef218948f71cc293d5348956b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/SpiraRuntime.h",
+      "bytes": 733,
+      "sha256": "8f79db1bdafa970d73f3b0a7cac22f8b1909f087ff1bbf317c42a5232a80881a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguageCore.cpp",
+      "bytes": 21352,
+      "sha256": "008cfee05699a699777febb5e5cc72328d4d0de6bf13529bc83700a0a1e5fcf1"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguageCore.h",
+      "bytes": 1841,
+      "sha256": "fbd04f08c63b69006402b3840154ba8f99c9f35f9c4e656442fa0c3843d86102"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguageFiles.cpp",
+      "bytes": 7608,
+      "sha256": "a32924f51137f34bfb5b2ca89bbd4b38f6fe63b74ba962bad0d4707271833d4c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguageFiles.h",
+      "bytes": 891,
+      "sha256": "e56a427d65d3781944e7c25901cbba64e296c9d543a2f1695068bcc76212c900"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguageHook.cpp",
+      "bytes": 16438,
+      "sha256": "63b273e6a13b6d0878597af6aca28523ac58f0a420374b69374e171c3cfd52d5"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguageHook.h",
+      "bytes": 852,
+      "sha256": "c9f0e744ade8fa1a3105e77a74fdd852128547be716e0bb2a316515ad8071ec9"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguagePack.cpp",
+      "bytes": 4843,
+      "sha256": "04466208095dae93cea123e729dc7052fd8b3b9c94a745df6aeca33613ec08b0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguagePack.h",
+      "bytes": 574,
+      "sha256": "ff7f74a255275c3f69d6003979f4e12525b1e4d8eae9218a5db6b56fa141a2e4"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguagePayload.cpp",
+      "bytes": 8186,
+      "sha256": "ded09956c18f7538ba0eebf2f9140aa97d95d5d04b4d4b8e0998e3e6767eec70"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguagePayload.h",
+      "bytes": 354,
+      "sha256": "52f5b9e7dee7aced8773f90ada986577c973c2064d936ee9b14c7f0d1cb58534"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/TextLanguageSettings.h",
+      "bytes": 516,
+      "sha256": "c4799d81c0a768d68404250b716da8016e74c8c2f000351bb50a2fea1a3c4ba9"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/UnXBoosterHook.cpp",
+      "bytes": 49713,
+      "sha256": "1d9de74fc41ae13d7b557496a9c2d036d039bb5f323886dcb229b3d9bf620eb3"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/UnXBoosterHook.h",
+      "bytes": 664,
+      "sha256": "d8b700db53a55af736f084a4c43006b172d87e6762e12d539ffc59017b8934ad"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardAccuracy.inl",
+      "bytes": 2563,
+      "sha256": "45516bae843542918c7bb196e256406c929d33eee1ff4545bbd93047ed0f9401"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardActionCore.h",
+      "bytes": 3185,
+      "sha256": "4686f3c03011b707ff9a1fd5f8cae947b001519621726fa094b1f14a9d83e9b0"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardActions.inl",
+      "bytes": 10899,
+      "sha256": "dc2b202f14a656054abf7896cca9a0cc8d7b0214456573c17085e3109394f6e6"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardCasting.inl",
+      "bytes": 9228,
+      "sha256": "9b402ee3010e6e96d45310c3678d56285f4677bb22934505f66358d21a333b7b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardCatalog.h",
+      "bytes": 6461,
+      "sha256": "282dd8c7a47338140de17123abacc23c543ce6ebe80283926d71131bdf8c3b20"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardEnergyActions.inl",
+      "bytes": 6587,
+      "sha256": "5a3e4d9f05b5796cf2cc732bf6da13785c26ddb953ee3769975d1d69469a2ad7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardEquipmentCommands.inl",
+      "bytes": 5654,
+      "sha256": "d1f3fcaaabf41d2ee01c5c521100817205b85635d324e388f0c2f0f2da5138aa"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardFollowUp.inl",
+      "bytes": 4302,
+      "sha256": "405273075b9506eb97b27c8018a72276d2c320c98acfd1fb281a560c03c71711"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardFormation.inl",
+      "bytes": 8774,
+      "sha256": "0b80c9353b437229256dadff0f21049963884b015d753b7b4637efd18328f684"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardOverdrive.inl",
+      "bytes": 9604,
+      "sha256": "c1f4a3679e50560cd7b9a9fe43be87637c5a39f8b4683770552b1b0b7da3a90e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardOverdriveUi.inl",
+      "bytes": 3612,
+      "sha256": "008a4dd2facb2e9e40649aacb7a67a33fad10f256fef2a0414c790b2ea14b2a7"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardRules.h",
+      "bytes": 4936,
+      "sha256": "75da7b9f730c65a62b6ada25880efa0a2248866b624ad24e2abf937435674d15"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardRuntime.cpp",
+      "bytes": 32472,
+      "sha256": "aa1d705b52923a499692f3f175927a9d12acb3c758dea8a769000a7239c352ee"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardRuntime.h",
+      "bytes": 1135,
+      "sha256": "605397912c16c08283fb836a0a31051492f56d141fa02401ece6084eab3b0a80"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardStatusCost.inl",
+      "bytes": 5487,
+      "sha256": "320060229f8efdae96de633d80ca5d7f4908b08e4e2c7e19dc789fde83c66e09"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/VanguardUiBridge.h",
+      "bytes": 2529,
+      "sha256": "3416e44c402934f0355ff02c0408c727b9aa7a046a9235c7ab198d98e0d5a4c1"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/WeaponStrikeVfxCore.h",
+      "bytes": 8598,
+      "sha256": "59bffdb1be745ef5e2f4f8f6022cc7923d0b67bfe2bda909a6d89a93c33dd760"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/WeaponStrikeVfxEvidence.generated.h",
+      "bytes": 3979,
+      "sha256": "e11eadd161e5121820f6b765fb86470931027c1a3ebf899c50a01860562a1a36"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/WeaponStrikeVfxRuntime.cpp",
+      "bytes": 16439,
+      "sha256": "f5cc6064f03df0aeb4629f94ad36e436a53cc2e652b44cfbd65ee22ebd63243a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/hooks/WeaponStrikeVfxRuntime.h",
+      "bytes": 285,
+      "sha256": "7ba02719d8526f3c3d4642685d7a3fdde380f185d21b8022cb62de49e062f44c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/legacy/spheregrid_v5/SphereGridFullGridCompilerHook.cpp",
+      "bytes": 261710,
+      "sha256": "9463cdb9b77fa8a8c013a2d8a172294090622d9fada0a1ac8d0da87f64515392"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/legacy/spheregrid_v5/SphereGridFullGridCompilerHook.h",
+      "bytes": 577,
+      "sha256": "7f27b57426ea3988e57459fe1a6cbd2568bc17f65c1e5984ee9daaa4df124e35"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/legacy/spheregrid_v5/SphereGridTrueNewNodeHook.cpp",
+      "bytes": 77282,
+      "sha256": "b1a95d2025dbfdcb2dff9b6b4cfdffc0bf38fa87daac1765c7661da180048d70"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/legacy/spheregrid_v5/SphereGridTrueNewNodeHook.h",
+      "bytes": 476,
+      "sha256": "e9698ac485cb7b32298c36ad4fb0c55200438891a26ca8a6dd4a6bb5c6c20aef"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/shared/Config.cpp",
+      "bytes": 36128,
+      "sha256": "4d28434f70695e5f51842b0dcdf7ca50f16970774dbca3435a18d3257eab38b4"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/shared/Config.h",
+      "bytes": 4890,
+      "sha256": "9a93bbba6c3db1b28d31e5742e4ad4174a0c967b48e8ba3589c47a494ae3f68b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/shared/ffx_addresses.h",
+      "bytes": 59656,
+      "sha256": "f16835dfe52e3eb2cb176d2040d0eae6935b6c0f2fc2464b068bcd53fb7ed652"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/shared/ffx_hooks_block.h",
+      "bytes": 1336,
+      "sha256": "f8b5442c5cc2b5f23a84bdf9f96141ad9df0773ce979f81e5bb6864e2140a72e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/include/MinHook.h",
+      "bytes": 7530,
+      "sha256": "62dff05e63155c6bf8135c36a0d79dedbdcaaede9da26fe38daf0bea34323e38"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/buffer.c",
+      "bytes": 9814,
+      "sha256": "0ab484d7870c3a8e7a3a1ee61e2070072cf445ed85b619d4c4207fed34356d99"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/buffer.h",
+      "bytes": 1820,
+      "sha256": "9769702bd625249e59a19ede05c84365fcc7707e1fa0e5df08df42227cee13e3"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/hde/hde32.c",
+      "bytes": 9318,
+      "sha256": "5da4941e9044f7b325c7f952b5840089e365f374740b7fe7318805d08c0d6c32"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/hde/hde32.h",
+      "bytes": 2450,
+      "sha256": "5132de5be8ac7a9d054420f5caef0fb01437faa892f03b3cdc77f795973bf15a"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/hde/hde64.c",
+      "bytes": 9507,
+      "sha256": "824eafa315322e6da105a7ce4ec1fc0e0adeee0106d32152fbb0b59e709bd15c"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/hde/hde64.h",
+      "bytes": 2602,
+      "sha256": "e99aa4997bda14b534c614c3d8cb78a72c4aca91a1212c8b03ec605d1d75e36e"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/hde/pstdint.h",
+      "bytes": 1662,
+      "sha256": "604d1cdf45c5a95bc9cf1bbf39ca05ef83013541101d34971c5cd7577e3d5247"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/hde/table32.h",
+      "bytes": 3508,
+      "sha256": "43bf687a9fff071b5f46070db4d36c846f8e069cdc57485ee897c499aacdde23"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/hde/table64.h",
+      "bytes": 3577,
+      "sha256": "b774446d2f110ce954fb0a710f4693c5562ddbd8d56fe84106f2ee80db8b50a2"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/hook.c",
+      "bytes": 26626,
+      "sha256": "edcce4c81985d7dd5b73feae96d6498c8f749b1bca4c3d2d9926ea9a17a84755"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/trampoline.c",
+      "bytes": 10718,
+      "sha256": "f13a169f803ff5a8e45c58ce668b4377a9878c0fc4452369b8a1325065186b2b"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/third_party/minhook/src/trampoline.h",
+      "bytes": 3759,
+      "sha256": "53ed9934492320617a27bfd952ffe7f5b7a4a1d09963d4512447082fe7b727b4"
+    },
+    {
+      "path": "src/runtime/FfxHooksDll/version.rc",
+      "bytes": 920,
+      "sha256": "18dc6e850124e252153f27c5c32db5753321ce8b7d19d0ea6c4dca918f3d71cc"
+    },
+    {
+      "path": "src/runtime/NativeMenuShell/NativeMenuShell.h",
+      "bytes": 53026,
+      "sha256": "89b65654ed0879e6c06e11249ac92ec797c6b2d7e4f78a38f1fc8334e310b93d"
+    }
+  ]
+}

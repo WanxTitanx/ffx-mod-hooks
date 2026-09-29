@@ -119,7 +119,7 @@
       "name_en": "The Empress",
       "name_pt": "A Imperatriz",
       "scene": "a serene female fayth presiding over the abundant Moonflow, white flowers and pyreflies",
-      "mechanics_proposed": "Max HP +40%; Auto-Regen",
+      "mechanics_proposed": "Max HP +40%; Auto-Regen; Earthstrike; Earth Ward",
       "ffx2_inspiration": [
         "Recovery Bracer"
       ],
@@ -139,7 +139,7 @@
       "acquisition_proposed": "Temple, crafting or optional combat milestone; never permanently missable.",
       "rank_policy": "Major Arcana have the strongest default individual effects; minors specialize or combine in mode B.",
       "prompt": "Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. Top medallion text (verbatim): \"III\". Bottom name plaque text (verbatim): \"THE EMPRESS\". Card subject: The Empress. Scene: a serene female fayth presiding over the abundant Moonflow, white flowers and pyreflies. Accent palette: ocean blue, pearl, antique gold; dramatic celestial light. Keep traditional Tarot symbols legible and the border consistent with the reference.",
-      "balance_revision": 4
+      "balance_revision": 5
     },
     {
       "id": 4,
@@ -239,7 +239,7 @@
       "name_en": "The Chariot",
       "name_pt": "O Carro",
       "scene": "a luminous ceremonial chariot drawn by two opposing aeon-like beasts across the Calm Lands",
-      "mechanics_proposed": "Auto-Haste; First Strike; CTB recovery -10%; Strength +15%",
+      "mechanics_proposed": "Auto-Haste; First Strike; CTB recovery -10%; Strength +15%; Aerostrike; Wind Ward",
       "ffx2_inspiration": [
         "Speed Bracer"
       ],
@@ -259,7 +259,7 @@
       "acquisition_proposed": "Post-airship sidequest or Monster Arena milestone with a guaranteed reward.",
       "rank_policy": "Major Arcana have the strongest default individual effects; minors specialize or combine in mode B.",
       "prompt": "Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. Top medallion text (verbatim): \"VII\". Bottom name plaque text (verbatim): \"THE CHARIOT\". Card subject: The Chariot. Scene: a luminous ceremonial chariot drawn by two opposing aeon-like beasts across the Calm Lands. Accent palette: ocean blue, pearl, antique gold; dramatic celestial light. Keep traditional Tarot symbols legible and the border consistent with the reference.",
-      "balance_revision": 4
+      "balance_revision": 5
     },
     {
       "id": 8,
@@ -389,7 +389,7 @@
       "name_en": "The Hanged Man",
       "name_pt": "O Enforcado",
       "scene": "a willing pilgrim suspended upside down in a luminous underwater fayth vision, calm expression",
-      "mechanics_proposed": "Incoming HP damage -20%; CTB recovery +25%; Defend restores 3% MP; Auto-Protect",
+      "mechanics_proposed": "Incoming HP damage -20%; CTB recovery +25%; Defend restores 3% MP; Auto-Protect; Gravitystrike; Gravity Ward (Elemental Core)",
       "ffx2_inspiration": [
         "Adamantite"
       ],
@@ -409,7 +409,7 @@
       "acquisition_proposed": "Post-airship sidequest or Monster Arena milestone with a guaranteed reward.",
       "rank_policy": "Major Arcana have the strongest default individual effects; minors specialize or combine in mode B.",
       "prompt": "Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. Top medallion text (verbatim): \"XII\". Bottom name plaque text (verbatim): \"THE HANGED MAN\". Card subject: The Hanged Man. Scene: a willing pilgrim suspended upside down in a luminous underwater fayth vision, calm expression. Accent palette: ocean blue, pearl, antique gold; dramatic celestial light. Keep traditional Tarot symbols legible and the border consistent with the reference.",
-      "balance_revision": 4
+      "balance_revision": 5
     },
     {
       "id": 13,
@@ -419,7 +419,7 @@
       "name_en": "Death",
       "name_pt": "A Morte",
       "scene": "a silent armored ferryman on the Farplane shore, falling petals becoming pyreflies, a distant sunrise",
-      "mechanics_proposed": "Deathstrike 100%; Deathproof; HP damage +20% against Death-immune targets; a kill restores 20% HP and 10% MP once per action",
+      "mechanics_proposed": "Deathstrike 100%; Deathproof; HP damage +20% against Death-immune targets; a kill restores 20% HP and 10% MP once per action; Biostrike; Poison Ward (Elemental Core)",
       "ffx2_inspiration": [
         "Mortal Shock",
         "Angel Earrings"
@@ -440,7 +440,7 @@
       "acquisition_proposed": "Post-airship sidequest or Monster Arena milestone with a guaranteed reward.",
       "rank_policy": "Major Arcana have the strongest default individual effects; minors specialize or combine in mode B.",
       "prompt": "Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. Top medallion text (verbatim): \"XIII\". Bottom name plaque text (verbatim): \"DEATH\". Card subject: Death. Scene: a silent armored ferryman on the Farplane shore, falling petals becoming pyreflies, a distant sunrise. Accent palette: ocean blue, pearl, antique gold; dramatic celestial light. Keep traditional Tarot symbols legible and the border consistent with the reference.",
-      "balance_revision": 4
+      "balance_revision": 5
     },
     {
       "id": 14,
@@ -570,7 +570,7 @@
       "name_en": "The Moon",
       "name_pt": "A Lua",
       "scene": "a great moon above Macalania, two guardian beasts on either side of a luminous winding path",
-      "mechanics_proposed": "Auto-Reflect; Evade and Counter; Evasion +30; Sleep/Confusion proof; Sleepstrike 100%; Confusetouch 50%; incoming HP damage -10%",
+      "mechanics_proposed": "Auto-Reflect; Evade and Counter; Evasion +30; Sleep/Confusion proof; Sleepstrike 100%; Confusetouch 50%; incoming HP damage -10%; Shadowstrike; Shadow Ward",
       "ffx2_inspiration": [
         "Star Bracer",
         "Black Choker",
@@ -592,7 +592,7 @@
       "acquisition_proposed": "Post-airship sidequest or Monster Arena milestone with a guaranteed reward.",
       "rank_policy": "Major Arcana have the strongest default individual effects; minors specialize or combine in mode B.",
       "prompt": "Use case: stylized-concept. Asset: ONE illustrated Tarot card for the original Final Fantasy X inspired deck Spira: Arcana of the Fayth. Portrait 2:3, straight-on full card filling the canvas. The supplied original frame-v1 is a style and geometry reference: preserve its refined ivory, ocean-blue and restrained gold ornamental border, aqua pyrefly details, TOP circular numeral cartouche and BOTTOM ivory name plaque. The numeral is ABOVE the illustration; the traditional card name is BELOW it, clearly legible and spelled exactly. Create a rich hand-painted Japanese fantasy game illustration inside the frame. No extra text, logo or watermark. Do not show multiple cards or a tabletop. Luminous atmospheric Spira scenery, delicate painterly textures, strong readable silhouette, elegant symbolism. Art is original interpretation, not a screenshot or copied official card. Top medallion text (verbatim): \"XVIII\". Bottom name plaque text (verbatim): \"THE MOON\". Card subject: The Moon. Scene: a great moon above Macalania, two guardian beasts on either side of a luminous winding path. Accent palette: ocean blue, pearl, antique gold; dramatic celestial light. Keep traditional Tarot symbols legible and the border consistent with the reference.",
-      "balance_revision": 4
+      "balance_revision": 5
     },
     {
       "id": 19,

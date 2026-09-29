@@ -38,6 +38,16 @@ enum class Owner : uint8_t {
     ArcanaGameplay,
     TextLanguage,
     MonsterRewards,
+    WeaponStrikeVfx,
+    NulWardRecovery,
+    GridTeachSave,
+    GridTeachRecovery,
+    SphereGridRecovery,
+    SeymourCompatibility,
+    SeymourOverdrive,
+    SeymourGearPresentation,
+    SeymourGearSort,
+    SeymourMenuList,
 };
 
 enum class State : uint8_t {

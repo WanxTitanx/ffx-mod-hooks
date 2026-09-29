@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build an Arcana beta ZIP; never copies anything into a game folder."""
+"""Build a private Arcana candidate ZIP; never copies anything into a game folder."""
 import argparse
 import hashlib
 import json
@@ -55,7 +55,7 @@ def main():
     files["README-Arcana.txt"] = (
         "Jarvis-HOOK / MOD-008 - Spira: Arcana of the Fayth\n"
         "Standalone FFX Hooks module. Spira Reforge and its data packs are not required.\n"
-        "Beta candidate. RT2 gameplay/visual acceptance is pending.\n"
+        "Private validation candidate. RT2 gameplay/visual acceptance is pending.\n"
         "Both settings are OFF by default. Enable Arcana and restart for native Main Menu > Equip > Tarot.\n"
         "Use Development > Arcana: full deck for the explicit instant-deck grant. Turning it off keeps earned cards.\n"
         "Normal acquisition uses temple, sidequest and challenge milestones; locked cards show their requirement.\n"
@@ -68,7 +68,7 @@ def main():
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip())
     identity = {"schema": "jarvis.arcana.runtime-package.v1", "source_commit": revision,
-                "source_repository": "https://github.com/WanxTitanx/ffx-mod-hooks",
+                "source_repository": "https://github.com/WanxTitanx/ffx-hooks",
                 "working_tree_dirty": dirty, "live_validation": "PENDING_RT2", "files": {n: sha(d) for n, d in sorted(files.items())}}
     files["Arcana-package.json"] = (json.dumps(identity, indent=2) + "\n").encode()
     args.output.parent.mkdir(parents=True, exist_ok=True)

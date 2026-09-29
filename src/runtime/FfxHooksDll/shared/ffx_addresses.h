@@ -287,7 +287,7 @@
 #define FFX_BATTLE_ACTOR_NUL_DARK_BLOCK_OFF      0x614u  /* ATEL case 57 — Umbral Ward */
 #define RVA_FFX_GRANT_COMMAND_TO_CHARACTER       0x00385D10u
 #define FFX_BATTLE_MENU_COMMAND_ID_LIMIT         320u
-#define FFX_BATTLE_MENU_COMMAND_ID_LIMIT_EXTENDED 367u  /* grown command.bin row count (ids 0..366) */
+#define FFX_BATTLE_MENU_COMMAND_ID_LIMIT_EXTENDED 374u  /* grown command.bin rows 0..373; learned state remains shadowed */
 #define FFX_GRID_TEACH_SIDECAR_WORDS               18u   /* party bank shadow: ids 96..383 */
 #define FFX_GRID_TEACH_SIDECAR_BYTES               36u
 /* Sphere Grid node-activate FSM — grant LearnedMove via case 21 inside this function.
