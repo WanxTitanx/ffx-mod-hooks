@@ -1,4 +1,4 @@
-# Install FFX Hooks v0.6.0-beta
+# Install FFX Hooks v0.6.0-beta.1
 
 The package targets the supported Steam **FFX.exe (Windows x86)**. FFX-2 support
 is not implied. A legal game installation and a working FFX DINPUT8 module loader
@@ -7,15 +7,15 @@ same Windows DLL and the same paths relative to the game directory.
 
 ## Download and verify
 
-Download `ffx-hooks-release-v0.6.0-beta.zip` and `ffx-hooks-v0.6.0-beta.sha256`
-from the [release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta).
-The matching `ffx-hooks-source-v0.6.0-beta.tar.gz` contains the public tagged source.
+Download `ffx-hooks-release-v0.6.0-beta.1.zip` and `ffx-hooks-v0.6.0-beta.1.sha256`
+from the [release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1).
+The matching `ffx-hooks-source-v0.6.0-beta.1.tar.gz` contains the public tagged source.
 Verify the downloaded file hashes against the checksum file. The ZIP also has
 `CHECKSUMS.sha256`, `SOURCE.md` and `release-manifest.json` for its contents.
 
 The supplied DLL is 3,398,144 bytes, SHA-256
 `734a0bf94b56157648e5391ca06dfb1c60aad2c6bb27748762a67315c98b8ffc`.
-Its PE resource says 0.2.0.0; the public package/tag is v0.6.0-beta. A separately
+Its PE resource says 0.2.0.0; the public package/tag is v0.6.0-beta.1. A separately
 rebuilt DLL can have another hash and is not this tested binary.
 
 ## Install with the game closed

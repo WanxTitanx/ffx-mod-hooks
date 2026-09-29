@@ -56,6 +56,7 @@ Evidence: [latest fixes, formats and deployment](research/F8_F7_ELEMENTS_MONSTER
 - [x] Preserve native reward WORDs while computing individual then general factors above 65,535 with bounded wide arithmetic.
 - [x] Add atomic, conflict-aware `monster-rewards-v1.tsv` persistence beside the active INI.
 - [x] Deliver the complete Editor dependency and implementation dossier after DLL deployment.
+- [x] Restore the donation section and add a complete PT-BR README with reciprocal language links; include both READMEs in the public release recipe.
 - [ ] Complete player acceptance of the exact consolidated DLL: menus, elements, rewards, combat coexistence and save/load lifecycle.
 - [ ] Complete independent release review and explicitly promote a validated public package; local deployment is not this gate.
 

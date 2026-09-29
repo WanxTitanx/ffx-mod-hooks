@@ -1,5 +1,7 @@
 # ffx-mod-hooks
 
+**English** | [Português (Brasil)](README.pt-BR.md)
+
 <div align="center">
 
 ![ffx-mod-hooks logo](assets/logo.png)
@@ -7,9 +9,10 @@
 **Runtime engine hooks for FINAL FANTASY X HD Remaster (Steam, PC)**
 
 [![Status](https://img.shields.io/badge/status-BETA-red)](#beta-status)
-[![Version](https://img.shields.io/badge/version-0.6.0--beta-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta)
+[![Version](https://img.shields.io/badge/version-0.6.0--beta.1-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20x86-lightgrey)](#compatibility)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wandersonwpires%40hotmail.com&currency_code=USD)
 
 </div>
 
@@ -29,6 +32,7 @@ consolidated **FFX** build; it does not claim equivalent FFX-2 support.
 - [Build](#build), [deploy](#deploy) and [validation](#testing-rt2)
 - [Checked roadmap](docs/ROADMAP.md)
 - [Complete Editor integration dossier](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
+- [Support the project](#support)
 
 ## Beta status
 
@@ -45,13 +49,16 @@ deployment alone does not promote it to Production. Known issues are tracked in
 
 ## Download and install
 
-The **v0.6.0-beta** release contains the consolidated x86 DLL, all 78 selected
+The **v0.6.0-beta.1** release contains the consolidated x86 DLL, all 78 selected
 Arcana cards plus the icon/back, third-party licenses, OFF configuration examples,
 installation instructions, provenance and SHA-256 checksums. The matching source
 archive contains the public tagged tree, including build/test and artwork inputs.
 
+This documentation revision restores the donation section and adds a complete
+PT-BR README. The DLL and its hash are unchanged from v0.6.0-beta.
+
 Get the binary ZIP, source archive and checksum file from the
-[v0.6.0-beta release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta).
+[v0.6.0-beta.1 release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1).
 Read [English installation](docs/INSTALL.md) or
 [instalação em português](docs/INSTALACAO_PT-BR.md).
 
@@ -82,8 +89,8 @@ Jarvis-HOOK checkpoint: **2026-09-28**, implemented and deployed from `main`.
 | Supported executable | PE32/i386 `FFX.exe`, preferred image base `0x00400000` |
 | Executable SHA-256 | `78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced` |
 
-The v0.6.0-beta package carries this already validated, hash-bound DLL. Its PE
-resource still reports `0.2.0.0`; the package/tag version is **v0.6.0-beta**.
+The v0.6.0-beta.1 package carries this already validated, hash-bound DLL. Its PE
+resource still reports `0.2.0.0`; the package/tag version is **v0.6.0-beta.1**.
 `SOURCE.md` and the release manifest bind the binary to the public source commit.
 This beta release is not a Production/RT2 promotion.
 The [deployment and validation record](docs/research/F8_F7_ELEMENTS_MONSTER_REWARDS_2026_09_28.md)
@@ -452,7 +459,8 @@ only the selected case after the human-run session. No F8 case is promoted by th
 ## Versioning
 
 Independent SemVer, starting at `0.1.0-beta.1`. This project will stay below `1.0.0` while in
-beta. `MAJOR.MINOR.PATCH` with pre-release suffix; REVISION bumps are doc-only. See
+beta. `MAJOR.MINOR.PATCH` with pre-release suffix; REVISION bumps are doc-only. The v0.6.0-beta.1 documentation revision uses the same validated DLL as
+v0.6.0-beta. See
 [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits
@@ -463,6 +471,17 @@ Xe.BinaryMapper (Xeeynamo), the FFX module loader / DINPUT8 proxy concept (ffgri
 The DINPUT8 main-thread seam (`GetDeviceState` vtable hook) was discovered and proven
 in-house (see docs). ATEL/monster codecs in SinCoreLib were extracted from the
 FFX Mod Studio editor codebase (our own code).
+
+## Support
+
+🇧🇷 This project is made by a Brazilian developer. If it helps you, consider
+supporting its development:
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wandersonwpires%40hotmail.com&currency_code=USD)
+
+**Any amount helps.** Even US$ 2 contributes to maintenance. FFX Mod Studio is
+bigger than the hooks: it includes the Editor, Launcher, download website and
+other tools. Your support helps keep that work going. Donations are optional.
 
 ## License
 

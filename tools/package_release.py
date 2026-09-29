@@ -25,9 +25,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dll', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--version', default='v0.6.0-beta')
+    parser.add_argument('--version', default='v0.6.0-beta.1')
     args = parser.parse_args()
-    evidence = json.loads((ROOT / 'docs/releases/v0.6.0-beta-inputs.json').read_text())
+    evidence = json.loads((ROOT / 'docs/releases/v0.6.0-beta.1-inputs.json').read_text())
     if args.version != evidence['release']:
         parser.error('This release recipe is bound to its recorded version')
     dll = args.dll.read_bytes()
@@ -64,7 +64,7 @@ def main() -> None:
             files['mods/arcana/shared/' + name] = data
     if len(cards) != 78 or len(files) != 81:
         parser.error('Expected DLL plus 78 cards and two shared runtime images')
-    for name in ('LICENSE', 'NOTICE', 'README.md', 'docs/INSTALL.md',
+    for name in ('LICENSE', 'NOTICE', 'README.md', 'README.pt-BR.md', 'docs/INSTALL.md',
                  'docs/INSTALACAO_PT-BR.md', 'docs/ROADMAP.md'):
         files[name] = (ROOT / name).read_bytes()
     files['examples/ffx-hooks.ini.example'] = (ROOT / 'src/runtime/FfxHooksDll/ffx-hooks.ini').read_bytes()
@@ -101,8 +101,8 @@ PE resource version: 0.2.0.0; package/tag version: {args.version}.
 
 This is the previously validated Windows x86 Release DLL, also verified under
 Proton. Its production inputs are byte-identical to the public source entries
-recorded in docs/releases/v0.6.0-beta-inputs.json. Public documentation, packaging
-metadata and one test-only whitespace correction are not DLL code changes.
+recorded in docs/releases/{args.version}-inputs.json. Public documentation, packaging
+metadata, bilingual READMEs and one test-only whitespace correction are not DLL code changes.
 The source archive contains the exact public tagged tree. A new compiler/linker
 run may produce a different PE hash; that does not identify this tested binary.
 

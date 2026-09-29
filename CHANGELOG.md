@@ -7,6 +7,15 @@ that do not change behavior.
 
 ## [Unreleased]
 
+
+## [0.6.0-beta.1] — 2026-09-29
+
+- Restore the original PayPal support section and donation badge in the English README.
+- Add a complete `README.pt-BR.md`, covering the same DLL inventory, installation, configuration, build, validation limits, credits, license and support information; link both languages prominently.
+- Include both READMEs in the binary ZIP and matching tagged source archive. Keep the original v0.6.0-beta tag and archives intact.
+- Documentation/package revision only: the DLL and all 300 bound production inputs are unchanged from v0.6.0-beta.
+
+
 ## [0.6.0-beta] — 2026-09-28
 
 - Consolidate Vanguard (31 controls), Elemental Dominion, Spira Reforge, paid Aeon Ascension, Equipment Workshop, text-language support and Arcana (78 cards) in one DLL.

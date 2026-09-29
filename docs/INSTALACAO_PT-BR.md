@@ -1,4 +1,4 @@
-# Instalação do FFX Hooks v0.6.0-beta
+# Instalação do FFX Hooks v0.6.0-beta.1
 
 O pacote atende ao **FFX.exe Steam, Windows x86**, no perfil suportado. Não implica
 suporte equivalente ao FFX-2. Você precisa do jogo e do carregador de módulos FFX
@@ -7,15 +7,15 @@ DLL de Windows e os mesmos caminhos relativos à pasta do jogo.
 
 ## Download e conteúdo
 
-Baixe `ffx-hooks-release-v0.6.0-beta.zip` e `ffx-hooks-v0.6.0-beta.sha256` na
-[release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta).
-O arquivo `ffx-hooks-source-v0.6.0-beta.tar.gz` contém o código-fonte da mesma tag.
+Baixe `ffx-hooks-release-v0.6.0-beta.1.zip` e `ffx-hooks-v0.6.0-beta.1.sha256` na
+[release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.1).
+O arquivo `ffx-hooks-source-v0.6.0-beta.1.tar.gz` contém o código-fonte da mesma tag.
 Compare os hashes dos downloads com o arquivo SHA-256. O ZIP inclui também
 `SOURCE.md`, `release-manifest.json` e `CHECKSUMS.sha256` para conferir seu conteúdo.
 
 A DLL tem 3.398.144 bytes e SHA-256
 `734a0bf94b56157648e5391ca06dfb1c60aad2c6bb27748762a67315c98b8ffc`.
-A versão interna do PE ainda é 0.2.0.0; a versão do pacote/tag é v0.6.0-beta.
+A versão interna do PE ainda é 0.2.0.0; a versão do pacote/tag é v0.6.0-beta.1.
 Uma recompilação pode produzir outro hash e não identifica esse binário testado.
 
 ## Instale com o jogo fechado
