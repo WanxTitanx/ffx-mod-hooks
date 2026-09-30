@@ -1,4 +1,5 @@
 #include "BootSkipHook.h"
+#include "FahrenheitCoexistenceCore.h"
 #include <cstdio>
 #include <cstring>
 
@@ -8,7 +9,7 @@
 #include <intrin.h>
 #endif
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #endif
 
 namespace FfxHooks::Fastload {
@@ -23,8 +24,8 @@ EdgeQueue g_edges;
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 uintptr_t g_base=0;
 uint32_t g_startedMs=0;
-PLH::x86Detour* g_sceneDetour=nullptr;
-PLH::x86Detour* g_openingDetour=nullptr;
+FfxHooks::CompatibleDetour* g_sceneDetour=nullptr;
+FfxHooks::CompatibleDetour* g_openingDetour=nullptr;
 alignas(8) uint64_t g_sceneTrampoline=0;
 alignas(8) uint64_t g_openingTrampoline=0;
 std::atomic_flag g_sampleBusy=ATOMIC_FLAG_INIT;
@@ -278,6 +279,7 @@ static void __fastcall OpeningShim(void* self,void* edx) {
 } // namespace
 
 InstallResult InstallFastloadHook(uintptr_t base,LogFn log,const InstallOptions& options) {
+    if(!Coexistence::FeatureAllowed("development.fastload_autosave"))return {};
     if(!options.gateEnabled)return {}; // OFF does not read game memory or touch feature state.
     uint32_t expected=0;
     if(!g_installAttempt.compare_exchange_strong(expected,1,std::memory_order_acq_rel))return {InstallCode::Retained,g_publication.Read().failure};
@@ -312,13 +314,13 @@ InstallResult InstallFastloadHook(uintptr_t base,LogFn log,const InstallOptions&
     try {
         // Installed PolyHook2 2025-06-21 publishes *userTrampVar before writing its target
         // jump (x86Detour.cpp:73 vs :81). Aligned gateways and objects live for the process.
-        g_sceneDetour=new PLH::x86Detour(static_cast<uint64_t>(base+RVA_FFX_FASTLOAD_SCENE_TICK),
+        g_sceneDetour=new FfxHooks::CompatibleDetour(static_cast<uint64_t>(base+RVA_FFX_FASTLOAD_SCENE_TICK),
             reinterpret_cast<uint64_t>(&SceneTickShim),&g_sceneTrampoline);
         if(!g_sceneDetour->hook()||!g_sceneTrampoline)throw InstallCode::Failed;
         g_ready.fetch_or(1u,std::memory_order_release);
         if(IsTerminal(g_publication.Read().phase))
             return {InstallCode::Retained,g_publication.Read().failure};
-        g_openingDetour=new PLH::x86Detour(static_cast<uint64_t>(base+RVA_FFX_FASTLOAD_OPENING_LOADER),
+        g_openingDetour=new FfxHooks::CompatibleDetour(static_cast<uint64_t>(base+RVA_FFX_FASTLOAD_OPENING_LOADER),
             reinterpret_cast<uint64_t>(&OpeningShim),&g_openingTrampoline);
         if(!g_openingDetour->hook()||!g_openingTrampoline)throw InstallCode::Failed;
         g_ready.fetch_or(2u,std::memory_order_release);

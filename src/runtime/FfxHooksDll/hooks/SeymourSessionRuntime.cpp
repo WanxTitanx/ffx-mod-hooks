@@ -61,6 +61,7 @@ const NativeSaveEvents::Observer observer=[](){
 }();
 }
 void PrimeSaveIo(std::uintptr_t base,bool validateOnly){
+    if(!Coexistence::runtime.SavePipelineAllowed())return;
     if(validateOnly||!Requested()||stopping.load(std::memory_order_acquire))return;
     if(admin.test_and_set(std::memory_order_acquire))return;
     struct Unlock {~Unlock(){admin.clear(std::memory_order_release);}} unlock;

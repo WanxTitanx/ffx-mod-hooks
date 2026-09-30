@@ -10,7 +10,7 @@
 #include <vector>
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #endif
 
 namespace FfxHooks {
@@ -157,23 +157,23 @@ static MenuTreeResetFn g_menuTreeReset = nullptr;
 static FinishMenuTreeFn g_finishMenuTree = nullptr;
 static CmdUsabilityGateFn  g_cmdGateTrampoline = nullptr;
 static MenuConfirmFn       g_confirmTrampoline = nullptr;
-static PLH::x86Detour*     g_gateDetour        = nullptr;
-static PLH::x86Detour*     g_greyoutDetour     = nullptr;
-static PLH::x86Detour*     g_submenuRefreshDetour = nullptr;
-static PLH::x86Detour*     g_menuBuildDetour   = nullptr;
-static PLH::x86Detour*     g_refreshMenuDetour = nullptr;
-static PLH::x86Detour*     g_menuRouteDetour   = nullptr;
-static PLH::x86Detour*     g_openSubmenuDetour = nullptr;
-static PLH::x86Detour*     g_hasCommandBitDetour = nullptr;
-static PLH::x86Detour*     g_hasCommandSaveDetour = nullptr;
-static PLH::x86Detour*     g_copyMenuTemplateDetour = nullptr;
-static PLH::x86Detour*     g_isOverdriveReadyDetour = nullptr;
-static PLH::x86Detour*     g_buildCommandRingDetour = nullptr;
-static PLH::x86Detour*     g_menuInputDispatchDetour = nullptr;
-static PLH::x86Detour*     g_pushMenuTreeDetour = nullptr;
-static PLH::x86Detour*     g_resolveMenuTreeDetour = nullptr;
-static PLH::x86Detour*     g_cmdGateDetour = nullptr;
-static PLH::x86Detour*     g_confirmDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_gateDetour        = nullptr;
+static FfxHooks::CompatibleDetour*     g_greyoutDetour     = nullptr;
+static FfxHooks::CompatibleDetour*     g_submenuRefreshDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_menuBuildDetour   = nullptr;
+static FfxHooks::CompatibleDetour*     g_refreshMenuDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_menuRouteDetour   = nullptr;
+static FfxHooks::CompatibleDetour*     g_openSubmenuDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_hasCommandBitDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_hasCommandSaveDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_copyMenuTemplateDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_isOverdriveReadyDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_buildCommandRingDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_menuInputDispatchDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_pushMenuTreeDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_resolveMenuTreeDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_cmdGateDetour = nullptr;
+static FfxHooks::CompatibleDetour*     g_confirmDetour = nullptr;
 static uint64_t            g_gateTrampolineVa  = 0;
 static uint64_t            g_greyTrampolineVa  = 0;
 static uint64_t            g_submenuRefreshTrampolineVa = 0;
@@ -1821,14 +1821,14 @@ static bool InstallDetour(
     uintptr_t base,
     uint32_t rva,
     uint64_t shimVa,
-    PLH::x86Detour** detourOut,
+    FfxHooks::CompatibleDetour** detourOut,
     uint64_t* trampolineOut,
     const char* label) {
     if (!detourOut || !trampolineOut || *detourOut) return false;
     const uint64_t targetVa = static_cast<uint64_t>(base + rva);
     *trampolineOut = 0;
     try {
-        *detourOut = new PLH::x86Detour(targetVa, shimVa, trampolineOut);
+        *detourOut = new FfxHooks::CompatibleDetour(targetVa, shimVa, trampolineOut);
         const bool hooked = (*detourOut)->hook();
         if (!hooked) {
             delete *detourOut;
@@ -1851,7 +1851,7 @@ static bool InstallDetour(
     }
 }
 
-static bool RemoveDetour(PLH::x86Detour* detour, const char* label) {
+static bool RemoveDetour(FfxHooks::CompatibleDetour* detour, const char* label) {
     if (!detour) return true;
     const bool ok = detour->unHook();
     delete detour;

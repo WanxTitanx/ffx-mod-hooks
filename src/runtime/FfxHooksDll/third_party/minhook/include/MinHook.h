@@ -79,7 +79,12 @@ typedef enum MH_STATUS
     MH_ERROR_MODULE_NOT_FOUND,
 
     // The specified function is not found.
-    MH_ERROR_FUNCTION_NOT_FOUND
+    MH_ERROR_FUNCTION_NOT_FOUND,
+
+    // Jarvis-HOOK: another owner changed the target or its trampoline.
+    // Retain executable storage. Shared-provider postflight can report this
+    // after a transition, so callers must preserve their may-have-run fence.
+    MH_ERROR_PATCH_CONFLICT
 }
 MH_STATUS;
 
@@ -94,6 +99,12 @@ extern "C" {
     // Initialize the MinHook library. You must call this function EXACTLY ONCE
     // at the beginning of your program.
     MH_STATUS WINAPI MH_Initialize(VOID);
+
+    // Jarvis-HOOK extension. Select one already-loaded x86 provider before initialization.
+    // Only this client's created targets are managed; foreign queues and provider lifetime
+    // remain with their owner. Binding is immutable and pins the provider until process exit.
+    MH_STATUS WINAPI MH_BindSharedProvider(HMODULE provider);
+    BOOL WINAPI MH_SharedProviderBound(VOID);
 
     // Uninitialize the MinHook library. You must call this function EXACTLY
     // ONCE at the end of your program.

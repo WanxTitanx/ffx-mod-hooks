@@ -1,0 +1,18 @@
+# Jarvis-HOOK: editor labels.
+Ignore Customize progression	Ignorar progresso de Customize	Ignorar progreso de Customize	Ignorer la progression de modification	Ignora progressione di modifica	Fortschritt der Anpassung ignorieren	改造の解放条件を無視	개조 해금 조건 무시	忽略改造解锁进度
+Loaded command data unavailable	Dados de comandos carregados indisponíveis	Datos de comandos cargados no disponibles	Données de commandes chargées indisponibles	Dati comandi caricati non disponibili	Geladene Befehlsdaten nicht verfügbar	読込済みコマンドデータが利用不可	로드된 명령 데이터 사용 불가	已加载的指令数据不可用
+Press a gamepad combination	Pressione uma combinação no controle	Pulsa una combinación del mando	Appuyez sur une combinaison de manette	Premi una combinazione sul controller	Controller-Kombination drücken	コントローラーの組み合わせを入力	컨트롤러 조합 누르기	按下手柄按键组合
+Press a keyboard shortcut	Pressione um atalho de teclado	Pulsa un atajo de teclado	Appuyez sur un raccourci clavier	Premi una scorciatoia da tastiera	Tastaturkürzel drücken	キーボードショートカットを入力	키보드 단축키 누르기	按下键盘快捷键
+Refinement method: A / B	Método de refinamento: A / B	Método de refinamiento: A / B	Méthode d'amélioration : A / B	Metodo di perfezionamento: A / B	Veredelungsmethode: A / B	精錬方式: A / B	정련 방식: A / B	精炼方式：A / B
+Remap gamepad buttons	Remapear botões do controle	Reasignar botones del mando	Réaffecter les boutons de manette	Rimappa pulsanti controller	Controller-Tasten neu belegen	コントローラーボタンを再割り当て	컨트롤러 버튼 재설정	重新映射手柄按键
+Rename element	Renomear elemento	Renombrar elemento	Renommer l'élément	Rinomina elemento	Element umbenennen	属性名を変更	속성 이름 변경	重命名元素
+Restore default mapping	Restaurar mapeamento padrão	Restaurar asignación predeterminada	Rétablir l'affectation par défaut	Ripristina mappatura predefinita	Standardbelegung wiederherstellen	標準の割り当てに戻す	기본 매핑 복원	恢复默认映射
+Restore default name	Restaurar nome padrão	Restaurar nombre predeterminado	Rétablir le nom par défaut	Ripristina nome predefinito	Standardnamen wiederherstellen	標準の名前に戻す	기본 이름 복원	恢复默认名称
+Reward data unavailable	Dados de recompensas indisponíveis	Datos de recompensas no disponibles	Données de récompenses indisponibles	Dati ricompense non disponibili	Belohnungsdaten nicht verfügbar	報酬データが利用不可	보상 데이터 사용 불가	奖励数据不可用
+Saturation: %u%%	Saturação: %u%%	Saturación: %u%%	Saturation : %u%%	Saturazione: %u%%	Sättigung: %u%%	彩度: %u%%	채도: %u%%	饱和度：%u%%
+Scan control unavailable	Controle do Scan indisponível	Control de Scan no disponible	Commande Scan indisponible	Controllo Scan non disponibile	Scan-Steuerung nicht verfügbar	ライブラ設定が利用不可	라이브라 설정 사용 불가	侦测控制不可用
+Scan control unavailable.	Controle do Scan indisponível.	Control de Scan no disponible.	Commande Scan indisponible.	Controllo Scan non disponibile.	Scan-Steuerung nicht verfügbar.	ライブラ設定が利用できません。	라이브라 설정을 사용할 수 없습니다.	侦测控制不可用。
+Text label unavailable	Texto indisponível	Texto no disponible	Texte indisponible	Testo non disponibile	Beschriftung nicht verfügbar	テキストを表示できません	텍스트 표시 불가	文本标签不可用
+Use native Overdrive cost	Usar custo nativo de Overdrive	Usar coste nativo de Overdrive	Utiliser le coût Overdrive natif	Usa costo Overdrive nativo	Native Overdrive-Kosten verwenden	標準のOD消費量を使用	기본 오버드라이브 비용 사용	使用原生超限技消耗
+OD cost: Native | %s	Custo de OD: nativo | %s	Coste de OD: nativo | %s	Coût OD : natif | %s	Costo OD: nativo | %s	OD-Kosten: nativ | %s	OD消費: 標準 | %s	OD 비용: 기본값 | %s	OD 消耗：原生 | %s
+Runtime: %s | Text reads: %u	Execução: %s | Leituras de texto: %u	Ejecución: %s | Lecturas de texto: %u	Exécution : %s | Lectures de texte : %u	Esecuzione: %s | Letture testo: %u	Laufzeit: %s | Textzugriffe: %u	動作: %s | テキスト読込: %u	실행: %s | 텍스트 읽기: %u	运行：%s | 文本读取：%u

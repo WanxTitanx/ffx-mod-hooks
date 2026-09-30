@@ -21,7 +21,7 @@ try {
  $fixture=Join-Path $repo 'native-fixtures\FFX.exe'
  if((Get-FileHash $fixture -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Wrong private PE fixture'}
  Copy-Item (Join-Path $repo 'native-fixtures\msvcr110.dll') (Join-Path $obj 'msvcr110.dll') -Force
- foreach($mode in @('off','on')){
+ foreach($mode in @('off','on','managed-off','managed-on')){
   $data=Join-Path $obj ('private-'+[guid]::NewGuid().ToString('N'))
   Write-Output ('WORKSHOP_SAVE_FLOW_RONSO '+$mode)
   & $exe $fixture (Join-Path $repo 'native-fixtures\ffx_000') $data $mode

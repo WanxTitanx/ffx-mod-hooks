@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <PlatformTarget>x86</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <UseAppHost>false</UseAppHost>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DefineConstants>$(DefineConstants);FFXHOOKS_COOPERATIVE_PROVIDER</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../TransportTests.cs" />
+    <Compile Include="../../FhCooperativeServices.cs" Link="FhCooperativeServices.cs" />
+    <Compile Include="../../../CooperativeClient.cs" Link="CooperativeClient.cs" />
+  </ItemGroup>
+</Project>

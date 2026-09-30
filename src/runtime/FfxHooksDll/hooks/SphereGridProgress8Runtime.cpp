@@ -151,6 +151,7 @@ bool RegisterSource(const Source* value) noexcept {
     return source.compare_exchange_strong(expected,value,std::memory_order_acq_rel)||expected==value;
 }
 void PrimeSaveIo(std::uintptr_t base,bool validateOnly,const wchar_t* storageOverride){
+    if(!Coexistence::runtime.SavePipelineAllowed())return;
     if(validateOnly||!Requested()||stopping.load(std::memory_order_acquire))return;
     if(admin.test_and_set(std::memory_order_acquire))return;
     struct Unlock {~Unlock(){admin.clear(std::memory_order_release);}} unlock;

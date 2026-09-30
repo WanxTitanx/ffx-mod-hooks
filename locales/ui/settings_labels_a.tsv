@@ -1,0 +1,75 @@
+# Jarvis-HOOK: translated editor labels and format templates.
+ (default)	 (padrão)	 (predeterminado)	 (par défaut)	 (predefinito)	 (Standard)	（標準）	 (기본값)	（默认）
+ [Selected]	 [Selecionado]	 [Seleccionado]	 [Sélectionné]	 [Selezionato]	 [Ausgewählt]	 [選択中]	 [선택됨]	 [已选择]
+%.32s: enable Core and restart	%.32s: ative o núcleo e reinicie	%.32s: activa el núcleo y reinicia	%.32s : activez la base et redémarrez	%.32s: attiva la base e riavvia	%.32s: Basis aktivieren und neu starten	%.32s: 基本機能を有効化して再起動	%.32s: 기본 기능을 켜고 재시작	%.32s：启用核心并重启
+%.40s - bit 0x%02X	%.40s - bit 0x%02X	%.40s - bit 0x%02X	%.40s - bit 0x%02X	%.40s - bit 0x%02X	%.40s - Bit 0x%02X	%.40s - ビット0x%02X	%.40s - 비트 0x%02X	%.40s - 位 0x%02X
+%.48s color: #%06X	Cor de %.48s: #%06X	Color de %.48s: #%06X	Couleur %.48s : #%06X	Colore %.48s: #%06X	Farbe %.48s: #%06X	%.48sの色: #%06X	%.48s 색상: #%06X	%.48s 颜色：#%06X
+%.48s color: INVALID	Cor de %.48s: INVÁLIDA	Color de %.48s: NO VÁLIDO	Couleur %.48s : INVALIDE	Colore %.48s: NON VALIDO	Farbe %.48s: UNGÜLTIG	%.48sの色: 無効	%.48s 색상: 잘못된 값	%.48s 颜色：无效
+%.64s color	Cor de %.64s	Color de %.64s	Couleur de %.64s	Colore di %.64s	Farbe von %.64s	%.64sの色	%.64s 색상	%.64s 颜色
+%s multiplier: INVALID	Multiplicador de %s: INVÁLIDO	Multiplicador de %s: NO VÁLIDO	Multiplicateur %s : INVALIDE	Moltiplicatore %s: NON VALIDO	%s-Multiplikator: UNGÜLTIG	%s倍率: 無効	%s 배율: 잘못된 값	%s 倍率：无效
+%s multiplier: x%u	Multiplicador de %s: x%u	Multiplicador de %s: x%u	Multiplicateur %s : x%u	Moltiplicatore %s: x%u	%s-Multiplikator: x%u	%s倍率: x%u	%s 배율: x%u	%s 倍率：x%u
+%s saved %s. External override keeps it %s.	%s salvo como %s. A prioridade externa mantém %s.	%s guardado como %s. La prioridad externa mantiene %s.	%s enregistré sur %s. La priorité externe maintient %s.	%s salvato su %s. La priorità esterna mantiene %s.	%s als %s gespeichert. Externe Vorgabe hält %s.	%sを%sで保存。外部設定により%sを維持。	%s을(를) %s로 저장했습니다. 외부 설정으로 %s 유지.	%s 已保存为 %s。外部覆盖使其保持 %s。
+%s saved %s. Restart FFX to apply.	%s salvo como %s. Reinicie FFX para aplicar.	%s guardado como %s. Reinicia FFX para aplicar.	%s enregistré sur %s. Redémarrez FFX pour appliquer.	%s salvato su %s. Riavvia FFX per applicare.	%s als %s gespeichert. FFX zum Anwenden neu starten.	%sを%sで保存。FFXを再起動して適用。	%s을(를) %s로 저장했습니다. FFX를 재시작하세요.	%s 已保存为 %s。重启 FFX 后应用。
+%s sends %s	%s envia %s	%s envía %s	%s envoie %s	%s invia %s	%s sendet %s	%s → %s	%s → %s	%s 发送 %s
+%s: %04X | Native OD | %s	%s: %04X | OD nativo | %s	%s: %04X | OD nativo | %s	%s : %04X | OD natif | %s	%s: %04X | OD nativo | %s	%s: %04X | Nativer OD | %s	%s: %04X | 標準OD | %s	%s: %04X | 기본 OD | %s	%s：%04X | 原生 OD | %s
+%s: %04X | OD %u | %s	%s: %04X | OD %u | %s	%s: %04X | OD %u | %s	%s : %04X | OD %u | %s	%s: %04X | OD %u | %s	%s: %04X | OD %u | %s	%s: %04X | OD %u | %s	%s: %04X | OD %u | %s	%s：%04X | OD %u | %s
+%s: %s | Running: %s	%s: %s | Em execução: %s	%s: %s | En ejecución: %s	%s : %s | En cours : %s	%s: %s | In esecuzione: %s	%s: %s | Aktiv: %s	%s: %s | 動作: %s	%s: %s | 실행: %s	%s：%s | 运行：%s
+%s: Disabled	%s: Desativado	%s: Desactivado	%s : Désactivé	%s: Disattivato	%s: Deaktiviert	%s: 無効	%s: 비활성화	%s：已禁用
+%s: base unavailable until monster data load	%s: base indisponível até carregar os dados do monstro	%s: base no disponible hasta cargar los datos del monstruo	%s : base indisponible avant chargement du monstre	%s: base non disponibile fino al caricamento del mostro	%s: Basis erst nach Laden der Monsterdaten verfügbar	%s: モンスターデータ読込後に基礎値を取得	%s: 몬스터 데이터 로드 후 기본값 사용 가능	%s：怪物数据加载前基础值不可用
+%s: invalid individual or global rate	%s: taxa individual ou global inválida	%s: tasa individual o global no válida	%s : taux individuel ou global invalide	%s: valore individuale o globale non valido	%s: individueller oder globaler Faktor ungültig	%s: 個別または全体倍率が無効	%s: 개별 또는 전역 배율 오류	%s：独立或全局倍率无效
+A - one Key Sphere per added slot	A - uma Key Sphere por espaço adicionado	A - una Key Sphere por espacio añadido	A - une Sphère clé par emplacement ajouté	A - una Passosfera per slot aggiunto	A - ein Sphäropass je zusätzlichem Platz	A - 追加スロットごとにキースフィア1個	A - 추가 슬롯당 키 스피어 1개	A - 每个新增栏位一颗钥匙晶球
+A - one per slot	A - uma por espaço	A - una por espacio	A - une par emplacement	A - una per slot	A - eine je Platz	A - スロットごとに1個	A - 슬롯당 1개	A - 每栏一个
+AP multiplier	Multiplicador de AP	Multiplicador de AP	Multiplicateur de PC	Moltiplicatore AP	AP-Multiplikator	AP倍率	AP 배율	AP 倍率
+AP/Gil Multipliers	Multiplicadores de AP/Gil	Multiplicadores de AP/Guiles	Multiplicateurs PC/Gils	Moltiplicatori AP/Guil	AP/Gil-Multiplikatoren	AP・ギル倍率	AP/길 배율	AP/金币倍率
+Ability ID mapping	IDs das habilidades	IDs de habilidades	Identifiants des compétences	ID delle abilità	Fähigkeits-IDs	アビリティID設定	능력 ID 설정	能力 ID 映射
+Add character	Adicionar caractere	Añadir carácter	Ajouter un caractère	Aggiungi carattere	Zeichen hinzufügen	文字を追加	문자 추가	添加字符
+Arena+ settings	Configurações Arena+	Configuración de Arena+	Paramètres Arena+	Impostazioni Arena+	Arena+-Einstellungen	Arena+設定	Arena+ 설정	Arena+ 设置
+Automatic - first connected controller	Automático - primeiro controle conectado	Automático - primer mando conectado	Automatique - première manette connectée	Automatico - primo controller connesso	Automatisch - erster verbundener Controller	自動 - 最初に接続されたコントローラー	자동 - 첫 번째 연결 컨트롤러	自动 - 首个已连接的控制器
+B - 1/2/3/4 Key Spheres by slot	B - 1/2/3/4 Key Spheres conforme o espaço	B - 1/2/3/4 Key Spheres según el espacio	B - 1/2/3/4 Sphères clés selon l'emplacement	B - 1/2/3/4 Passosfere in base allo slot	B - 1/2/3/4 Sphäropässe je nach Platz	B - スロットに応じてキースフィア1/2/3/4個	B - 슬롯에 따라 키 스피어 1/2/3/4개	B - 按栏位消耗 1/2/3/4 颗钥匙晶球
+Base source: installed monster file	Base: arquivo de monstro instalado	Base: archivo de monstruo instalado	Base : fichier de monstre installé	Base: file mostro installato	Basis: installierte Monsterdatei	基礎値: インストール済みモンスターファイル	기본값: 설치된 몬스터 파일	基础来源：已安装的怪物文件
+Base source: not loaded	Base: não carregada	Base: sin cargar	Base : non chargée	Base: non caricata	Basis: nicht geladen	基礎値: 未読込	기본값: 로드되지 않음	基础来源：未加载
+Base source: observed battle values	Base: valores observados em batalha	Base: valores observados en combate	Base : valeurs observées en combat	Base: valori osservati in battaglia	Basis: beobachtete Kampfwerte	基礎値: 戦闘で観測した値	기본값: 전투에서 확인한 값	基础来源：战斗观测值
+Battle Photo Mode	Modo foto em batalha	Modo foto de combate	Mode photo en combat	Modalità foto in battaglia	Fotomodus im Kampf	戦闘フォトモード	전투 사진 모드	战斗拍照模式
+Brightness: %u%%	Brilho: %u%%	Brillo: %u%%	Luminosité : %u%%	Luminosità: %u%%	Helligkeit: %u%%	明るさ: %u%%	밝기: %u%%	亮度：%u%%
+Button mapping	Mapeamento dos botões	Asignación de botones	Affectation des boutons	Mappatura pulsanti	Tastenbelegung	ボタン割り当て	버튼 매핑	按键映射
+Character: %c	Caractere: %c	Carácter: %c	Caractère : %c	Carattere: %c	Zeichen: %c	文字: %c	문자: %c	字符：%c
+Character: (space)	Caractere: (espaço)	Carácter: (espacio)	Caractère : (espace)	Carattere: (spazio)	Zeichen: (Leerzeichen)	文字:（空白）	문자: (공백)	字符：（空格）
+Choose a controller	Escolher um controle	Elegir un mando	Choisir une manette	Scegli un controller	Controller auswählen	コントローラーを選択	컨트롤러 선택	选择控制器
+Choose a monster	Escolher um monstro	Elegir un monstruo	Choisir un monstre	Scegli un mostro	Monster auswählen	モンスターを選択	몬스터 선택	选择怪物
+Choose the game action button	Escolher o botão de ação do jogo	Elegir el botón de acción del juego	Choisir le bouton d'action du jeu	Scegli il pulsante d'azione del gioco	Aktionstaste des Spiels wählen	ゲーム内の操作ボタンを選択	게임 동작 버튼 선택	选择游戏动作按键
+Clear draft	Limpar rascunho	Borrar borrador	Effacer le brouillon	Cancella bozza	Entwurf leeren	入力をクリア	초안 지우기	清空草稿
+Clear this shortcut	Limpar este atalho	Borrar este atajo	Effacer ce raccourci	Cancella questa scorciatoia	Dieses Kürzel löschen	このショートカットを解除	이 단축키 지우기	清除此快捷键
+Command %04X: %s	Comando %04X: %s	Comando %04X: %s	Commande %04X : %s	Comando %04X: %s	Befehl %04X: %s	コマンド%04X: %s	명령 %04X: %s	指令 %04X：%s
+Command bindings	Vínculos de comandos	Vínculos de comandos	Associations de commandes	Associazioni comandi	Befehlszuordnungen	コマンド割り当て	명령 연결	指令绑定
+Configured combination	Combinação configurada	Combinación configurada	Combinaison configurée	Combinazione configurata	Konfigurierte Kombination	設定済みの組み合わせ	설정된 조합	已配置的组合
+Configured totals, before native character bonuses	Totais configurados, antes dos bônus nativos dos personagens	Totales configurados, antes de bonos nativos de personajes	Totaux configurés, avant les bonus natifs des personnages	Totali configurati, prima dei bonus nativi dei personaggi	Konfigurierte Summen vor nativen Charakterboni	設定後の合計（標準キャラクターボーナス適用前）	기본 캐릭터 보너스 적용 전 설정 합계	配置总值，在原生角色加成之前
+Controller: Automatic	Controle: automático	Mando: automático	Manette : automatique	Controller: automatico	Controller: automatisch	コントローラー: 自動	컨트롤러: 자동	控制器：自动
+Controller: Pad %d	Controle: %d	Mando: %d	Manette : %d	Controller: %d	Controller: %d	コントローラー: %d	컨트롤러: %d	控制器：%d
+Core unavailable	Núcleo indisponível	Núcleo no disponible	Base indisponible	Base non disponibile	Basis nicht verfügbar	基本機能が利用不可	기본 기능 사용 불가	核心不可用
+Custom (invalid order)	Personalizado (ordem inválida)	Personalizado (orden no válido)	Personnalisé (ordre invalide)	Personalizzato (ordine non valido)	Benutzerdefiniert (ungültige Reihenfolge)	カスタム（順序が無効）	사용자 지정 (순서 오류)	自定义（顺序无效）
+Custom element order	Ordem dos elementos personalizados	Orden de elementos personalizados	Ordre des éléments personnalisés	Ordine elementi personalizzati	Reihenfolge eigener Elemente	追加属性の順序	사용자 속성 순서	自定义元素顺序
+Custom order: %.24s / %.24s	Ordem personalizada: %.24s / %.24s	Orden personalizado: %.24s / %.24s	Ordre personnalisé : %.24s / %.24s	Ordine personalizzato: %.24s / %.24s	Eigene Reihenfolge: %.24s / %.24s	追加属性の順序: %.24s / %.24s	사용자 순서: %.24s / %.24s	自定义顺序：%.24s / %.24s
+Custom order: INVALID	Ordem personalizada: INVÁLIDA	Orden personalizado: NO VÁLIDO	Ordre personnalisé : INVALIDE	Ordine personalizzato: NON VALIDO	Eigene Reihenfolge: UNGÜLTIG	追加属性の順序: 無効	사용자 순서: 잘못된 값	自定义顺序：无效
+DEV - %s: %s	DEV - %s: %s	DEV - %s: %s	DEV - %s : %s	DEV - %s: %s	DEV - %s: %s	開発 - %s: %s	개발 - %s: %s	开发 - %s：%s
+Decrease (-1)	Diminuir (-1)	Reducir (-1)	Diminuer (-1)	Diminuisci (-1)	Verringern (-1)	減らす (-1)	감소 (-1)	减少 (-1)
+Decrease (-10)	Diminuir (-10)	Reducir (-10)	Diminuer (-10)	Diminuisci (-10)	Verringern (-10)	減らす (-10)	감소 (-10)	减少 (-10)
+Decrease (-100)	Diminuir (-100)	Reducir (-100)	Diminuer (-100)	Diminuisci (-100)	Verringern (-100)	減らす (-100)	감소 (-100)	减少 (-100)
+Delete last character	Apagar último caractere	Borrar último carácter	Effacer le dernier caractère	Cancella ultimo carattere	Letztes Zeichen löschen	最後の文字を削除	마지막 문자 삭제	删除最后一个字符
+Disable this binding	Desativar este vínculo	Desactivar este vínculo	Désactiver cette association	Disattiva questa associazione	Diese Zuordnung deaktivieren	この割り当てを無効化	이 연결 비활성화	禁用此绑定
+Edit ability ID	Editar ID da habilidade	Editar ID de habilidad	Modifier l'ID de compétence	Modifica ID abilità	Fähigkeits-ID bearbeiten	アビリティIDを編集	능력 ID 편집	编辑能力 ID
+Edit equipment command	Editar comando do equipamento	Editar comando de equipo	Modifier la commande d'équipement	Modifica comando equipaggiamento	Ausrüstungsbefehl bearbeiten	装備コマンドを編集	장비 명령 편집	编辑装备指令
+Element names	Nomes dos elementos	Nombres de elementos	Noms des éléments	Nomi elementi	Elementnamen	属性名	속성 이름	元素名称
+Enabled Scan elements	Elementos ativos no Scan	Elementos activos en Scan	Éléments actifs dans Scan	Elementi attivi in Scan	Aktive Scan-Elemente	ライブラ表示属性	라이브라 표시 속성	侦测中显示的元素
+Enabled extra elements: %u / 6	Elementos extras ativos: %u / 6	Elementos adicionales activos: %u / 6	Éléments supplémentaires actifs : %u / 6	Elementi aggiuntivi attivi: %u / 6	Aktive Zusatzelemente: %u / 6	有効な追加属性: %u / 6	활성 추가 속성: %u / 6	已启用额外元素：%u / 6
+Enabled extra elements: INVALID settings	Elementos extras: configurações INVÁLIDAS	Elementos adicionales: configuración NO VÁLIDA	Éléments supplémentaires : réglages INVALIDES	Elementi aggiuntivi: impostazioni NON VALIDE	Zusatzelemente: UNGÜLTIGE Einstellungen	追加属性: 設定が無効	추가 속성: 설정 오류	额外元素：设置无效
+Equipment command bindings	Vínculos de comandos de equipamento	Vínculos de comandos de equipo	Associations de commandes d'équipement	Associazioni comandi equipaggiamento	Ausrüstungsbefehle zuordnen	装備コマンドの割り当て	장비 명령 연결	装备指令绑定
+Expansion recipe	Receita de expansão	Receta de expansión	Recette d'extension	Ricetta di espansione	Erweiterungsrezept	拡張レシピ	확장 재료법	扩展配方
+Expansion recipe: %s	Receita de expansão: %s	Receta de expansión: %s	Recette d'extension : %s	Ricetta di espansione: %s	Erweiterungsrezept: %s	拡張レシピ: %s	확장 재료법: %s	扩展配方：%s
+Find monster by ID	Buscar monstro por ID	Buscar monstruo por ID	Chercher un monstre par ID	Cerca mostro per ID	Monster nach ID suchen	IDでモンスターを検索	ID로 몬스터 찾기	按 ID 查找怪物
+Free Gil	Sem custo de Gil	Sin coste de guiles	Sans coût en Gils	Nessun costo in Guil	Keine Gil-Kosten	ギル消費なし	길 비용 없음	免金币消耗
+Free materials	Sem custo de materiais	Sin coste de materiales	Sans coût en matériaux	Nessun costo materiali	Keine Materialkosten	素材消費なし	재료 비용 없음	免材料消耗
+Gamepad settings	Configurações do controle	Configuración del mando	Paramètres de manette	Impostazioni controller	Controller-Einstellungen	コントローラー設定	컨트롤러 설정	手柄设置
+Gamepad shortcuts	Atalhos do controle	Atajos del mando	Raccourcis de manette	Scorciatoie controller	Controller-Kürzel	コントローラーショートカット	컨트롤러 단축키	手柄快捷键
+Gil multiplier	Multiplicador de Gil	Multiplicador de guiles	Multiplicateur de Gils	Moltiplicatore Guil	Gil-Multiplikator	ギル倍率	길 배율	金币倍率
+Global %s rate: INVALID	Taxa global de %s: INVÁLIDA	Tasa global de %s: NO VÁLIDA	Taux global %s : INVALIDE	Valore globale %s: NON VALIDO	Globaler %s-Faktor: UNGÜLTIG	全体%s倍率: 無効	전역 %s 배율: 잘못된 값	全局 %s 倍率：无效
+Global %s rate: x%d	Taxa global de %s: x%d	Tasa global de %s: x%d	Taux global %s : x%d	Valore globale %s: x%d	Globaler %s-Faktor: x%d	全体%s倍率: x%d	전역 %s 배율: x%d	全局 %s 倍率：x%d

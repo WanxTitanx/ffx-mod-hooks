@@ -34,46 +34,32 @@ consolidated **FFX** build; it does not claim equivalent FFX-2 support.
 
 ## Beta status
 
-The 2026-09-29 integration joins the published recovery/Seymour/Sphere Grid lane
-with main's current elements, Arcana, rewards, languages and weapon effects.
-It also adds six learned **Elemental Nul spells**. See the
-[integration and asset receipt](docs/ai/NUL_ELEMENTS_INTEGRATION_2026_09_29.md)
-for tested source, installation identity and remaining live checks.
+**v0.6.0-beta.3** adds nine selectable interface languages, the optional Fahrenheit V2 integration and corrected F7/F8 action sounds. The merged runtime source is `c18fb5602a688dd0de5e7e85677c5d5102402788`.
 
-Features are opt-in. Every editable boolean in the current F8 catalog defaults
-OFF; the dashboard itself defaults ON. A package, compatible executable, restart
-or additional gate may be required before an enabled option becomes effective.
-`LIVE` in F8 describes how a setting is applied, not a claim of completed RT2.
+- **Interface:** English, Portuguese (Brazil), Spanish, French, Italian, German, Japanese, Korean and Simplified Chinese. Select **F8 > System > Interface language**. This preference is independent of game text and audio; non-FLAGS F7 pages retain native English.
+- **Fahrenheit:** shared hook ownership, frame/input coordination, managed save transactions and paired text/font resources with the matching V2 provider and bridge. Read the [optional V2 installation guide](docs/FAHRENHEIT_V2.md). Stock Fahrenheit/V1 retains documented restrictions.
+- **Corrections:** sound feedback follows successful, rejected and canceled actions; failed language persistence retains the previous choice; focus-loss and renderer ownership are preserved; provider read failures have one cleanup owner; upstream source verification now covers 501 files.
 
-The consolidated candidate has Windows build, RT0 and isolated RT1 evidence.
-Earlier user observations remain attached to their original DLLs. Full gameplay,
-visual and save-lifecycle acceptance of this exact candidate is still pending;
-deployment alone does not promote it to Production. Known issues are tracked in
-[KNOWN_BUGS](docs/KNOWN_BUGS.md) and the [current roadmap](docs/ROADMAP.md).
+This is a public beta with RT0/isolated RT1 evidence. Live auditory, visual, gameplay and save-lifecycle RT2 acceptance remains pending. Compatibility with arbitrary mod combinations is not established.
+
+All editable F8 gameplay booleans default OFF; the dashboard itself defaults ON. Existing feature content from beta.2 remains included. See [known issues](docs/KNOWN_BUGS.md) and the [roadmap](docs/ROADMAP.md).
 
 ## Current DLL
 
-Jarvis-HOOK checkpoint: **2026-09-29**, implemented and deployed from `main`.
+[Download v0.6.0-beta.3](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.3) — Jarvis-HOOK, 2026-09-29.
 
-| Identity | Recorded value |
+| Identity | Value |
 |---|---|
-| Runtime source commit | `2787386a7144af04c16f194029a4a35616bf8dea` (development integration) |
-| Installed module | `<game>/modules/ffx-hooks.dll` |
-| DLL size | 4,011,008 bytes |
-| DLL SHA-256 | `5f6a76f3260a1aa0f5a36e0ff6e9f641f7d92e0dda969910d0d66a2debc3016e` |
-| Deployment | 2026-09-29 10:28:24 UTC; verified backup and atomic replacement |
-| Source binding | 363 code/resource inputs match the recorded release build |
-| Protected installation scope | 1,116 inventoried files unchanged |
-| Supported executable | PE32/i386 `FFX.exe`, preferred image base `0x00400000` |
-| Executable SHA-256 | `78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced` |
+| Runtime source | `c18fb5602a688dd0de5e7e85677c5d5102402788` |
+| DLL | Windows x86 / PE32, 4,683,264 bytes |
+| DLL SHA-256 | `4e7dfe943e9496729b69c9c3af24dfef465ec4efddfb93dba5b6fdcd77af8a6e` |
+| Source binding | 383 public code/resource inputs; all 750 original captured inputs verified against the merged source |
+| PE resource version | `0.2.0.0`; package version `v0.6.0-beta.3` |
+| Live validation | RT2 pending; this publication does not install or promote the DLL |
 
-This local deployment includes the six Nuls, private animations and published
-recovery/Seymour/Sphere Grid integration alongside the existing main features.
-See the [source/build/deployment evidence](docs/ai/NUL_ELEMENTS_INTEGRATION_2026_09_29.md).
-The public [v0.6.0-beta.2](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2)
-archives identify the preceding DLL and remain unchanged. The PE resource still
-reports `0.2.0.0`; use the source and artifact hashes above for this deployment.
-Live RT2 acceptance and Production promotion remain separate.
+The release includes the main binary package, exact tagged public source, an optional paired Fahrenheit V2 add-on, corresponding modified provider source and SHA-256 checksums. The main ZIP retains Arcana art, English/PT-BR guides and configuration examples.
+
+See [installation](docs/INSTALL.md) and [Fahrenheit V2](docs/FAHRENHEIT_V2.md). Previous release assets remain unchanged.
 
 ## What this is
 

@@ -8,6 +8,8 @@ on:
       - 'contracts/**'
       - 'research/equipment_workshop/**'
       - 'tools/text_languages/**'
+      - 'tools/ui_languages/**'
+      - 'locales/ui/**'
       - '!**/*.md'
       - '.github/workflows/build.yml'
   pull_request:
@@ -16,6 +18,8 @@ on:
       - 'contracts/**'
       - 'research/equipment_workshop/**'
       - 'tools/text_languages/**'
+      - 'tools/ui_languages/**'
+      - 'locales/ui/**'
       - '!**/*.md'
       - '.github/workflows/build.yml'
   workflow_dispatch:
@@ -50,6 +54,17 @@ jobs:
           persist-credentials: false
       - name: MSVC x86 adapters, bounded file IO and F8 regressions
         run: ./src/runtime/FfxHooksDll/text_languages_rt1.ps1
+      - name: F7 and F8 input audio outcomes
+        run: ./src/runtime/FfxHooksDll/f7_audio_rt1.ps1
+      - name: Validate authored interface catalogs
+        run: |
+          python tools/ui_languages/catalog.py --check
+          if ($LASTEXITCODE -ne 0) { throw 'Interface catalog is stale or invalid' }
+          $env:PYTHONPATH = 'tools/ui_languages'
+          python -m unittest discover -s tools/ui_languages -v
+          if ($LASTEXITCODE -ne 0) { throw 'Interface catalog regressions failed' }
+      - name: Native interface locale and Unicode renderer regressions
+        run: ./src/runtime/FfxHooksDll/ui_language_rt1.ps1
       - name: Setup pinned vcpkg
         uses: lukka/run-vcpkg@v11
         with:

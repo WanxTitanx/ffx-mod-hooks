@@ -104,6 +104,15 @@ workshop::Error ReadEconomy(workshop::Economy& economy){
     economy.customizeUnlocked=workshop::NativeCustomizeUnlocked(story)?1:0;
     (void)CatalogBridge::Read(economy.catalog);return workshop::Error::Ok;
 }
+bool NormalizeLoadedImage(SaveImage& image) noexcept {
+    if(RonsoPool::IsValidSave(image))return true;
+    // Both completed reads and native RAM copies can arrive after the game's
+    // CRC checker clears its mirror. Normalize a private copy, never game RAM.
+    const auto expected=static_cast<std::uint16_t>(image[26]|(unsigned(image[27])<<8));
+    if(image[25844]||image[25845]||image[25846]||image[25847]||
+       RonsoPool::SaveChecksum(image)!=expected)return false;
+    image[25844]=image[26];image[25845]=image[27];return true;
+}
 void ReadAssociated(const wchar_t* path,const unsigned char* disk,const unsigned char* loaded,std::size_t size,
                     const NativeSaveEvents::CheckpointSelection* checkpoint) noexcept {
     if(!accepting.load() || !path || size!=kSaveBytes)return;
@@ -111,7 +120,9 @@ void ReadAssociated(const wchar_t* path,const unsigned char* disk,const unsigned
         if(!RonsoPool::OwnerStore::IsSavePath(path))return;
         Pending entry{};entry.path=path;entry.buffer=reinterpret_cast<std::uintptr_t>(loaded);
         if(checkpoint){entry.checkpoint=checkpoint->selected;entry.checkpointProof=checkpoint->proof;}
-        if(!Fingerprint(disk,size,entry.disk)||!Fingerprint(loaded+64,size-64,entry.payload))return;
+        SaveImage canonical{};
+        if(!Copy(canonical.data(),loaded,size)||!NormalizeLoadedImage(canonical)||
+           !Fingerprint(disk,size,entry.disk)||!Fingerprint(canonical.data()+64,size-64,entry.payload))return;
         std::lock_guard<std::recursive_mutex> lock(mutex);
         // A successful read replaces the buffer's provenance even when two
         // save slots contain identical bytes. Never keep an older path attached
@@ -157,15 +168,10 @@ bool PrepareLoad(const SaveImage& image,const void* address){
     // a private copy only, after proving the header CRC against the payload.
     // All other bytes still have to match the observed completed file read.
     SaveImage canonical=image;
-    if(!RonsoPool::IsValidSave(canonical)){
-        const auto expected=static_cast<std::uint16_t>(canonical[26]|(unsigned(canonical[27])<<8));
-        if(canonical[25844]||canonical[25845]||canonical[25846]||canonical[25847]||
-           RonsoPool::SaveChecksum(canonical)!=expected){
-            code=RuntimeCode::Conflict;
-            Log("[ffx-hooks] Workshop: native load rejected; checksum transition is not verified\n");
-            return false;
-        }
-        canonical[25844]=canonical[26];canonical[25845]=canonical[27];
+    if(!NormalizeLoadedImage(canonical)){
+        code=RuntimeCode::Conflict;
+        Log("[ffx-hooks] Workshop: native load rejected; checksum transition is not verified\n");
+        return false;
     }
     Hash payload{};if(!Fingerprint(canonical.data()+64,canonical.size()-64,payload))return false;
     const Pending* selected=nullptr;
@@ -449,12 +455,12 @@ bool Begin(std::uintptr_t base,bool on,bool validateOnly,LogFn logger,const wcha
     if(started.load())return accepting.load();
     const auto directory=overridePath?std::wstring(overridePath):Directory();
     bool persisted=false;if(!directory.empty()){WIN32_FIND_DATAW found{};HANDLE find=FindFirstFileW((directory+L"\\*.bin").c_str(),&found);if(find!=INVALID_HANDLE_VALUE){persisted=true;FindClose(find);}}
-    const bool inventory=on||persisted;
+    const bool inventory=(on||persisted)&&Coexistence::runtime.SavePipelineAllowed();
     const bool effects=EquipmentEffects::Pipeline::Required()||NativeGameplayEvents::Requested();
     const bool equipment=inventory||effects;
     if(!equipment&&!CombatExtensions::Required()){code=RuntimeCode::Disabled;return false;}
     if(validateOnly){code=RuntimeCode::Disabled;return false;}
-    started=true;module=base;enabled=on;logFn=logger;sharedOnly=!inventory;
+    started=true;module=base;enabled=on&&inventory;logFn=logger;sharedOnly=!inventory;
     if(!Profile(base,equipment)){code=RuntimeCode::Unsupported;return false;}
     if(inventory&&!store.Initialize(directory,true)){code=RuntimeCode::StorageError;return false;}
 #ifdef FFXHOOKS_HAVE_POLYHOOK
@@ -493,6 +499,7 @@ bool Begin(std::uintptr_t base,bool on,bool validateOnly,LogFn logger,const wcha
 
 bool Start(std::uintptr_t base,bool on,bool validateOnly,LogFn logger){return Begin(base,on,validateOnly,logger,nullptr);}
 void PrimeSaveIo(bool on,bool validateOnly){
+    if(!Coexistence::runtime.SavePipelineAllowed())return;
     if(validateOnly)return;
     bool persisted=false;const auto directory=Directory();
     if(!directory.empty()){WIN32_FIND_DATAW found{};HANDLE file=FindFirstFileW((directory+L"\\*.bin").c_str(),&found);if(file!=INVALID_HANDLE_VALUE){persisted=true;FindClose(file);}}

@@ -329,19 +329,23 @@ private:
                 char key[80]{};if(!ParseString(key,sizeof(key)))return ConfigCode::Malformed;
                 SkipWhitespace();if(!Consume(':'))return ConfigCode::Malformed;SkipWhitespace();
                 if(Equals(key,"key")){
-                    if(seen&1)return ConfigCode::DuplicateKey;seen|=1;
+                    if(seen&1)return ConfigCode::DuplicateKey;
+                    seen|=1;
                     if(!ParseString(item.key.data(),item.key.size()))return ConfigCode::Malformed;
                 }else if(Equals(key,"affinity")){
-                    if(seen&2)return ConfigCode::DuplicateKey;seen|=2;
+                    if(seen&2)return ConfigCode::DuplicateKey;
+                    seen|=2;
                     uint32_t value=0;const auto result=ParseMask(3,&value);if(result!=ConfigCode::Ok)return result;
                     item.affinity=static_cast<F7Elements::Affinity>(value);
                 }else if(!SkipValue(0))return ConfigCode::Malformed;
                 SkipWhitespace();if(Consume('}'))break;
-                if(!Consume(','))return ConfigCode::Malformed;SkipWhitespace();
+                if(!Consume(','))return ConfigCode::Malformed;
+                SkipWhitespace();
             }
             if(seen!=3||!item.key[0])return ConfigCode::Malformed;
             SkipWhitespace();if(Consume(']'))break;
-            if(!Consume(','))return ConfigCode::Malformed;SkipWhitespace();
+            if(!Consume(','))return ConfigCode::Malformed;
+            SkipWhitespace();
         }
         if(!F7Elements::Valid(parsed))return ConfigCode::OutOfRange;
         *output=parsed;return ConfigCode::Ok;

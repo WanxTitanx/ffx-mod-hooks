@@ -30,71 +30,79 @@ static void F8RewardLabel(NativeSettingsPage page,int row,char* out,size_t capac
     using namespace FfxHooks;using namespace MonsterRewards;
     if(page==NativeSettingsPage::RewardMultipliers){
         if(row==0||row==2||row==4){const auto* flag=row==4?FindF8Flag("cheats.monster_rewards"):F8RewardFlag(row==0?Kind::Ap:Kind::Gil);
-            if(!flag){strncpy_s(out,capacity,"Control unavailable",_TRUNCATE);return;}
-            _snprintf_s(out,capacity,_TRUNCATE,"%s: %s",row==0?"Global AP":row==2?"Global Gil":"Per-monster mode",ResolveF8Flag(*flag).value?"ON":"OFF");return;}
+            if(!flag){F8Copy(out,capacity,"Control unavailable");return;}
+            F8Format(out,capacity,"%s: %s",row==0?"Global AP":row==2?"Global Gil":"Per-monster mode",ResolveF8Flag(*flag).value?"ON":"OFF");return;}
         if(row==1||row==3){const auto* flag=F8RewardFlag(row==1?Kind::Ap:Kind::Gil);const auto scalar=ResolveF8Scalar(*flag);
-            if(scalar.state==F8ScalarState::Invalid)_snprintf_s(out,capacity,_TRUNCATE,"Global %s rate: INVALID",row==1?"AP":"Gil");
-            else _snprintf_s(out,capacity,_TRUNCATE,"Global %s rate: x%d",row==1?"AP":"Gil",scalar.value);return;}
-        strncpy_s(out,capacity,row==5?"Choose a monster":"Find monster by ID",_TRUNCATE);return;
+            if(scalar.state==F8ScalarState::Invalid)F8Format(out,capacity,"Global %s rate: INVALID",row==1?"AP":"Gil");
+            else F8Format(out,capacity,"Global %s rate: x%d",row==1?"AP":"Gil",scalar.value);return;}
+        F8Copy(out,capacity,row==5?"Choose a monster":"Find monster by ID");return;
     }
     if(page==NativeSettingsPage::RewardRate){
-        if(row==0)_snprintf_s(out,capacity,_TRUNCATE,"Multiplier: x%u",g_rewardRateDraft);
-        else if(row==5)_snprintf_s(out,capacity,_TRUNCATE,"Use default: x%u",g_rewardGlobal?100u:1u);
-        else {const char* labels[]={"","Increase (+1)","Decrease (-1)","Increase (+10)","Decrease (-10)","","Save multiplier"};strncpy_s(out,capacity,labels[row],_TRUNCATE);}return;
+        if(row==0)F8Format(out,capacity,"Multiplier: x%u",g_rewardRateDraft);
+        else if(row==5)F8Format(out,capacity,"Use default: x%u",g_rewardGlobal?100u:1u);
+        else {const char* labels[]={"","Increase (+1)","Decrease (-1)","Increase (+10)","Decrease (-10)","","Save multiplier"};F8Copy(out,capacity,labels[row]);}return;
     }
     if(page==NativeSettingsPage::MonsterRewardId){
-        _snprintf_s(out,capacity,_TRUNCATE,"m%03u: %s",g_rewardIdDraft,row==0?"Increase (+1)":row==1?"Decrease (-1)":row==2?"Increase (+100)":row==3?"Decrease (-100)":"Open this monster");return;
+        F8Format(out,capacity,"m%03u: %s",g_rewardIdDraft,row==0?"Increase (+1)":row==1?"Decrease (-1)":row==2?"Increase (+100)":row==3?"Decrease (-100)":"Open this monster");return;
     }
-    unsigned id=g_rewardSpecies;if(page==NativeSettingsPage::MonsterRewardList&&!SpeciesAt(static_cast<unsigned>(row),id)){strncpy_s(out,capacity,"Monster unavailable",_TRUNCATE);return;}
-    Preview preview{};if(!ReadPreview(id,preview)){strncpy_s(out,capacity,"Reward data unavailable",_TRUNCATE);return;}
-    if(page==NativeSettingsPage::MonsterRewardList||row==0){_snprintf_s(out,capacity,_TRUNCATE,"m%03u  %.52s",id,preview.name);return;}
+    unsigned id=g_rewardSpecies;if(page==NativeSettingsPage::MonsterRewardList&&!SpeciesAt(static_cast<unsigned>(row),id)){F8Copy(out,capacity,"Monster unavailable");return;}
+    Preview preview{};if(!ReadPreview(id,preview)){F8Copy(out,capacity,"Reward data unavailable");return;}
+    if(page==NativeSettingsPage::MonsterRewardList||row==0){F8Format(out,capacity,"m%03u  %.52s",id,UiLanguage::Raw{preview.name});return;}
     if(row==1||row==2){const bool ap=row==1;
-        if(!(ap?preview.apValid:preview.gilValid))_snprintf_s(out,capacity,_TRUNCATE,"%s multiplier: INVALID",ap?"AP":"Gil");
-        else _snprintf_s(out,capacity,_TRUNCATE,"%s multiplier: x%u",ap?"AP":"Gil",ap?preview.apMultiplier:preview.gilMultiplier);return;}
+        if(!(ap?preview.apValid:preview.gilValid))F8Format(out,capacity,"%s multiplier: INVALID",ap?"AP":"Gil");
+        else F8Format(out,capacity,"%s multiplier: x%u",ap?"AP":"Gil",ap?preview.apMultiplier:preview.gilMultiplier);return;}
     if(row>=3&&row<=5){const auto& value=row==3?preview.ap:row==4?preview.overkillAp:preview.gil;
         const auto base=row==3?preview.base.ap:row==4?preview.base.overkillAp:preview.base.gil;
         const char* title=row==3?"AP":row==4?"Overkill AP":"Gil";
-        if(preview.source==Source::Unavailable)_snprintf_s(out,capacity,_TRUNCATE,"%s: base unavailable until monster data load",title);
-        else if(!value.valid)_snprintf_s(out,capacity,_TRUNCATE,"%s: invalid individual or global rate",title);
-        else _snprintf_s(out,capacity,_TRUNCATE,"%s: %u > %llu > %u%s",title,static_cast<unsigned>(base),static_cast<unsigned long long>(value.individual),value.applied,value.clamped?" *":"");return;
+        if(preview.source==Source::Unavailable)F8Format(out,capacity,"%s: base unavailable until monster data load",title);
+        else if(!value.valid)F8Format(out,capacity,"%s: invalid individual or global rate",title);
+        else F8Format(out,capacity,"%s: %u > %llu > %u%s",title,static_cast<unsigned>(base),static_cast<unsigned long long>(value.individual),value.applied,value.clamped?" *":"");return;
     }
-    if(row==6)strncpy_s(out,capacity,"Configured totals, before native character bonuses",_TRUNCATE);
-    else if(row==7)strncpy_s(out,capacity,preview.source==Source::LiveActor?"Base source: observed battle values":preview.source==Source::ModFile?"Base source: installed monster file":"Base source: not loaded",_TRUNCATE);
-    else _snprintf_s(out,capacity,_TRUNCATE,"Per-monster mode: %s",Detail());
+    if(row==6)F8Copy(out,capacity,"Configured totals, before native character bonuses");
+    else if(row==7)F8Copy(out,capacity,preview.source==Source::LiveActor?"Base source: observed battle values":preview.source==Source::ModFile?"Base source: installed monster file":"Base source: not loaded");
+    else F8Format(out,capacity,"Per-monster mode: %s",Detail());
 }
-static void F8RewardOpenRate(int obj,bool global,FfxHooks::MonsterRewards::Kind kind){
+static int F8RewardOpenRate(int obj,bool global,FfxHooks::MonsterRewards::Kind kind){
+    if(g_nativeSettingsDepth>=4)return 3;
     using namespace FfxHooks;g_rewardGlobal=global;g_rewardKind=kind;g_rewardRateDraft=1;
     if(global){const auto scalar=ResolveF8Scalar(*F8RewardFlag(kind));g_rewardRateDraft=scalar.state==F8ScalarState::Invalid?100u:static_cast<unsigned>(scalar.value);}
     else {MonsterRewards::Preview p{};if(MonsterRewards::ReadPreview(g_rewardSpecies,p))g_rewardRateDraft=kind==MonsterRewards::Kind::Ap?p.apMultiplier:p.gilMultiplier;}
-    F8NativeSettingsPush(obj,NativeSettingsPage::RewardRate);
+    return F8NativeSettingsEnter(obj,NativeSettingsPage::RewardRate);
 }
-static void F8RewardActivate(int obj,NativeSettingsPage page,int row){
+static int F8RewardActivate(int obj,NativeSettingsPage page,int row){
     using namespace FfxHooks;using namespace MonsterRewards;
     if(page==NativeSettingsPage::RewardMultipliers){
-        if(row==0||row==2||row==4){const auto* flag=row==4?FindF8Flag("cheats.monster_rewards"):F8RewardFlag(row==0?Kind::Ap:Kind::Gil);if(!flag)return;
+        if(row==0||row==2||row==4){const auto* flag=row==4?FindF8Flag("cheats.monster_rewards"):F8RewardFlag(row==0?Kind::Ap:Kind::Gil);if(!flag)return 3;
             const auto result=SetF8FlagValue(*flag,!ResolveF8Flag(*flag).value);
-            strncpy_s(g_nativeSettingsNotice,result.code==F8EditCode::Saved?(row==4?"Saved. Restart FFX to enable the per-monster hook.":"Saved. Global runtime applies this setting."):"Unable to save. Previous value preserved.",_TRUNCATE);return;}
-        if(row==1||row==3){F8RewardOpenRate(obj,true,row==1?Kind::Ap:Kind::Gil);return;}
-        if(row==5){F8NativeSettingsPush(obj,NativeSettingsPage::MonsterRewardList);return;}
-        g_rewardIdDraft=g_rewardSpecies;F8NativeSettingsPush(obj,NativeSettingsPage::MonsterRewardId);return;
+            const bool effective=result.effective.value==result.requestedValue;
+            strncpy_s(g_nativeSettingsNotice,result.code==F8EditCode::Saved?
+                (!effective?"Preference saved. An external override still controls this feature.":
+                 row==4?"Saved. Restart FFX to enable the per-monster hook.":"Saved. Global runtime applies this setting."):
+                "Unable to save. Previous value preserved.",_TRUNCATE);return result.code==F8EditCode::Saved&&effective?1:3;}
+        if(row==1||row==3)return F8RewardOpenRate(obj,true,row==1?Kind::Ap:Kind::Gil);
+        if(row==5)return F8NativeSettingsEnter(obj,NativeSettingsPage::MonsterRewardList);
+        g_rewardIdDraft=g_rewardSpecies;return F8NativeSettingsEnter(obj,NativeSettingsPage::MonsterRewardId);
     }
     if(page==NativeSettingsPage::MonsterRewardId){
-        if(row==4){g_rewardSpecies=g_rewardIdDraft;F8NativeSettingsPush(obj,NativeSettingsPage::MonsterRewardDetail);return;}
+        if(row==4){g_rewardSpecies=g_rewardIdDraft;return F8NativeSettingsEnter(obj,NativeSettingsPage::MonsterRewardDetail);}
         const int delta=row==0?1:row==1?-1:row==2?100:-100;
-        g_rewardIdDraft=static_cast<unsigned>((std::max)(0,(std::min)(int(SpeciesCount-1),int(g_rewardIdDraft)+delta)));return;
+        const auto before=g_rewardIdDraft;
+        g_rewardIdDraft=static_cast<unsigned>((std::max)(0,(std::min)(int(SpeciesCount-1),int(g_rewardIdDraft)+delta)));return before!=g_rewardIdDraft?1:0;
     }
     if(page==NativeSettingsPage::MonsterRewardList){
-        if(SpeciesAt(static_cast<unsigned>(row),g_rewardSpecies))F8NativeSettingsPush(obj,NativeSettingsPage::MonsterRewardDetail);return;
+        if(!SpeciesAt(static_cast<unsigned>(row),g_rewardSpecies))return 3;return F8NativeSettingsEnter(obj,NativeSettingsPage::MonsterRewardDetail);
     }
-    if(page==NativeSettingsPage::MonsterRewardDetail){if(row==1||row==2)F8RewardOpenRate(obj,false,row==1?Kind::Ap:Kind::Gil);return;}
+    if(page==NativeSettingsPage::MonsterRewardDetail){if(row!=1&&row!=2)return 0;return F8RewardOpenRate(obj,false,row==1?Kind::Ap:Kind::Gil);}
     if(page==NativeSettingsPage::RewardRate){
         const unsigned maximum=g_rewardGlobal?100u:MaximumMultiplier;
         if(row>=1&&row<=4){const int delta=row==1?1:row==2?-1:row==3?10:-10;
-            g_rewardRateDraft=static_cast<unsigned>((std::max)(1,(std::min)(int(maximum),int(g_rewardRateDraft)+delta)));return;}
-        if(row==5){g_rewardRateDraft=g_rewardGlobal?100u:1u;return;}
+            const auto before=g_rewardRateDraft;
+            g_rewardRateDraft=static_cast<unsigned>((std::max)(1,(std::min)(int(maximum),int(g_rewardRateDraft)+delta)));return before!=g_rewardRateDraft?1:0;}
+        if(row==5){const auto before=g_rewardRateDraft;g_rewardRateDraft=g_rewardGlobal?100u:1u;return before!=g_rewardRateDraft?1:0;}
         if(row==6){const bool saved=g_rewardGlobal?SetF8ScalarValue(*F8RewardFlag(g_rewardKind),static_cast<int>(g_rewardRateDraft)).code==F8ScalarEditCode::Saved:
                 SaveMultiplier(g_rewardSpecies,g_rewardKind,g_rewardRateDraft);
             strncpy_s(g_nativeSettingsNotice,saved?"Multiplier saved. Other monsters and reward types are unchanged.":"Unable to save. Previous multiplier preserved.",_TRUNCATE);
-            if(saved)F8NativeSettingsPop(obj);}
+            if(saved)F8NativeSettingsPop(obj);return saved?1:3;}
     }
+    return 0;
 }

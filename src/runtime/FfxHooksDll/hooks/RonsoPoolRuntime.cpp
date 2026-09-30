@@ -7,6 +7,7 @@
 #include "NativeSaveEvents.h"
 #include "RonsoCommandCosts.h"
 #include "NativeSaveCommitAdapter.h"
+#include "FahrenheitServices.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -250,6 +251,24 @@ struct IoWork {
     bool needsOwner=false,useOutput=false;
     uint32_t epoch=0;
 };
+// Both transports share checkpoint selection, ownership lookup and conversion.
+bool PrepareReadWork(IoWork& work,SaveSession& next,SaveDecision& decision,OwnerRead& ownership) {
+    work.selected=work.input;
+    if(!NativeSaveEvents::SelectRead(work.path.c_str(),work.input.data(),work.selected.data(),
+                                    kSaveSize,&work.selection))return false;
+    SavedOwner metadata{};ownership=OwnerRead::Missing;
+    if(work.selection.selected){
+        const auto& pool=work.selection.pool;
+        metadata={pool.originalMax,pool.charge,pool.maximum};
+        if(pool.present)ownership=OwnerRead::Found;
+    }else ownership=store.Read(work.path,work.input,&metadata);
+    const auto& image=work.selection.selected?work.selected:work.input;
+    next={};decision=SaveDecision::Invalid;
+    if(ownership==OwnerRead::Found||ownership==OwnerRead::Missing)
+        decision=LoadPool(requestedGameplay,image,ownership==OwnerRead::Found?&metadata:nullptr,
+                          CurrentScene(),&next,&work.output);
+    return !work.selection.selected||decision==SaveDecision::Native||decision==SaveDecision::Converted;
+}
 size_t __cdecl ReadShim(void* data,size_t size,size_t count,void* stream) {
     const uintptr_t caller=reinterpret_cast<uintptr_t>(_ReturnAddress());
     if(!readOriginal)return 0;
@@ -278,26 +297,11 @@ size_t __cdecl ReadShim(void* data,size_t size,size_t count,void* stream) {
             OwnerStore::IsSavePath(path)&&DataRange(reinterpret_cast<uintptr_t>(data),kSaveSize,true)) {
             auto work=std::make_unique<IoWork>();work->path=path;
             if(Copy(work->input.data(),data,kSaveSize)) {
-                work->selected=work->input;
-                if(!NativeSaveEvents::SelectRead(path,work->input.data(),work->selected.data(),
-                                                kSaveSize,&work->selection)){
+                SaveSession next{};SaveDecision decision=SaveDecision::Invalid;
+                OwnerRead ownership=OwnerRead::Missing;
+                if(!PrepareReadWork(*work,next,decision,ownership)){
                     storageFault.store(true);NativeSaveEvents::ReadRejected();
                     Notice("[ffx-hooks] ERROR paid checkpoint could not be verified; native load rejected\n");
-                    SetLastError(ERROR_INVALID_DATA);return 0;
-                }
-                SavedOwner metadata{};OwnerRead ownership=OwnerRead::Missing;
-                if(work->selection.selected){
-                    const auto& pool=work->selection.pool;
-                    metadata={pool.originalMax,pool.charge,pool.maximum};
-                    if(pool.present)ownership=OwnerRead::Found;
-                }else ownership=store.Read(work->path,work->input,&metadata);
-                const auto& loadImage=work->selection.selected?work->selected:work->input;
-                SaveSession next{};SaveDecision decision=SaveDecision::Invalid;
-                if(ownership==OwnerRead::Found||ownership==OwnerRead::Missing)
-                    decision=LoadPool(requestedGameplay,loadImage,ownership==OwnerRead::Found?&metadata:nullptr,
-                        CurrentScene(),&next,&work->output);
-                if(work->selection.selected&&decision!=SaveDecision::Native&&decision!=SaveDecision::Converted){
-                    storageFault.store(true);NativeSaveEvents::ReadRejected();
                     SetLastError(ERROR_INVALID_DATA);return 0;
                 }
                 {
@@ -728,6 +732,7 @@ bool HasPersistentOwnership() noexcept {
     } catch(...) {return false;}
 }
 bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* result,const wchar_t* overrideDirectory) {
+    if(!Coexistence::runtime.SavePipelineAllowed())return false;
     if(!result||preparedOnce||readiness.load()!=0)return false;
     *result={};moduleBase=base;logger=log;
     if(!Profile())return false;
@@ -735,16 +740,18 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
     if(GetEnvironmentVariableW(L"FFXHOOKS_RONSO_MANA_FORCE",legacy,8)>0&&legacy[0]!=L'0')return false;
     const auto directory=overrideDirectory?std::wstring(overrideDirectory):StorageDirectory();
     const bool observerRequested=NativeSaveEvents::Requested(),commandRequested=CommandCosts::Requested();
-    if(!gameplay&&!overrideDirectory&&!HasPersistentOwnership()&&!observerRequested&&!commandRequested)return true;
-    if((gameplay||observerRequested||commandRequested)&&!overrideDirectory) {
+    const bool managed=Coexistence::runtime.SaveServicesAllowed();
+    if(!managed&&!gameplay&&!overrideDirectory&&!HasPersistentOwnership()&&!observerRequested&&!commandRequested)return true;
+    if((managed||gameplay||observerRequested||commandRequested)&&!overrideDirectory) {
         const auto slash=directory.find_last_of(L"/\\");
         if(slash==std::wstring::npos)return false;
         const auto parent=directory.substr(0,slash);
         if(!CreateDirectoryW(parent.c_str(),nullptr)&&GetLastError()!=ERROR_ALREADY_EXISTS)return false;
     }
-    if(!store.Initialize(directory,gameplay||observerRequested||commandRequested))return false;
+    if(!store.Initialize(directory,managed||gameplay||observerRequested||commandRequested))return false;
+    verifiedSaveRequested=NativeSaveEvents::VerifiedRequested()||managed;
+    if(!managed){
     HMODULE crt=GetModuleHandleW(L"msvcr110.dll");if(!crt)return false;
-    verifiedSaveRequested=NativeSaveEvents::VerifiedRequested();
     readOriginal=reinterpret_cast<ReadFn>(GetProcAddress(crt,"fread"));
     writeOriginal=reinterpret_cast<WriteFn>(GetProcAddress(crt,"fwrite"));
     fileNo=reinterpret_cast<FileNoFn>(GetProcAddress(crt,"_fileno"));
@@ -763,6 +770,7 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
            !Copy(&closeEntry,reinterpret_cast<void*>(base+kCloseImport),4)||
            closeEntry!=reinterpret_cast<void*>(closeOriginal))return false;
     }
+    }
     if(gameplay) {
         if(!BuildMaximumStub())return false;
         result->hooks[result->count++]={base+0x39B5B7,maxStub,&maxOriginal};
@@ -773,7 +781,7 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
         result->hooks[result->count++]={base+0x38C750,reinterpret_cast<void*>(&CostGateShim),&costGateOriginal};
     }
     result->hooks[result->count++]={base+0x386BC0,reinterpret_cast<void*>(&ResetShim),&resetOriginal};
-    if(verifiedSaveRequested&&!verifiedSaveRuntime.Configure({VerifiedSaveReady,VerifiedSaveEpoch,
+    if(!managed&&verifiedSaveRequested&&!verifiedSaveRuntime.Configure({VerifiedSaveReady,VerifiedSaveEpoch,
         VerifiedSaveThread,VerifiedStreamIdentity,VerifiedSaveReadback,VerifiedSaveError,
         RestoreVerifiedSaveError,VerifiedSaveErrorNumber}))return false;
     result->ioRequired=true;requestedGameplay=gameplay;preparedOnce=true;
@@ -782,6 +790,10 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
 }
 bool InstallIoImports() noexcept {
     if(!preparedOnce||readiness.load()!=0)return false;
+    if(Coexistence::runtime.SaveServicesAllowed()){
+        verifiedSaveIoReady.store(true,std::memory_order_release);return true;
+    }
+    if(!Coexistence::runtime.NativeSaveIoAllowed())return false;
     if(!PublishImport(kReadImport,reinterpret_cast<void*>(readOriginal),reinterpret_cast<void*>(&ReadShim),&readPatch)) {
         RestoreIoImports();return false;
     }
@@ -827,3 +839,5 @@ void DiscardUnpublishedRuntime() noexcept {
 void SetImportProtectionForFixture(ImportProtectFn fn) noexcept {protectForFixture=fn;}
 #endif
 }
+
+#include "FahrenheitManagedIo.inl"

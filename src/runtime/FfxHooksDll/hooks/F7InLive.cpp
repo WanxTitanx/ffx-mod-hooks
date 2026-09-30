@@ -12,6 +12,7 @@
 //    battle-entry pending of MusicHook (SetArenaBattleMusicPending) for BATTLE. Randomizer picks
 //    from the playlist at battle start. Requires MusicHook installed (music.flag / FFXHOOKS_ENABLE_MUSIC).
 #include "F7InLive.h"
+#include "F7ConfigEditor.h"
 #include "CustomMixRuntime.h"
 #include "ArenaBattleProgram.h"
 #include "F8FlagCatalog.h"
@@ -1202,8 +1203,7 @@ void F7_SetMusicFade(int frames) {
     edit.first = (frames < 0) ? 0 : (frames > 600 ? 600 : frames);
     const F7ConfigStateSnapshot snapshot =
         F7_UpdateConfigSnapshot(&ApplyConfigEdit, &edit);
-    if (snapshot.config.music.fadeFrames > 0)
-        FfxHooks::SetMusicHookMinFadeFrames(snapshot.config.music.fadeFrames);
+    FfxHooks::SetMusicHookMinFadeFrames(snapshot.config.music.fadeFrames);
     F7_SaveConfig();
     F7_Log("[ffx-hooks] F7: music fade -> %d\n", snapshot.config.music.fadeFrames);
 }
@@ -1213,11 +1213,10 @@ void F7_SetMusicFade(int frames) {
 static void F7_ApplyMusicBattle() {
     const F7MusicConfig music = F7_GetConfigSnapshot().config.music;
     int target = -1;
-    int fade = (music.fadeFrames > 0) ? music.fadeFrames : 90;
+    const int fade = F7Editor::FadeFrames(music);
     if (music.randomizer && music.playlistCount > 0) {
-        const int idx = (int)(GetTickCount() % (unsigned)music.playlistCount);
-        target = music.playlist[idx];
-        F7_Log("[ffx-hooks] F7: randomizer sorteou faixa %d (playlist[%d])\n", target, idx);
+        target = F7Editor::PlaylistTrack(music,GetTickCount());
+        F7_Log("[ffx-hooks] F7: randomizer selected validated playlist track %d\n", target);
     } else if (music.battleTrack >= 0) {
         target = music.battleTrack;
     } else {

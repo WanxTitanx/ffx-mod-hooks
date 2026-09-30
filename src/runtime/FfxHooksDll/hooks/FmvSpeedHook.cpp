@@ -10,7 +10,7 @@
 #include <cmath>
 #include <cstring>
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #endif
 namespace FfxHooks::FmvSpeed {
 namespace {
@@ -31,7 +31,7 @@ struct AudioOwner {void* channel=nullptr;void* sound=nullptr;float baseline=0,la
 AudioOwner g_audio{};
 void* g_conflictChannel=nullptr;void* g_conflictSound=nullptr;
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-PLH::x86Detour* g_hook=nullptr;
+FfxHooks::CompatibleDetour* g_hook=nullptr;
 #endif
 struct Movie {bool valid=false,neutral=false;void* core=nullptr;void* channel=nullptr;unsigned queued=0;};
 Movie ReadMovie(){
@@ -139,7 +139,7 @@ bool Start(std::uintptr_t base){
 #ifdef FFXHOOKS_HAVE_POLYHOOK
     g_base=base;HMODULE own=nullptr;
     if(!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,reinterpret_cast<LPCWSTR>(&FrameShim),&own))return false;
-    try{g_hook=new PLH::x86Detour(base+kFrameRva,reinterpret_cast<std::uintptr_t>(&FrameShim),&g_original);if(!g_hook->hook()){g_status=Code::Conflict;return false;}}
+    try{g_hook=new FfxHooks::CompatibleDetour(base+kFrameRva,reinterpret_cast<std::uintptr_t>(&FrameShim),&g_original);if(!g_hook->hook()){g_status=Code::Conflict;return false;}}
     catch(...){g_status=Code::Conflict;return false;}
     g_ready=true;g_accepting=true;g_status=Code::Ready;return true;
 #else

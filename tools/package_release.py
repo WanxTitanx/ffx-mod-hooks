@@ -25,7 +25,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dll', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--version', default='v0.6.0-beta.2')
+    parser.add_argument('--version', default='v0.6.0-beta.3')
     args = parser.parse_args()
     if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+-beta(?:\.[0-9]+)?', args.version):
         parser.error('Use an explicit supported beta version')
@@ -67,7 +67,7 @@ def main() -> None:
     if len(cards) != 78 or len(files) != 81:
         parser.error('Expected DLL plus 78 cards and two shared runtime images')
     for name in ('LICENSE', 'NOTICE', 'README.md', 'README.pt-BR.md', 'docs/INSTALL.md',
-                 'docs/INSTALACAO_PT-BR.md', 'docs/ROADMAP.md'):
+                 'docs/INSTALACAO_PT-BR.md', 'docs/ROADMAP.md', 'docs/FAHRENHEIT_V2.md'):
         files[name] = (ROOT / name).read_bytes()
     files['examples/ffx-hooks.ini.example'] = (ROOT / 'src/runtime/FfxHooksDll/ffx-hooks.ini').read_bytes()
     files['examples/monster-rewards-v1.tsv.example'] = b'ffx.monster-rewards.v1\n'
@@ -101,15 +101,14 @@ Runtime source checkpoint: {evidence['runtime_source_commit']}
 DLL: {len(dll)} bytes, SHA-256 `{sha(dll)}`.
 PE resource version: 0.2.0.0; package/tag version: {args.version}.
 
-This is the previously validated Windows x86 Release DLL, also verified under
-Proton. Its production inputs are byte-identical to the public source entries
+This is the previously validated Windows x86 Release DLL. Its production inputs are byte-identical to the public source entries
 recorded in docs/releases/{args.version}-inputs.json. Public documentation, packaging
 metadata and bilingual READMEs are not DLL code changes.
 The source archive contains the exact public tagged tree. A new compiler/linker
 run may produce a different PE hash; that does not identify this tested binary.
 
 Validation: {evidence['evidence']}.
-The public source also has portable Workshop, Arcana, Nul and text checks.
+Public-copy checks are recorded in docs/releases/{args.version}-validation.json.
 This beta release does not assert complete live RT2 or Production acceptance.
 Game executable, native save/PE fixtures, loaders and game-derived mod/translation
 packs are not redistributed. Arcana's original selected runtime artwork is included.

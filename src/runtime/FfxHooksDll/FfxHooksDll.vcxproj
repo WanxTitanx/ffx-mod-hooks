@@ -58,7 +58,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <FFXHooksEnablePolyHook Condition="'$(FFXHooksEnablePolyHook)'==''">true</FFXHooksEnablePolyHook>
-    <FFXHooksPolyHookDefinition Condition="'$(FFXHooksEnablePolyHook)'=='true'">FFXHOOKS_HAVE_POLYHOOK</FFXHooksPolyHookDefinition>
+    <FFXHooksPolyHookDefinition Condition="'$(FFXHooksEnablePolyHook)'=='true'">FFXHOOKS_HAVE_POLYHOOK;FFXHOOKS_COEXISTENCE</FFXHooksPolyHookDefinition>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
@@ -81,7 +81,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..\..\research\equipment_workshop\include;$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)third_party\minhook\include;$(ProjectDir)..\..\..\research\equipment_workshop\include;$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -89,7 +89,7 @@
       <EnableUAC>false</EnableUAC>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x86-windows-static\debug\lib;$(ProjectDir)vcpkg_installed\x86-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -104,7 +104,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..\..\research\equipment_workshop\include;$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)third_party\minhook\include;$(ProjectDir)..\..\..\research\equipment_workshop\include;$(ProjectDir)vcpkg_installed\x86-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -114,7 +114,7 @@
       <EnableUAC>false</EnableUAC>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <AdditionalLibraryDirectories>$(ProjectDir)vcpkg_installed\x86-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;minhook.lib;d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'=='true'">PolyHook_2.lib;Zydis.lib;Zycore.lib;asmjit.lib;asmtk.lib;d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(FFXHooksEnablePolyHook)'!='true'">d3d11.lib;d3dcompiler.lib;windowscodecs.lib;ole32.lib;kernel32.lib;user32.lib;winhttp.lib;bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -304,6 +304,7 @@
     <ClCompile Include="hooks\F7UiCore.cpp" />
     <ClCompile Include="hooks\FieldScoutAdmissionCore.cpp" />
     <ClCompile Include="hooks\MinHookBatchCoordinator.cpp" />
+    <ClCompile Include="hooks\FahrenheitBridge.cpp" />
     <ClCompile Include="hooks\MonsterAiObserverCore.cpp" />
     <ClCompile Include="hooks\MonsterAiDispatchShadow.cpp" />
     <ClCompile Include="hooks\MonsterAiDispatchTelemetry.cpp" />
@@ -344,6 +345,12 @@
     <ClCompile Include="hooks\NulWardTeachHook.cpp" />
     <ClCompile Include="hooks\PhaseTurnEdgeHook.cpp" />
     <ClCompile Include="hooks\PhaseTurnEdgeSidecar.cpp" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(FFXHooksEnablePolyHook)'=='true'">
+    <ClCompile Include="third_party\minhook\src\hook.c" />
+    <ClCompile Include="third_party\minhook\src\buffer.c" />
+    <ClCompile Include="third_party\minhook\src\trampoline.c" />
+    <ClCompile Include="third_party\minhook\src\hde\hde32.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

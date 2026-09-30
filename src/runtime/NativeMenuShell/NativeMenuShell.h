@@ -1,4 +1,4 @@
-﻿// ============================================================================
+// ============================================================================
 //  NativeMenuShell.h  —  ACTIVE SHARED RUNTIME HEADER FOR POLYHOOK BUILDS
 // ----------------------------------------------------------------------------
 //  Jarvis-HOOK — native in-game menu surface for FFX HD (FFX.exe x86).
@@ -38,6 +38,7 @@
 //  synchronously, and the native pump is main-thread-owned.
 // ============================================================================
 #pragma once
+#include "MenuFeedback.h"
 #include <stdio.h>  // _snprintf_s keeps this header self-contained (2026-08-02 fix).
 #if defined(_WIN64) || defined(__x86_64__)
 #  error "NativeMenuShell targets 32-bit FFX.exe (x86) ONLY — cdecl float-on-stack ABI + 4-byte pointers."
@@ -660,7 +661,8 @@ typedef int (__cdecl* Fn_PadRead)(void);
 typedef int (__cdecl* Fn_PlaySfx)(int id);
 static inline int  PadDir()  { return FFX_FN(VA_PadReadDir,  Fn_PadRead)() & 0xFFFF; }
 static inline int  PadEdge() { return FFX_FN(VA_PadReadEdge, Fn_PadRead)() & 0xFFFF; }
-static inline void PlaySfx(int id) { FFX_FN(VA_MenuPlaySfx, Fn_PlaySfx)(id); }
+static inline void PlaySfxDirect(int id) { FFX_FN(VA_MenuPlaySfx, Fn_PlaySfx)(id); }
+static inline void PlaySfx(int id) { FfxHooks::MenuAudio::Dispatch(id,PlaySfxDirect); }
 
 static const uintptr_t VA_PadGlobals = 0x25D09D2;   // Pad state block: held/edge/repeat/stick plus fallbacks.
 // Historical input-swallow helper: zero the state consumed by readers 0x8BE3E0/440/480 after this
@@ -683,6 +685,7 @@ static int __cdecl OurListInputCb(int obj) {
     // its confirm result. Return before sampling PadDir/PadEdge so mixed input
     // cannot move or replace that authoritative click in the same frame.
     if (g_ourClosed) return obj;
+    FfxHooks::MenuAudio::Scope feedback;
     const int dir  = PadDir();
     const int edge = PadEdge();
     int sel = RdW(obj, O_SELECTED);
@@ -691,22 +694,24 @@ static int __cdecl OurListInputCb(int obj) {
     const int page = RdW(obj, O_PAGE);
     if (count <= 0) return obj;
     if (dir & 0x1000) {                              // UP wraps from the first row to the last.
-        sel = (sel > 0) ? (sel - 1) : (count - 1); PlaySfx(1);
+        sel = (sel > 0) ? (sel - 1) : (count - 1); if(count>1)PlaySfx(1);
     } else if (dir & 0x4000) {                       // DOWN wraps from the last row to the first.
-        sel = (sel < count - 1) ? (sel + 1) : 0; PlaySfx(1);
+        sel = (sel < count - 1) ? (sel + 1) : 0; if(count>1)PlaySfx(1);
     }
     // KEYSTONE: LEFT (0x8000) and RIGHT (0x2000) edit the selected row value.
     if (sel >= 0 && sel < kRowCount && g_rows[sel].rowType != RT_NONE) {
         if (dir & 0x8000) {
+            const int before=g_rowValue[sel];
             g_rowEdited[sel] = true;   // 2026-08-02 fix: reveal the value only after an edit.
             g_rowValue[sel] -= g_rows[sel].stepVal;
             if (g_rowValue[sel] < g_rows[sel].minVal) g_rowValue[sel] = g_rows[sel].minVal;
-            PlaySfx(1);
+            if(g_rowValue[sel]!=before)PlaySfx(1);
         } else if (dir & 0x2000) {
+            const int before=g_rowValue[sel];
             g_rowEdited[sel] = true;
             g_rowValue[sel] += g_rows[sel].stepVal;
             if (g_rowValue[sel] > g_rows[sel].maxVal) g_rowValue[sel] = g_rows[sel].maxVal;
-            PlaySfx(1);
+            if(g_rowValue[sel]!=before)PlaySfx(1);
         }
     }
     if (sel < 0) sel = 0;
@@ -718,7 +723,7 @@ static int __cdecl OurListInputCb(int obj) {
     WrW(obj, O_SELECTED, (int16_t)sel);
     WrW(obj, O_TOP,      (int16_t)top);              // Snap without easing; do not write +69 or +40.
     if (!g_ourClosed) {
-        if (edge & 0x20)      { PlaySfx(1); g_ourResult = sel; g_ourClosed = 1; }   // Confirm.
+        if (edge & 0x20)      { feedback.Discard(); g_ourResult = sel; g_ourClosed = 1; } // Dispatch owns the result sound.
         else if (edge & 0x40) { PlaySfx(4); g_ourResult = -1;  g_ourClosed = 1; }   // Cancel.
     }
     return obj;   // Input swallowing was reverted because clearing the pad soft-locked all game input.
@@ -785,9 +790,16 @@ static inline Poll PollMenu(const Menu& m) {
 }
 
 // Dispatch a confirmed row through the decoupled runtime-action bridge.
+static inline bool ConfirmationAwaitsAllocation(ActionId action) {
+    return action==ACT_DIFFICULTY||action==ACT_FORCE_BATTLE||action==ACT_AI_SWAP||
+        action==ACT_MUSIC||action==ACT_ARENA||action==ACT_SIN;
+}
+static inline void PlayMenuOpenResult(bool opened) { PlaySfx(opened?1:3); }
 static inline void DispatchConfirm(int row) {
-    if (row < 0 || row >= kRowCount) return;
+    FfxHooks::MenuAudio::Scope feedback;
+    if (row < 0 || row >= kRowCount) {PlaySfx(3);return;}
     const Row& R = g_rows[row];
+    if(!ConfirmationAwaitsAllocation(R.action))PlaySfx(R.action==ACT_EXIT?4:1);
     if (R.kind == EDGE) { if (g_bridge.onEdge)     g_bridge.onEdge(R.action); }
     else                { if (g_bridge.onHeldEnter) g_bridge.onHeldEnter(R.action); }
 }

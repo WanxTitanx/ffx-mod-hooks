@@ -10,7 +10,7 @@
 #include <cstdio>
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #endif
 
 namespace FfxHooks {
@@ -20,7 +20,7 @@ namespace {
 static bool g_installed = false;
 static bool g_terminalInstallFailure = false;
 static void (*g_logFn)(const char*) = nullptr;
-static void* g_detour = nullptr; /* PLH::x86Detour* when PolyHook is compiled in. */
+static void* g_detour = nullptr; /* FfxHooks::CompatibleDetour* when PolyHook is compiled in. */
 alignas(8) static uint64_t g_trampoline = 0;
 /* The callback, Present producer, focus callback, and detach path share exactly one word.
  * Separate request/effective/stop atomics allowed a stale Present frame to re-arm bypass after
@@ -135,11 +135,11 @@ bool InstallDialogSkipHook(uintptr_t moduleBase, void* logFn, DialogSkipInstallS
 
     bool hooked = false;
     try {
-        g_detour = new PLH::x86Detour(
+        g_detour = new FfxHooks::CompatibleDetour(
             static_cast<uint64_t>(moduleBase + RVA_FFX_FMODVOICE_READ_EVENT_DATA),
             reinterpret_cast<uint64_t>(&ReadEventData_DialogSkipHook),
             &g_trampoline);
-        hooked = static_cast<PLH::x86Detour*>(g_detour)->hook();
+        hooked = static_cast<FfxHooks::CompatibleDetour*>(g_detour)->hook();
     } catch (...) {
         hooked = false;
     }
@@ -229,9 +229,11 @@ void RequestDialogSkipStop() noexcept {
 void RemoveDialogSkipHook() {
     RequestDialogSkipStop();
 #ifdef FFXHOOKS_HAVE_POLYHOOK
+    // Logical stop is immediate; delayed entrants still need the original.
+    if (Coexistence::runtime.PeerPresent()) return;
     if (g_detour && !g_terminalInstallFailure) {
-        static_cast<PLH::x86Detour*>(g_detour)->unHook();
-        delete static_cast<PLH::x86Detour*>(g_detour);
+        static_cast<FfxHooks::CompatibleDetour*>(g_detour)->unHook();
+        delete static_cast<FfxHooks::CompatibleDetour*>(g_detour);
         g_detour = nullptr;
     }
 #endif

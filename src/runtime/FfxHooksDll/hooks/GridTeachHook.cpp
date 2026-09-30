@@ -217,8 +217,8 @@ bool Validate(std::uintptr_t base){
 }
 } // namespace
 
-bool StartGridTeachSaveTracking(std::uintptr_t base,GridTeachLogFn log){return GridLearned::Runtime::Start(base,log);}
-bool StartNativeSaveLoadEvents(std::uintptr_t module){return GridLearned::Runtime::StartLoadEvents(module);}
+bool StartGridTeachSaveTracking(std::uintptr_t base,GridTeachLogFn log){return Coexistence::runtime.SavePipelineAllowed()&&GridLearned::Runtime::Start(base,log);}
+bool StartNativeSaveLoadEvents(std::uintptr_t module){return Coexistence::runtime.SavePipelineAllowed()&&GridLearned::Runtime::StartLoadEvents(module);}
 bool NativeSaveLoadEventsReady() noexcept {return GridLearned::Runtime::loadEventsReady.load(std::memory_order_acquire);}
 void RequestNativeSaveLoadEventsStop() noexcept {GridLearned::Runtime::RequestLoadEventsStop();}
 bool RemoveNativeSaveLoadEvents() noexcept {return GridLearned::Runtime::StopLoadEvents();}

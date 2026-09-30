@@ -1,0 +1,184 @@
+{
+  "producer": "Jarvis-HOOK",
+  "release": "v0.6.0-beta.3",
+  "runtime_source_commit": "c18fb5602a688dd0de5e7e85677c5d5102402788",
+  "public_copy_checks": [
+    {
+      "name": "workshop",
+      "command": [
+        "python3",
+        "research/equipment_workshop/run_checks.py"
+      ],
+      "exit": 0,
+      "log_sha256": "5f47dd60ae7c68567b0d4ddf88641337b0216012679eca4cf5afa1f7f850417f"
+    },
+    {
+      "name": "text-languages",
+      "command": [
+        "python3",
+        "tools/text_languages/run_checks.py",
+        "--output",
+        "work/public-beta3-text",
+        "--sanitizers"
+      ],
+      "exit": 0,
+      "log_sha256": "58c4cb53af831ee8465e538603e739bcada0ab2d612147c3207384598157afd1"
+    },
+    {
+      "name": "ui-catalog",
+      "command": [
+        "python3",
+        "tools/ui_languages/catalog.py",
+        "--check"
+      ],
+      "exit": 0,
+      "log_sha256": "2c27d1613f60c9f3fd291d00fd2e08edc06dc75f72fb16bc45127a555cd29df4"
+    },
+    {
+      "name": "ui-tests",
+      "command": [
+        "PYTHONPATH=tools/ui_languages",
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/ui_languages",
+        "-v"
+      ],
+      "exit": 0,
+      "log_sha256": "5f5ef530a4e5550748a812a50257e95953a5e3451cc443f50c9fe79ccf5fdac3"
+    },
+    {
+      "name": "provider-tests",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "integrations.fahrenheit.tests.test_verify_upstream",
+        "integrations.fahrenheit.provider.tests.test_overlay",
+        "-v"
+      ],
+      "exit": 0,
+      "log_sha256": "16ccf1bb2dcae9cd102c42195fb8f6c724ebd6fcc18f51227b559e79e6d408b4"
+    },
+    {
+      "name": "provider-io",
+      "command": [
+        "dotnet",
+        "run",
+        "--project",
+        "integrations/fahrenheit/provider/tests/ProviderIoTests.csproj",
+        "-c",
+        "Release"
+      ],
+      "exit": 0,
+      "log_sha256": "3e8882cf59f7da319c210a3cd533e350475d4f5917bca3cf2bf842be53b9ddd1"
+    },
+    {
+      "name": "bridge-lifecycle",
+      "command": [
+        "dotnet",
+        "run",
+        "--project",
+        "integrations/fahrenheit/tests/BridgeLifecycleTests.csproj",
+        "-c",
+        "Release"
+      ],
+      "exit": 0,
+      "log_sha256": "9be473f445a45f75ead9d67d9e0c8d2ae5f1f378f0efc3fd9c34bd91303f1c73"
+    },
+    {
+      "name": "provider-composition",
+      "command": [
+        "python3",
+        "integrations/fahrenheit/provider/tests/run_composition.py",
+        "--reference",
+        "work/fahrenheit/upstream"
+      ],
+      "exit": 0,
+      "log_sha256": "7341776f5c5e3998257718abad424f69aa1840d1e21ae681f85b5878e0fc6be2"
+    }
+  ],
+  "reused_windows_checks": [
+    {
+      "script": "equipment_workshop_menu_rt1.ps1",
+      "exit": 0,
+      "log_sha256": "56c171962a4b6f237a78cc16b0bd53134eb08445b23fc19fc2f9a2ff69406d92"
+    },
+    {
+      "script": "equipment_workshop_save_flow_rt1.ps1",
+      "exit": 0,
+      "log_sha256": "62f74fcf176422f43cdf6c117526aa0514795899ae2ad3faf2855dd8826a2238"
+    },
+    {
+      "script": "f7_audio_rt1.ps1",
+      "exit": 0,
+      "log_sha256": "96f7141b828f21551e3dbd65f486b1754c4f6bdeb0fad9ba855f33ce9aac0c1f"
+    },
+    {
+      "script": "f7_runtime_rt0.ps1",
+      "exit": 0,
+      "log_sha256": "a986ae8925b70d156643cc5f0691c9cb83d598b708147e0d8b1a4decbf0b5391"
+    },
+    {
+      "script": "f7_runtime_rt1.ps1",
+      "exit": 0,
+      "log_sha256": "358b3b3c16cb4bb6c63aed6bf1479f276b69b7c87ce37b9e8fed24439f2a81e3"
+    },
+    {
+      "script": "f7_ui_rt0.ps1",
+      "exit": 0,
+      "log_sha256": "b24ce703fa96584175062db0e9489ba9dfbb5d5fed240486c9b98d895622be52"
+    },
+    {
+      "script": "f8_runtime_rt0.ps1",
+      "exit": 0,
+      "log_sha256": "5770ae2d5bffe94118f74f61ab2b04c30af70b16341e316857ac00f59ed4e375"
+    },
+    {
+      "script": "fahrenheit_bridge_rt1.ps1",
+      "exit": 0,
+      "log_sha256": "65a6027fafbbe234d2c275778e5bd8de5f4ed7890b9fb273ce608b778c2612e7"
+    },
+    {
+      "script": "fahrenheit_managed_io_rt1.ps1",
+      "exit": 0,
+      "log_sha256": "b4c5b244921a76159e828cb927b0648a800a540f90b35a81446d46340bc4a413"
+    },
+    {
+      "script": "fahrenheit_text_rt1.ps1",
+      "exit": 0,
+      "log_sha256": "7552ea85626325615df00322a3e12ccd12383e20b3b0ffe80ab0633d349d4059"
+    },
+    {
+      "script": "ui_language_rt1.ps1",
+      "exit": 0,
+      "log_sha256": "e293c69120fe8cb8f3800e5830c3e11976c4c1881ba425a66aa1d6139e2cf31c"
+    }
+  ],
+  "reuse_basis": "All 750 captured native input Git blobs match the merged development source; the release binds 383 public code/resource files and includes corresponding build scripts/tests. Working-copy CRLF differences are not used as source identity.",
+  "transport": {
+    "checks": 17,
+    "failures": 0,
+    "candidate": {
+      "file": "ffx-hooks.dll",
+      "bytes": 4683264,
+      "sha256": "4e7dfe943e9496729b69c9c3af24dfef465ec4efddfb93dba5b6fdcd77af8a6e"
+    },
+    "log_sha256": "1be5212802761a3ff540975cd28d8c1c866797286bdf767b7de227895f41e559"
+  },
+  "fixture_notes": [
+    "Workshop skips two optional private fixtures.",
+    "No private translation pack supplied.",
+    "The pinned 501-file upstream fixture was supplied in ignored work/ after an initial missing-fixture error; all eight source-verifier tests then passed."
+  ],
+  "hosted_source_checks": {
+    "build": 36655558046,
+    "context": 36655558150,
+    "portable": 36655558154
+  },
+  "game_started": false,
+  "deployed": false,
+  "rt2": false
+}

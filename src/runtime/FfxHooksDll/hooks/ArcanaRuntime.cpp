@@ -331,6 +331,7 @@ unsigned __cdecl DamageShim(unsigned user,void* userPointer,unsigned target,void
 }
 }
 bool Prime(std::uintptr_t module,const Settings& options,bool validateOnly,void(*log)(const char*)){
+    if(!Coexistence::runtime.SavePipelineAllowed())return false;
     if(!options.enabled||validateOnly)return false;
     if(options.defaultMode!=Mode::Twin&&options.defaultMode!=Mode::Constellation)return false;
     if(primed.load())return enabled.load();

@@ -1,5 +1,6 @@
 #pragma once
 #include "../shared/Config.h"
+#include "FahrenheitCoexistenceCore.h"
 #include <array>
 
 namespace FfxHooks::ModFeatures {
@@ -25,6 +26,7 @@ inline constexpr std::array<Entry,static_cast<unsigned>(Feature::Count)> Entries
 }};
 inline bool Enabled(Feature feature){
     const auto index=static_cast<unsigned>(feature);
-    return index<Entries.size()&&Config::ResolveBoolGate(Entries[index].gate).value;
+    return index<Entries.size()&&Coexistence::FeatureAllowed(Entries[index].gate.canonicalKey)&&
+        Config::ResolveBoolGate(Entries[index].gate).value;
 }
 } // namespace FfxHooks::ModFeatures

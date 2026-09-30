@@ -6,7 +6,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <intrin.h>
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #include <exception>
 #include <limits.h>
 #include <stdarg.h>
@@ -21,7 +21,7 @@ void SetSupplementalDropProvider(SupplementalDropProvider provider) noexcept {su
 
 namespace {
 
-static PLH::x86Detour*        g_detour = nullptr;
+static FfxHooks::CompatibleDetour*        g_detour = nullptr;
 static uint64_t               g_trampoline = 0;
 static DoubleTripleDropLogFn  g_logFn = nullptr;
 static bool                   g_installed = false;
@@ -165,7 +165,7 @@ DoubleTripleDropInstallResult InstallDoubleTripleDropHook(
         logHits ? 1 : 0);
 
     try {
-        g_detour = new PLH::x86Detour(
+        g_detour = new FfxHooks::CompatibleDetour(
             targetVa,
             reinterpret_cast<uint64_t>(&AddItem_Shim),
             &g_trampoline);
@@ -199,6 +199,7 @@ DoubleTripleDropInstallResult InstallDoubleTripleDropHook(
 }
 
 void RemoveDoubleTripleDropHook(DoubleTripleDropLogFn log) {
+    if (Coexistence::runtime.PeerPresent()) return;
     if (!g_installed) return;
     if (g_detour) {
         g_detour->unHook();

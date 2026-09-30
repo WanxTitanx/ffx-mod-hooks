@@ -17,8 +17,14 @@ bool BeginBindingCapture(NativeBindings::Action){return false;}
 bool BeginGamepadCapture(NativeBindings::Action){return false;}
 NativeBindings::BindResult SaveBinding(NativeBindings::Action,NativeBindings::Binding){return NativeBindings::BindResult::Ok;}
 bool SaveGamepadBinding(NativeBindings::Action,std::uint32_t){return true;}
-bool ConsumeBindingCapture(NativeBindings::BindResult*,bool*){return false;}
-bool ConsumeGamepadCapture(bool*,bool*){return false;}
+bool captureResultArmed=false,captureResultSaved=false,captureResultCancelled=false;
+bool ConsumeBindingCapture(NativeBindings::BindResult* result,bool* cancel){
+ if(!captureResultArmed)return false;captureResultArmed=false;*cancel=captureResultCancelled;
+ *result=captureResultSaved?NativeBindings::BindResult::Ok:static_cast<NativeBindings::BindResult>(1);return true;
+}
+bool ConsumeGamepadCapture(bool* saved,bool* cancel){
+ if(!captureResultArmed)return false;captureResultArmed=false;*saved=captureResultSaved;*cancel=captureResultCancelled;return true;
+}
 }
 namespace FfxHooks::NativeGamepad {
 Snapshot Poll(){return {};}

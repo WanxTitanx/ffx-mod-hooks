@@ -8,7 +8,7 @@
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #include <exception>
 #include <stdarg.h>
 #include <stdio.h>
@@ -20,7 +20,7 @@ namespace FfxHooks {
 
 namespace {
 
-static PLH::x86Detour*   g_detour = nullptr;
+static FfxHooks::CompatibleDetour*   g_detour = nullptr;
 static uint64_t          g_trampoline = 0;
 static BattleEndLogFn    g_logFn = nullptr;
 static BattleEndCallback g_callback = nullptr;
@@ -123,7 +123,7 @@ BattleEndInstallResult InstallBattleEndHook(uintptr_t base, BattleEndLogFn log) 
         static_cast<unsigned>(RVA_FFX_BATTLE_END_CLEANUP_DISPATCHER));
 
     try {
-        g_detour = new PLH::x86Detour(
+        g_detour = new FfxHooks::CompatibleDetour(
             targetVa,
             reinterpret_cast<uint64_t>(&BattleEnd_Shim),
             &g_trampoline);
@@ -153,6 +153,7 @@ BattleEndInstallResult InstallBattleEndHook(uintptr_t base, BattleEndLogFn log) 
 }
 
 void RemoveBattleEndHook() {
+    if (Coexistence::runtime.PeerPresent()) return;
     if (!g_installed) return;
     if (g_detour) { g_detour->unHook(); delete g_detour; g_detour = nullptr; }
     g_trampoline = 0;

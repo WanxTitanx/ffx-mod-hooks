@@ -1,4 +1,5 @@
 #include "RonsoPoolStore.h"
+#include "NativeSaveSlotPath.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -61,13 +62,7 @@ OwnerRead ReadRecord(const std::wstring& path,Record* out) {
 }
 }
 bool OwnerStore::IsSavePath(const std::wstring& path) noexcept {
-    if(path.empty() || path.find(L'\0')!=std::wstring::npos)return false;
-    const size_t slash=path.find_last_of(L"/\\");
-    if(slash==std::wstring::npos)return false;
-    const size_t at=slash+1;
-    if(path.size()-at!=7 || _wcsnicmp(path.c_str()+at,L"ffx_",4)!=0)return false;
-    for(size_t i=at+4;i<path.size();++i)if(path[i]<L'0'||path[i]>L'9')return false;
-    return true;
+    return IsNativeSaveSlotPath(path);
 }
 bool OwnerStore::Initialize(const std::wstring& directory,bool create) {
     directory_.clear();if(directory.empty())return false;

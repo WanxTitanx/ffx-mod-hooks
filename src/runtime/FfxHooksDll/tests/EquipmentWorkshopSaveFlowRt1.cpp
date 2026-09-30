@@ -8,6 +8,7 @@
 #include "../hooks/RonsoPoolRuntime.h"
 #include "../hooks/RonsoPoolSave.h"
 #include "../hooks/NativeSaveEvents.h"
+#include "../hooks/FahrenheitServices.h"
 #include "PrivatePeFixture.h"
 #include "WorkshopEconomyFixture.h"
 #include <cstdio>
@@ -17,6 +18,7 @@ using namespace FfxHooks;
 using EquipmentWorkshop::SaveImage;
 namespace {
 uintptr_t base=0;
+bool managedTransport=false;
 using OpenFn=void*(__cdecl*)(const wchar_t*,const wchar_t*);
 using CloseFn=int(__cdecl*)(void*);
 OpenFn openFile=nullptr;CloseFn closeFile=nullptr;
@@ -51,8 +53,39 @@ __declspec(naked) size_t __cdecl NativeRead(void*,void*) {
     }
 }
 bool Put(const std::wstring& path,const SaveImage& bytes){HANDLE f=CreateFileW(path.c_str(),GENERIC_WRITE,0,nullptr,CREATE_ALWAYS,0,nullptr);if(f==INVALID_HANDLE_VALUE)return false;DWORD count=0;const bool ok=WriteFile(f,bytes.data(),static_cast<DWORD>(bytes.size()),&count,nullptr)&&count==bytes.size();CloseHandle(f);return ok;}
-bool Read(const std::wstring& path,SaveImage& bytes){void* file=openFile(path.c_str(),L"rb");if(!file)return false;uint32_t count=static_cast<uint32_t>(bytes.size());void* data=bytes.data();Patch(base+0x8E72F4,&count,4);Patch(base+0x8E72F8,&data,4);const auto got=NativeRead(file,reinterpret_cast<void*>(base+0x2F0213));closeFile(file);return got==bytes.size();}
-bool Write(const std::wstring& path,SaveImage& bytes){void* file=openFile(path.c_str(),L"wb");if(!file)return false;const auto got=NativeWrite(bytes.size(),bytes.data(),file,reinterpret_cast<void*>(base+0x2F06B8));closeFile(file);return got==bytes.size();}
+unsigned Slot(const std::wstring& path){return static_cast<unsigned>(std::stoul(path.substr(path.find_last_of(L'_')+1)));}
+uint16_t ChecksumAndClear(SaveImage& image);
+bool Read(const std::wstring& path,SaveImage& bytes){
+    if(managedTransport){
+        const auto ticket=FfxHooks_FahrenheitBeginReadV2(path.c_str(),Slot(path),bytes.data(),static_cast<std::uint32_t>(bytes.size()));
+        if(!ticket)return false;
+        HANDLE file=CreateFileW(path.c_str(),GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,0,nullptr);
+        SaveImage disk{};DWORD count=0;
+        bool ok=file!=INVALID_HANDLE_VALUE&&ReadFile(file,disk.data(),static_cast<DWORD>(disk.size()),&count,nullptr)&&count==disk.size()&&
+            FfxHooks_FahrenheitTransformReadV2(ticket,reinterpret_cast<std::uintptr_t>(file),disk.data(),static_cast<std::uint32_t>(disk.size()))==1;
+        if(file!=INVALID_HANDLE_VALUE)ok=CloseHandle(file)&&ok;
+        if(ok){const auto expected=static_cast<uint16_t>(bytes[26]|(unsigned(bytes[27])<<8));ok=ChecksumAndClear(bytes)==expected;}
+        if(!ok){FfxHooks_FahrenheitAbortIoV2(ticket);return false;}
+        return FfxHooks_FahrenheitEndReadV2(ticket,1)==1;
+    }
+    void* file=openFile(path.c_str(),L"rb");if(!file)return false;uint32_t count=static_cast<uint32_t>(bytes.size());void* data=bytes.data();Patch(base+0x8E72F4,&count,4);Patch(base+0x8E72F8,&data,4);const auto got=NativeRead(file,reinterpret_cast<void*>(base+0x2F0213));closeFile(file);return got==bytes.size();
+}
+bool Write(const std::wstring& path,SaveImage& bytes){
+    if(managedTransport){
+        SaveImage output{};
+        const auto ticket=FfxHooks_FahrenheitBeginWriteV2(path.c_str(),Slot(path),bytes.data(),static_cast<std::uint32_t>(bytes.size()),output.data());
+        if(!ticket)return false;
+        const auto temp=path+L".cooperative-test-tmp";
+        HANDLE file=CreateFileW(temp.c_str(),GENERIC_WRITE,0,nullptr,CREATE_NEW,FILE_ATTRIBUTE_NORMAL,nullptr);
+        DWORD count=0;bool ok=file!=INVALID_HANDLE_VALUE&&FfxHooks_FahrenheitOpenWriteV2(ticket,reinterpret_cast<std::uintptr_t>(file))==1&&
+            WriteFile(file,output.data(),static_cast<DWORD>(output.size()),&count,nullptr)&&count==output.size()&&FlushFileBuffers(file);
+        if(file!=INVALID_HANDLE_VALUE)ok=CloseHandle(file)&&ok;
+        if(ok)ok=MoveFileExW(temp.c_str(),path.c_str(),MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)!=FALSE;
+        if(!ok){FfxHooks_FahrenheitAbortIoV2(ticket);if(file!=INVALID_HANDLE_VALUE)DeleteFileW(temp.c_str());return false;}
+        return FfxHooks_FahrenheitEndWriteV2(ticket,1)==1;
+    }
+    void* file=openFile(path.c_str(),L"wb");if(!file)return false;const auto got=NativeWrite(bytes.size(),bytes.data(),file,reinterpret_cast<void*>(base+0x2F06B8));closeFile(file);return got==bytes.size();
+}
 void Apply(SaveImage& image){reinterpret_cast<int(__cdecl*)(void*,const void*)>(base+0x4B5450)(reinterpret_cast<void*>(base+0xD2CA90),image.data());}
 uint16_t ChecksumAndClear(SaveImage& image){return reinterpret_cast<uint16_t(__cdecl*)(void*)>(base+0x248030)(image.data());}
 void Log(const char* s){std::fputs(s,stdout);}
@@ -60,7 +93,12 @@ void LostPostWrite(const wchar_t*,const unsigned char*,std::size_t) noexcept {}
 }
 int main(int argc,char** argv){
     if(argc!=5)return 2;
-    const bool ronsoActive=std::strcmp(argv[4],"on")==0;
+    managedTransport=std::strncmp(argv[4],"managed-",8)==0;
+    const bool ronsoActive=std::strcmp(argv[4],"on")==0||std::strcmp(argv[4],"managed-on")==0;
+    if(managedTransport){
+        auto& state=Coexistence::runtime;state.Observe(true);
+        if(!state.ConfigureServices(2,4)||!state.Ready(1,3)||!state.TryStart())return 2;
+    }
     HMODULE image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES),crt=LoadLibraryW(L"msvcr110.dll");
     if(!image||!crt||!PrivatePeFixture::NormalizeRelocations(image))return 2;base=reinterpret_cast<uintptr_t>(image);
     const auto nativeRead=GetProcAddress(crt,"fread"),nativeWrite=GetProcAddress(crt,"fwrite"),nativeCopy=GetProcAddress(crt,"memcpy");
@@ -72,6 +110,7 @@ int main(int argc,char** argv){
     RonsoPool::PreparedRuntime prepared{};
     Check(RonsoPool::PrepareRuntime(base,ronsoActive,Log,&prepared,(root+L"\\ronso").c_str())&&RonsoPool::InstallIoImports(),"shared native save I/O owns the real FFX imports");
     if(failures)return 2;RonsoPool::ActivateRuntime();
+    if(managedTransport&&!Coexistence::runtime.Finish(true))return 2;
     const unsigned char returnAfterCall[]={0x83,0xC4,0x10,0xC3};
     Patch(base+0x2F0228,returnAfterCall,sizeof(returnAfterCall));Patch(base+0x2F06C5,returnAfterCall,sizeof(returnAfterCall));
     const unsigned char postLoadReturn[]={0x31,0xC0,0xC3,0x90,0x90};Patch(base+0x4B546B,postLoadReturn,sizeof(postLoadReturn));
@@ -84,6 +123,9 @@ int main(int argc,char** argv){
     const auto before=loaded;const auto crc=ChecksumAndClear(loaded);const auto stored=static_cast<uint16_t>(before[26]|(unsigned(before[27])<<8));
     bool onlyTrailer=true;for(unsigned i=0;i<loaded.size();++i)if((i<25844||i>=25848)&&loaded[i]!=before[i])onlyTrailer=false;
     Check(crc==stored&&onlyTrailer&&loaded[25844]==0&&loaded[25845]==0&&loaded[25846]==0&&loaded[25847]==0,"actual native checksum clears only the four-byte payload trailer");
+    // Fahrenheit confirms a read after its CRC check. Existing consumers must
+    // associate the same payload without rewriting the provider's ref buffer.
+    if(!managedTransport)NativeSaveEvents::ReadCompleted(path.c_str(),disk.data(),loaded.data(),loaded.size());
     const auto unmodifiedSource=loaded;Apply(loaded);
     Check(EquipmentWorkshop::Capture(state),"actual load detour admits the native post-checksum image");
     Check(loaded==unmodifiedSource,"admission does not rewrite the game's load buffer");

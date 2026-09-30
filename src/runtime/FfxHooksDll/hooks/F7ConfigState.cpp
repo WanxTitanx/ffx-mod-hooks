@@ -1,4 +1,5 @@
 #include "F7InLive.h"
+#include "F7ConfigEditor.h"
 #include "SinRamConfigCore.h"
 
 #include <algorithm>
@@ -116,4 +117,23 @@ bool F7_SetSinRamConfig(const SinRam::Config& config) {
     return true;
 }
 
+namespace F7Editor {
+Result CommitMusic(const F7MusicConfig& expected,const F7MusicConfig& requested) {
+    if(!ValidMusic(requested))return Result::Invalid;
+    std::lock_guard<std::mutex> guard(g_f7ConfigStateLock);
+    if(!EqualMusic(g_f7ConfigState.config.music,expected))return Result::Conflict;
+    g_f7ConfigState.config.music=requested;
+    g_f7ConfigState.revision=NextRevision(g_f7ConfigState.revision);
+    return Result::Applied;
+}
+Result CommitDifficulty(const F7Difficulty::DifficultyConfig& expected,const F7Difficulty::DifficultyConfig& requested) {
+    if(!ValidDifficulty(requested))return Result::Invalid;
+    std::lock_guard<std::mutex> guard(g_f7ConfigStateLock);
+    if(!EqualDifficulty(g_f7ConfigState.difficulty,expected))return Result::Conflict;
+    g_f7ConfigState.difficulty=requested;g_f7ConfigState.difficultyValid=true;
+    CopyCanonicalDifficultyToConfig(&g_f7ConfigState.config,requested);
+    g_f7ConfigState.revision=NextRevision(g_f7ConfigState.revision);
+    return Result::Applied;
+}
+}
 }  // namespace FfxHooks

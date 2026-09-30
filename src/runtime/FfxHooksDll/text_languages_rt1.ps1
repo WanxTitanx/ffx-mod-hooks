@@ -93,7 +93,7 @@ try {
         'hooks\F8RuntimeCore.cpp','hooks\MinHookBatchCoordinator.cpp','shared\Config.cpp','tests\TextLanguageNativeRt1.cpp')
     $nativeExe = Compile 'TextLanguageNativeRt1' $native (@('/DFFXHOOKS_HAVE_POLYHOOK') + $vendorObjects)
     if ($private) {
-        foreach ($mode in @('active','concurrent','early','stop','stop-validated','stop-reading','stop-committed','bad-font','late')) {
+        foreach ($mode in @('active','concurrent','early','stop','stop-validated','stop-reading','stop-committed','bad-font','late','cooperative','cooperative-conflict','cooperative-stop')) {
             Execute ('Native-'+$mode) $nativeExe @($ExecutablePath,$PackageDirectory,$ReferenceDirectory,$mode)
         }
     } else { Write-Host 'NATIVE_PRIVATE_FIXTURE=NOT_SUPPLIED; native adapter compiled only.' }

@@ -2483,18 +2483,19 @@ void TestProductionAdapterSourceContracts() {
                applyOverride.find("F7_PublishPendingBattleField") != std::string::npos,
            "deferred Arena and Custom Mix overrides must publish the target route only when the override applies");
     const std::string commitUi = SourceBetween(
-        dllmain, "static void F7_CommitValsToConfig()", "static void F7Sub_HandleConfirm");
-    Expect(commitUi.find("F7_SetDifficultyGlobal(p)") != std::string::npos &&
+        dllmain, "static bool F7_CommitValsToConfig()", "static void F7Sub_HandleConfirm");
+    Expect(commitUi.find("F7Editor::CommitDifficulty(g_f7DiffExpected,g_f7DiffDraft)") != std::string::npos &&
+               commitUi.find("g_f7DiffDraft)!=FfxHooks::F7Editor::Result::Applied") != std::string::npos &&
                commitUi.find("F7_GetConfig()") == std::string::npos &&
                dllmain.find("const_cast<FfxHooks::F7Config&>") == std::string::npos,
            "UI edits must publish through the synchronized Difficulty snapshot API");
     const std::string saveFeedback = SourceBetween(
         dllmain, "static bool F7_SaveConfigWithFeedback",
-        "static void F7_CommitValsToConfig()");
+        "static bool F7_CommitValsToConfig()");
     Expect(saveFeedback.find("FfxHooks::F7_SaveConfig()") != std::string::npos &&
                saveFeedback.find("Config save failed; changes remain in memory") !=
                    std::string::npos &&
-               saveFeedback.find("PlaySfx(saved ? 4 : 3)") != std::string::npos &&
+               saveFeedback.find("PlaySfx(saved ? 1 : 3)") != std::string::npos &&
                dllmain.find("FfxHooks::F7_SaveConfig(); F7DiffSetStatus") ==
                    std::string::npos,
            "F7 UI save actions must surface persistence failure and must not emit success SFX");
@@ -3057,7 +3058,7 @@ void TestFocusLossSafetyContract() {
     const std::string closeTransition = SourceBetween(
         dllmain,
         "FfxHooks::F7Ui::CloseDestination destination) {",
-        "static void F7_CommitValsToConfig()");
+        "static bool F7_CommitValsToConfig()");
     Expect(closeTransition.find("ArenaPlus_UltraCancelForClose(source)") !=
                std::string::npos &&
                closeTransition.find("ArenaPlus_CloseMenu(g_arenaPlusMenu)") !=

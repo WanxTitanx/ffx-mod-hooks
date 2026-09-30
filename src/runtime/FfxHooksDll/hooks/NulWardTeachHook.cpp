@@ -1,4 +1,5 @@
 #include "NulWardTeachHook.h"
+#include "FahrenheitCoexistenceCore.h"
 #include "../shared/ffx_addresses.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -9,7 +10,7 @@
 #include <vector>
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #include <exception>
 #endif
 
@@ -44,7 +45,7 @@ static volatile LONG        g_grantOnce = 0;
 // just before FFX_Btl_BuildActorCommandMenu seeds each actor — so IsCommandAvailable(320/321)
 // is true and the wards reach the White-magic submenu.
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-static PLH::x86Detour*      g_prepDetour = nullptr;
+static FfxHooks::CompatibleDetour*      g_prepDetour = nullptr;
 static uint64_t             g_prepTrampoline = 0;
 static volatile LONG        g_prepFireCount = 0;
 #endif
@@ -63,7 +64,7 @@ static volatile LONG        g_prepFireCount = 0;
 static GetCmdEntryFn        g_getCmdEntry = nullptr;
 static IsCmdAvailFn         g_isCmdAvail = nullptr;
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-static PLH::x86Detour*      g_buildDetour = nullptr;
+static FfxHooks::CompatibleDetour*      g_buildDetour = nullptr;
 static uint64_t             g_buildTrampoline = 0;
 static volatile LONG        g_buildDiagTotal = 0;
 static int                  g_buildDiagPerChar[18] = {};
@@ -257,6 +258,12 @@ static int __cdecl BuildActorCommandMenu_Fix_Shim(int charIdx, int actorRecord) 
 
 NulWardTeachInstallResult InstallNulWardTeachHook(uintptr_t base, bool grantOnLoad, NulWardTeachLogFn log) {
     NulWardTeachInstallResult result = { false, 0, false };
+    // Legacy flags bypass F8. Reject before patching menu limits or granting
+    // persistent command bits when the active save owner is managed.
+    if (!Coexistence::runtime.SavePipelineAllowed()) {
+        if (log) log("[ffx-hooks] NulWardTeach unavailable: Fahrenheit save adapter required");
+        return result;
+    }
     if (g_installed) {
         result.ok = true;
         result.menuBoundPatchVa = g_menuPatchVa;
@@ -289,7 +296,7 @@ NulWardTeachInstallResult InstallNulWardTeachHook(uintptr_t base, bool grantOnLo
         // Re-assert the ward bank bits after every battle-init bank reload (see RE verdict).
         const uint64_t prepVa = static_cast<uint64_t>(base + RVA_FFX_BTL_PREPARE_SAVE_COMMAND_STATE);
         try {
-            g_prepDetour = new PLH::x86Detour(
+            g_prepDetour = new FfxHooks::CompatibleDetour(
                 prepVa,
                 reinterpret_cast<uint64_t>(&PrepareSaveCommandState_Shim),
                 &g_prepTrampoline);
@@ -313,7 +320,7 @@ NulWardTeachInstallResult InstallNulWardTeachHook(uintptr_t base, bool grantOnLo
         // Ronso's BuildActorCommandMenu gate must stay disarmed while this is installed (shared entry).
         const uint64_t buildVa = static_cast<uint64_t>(base + RVA_FFX_BATTLE_BUILD_ACTOR_COMMAND_MENU);
         try {
-            g_buildDetour = new PLH::x86Detour(
+            g_buildDetour = new FfxHooks::CompatibleDetour(
                 buildVa,
                 reinterpret_cast<uint64_t>(&BuildActorCommandMenu_Fix_Shim),
                 &g_buildTrampoline);

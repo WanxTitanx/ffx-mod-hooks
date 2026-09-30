@@ -84,7 +84,7 @@ if ($sin -notmatch 'F7ListMouseTick\(' -or $sin -notmatch 'ResolveDirectionalInp
 if ($sin -notmatch '(?s)SIN_RAM_ROW_SAVE.*?F7_SetSinRamConfig\(g_sinDraft\).*?F7_SaveConfig\(\)') {
     throw 'S.I.N. must save through the existing sole configuration writer'
 }
-foreach ($feedback in @('Saved for next encounter','Save failed - memory only','NativeMenu::PlaySfx(saved ? 4 : 3)')) {
+foreach ($feedback in @('Saved for next encounter','Save failed - memory only','NativeMenu::PlaySfx(saved ? 1 : 3)')) {
     if (-not $sin.Contains($feedback)) { throw "S.I.N. truthful save feedback missing $feedback" }
 }
 if ($f7InLive -notmatch 'if \(!sinRequest\.config\.seeded\)') {
@@ -98,7 +98,7 @@ Assert-SourceContract `
     'R\.type == F7RT_BACK \|\| R\.type == F7RT_ACTION \|\|\s*\(g_f7MenuKind == F7_MENU_FORCE && sel == 1\)' `
     'Force Repeat confirm must enter the explicit action path instead of silently discarding the draft'
 Assert-SourceContract `
-    '(?s)if \(g_f7MenuKind == F7_MENU_FORCE\) \{\s*if \(row == 0\).*?else if \(row == 1\) \{\s*F7_CommitValsToConfig\(\);\s*FfxHooks::F7_SaveConfig\(\);' `
+    '(?s)if \(g_f7MenuKind == F7_MENU_FORCE\) \{\s*if \(row == 0\).*?else if \(row == 1\) \{\s*if\(!F7_CommitValsToConfig\(\)\)return;\s*F7_SaveConfigWithFeedback\("Repeat count saved to f7_inlive.json"\);' `
     'Force Repeat row 1 must save its own mapped draft value'
 
 $mouseHelperDeclaration = $dllmain.IndexOf('static F7MouseInputResult F7ListMouseTick(')

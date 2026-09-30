@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include "../hooks/TextLanguageHook.h"
 #include "../hooks/TextLanguageFiles.h"
+#include "../hooks/FahrenheitServices.h"
 #include "TextLanguagePeFixture.inc"
 using namespace FfxHooks::TextLanguage;
 namespace N=FfxHooks::TextLanguage::Native;
@@ -52,6 +53,19 @@ using Get=std::uint32_t(__thiscall*)(Stream*,void*,std::uint32_t);
 using Seek=std::uint32_t(__thiscall*)(Stream*,std::int32_t,int);
 using Close=int(__thiscall*)(Stream*);
 using FontCall=int(__cdecl*)(const unsigned char*);
+Open peerOriginal=nullptr;
+bool peerConflict=false;
+int __cdecl PeerConflict(const char*){return peerConflict?1:0;}
+int __fastcall PeerOpen(Stream* stream,void*,const char* path,int readOnly,int a3,int a4,int a5){
+ const auto handle=(readOnly&255)?FfxHooks_FahrenheitOpenResourceV2(path):0;
+ if(handle==static_cast<std::uintptr_t>(-1))return 1;
+ if(handle){stream->file=reinterpret_cast<HANDLE>(handle);stream->archive=nullptr;return 0;}
+ return peerOriginal(stream,path,readOnly,a3,a4,a5);
+}
+Stream* __fastcall PeerConstructor(Stream* stream,void*,const char* path,int readOnly,unsigned a3,unsigned a4,int a5){
+ stream->file=INVALID_HANDLE_VALUE;stream->archive=nullptr;
+ PeerOpen(stream,nullptr,path,readOnly,static_cast<int>(a3),static_cast<int>(a4),a5);return stream;
+}
 void SeedImports(unsigned char* image){
  Import(image,0x70C138,reinterpret_cast<void*>(&CreateFileW));
  Import(image,0x70C13C,reinterpret_cast<void*>(&GetFileSizeEx));
@@ -78,7 +92,8 @@ void SeedImports(unsigned char* image){
 int main(int argc,char** argv){
  if(argc!=4&&argc!=5){std::fprintf(stderr,"Usage: TextLanguageNativeRt1 FFX.exe PACK REFERENCE [active|concurrent|early|stop|stop-validated|stop-reading|stop-committed|bad-font|late]\n");return 2;}
  const std::string mode=argc==5?argv[4]:"active";
- if(mode!="active"&&mode!="concurrent"&&mode!="early"&&mode!="stop"&&mode!="stop-validated"&&mode!="stop-reading"&&mode!="stop-committed"&&mode!="bad-font"&&mode!="late")return 2;
+ const bool cooperative=mode=="cooperative"||mode=="cooperative-conflict"||mode=="cooperative-stop";
+ if(!cooperative&&mode!="active"&&mode!="concurrent"&&mode!="early"&&mode!="stop"&&mode!="stop-validated"&&mode!="stop-reading"&&mode!="stop-committed"&&mode!="bad-font"&&mode!="late")return 2;
  const auto executable=std::filesystem::absolute(argv[1]);const auto package=std::filesystem::absolute(argv[2]);
  const auto reference=std::filesystem::absolute(argv[3]);
  const auto temporary=std::filesystem::current_path()/("mod006-native-"+std::to_string(GetCurrentProcessId()));
@@ -95,7 +110,8 @@ int main(int argc,char** argv){
  const auto base=reinterpret_cast<std::uintptr_t>(image);SeedImports(image);
  std::array<std::uint32_t,2> locale{0,1};auto* localePointer=locale.data();
  std::memcpy(image+0x8DED48,&localePointer,4);
- const auto open=reinterpret_cast<Open>(image+0x208100);const auto size=reinterpret_cast<Size>(image+0x207F80);
+ peerOriginal=reinterpret_cast<Open>(image+0x208100);
+ const auto open=cooperative?reinterpret_cast<Open>(&PeerOpen):peerOriginal;const auto size=reinterpret_cast<Size>(image+0x207F80);
  const auto get=reinterpret_cast<Get>(image+0x208250);const auto seek=reinterpret_cast<Seek>(image+0x2082A0);
  const auto close=reinterpret_cast<Close>(image+0x207F40);const auto font=reinterpret_cast<FontCall>(image+0x4AC0E0);
  N::Settings off;Check(N::Start(0,off)&&!N::Inspect().installed,"OFF performs no native mutation");
@@ -104,16 +120,32 @@ int main(int argc,char** argv){
  settings.validateOnly=true;
  Check(N::Start(base,settings)&&N::Inspect().state==N::State::ValidateOnly&&!N::Inspect().installed,"validate-only leaves native entry points unchanged");
  settings.validateOnly=false;
+ std::array<unsigned char,16> openBefore{};std::memcpy(openBefore.data(),image+0x208100,openBefore.size());
+ if(cooperative){
+  auto& state=FfxHooks::Coexistence::runtime;state.Observe(true);
+  Check(state.ConfigureServices(2,8)&&state.Ready(1,3)&&state.TryStart()&&state.Finish(true),"cooperative file ownership is explicit");
+  FfxHooks::Coexistence::resourceConflict.store(PeerConflict);
+  Jump(image,0x207D80,reinterpret_cast<void*>(&PeerConstructor));
+  FlushInstructionCache(GetCurrentProcess(),image+0x207D80,5);
+  if(mode=="cooperative-conflict"){
+   peerConflict=true;
+   Check(!N::Start(base,settings)&&N::Inspect().state==N::State::Conflict&&!N::Inspect().installed,"another EFL replacement rejects the whole paired package before any hook");
+   Check(std::memcmp(openBefore.data(),image+0x208100,openBefore.size())==0,"conflicting resource admission leaves native file worker intact");
+   std::filesystem::current_path(cwd);std::filesystem::remove_all(temporary);
+   std::printf("TextLanguageNative RT1 (%s): %u checks, %u failures\n",mode.c_str(),checks,failures);return failures?1:0;
+  }
+ }
  if(mode=="late"){
   const std::uint32_t occupied=1;std::memcpy(image+0x1441DA4,&occupied,4);
   Check(!N::Start(base,settings)&&N::Inspect().state==N::State::TooLate&&!N::Inspect().installed,"late activation cannot replace an initialized font cache");
- }else Check(N::Start(base,settings,mode=="bad-font"?&ThrowingLogger:mode=="stop-validated"?&StopAfterValidation:nullptr)&&N::Inspect().installed,"exact PE arms both native adapters");
+ }else Check(N::Start(base,settings,mode=="bad-font"?&ThrowingLogger:mode=="stop-validated"?&StopAfterValidation:nullptr)&&N::Inspect().installed,"exact PE arms its owned adapters");
+ if(cooperative)Check(std::memcmp(openBefore.data(),image+0x208100,openBefore.size())==0,"cooperative transport never installs a competing OpenStream hook");
  if(N::Inspect().installed){
   auto originalMetrics=Read((reference/"font/base.ftc").string().c_str());
   std::array<unsigned char,8> saveWriter{};std::memcpy(saveWriter.data(),image+0x4B3EE3,8);
   const auto& selectedResource=input.Description().resources[0];
   const auto selectedRequest="../../../"+selectedResource.request.substr(1);
-  bool activeExpected=mode=="active"||mode=="concurrent"||mode=="stop-committed";
+  bool activeExpected=cooperative||mode=="active"||mode=="concurrent"||mode=="stop-committed";
   if(mode=="early"){
    Stream early;Check(open(&early,selectedRequest.c_str(),1,0,0,1)==0&&size(&early)==selectedResource.sourceSize,"early text request retains native bytes");close(&early);
   }else if(mode=="stop")Check(N::Stop()&&!N::Inspect().installed,"stop before publication restores original native entries");
@@ -184,6 +216,7 @@ int main(int argc,char** argv){
   const auto mismatch=reinterpret_cast<Mismatch>(image+0x387430);
   Check(mismatch(1)==0&&mismatch(0)!=0,"native old-save language comparison still uses the original locale ID");
   Check(!N::Stop()&&N::Inspect().state==N::State::RestartRequired,"published text and font remain paired until restart");
+  if(mode=="cooperative-stop")FfxHooks::Coexistence::runtime.Stop();
   Stream retained;Check(open(&retained,request.c_str(),1,0,0,1)==0&&size(&retained)==resource.size,"Stop cannot detach the font dependency of cached translations");close(&retained);
   }
   Check(locale[1]==1&&std::memcmp(image+0x4B3EE3,saveWriter.data(),saveWriter.size())==0,"virtual text language preserves native locale and save-header code");

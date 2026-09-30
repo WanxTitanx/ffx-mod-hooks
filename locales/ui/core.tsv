@@ -1,0 +1,66 @@
+# Jarvis-HOOK — en pt es fr it de ja ko zh, separated by tabs.
+Back	Voltar	Volver	Retour	Indietro	Zurück	戻る	뒤로	返回
+Cancel	Cancelar	Cancelar	Annuler	Annulla	Abbrechen	キャンセル	취소	取消
+Save	Salvar	Guardar	Enregistrer	Salva	Speichern	保存	저장	保存
+Reset	Redefinir	Restablecer	Réinitialiser	Ripristina	Zurücksetzen	リセット	초기화	重置
+Exit	Sair	Salir	Quitter	Esci	Schließen	閉じる	닫기	关闭
+Select	Selecionar	Seleccionar	Sélectionner	Seleziona	Auswählen	選択	선택	选择
+Navigate	Navegar	Navegar	Naviguer	Naviga	Navigieren	移動	이동	移动
+Tabs	Abas	Pestañas	Onglets	Schede	Reiter	タブ	탭	选项卡
+Toggle	Alternar	Alternar	Basculer	Attiva/disattiva	Umschalten	切り替え	전환	切换
+Configure	Configurar	Configurar	Configurer	Configura	Konfigurieren	設定	설정	配置
+Apply Tab	Aplicar aba	Aplicar pestaña	Appliquer l'onglet	Applica scheda	Reiter anwenden	タブに適用	탭 적용	应用此页
+Settings	Configurações	Configuración	Paramètres	Impostazioni	Einstellungen	設定	설정	设置
+F8 - Settings	F8 - Configurações	F8 - Configuración	F8 - Paramètres	F8 - Impostazioni	F8 - Einstellungen	F8 - 設定	F8 - 설정	F8 - 设置
+Interface language	Idioma da interface	Idioma de la interfaz	Langue de l'interface	Lingua dell'interfaccia	Sprache der Oberfläche	インターフェース言語	인터페이스 언어	界面语言
+Choose the language of the DLL menus. Game text and audio are independent.	Escolha o idioma dos menus da DLL. Textos e áudio do jogo são independentes.	Elige el idioma de los menús de la DLL. Los textos y el audio del juego son independientes.	Choisissez la langue des menus de la DLL. Les textes et l'audio du jeu sont indépendants.	Scegli la lingua dei menu della DLL. Testi e audio del gioco sono indipendenti.	Sprache der DLL-Menüs wählen. Spieltexte und Audio sind unabhängig.	DLLメニューの言語を選択します。ゲームの文章と音声は別設定です。	DLL 메뉴 언어를 선택합니다. 게임 텍스트와 음성은 별도 설정입니다.	选择 DLL 菜单的语言。游戏文本和音频单独设置。
+Interface language saved.	Idioma da interface salvo.	Idioma de la interfaz guardado.	Langue de l'interface enregistrée.	Lingua dell'interfaccia salvata.	Oberflächensprache gespeichert.	インターフェース言語を保存しました。	인터페이스 언어를 저장했습니다.	界面语言已保存。
+Unable to save the interface language.	Não foi possível salvar o idioma da interface.	No se pudo guardar el idioma de la interfaz.	Impossible d'enregistrer la langue de l'interface.	Impossibile salvare la lingua dell'interfaccia.	Oberflächensprache konnte nicht gespeichert werden.	インターフェース言語を保存できませんでした。	인터페이스 언어를 저장할 수 없습니다.	无法保存界面语言。
+System	Sistema	Sistema	Système	Sistema	System	システム	시스템	系统
+Boosters	Facilidades	Mejoras	Assistances	Aiuti	Spielhilfen	ブースター	편의 기능	辅助功能
+Cheats	Trapaças	Trucos	Triches	Trucchi	Cheats	チート	치트	作弊
+Extras	Extras	Extras	Extras	Extra	Extras	追加機能	추가 기능	额外功能
+Input	Controles	Controles	Commandes	Comandi	Eingabe	操作	조작	操作
+Dev	Desenvolvimento	Desarrollo	Développement	Sviluppo	Entwicklung	開発	개발	开发
+Reforge	Reforge	Reforge	Reforge	Reforge	Reforge	Reforge	Reforge	Reforge
+ON	LIGADO	ACTIVADO	ACTIVÉ	ATTIVO	AN	オン	켜짐	开启
+OFF	DESLIGADO	DESACTIVADO	DÉSACTIVÉ	DISATTIVO	AUS	オフ	꺼짐	关闭
+INVALID	INVÁLIDO	NO VÁLIDO	INVALIDE	NON VALIDO	UNGÜLTIG	無効	잘못된 값	无效
+Valid	Válido	Válido	Valide	Valido	Gültig	有効	유효	有效
+Invalid	Inválido	No válido	Invalide	Non valido	Ungültig	無効	잘못된 값	无效
+Disabled	Desativado	Desactivado	Désactivé	Disattivato	Deaktiviert	無効	비활성화	已禁用
+Restart required	Reinicie o jogo	Reinicia el juego	Redémarrage requis	Riavvio necessario	Neustart erforderlich	再起動が必要	재시작 필요	需要重启
+Running ON	Em execução	En ejecución	En cours	In esecuzione	Aktiv	動作中	실행 중	运行中
+Running OFF	Inativo	Inactivo	Inactif	Inattivo	Inaktiv	停止中	중지됨	未运行
+NOT WIRED	SEM INTEGRAÇÃO	SIN INTEGRAR	NON INTÉGRÉ	NON INTEGRATO	NICHT ANGEBUNDEN	未実装	연결되지 않음	未接入
+Enable Supported	Ativar disponíveis	Activar disponibles	Activer les options disponibles	Attiva opzioni disponibili	Verfügbare aktivieren	利用可能な機能を有効化	사용 가능 기능 켜기	启用可用功能
+Disable Supported	Desativar disponíveis	Desactivar disponibles	Désactiver les options disponibles	Disattiva opzioni disponibili	Verfügbare deaktivieren	利用可能な機能を無効化	사용 가능 기능 끄기	禁用可用功能
+Enable all available options in this tab	Ative todas as opções disponíveis nesta aba	Activa todas las opciones disponibles de esta pestaña	Activez toutes les options disponibles dans cet onglet	Attiva tutte le opzioni disponibili in questa scheda	Alle verfügbaren Optionen dieses Reiters aktivieren	このタブで利用可能な全機能を有効にします	이 탭에서 사용 가능한 모든 기능을 켭니다	启用此页中的所有可用功能
+Disable all available options in this tab	Desative todas as opções disponíveis nesta aba	Desactiva todas las opciones disponibles de esta pestaña	Désactivez toutes les options disponibles dans cet onglet	Disattiva tutte le opzioni disponibili in questa scheda	Alle verfügbaren Optionen dieses Reiters deaktivieren	このタブで利用可能な全機能を無効にします	이 탭에서 사용 가능한 모든 기능을 끕니다	禁用此页中的所有可用功能
+Close the flags menu and return to the game	Feche as configurações e volte ao jogo	Cierra la configuración y vuelve al juego	Fermez les paramètres et revenez au jeu	Chiudi le impostazioni e torna al gioco	Einstellungen schließen und zum Spiel zurückkehren	設定を閉じてゲームに戻ります	설정을 닫고 게임으로 돌아갑니다	关闭设置并返回游戏
+Select an option. Back returns to F8.	Selecione uma opção. Voltar retorna ao F8.	Selecciona una opción. Volver regresa a F8.	Sélectionnez une option. Retour revient à F8.	Seleziona un'opzione. Indietro torna a F8.	Option wählen. Zurück öffnet F8.	項目を選択。「戻る」でF8に戻ります。	옵션을 선택합니다. 뒤로를 누르면 F8로 돌아갑니다.	选择一个选项。返回键回到 F8。
+Mouse/Scroll  Arrows: move  Enter: select  Back: return	Mouse/Rolagem  Setas: mover  Enter: selecionar  Voltar: retornar	Ratón/Rueda  Flechas: mover  Intro: elegir  Atrás: volver	Souris/Molette  Flèches : déplacer  Entrée : choisir  Retour : revenir	Mouse/Rotella  Frecce: sposta  Invio: scegli  Indietro: torna	Maus/Mausrad  Pfeile: bewegen  Enter: wählen  Zurück: zurück	マウス/ホイール  矢印:移動  Enter:選択  Back:戻る	마우스/휠  방향키: 이동  Enter: 선택  Back: 뒤로	鼠标/滚轮  方向键：移动  Enter：选择  Back：返回
+Invalid selection	Seleção inválida	Selección no válida	Sélection invalide	Selezione non valida	Ungültige Auswahl	無効な選択	잘못된 선택	无效选择
+Invalid option	Opção inválida	Opción no válida	Option invalide	Opzione non valida	Ungültige Option	無効な項目	잘못된 옵션	无效选项
+Control unavailable	Controle indisponível	Control no disponible	Commande indisponible	Comando non disponibile	Steuerung nicht verfügbar	操作できません	조작할 수 없음	控制不可用
+Options	Opções	Opciones	Options	Opzioni	Optionen	オプション	옵션	选项
+Additional mods	Mods adicionais	Mods adicionales	Mods supplémentaires	Mod aggiuntive	Weitere Mods	追加MOD	추가 모드	其他模组
+Audio languages	Idiomas do áudio	Idiomas del audio	Langues audio	Lingue audio	Audiosprachen	音声の言語	음성 언어	音频语言
+Text languages	Idiomas dos textos	Idiomas de los textos	Langues des textes	Lingue dei testi	Textsprachen	文章の言語	텍스트 언어	文本语言
+Voice language	Idioma das vozes	Idioma de las voces	Langue des voix	Lingua delle voci	Sprache der Stimmen	ボイス言語	음성 언어	语音语言
+Battle sound language	Idioma dos sons de batalha	Idioma del audio de combate	Langue des sons de combat	Lingua dei suoni in battaglia	Sprache der Kampfgeräusche	戦闘音声の言語	전투 음성 언어	战斗音效语言
+Movie audio language	Idioma do áudio dos vídeos	Idioma del audio de los vídeos	Langue audio des vidéos	Lingua audio dei filmati	Sprache der Filmsequenzen	ムービー音声の言語	영상 음성 언어	过场动画音频语言
+Voices	Vozes	Voces	Voix	Voci	Stimmen	ボイス	음성	语音
+Battle sounds	Sons de batalha	Sonidos de combate	Sons de combat	Suoni di battaglia	Kampfgeräusche	戦闘音声	전투 음성	战斗音效
+Movie audio	Áudio dos vídeos	Audio de los vídeos	Audio des vidéos	Audio dei filmati	Filmaudio	ムービー音声	영상 음성	过场动画音频
+Original game language	Idioma original do jogo	Idioma original del juego	Langue originale du jeu	Lingua originale del gioco	Originalsprache des Spiels	ゲーム本来の言語	게임 기본 언어	游戏原始语言
+Game default	Padrão do jogo	Predeterminado del juego	Par défaut du jeu	Predefinita del gioco	Spielstandard	ゲームの設定に従う	게임 기본값	游戏默认
+English	Inglês	Inglés	Anglais	Inglese	Englisch	英語	영어	英语
+Japanese	Japonês	Japonés	Japonais	Giapponese	Japanisch	日本語	일본어	日语
+Portuguese (Brazil)	Português (Brasil)	Portugués (Brasil)	Portugais (Brésil)	Portoghese (Brasile)	Portugiesisch (Brasilien)	ポルトガル語（ブラジル）	포르투갈어 (브라질)	葡萄牙语（巴西）
+Spanish	Espanhol	Español	Espagnol	Spagnolo	Spanisch	スペイン語	스페인어	西班牙语
+French	Francês	Francés	Français	Francese	Französisch	フランス語	프랑스어	法语
+Italian	Italiano	Italiano	Italien	Italiano	Italienisch	イタリア語	이탈리아어	意大利语
+German	Alemão	Alemán	Allemand	Tedesco	Deutsch	ドイツ語	독일어	德语
+Korean	Coreano	Coreano	Coréen	Coreano	Koreanisch	韓国語	한국어	韩语
+Chinese (Simplified)	Chinês (simplificado)	Chino (simplificado)	Chinois (simplifié)	Cinese (semplificato)	Chinesisch (vereinfacht)	中国語（簡体字）	중국어 (간체)	简体中文

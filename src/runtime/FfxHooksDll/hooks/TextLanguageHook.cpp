@@ -1,4 +1,6 @@
 #include "TextLanguageHook.h"
+#include "FahrenheitCoexistenceCore.h"
+#include "FahrenheitServices.h"
 #include "TextLanguageFiles.h"
 #include "TextLanguageSettings.h"
 #include "F8RuntimeCore.h"
@@ -33,6 +35,8 @@ enum class Publication : std::uint8_t {Pending,Committed,Cancelled};
 static_assert(std::atomic<Publication>::is_always_lock_free,"Detach cancellation must be lock-free");
 struct Context {
  std::uintptr_t base=0,targets[2]{};
+ std::size_t targetCount=2;
+ bool cooperative=false;
  OpenFn originalOpen=nullptr;FontFn originalFont=nullptr;
  Files files;PreparedPack pack;std::size_t metrics=0;
  std::atomic<bool> installed{false},fontReady{false},closing{false},earlyResource{false};
@@ -78,7 +82,14 @@ std::uint32_t Locale(const Context& context){
 }
 bool NativeSource(Context& context,const Resource& resource,Bytes& bytes){
  Stream stream;const std::string path="../../../"+resource.request.substr(1);
- if(context.originalOpen(&stream,path.c_str(),1,0,0,1)!=0)return false;
+ if(context.cooperative){
+  // Use the provider-owned constructor chain. The existing g_sourceRead fence
+  // prevents our resource callback from redirecting this source-verification read.
+  using Constructor=Stream*(__thiscall*)(Stream*,const char*,int,unsigned,unsigned,int);
+  const auto create=reinterpret_cast<Constructor>(context.base+0x207D80);
+  if(create(&stream,path.c_str(),1,0,0,1)!=&stream||
+     (stream.file==INVALID_HANDLE_VALUE&&!stream.archive))return false;
+ }else if(context.originalOpen(&stream,path.c_str(),1,0,0,1)!=0)return false;
  struct Closing {Stream* stream;CloseFn close;~Closing(){close(stream);}} closing{&stream,reinterpret_cast<CloseFn>(context.base+0x207F40)};
  const auto size=reinterpret_cast<SizeFn>(context.base+0x207F80)(&stream);
  if(size!=resource.sourceSize||size>MaxResourceBytes)return false;
@@ -154,30 +165,38 @@ bool ReadPath(const char* input,std::string& output){
  }
  return false;
 }
+std::uintptr_t OpenSelected(Context& context,const std::string& request,bool readOnly){
+ const auto* resource=Resolve(context.files.Description(),request,Locale(context),readOnly);
+ if(!resource||resource->family==Family::Metrics)return 0;
+ Shared lock(g_admission);
+ if(context.fontReady){
+  const auto handle=context.files.Open(*resource);
+  if(handle!=static_cast<std::uintptr_t>(-1)){
+   if(resource->family==Family::Atlas)++context.fontOpens;else ++context.textOpens;
+   return handle;
+  }
+  Reject(context,State::RestartRequired,"[text-language] A pinned resource could not be reopened. Restart required.");
+  return static_cast<std::uintptr_t>(-1);
+ }
+ if(!context.closing){
+  context.earlyResource=true;Reject(context,State::TooLate,"[text-language] A dependent resource loaded before the Western font boundary. Native resources retained.");
+ }
+ return 0;
+}
 int __fastcall OpenStream(Stream* stream,void*,const char* path,int readOnly,int a3,int a4,int a5){
  auto& context=*g_context.load(std::memory_order_acquire);
  if(g_sourceRead)return context.originalOpen(stream,path,readOnly,a3,a4,a5);
  try{
   std::string request;Stream before;
-  const Resource* resource=nullptr;
   if((readOnly&255)&&ReadPath(path,request)&&Copy(reinterpret_cast<std::uintptr_t>(stream),&before,sizeof(before))&&
-     before.file==INVALID_HANDLE_VALUE&&!before.archive)
-   resource=Resolve(context.files.Description(),request,Locale(context),true);
-  if(resource&&resource->family!=Family::Metrics){
+     before.file==INVALID_HANDLE_VALUE&&!before.archive){
    // Readers wait for the complete font/text transaction. Without this fence,
    // a racing atlas request could cache vanilla pixels while custom metrics
    // and translated strings were being published on the font thread.
-   Shared lock(g_admission);
-   if(context.fontReady){
-    const auto handle=context.files.Open(*resource);
-    if(handle!=static_cast<std::uintptr_t>(-1)){
-     stream->file=reinterpret_cast<HANDLE>(handle);stream->archive=nullptr;
-     if(resource->family==Family::Atlas)++context.fontOpens;else ++context.textOpens;
-     return 0;
-    }
-    Reject(context,State::RestartRequired,"[text-language] A pinned resource could not be reopened. Restart required.");
-   }else if(!context.closing){
-    context.earlyResource=true;Reject(context,State::TooLate,"[text-language] A dependent resource loaded before the Western font boundary. Native resources retained.");
+   const auto handle=OpenSelected(context,request,true);
+   if(handle==static_cast<std::uintptr_t>(-1))return 1;
+   if(handle){
+    stream->file=reinterpret_cast<HANDLE>(handle);stream->archive=nullptr;return 0;
    }
   }
  }catch(...){/* Allocation failures preserve the original loader contract. */}
@@ -186,6 +205,7 @@ int __fastcall OpenStream(Stream* stream,void*,const char* path,int readOnly,int
 }
 
 bool Start(std::uintptr_t base,const Settings& settings,LogFn log){
+ if(!Coexistence::FeatureAllowed("language.text")){g_state=State::Conflict;Report(log,"[text-language] Fahrenheit owns file redirection; original resources retained.");return false;}
  if(!TryAcquireSRWLockExclusive(&g_start))return false;
  struct Unlock {~Unlock(){ReleaseSRWLockExclusive(&g_start);}} unlock;
  if(g_context.load())return false;
@@ -196,22 +216,35 @@ bool Start(std::uintptr_t base,const Settings& settings,LogFn log){
   if(!Copy(base+WesternWidthsRva,&widths,4)||widths){g_state=State::TooLate;return false;}
   if(GetModuleHandleW(L"unx.dll")){g_state=State::Conflict;return false;}
   auto next=std::make_unique<Context>();next->base=base;next->log=log;std::string error;
+  next->cooperative=Coexistence::runtime.FileServicesAllowed();
   if(!next->files.Initialize(settings.packageDirectory,error)||next->files.Description().locale!=settings.locale){
    g_state=State::InvalidPack;Report(log,error.c_str());return false;
   }
+  if(next->cooperative){
+   const auto conflicts=Coexistence::resourceConflict.load(std::memory_order_acquire);
+   if(!conflicts){g_state=State::Conflict;return false;}
+   for(const auto& resource:next->files.Description().resources)if(conflicts(resource.request.c_str())){
+    g_state=State::Conflict;Report(log,"[text-language] Another Fahrenheit mod replaces a paired text/font resource. No partial package was published.");return false;
+   }
+  }
   if(settings.validateOnly){g_state=State::ValidateOnly;return true;}
   if(MinHookBatch::EnsureProcessInitialized()!=MinHookBatch::InitializationResult::Ready){g_state=State::Conflict;return false;}
-  next->targets[0]=base+OpenRva;next->targets[1]=base+FontRva;
-  if(MH_CreateHook(reinterpret_cast<void*>(next->targets[0]),reinterpret_cast<void*>(&OpenStream),reinterpret_cast<void**>(&next->originalOpen))!=MH_OK){g_state=State::Conflict;return false;}
-  if(MH_CreateHook(reinterpret_cast<void*>(next->targets[1]),reinterpret_cast<void*>(&RegisterFont),reinterpret_cast<void**>(&next->originalFont))!=MH_OK){
-   MH_RemoveHook(reinterpret_cast<void*>(next->targets[0]));g_state=State::Conflict;return false;
+  if(next->cooperative){
+   next->targetCount=1;next->targets[0]=base+FontRva;
+   next->originalOpen=reinterpret_cast<OpenFn>(base+OpenRva);
+  }else{
+   next->targets[0]=base+OpenRva;next->targets[1]=base+FontRva;
+   if(MH_CreateHook(reinterpret_cast<void*>(next->targets[0]),reinterpret_cast<void*>(&OpenStream),reinterpret_cast<void**>(&next->originalOpen))!=MH_OK){g_state=State::Conflict;return false;}
+  }
+  if(MH_CreateHook(reinterpret_cast<void*>(base+FontRva),reinterpret_cast<void*>(&RegisterFont),reinterpret_cast<void**>(&next->originalFont))!=MH_OK){
+   if(!next->cooperative)MH_RemoveHook(reinterpret_cast<void*>(next->targets[0]));g_state=State::Conflict;return false;
   }
   HMODULE module=nullptr;
   if(!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,reinterpret_cast<LPCWSTR>(&OpenStream),&module)){
-   MH_RemoveHook(reinterpret_cast<void*>(next->targets[0]));MH_RemoveHook(reinterpret_cast<void*>(next->targets[1]));g_state=State::Conflict;return false;
+   for(std::size_t i=0;i<next->targetCount;++i)MH_RemoveHook(reinterpret_cast<void*>(next->targets[i]));g_state=State::Conflict;return false;
   }
   auto* context=next.release();g_context.store(context,std::memory_order_release);g_state=State::Armed;
-  const auto result=MinHookBatch::EnableBatch(&MinHookBatch::ProcessCoordinator(),MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::TextLanguage,context->targets,2);
+  const auto result=MinHookBatch::EnableBatch(&MinHookBatch::ProcessCoordinator(),MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::TextLanguage,context->targets,context->targetCount);
   if(result.result!=MinHookBatch::BatchResult::Applied){context->closing=true;g_state=State::Conflict;return false;}
   context->installed=true;
   bool ready=false;
@@ -225,7 +258,7 @@ bool Start(std::uintptr_t base,const Settings& settings,LogFn log){
   }
   if(!ready){
    const auto retired=MinHookBatch::NeutralizeBatch(&MinHookBatch::ProcessCoordinator(),
-       MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::TextLanguage,context->targets,2);
+       MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::TextLanguage,context->targets,context->targetCount);
    if(retired.result==MinHookBatch::BatchResult::Neutralized)context->installed=false;
    else g_state=State::Conflict;
   }
@@ -265,9 +298,20 @@ bool Stop() noexcept {
  const bool published=context->publication.load()==Publication::Committed;ReleaseSRWLockExclusive(&g_admission);
  if(published){g_state=State::RestartRequired;return false;}
  if(!context->installed)return true;
- const auto result=MinHookBatch::NeutralizeBatch(&MinHookBatch::ProcessCoordinator(),MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::TextLanguage,context->targets,2);
+ const auto result=MinHookBatch::NeutralizeBatch(&MinHookBatch::ProcessCoordinator(),MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::TextLanguage,context->targets,context->targetCount);
  if(result.result!=MinHookBatch::BatchResult::Neutralized){g_state=State::Conflict;return false;}
  context->installed=false;g_state=State::Stopped;return true;
+}
+
+extern "C" __declspec(dllexport) std::uintptr_t __cdecl FfxHooks_FahrenheitOpenResourceV2(const char* path){
+ using namespace FfxHooks::TextLanguage::Native;
+ auto* context=g_context.load(std::memory_order_acquire);
+ if(!context||!context->cooperative||g_sourceRead)return 0;
+ // Published paired resources outlive logical stop: a cached translated string
+ // must never be combined with a fallback atlas after the service closes.
+ if(!context->fontReady&&!FfxHooks::Coexistence::runtime.FileServicesAllowed())return 0;
+ try{std::string request;if(!ReadPath(path,request))return 0;return OpenSelected(*context,request,true);}
+ catch(...){return context->fontReady?static_cast<std::uintptr_t>(-1):0;}
 }
 Snapshot Inspect() noexcept {
  Snapshot out;out.state=g_state.load();if(auto* context=g_context.load()){

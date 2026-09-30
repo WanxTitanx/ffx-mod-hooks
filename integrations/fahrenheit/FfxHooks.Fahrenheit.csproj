@@ -1,0 +1,32 @@
+<Project>
+  <!-- alpha12's current API is source-pinned until its SDK is published. Use the
+       upstream SDK imports directly; never ship a second copy of fh.dll. -->
+  <Import Project="$(FahrenheitSourceRoot)/src/sdk/Sdk/Sdk.props" />
+  <PropertyGroup>
+    <AssemblyName>ffxhooks_fahrenheit</AssemblyName>
+    <AssemblyTitle>FFX Hooks compatibility bridge</AssemblyTitle>
+    <Description>Shared hooks and rendering, with optional cooperative save and text-resource services.</Description>
+    <Authors>Jarvis-HOOK</Authors>
+    <Version>0.2.0</Version>
+    <RepositoryUrl>https://github.com/WanxTitanx/ffx-hooks</RepositoryUrl>
+    <FhManifestFlags>NONE</FhManifestFlags>
+    <PublishDir>$(MSBuildProjectDirectory)/bin/publish/</PublishDir>
+    <PlatformTarget>x86</PlatformTarget>
+    <DefineConstants Condition="Exists('$(FahrenheitSourceRoot)/ffx-hooks-cooperative.json')">$(DefineConstants);FFXHOOKS_COOPERATIVE_PROVIDER</DefineConstants>
+    <FahrenheitPython Condition="'$(FahrenheitPython)'=='' and '$(OS)'=='Windows_NT'">python</FahrenheitPython>
+    <FahrenheitPython Condition="'$(FahrenheitPython)'==''">python3</FahrenheitPython>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <Compile Remove="provider/**/*.cs" />
+    <PackageReference Remove="Fahrenheit" />
+    <!-- A caller may override this bridge's PublishDir. Do not propagate it to
+         the framework reference and accidentally package a second fh.dll. -->
+    <ProjectReference Include="$(FahrenheitSourceRoot)/src/core/Fahrenheit.csproj" Private="false" ExcludeAssets="runtime;native" GlobalPropertiesToRemove="PublishDir" />
+  </ItemGroup>
+  <Import Project="$(FahrenheitSourceRoot)/src/sdk/Sdk/Sdk.targets" />
+  <Target Name="VerifyFahrenheitCompatibilityReference" BeforeTargets="PrepareForBuild">
+    <Exec Condition="!Exists('$(FahrenheitSourceRoot)/ffx-hooks-cooperative.json')" Command="&quot;$(FahrenheitPython)&quot; &quot;$(MSBuildProjectDirectory)/verify_upstream.py&quot; &quot;$(FahrenheitSourceRoot)&quot;" />
+    <Exec Condition="Exists('$(FahrenheitSourceRoot)/ffx-hooks-cooperative.json')" Command="&quot;$(FahrenheitPython)&quot; &quot;$(MSBuildProjectDirectory)/provider/build_overlay.py&quot; &quot;$(FahrenheitSourceRoot)&quot; --verify" />
+  </Target>
+</Project>

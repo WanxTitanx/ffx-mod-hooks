@@ -355,6 +355,8 @@ private:
 };
 
 F8RuntimeStatus RuntimeStatusAtLocked(size_t index) {
+    if(!Coexistence::FeatureAllowed(kFlags[index].gate.canonicalKey))
+        return {F8RuntimeAvailability::PeerOwned,true,false};
     return g_runtimeStatuses[index];
 }
 
@@ -448,7 +450,7 @@ F8EditResult SetF8FlagValue(const F8FlagSpec& flag, bool requestedValue) {
     }
     const bool nonAvailableLive = catalogFlag.activation == F8Activation::Live &&
         runtime.availability != F8RuntimeAvailability::Available;
-    if (nonAvailableLive && requestedValue) {
+    if ((nonAvailableLive || runtime.availability == F8RuntimeAvailability::PeerOwned) && requestedValue) {
         return {F8EditCode::RejectedUnavailable, requestedValue, effective, runtime};
     }
     const bool persisted = requestedValue && std::strcmp(catalogFlag.gate.canonicalKey,"arena_plus.music")==0
@@ -518,7 +520,7 @@ F8BulkEditResult SetF8TabValues(const char* tab, bool requestedValue) {
         const F8RuntimeStatus runtime = RuntimeStatusAtLocked(index);
         const bool unavailableLive = flag.activation == F8Activation::Live &&
             runtime.availability != F8RuntimeAvailability::Available;
-        if (requestedValue && unavailableLive) {
+        if (requestedValue && (unavailableLive || runtime.availability == F8RuntimeAvailability::PeerOwned)) {
             // Quarantine/signature failures are expected skips, not generic blocks.
             row.code = F8BulkRowCode::Unavailable;
             ++result.unavailable;
@@ -707,6 +709,7 @@ const char* F8AvailabilityName(F8RuntimeAvailability availability) {
         case F8RuntimeAvailability::RestorePending: return "RESTORE PENDING";
         case F8RuntimeAvailability::Conflict: return "CONFLICT";
         case F8RuntimeAvailability::PlatformLimited: return "LIMITED BY PLATFORM";
+        case F8RuntimeAvailability::PeerOwned: return "FAHRENHEIT: ADAPTER REQUIRED";
         default: return "UNKNOWN";
     }
 }

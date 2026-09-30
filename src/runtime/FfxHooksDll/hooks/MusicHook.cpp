@@ -4,7 +4,7 @@
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #include <exception>
 #include <stdarg.h>
 #include <stdio.h>
@@ -15,10 +15,10 @@ namespace FfxHooks {
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 
-static PLH::x86Detour* g_detourPlay    = nullptr;
-static PLH::x86Detour* g_detourSwitch  = nullptr;
-static PLH::x86Detour* g_detourPrep    = nullptr;
-static PLH::x86Detour* g_detourPreload = nullptr;
+static FfxHooks::CompatibleDetour* g_detourPlay    = nullptr;
+static FfxHooks::CompatibleDetour* g_detourSwitch  = nullptr;
+static FfxHooks::CompatibleDetour* g_detourPrep    = nullptr;
+static FfxHooks::CompatibleDetour* g_detourPreload = nullptr;
 static uint64_t        g_trampolinePlay   = 0;
 static uint64_t        g_trampolineSwitch = 0;
 static uint64_t        g_trampolinePrep   = 0;
@@ -465,7 +465,7 @@ static MusicHookInstallResult InstallMusicHookAtRva(
     uint32_t targetRva,
     const char* label,
     uint64_t shimVa,
-    PLH::x86Detour** detourOut,
+    FfxHooks::CompatibleDetour** detourOut,
     uint64_t* trampolineOut,
     bool* hookedOut) {
     MusicHookInstallResult result = { false, 0 };
@@ -479,7 +479,7 @@ static MusicHookInstallResult InstallMusicHookAtRva(
         label ? label : "?", static_cast<unsigned>(targetVa));
 
     try {
-        *detourOut = new PLH::x86Detour(targetVa, shimVa, trampolineOut);
+        *detourOut = new FfxHooks::CompatibleDetour(targetVa, shimVa, trampolineOut);
         *hookedOut = (*detourOut)->hook();
         result.ok = *hookedOut;
         result.trampoline = *trampolineOut;
@@ -515,7 +515,7 @@ static MusicHookInstallResult InstallMusicHookAt(
     uintptr_t base,
     MusicHookTarget target,
     uint64_t shimVa,
-    PLH::x86Detour** detourOut,
+    FfxHooks::CompatibleDetour** detourOut,
     uint64_t* trampolineOut,
     bool* hookedOut) {
     const uintptr_t targetRva =
@@ -662,7 +662,7 @@ MusicHookInstallResult InstallMusicHook(
         HookLog(log, "[ffx-hooks] MusicHook stack trace enabled via FFXHOOKS_TRACE_MUSIC_STACK=1");
     }
 
-    PLH::x86Detour** detourOut = (target == MusicHookTarget::SwitchCrossfade) ? &g_detourSwitch : &g_detourPlay;
+    FfxHooks::CompatibleDetour** detourOut = (target == MusicHookTarget::SwitchCrossfade) ? &g_detourSwitch : &g_detourPlay;
     uint64_t* trampolineOut = (target == MusicHookTarget::SwitchCrossfade) ? &g_trampolineSwitch : &g_trampolinePlay;
     bool* hookedOut = (target == MusicHookTarget::SwitchCrossfade) ? &g_hookedSwitch : &g_hookedPlay;
     const uint64_t shimVa = (target == MusicHookTarget::SwitchCrossfade)
@@ -677,7 +677,7 @@ MusicHookInstallResult InstallMusicHook(
     return result;
 }
 
-static bool UnhookDetour(PLH::x86Detour* detour, bool hooked, MusicHookLogFn log, const char* label) {
+static bool UnhookDetour(FfxHooks::CompatibleDetour* detour, bool hooked, MusicHookLogFn log, const char* label) {
     if (!detour) return true;
     bool removed = true;
     if (hooked) {
@@ -699,6 +699,10 @@ static bool UnhookDetour(PLH::x86Detour* detour, bool hooked, MusicHookLogFn log
 }
 
 bool RemoveMusicHook(MusicHookLogFn log) {
+    // A callback can be past the relay but not yet have read its continuation.
+    // Peer chains have process lifetime; retain both the originals and their
+    // shared state instead of claiming a physical teardown without a drain.
+    if (Coexistence::runtime.PeerPresent()) return false;
     const bool removedPlay = UnhookDetour(g_detourPlay, g_hookedPlay, log, "PlayTrack");
     const bool removedSwitch = UnhookDetour(g_detourSwitch, g_hookedSwitch, log, "SwitchCrossfade");
     const bool removedPrep = UnhookDetour(g_detourPrep, g_hookedPrep, log, "PrepBattleTrack");

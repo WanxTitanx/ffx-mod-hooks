@@ -18,6 +18,25 @@
 #include "TextLanguageSettings.h"
 #include "TextLanguageHook.h"
 #include "TextLanguageCore.h"
+#include "UiLanguageSettings.h"
+#include "UiLanguageFormat.h"
+#include "UiLanguageOverlay.h"
+static const char* F8Tr(const char* text){return FfxHooks::UiLanguage::Text(text);}
+static void F8Copy(char* out,size_t capacity,const char* text){
+    FfxHooks::UiLanguage::CopyUtf8(out,capacity,F8Tr(text));
+}
+template<class... Args>
+static void F8Format(char* out,size_t capacity,const char* format,Args... args){
+    (void)FfxHooks::UiLanguage::Format(out,capacity,format,args...);
+}
+
+static void F8DrawUiText(const char* text,float x,float y,float width,float height,
+                        bool title=false,bool wrap=false,bool center=false){
+    using namespace NativeMenu;
+    if(FfxHooks::UiOverlay::Caption(text,x/NX(1.0f),y/NY(1.0f),width,height,title,wrap,center))return;
+    unsigned char encoded[128]{};EncodeLabel(text,encoded,sizeof(encoded));
+    if(title)DrawString(encoded,x,y);else DrawStringSub(encoded,x,y);
+}
 static const FfxHooks::F8FlagSpec* F8NativeScanFlag(int row){
     const char* keys[]={"labs.scan_expanded","labs.element_scan_dark"};
     return row>=0&&row<2?FfxHooks::FindF8Flag(keys[row]):nullptr;
@@ -29,7 +48,7 @@ enum class NativeSettingsPage { None, Keyboard, Gamepad, Controller, ControllerP
     ArenaOptions, Vanguard, VanguardDamage, VanguardMagic, VanguardStatus, VanguardFormation,
     VanguardWeapons, VanguardArmor, VanguardEquipment, VanguardMapping, Arena, VanguardMappingEdit, VanguardCommandBindings, VanguardCommandEdit, TextLanguages, AdditionalMods, FieldScout,
     RewardMultipliers,MonsterRewardList,MonsterRewardDetail,RewardRate,MonsterRewardId,
-    ElementNames,ElementNameEdit,ElementNameCapture, PhotoMode, Seymour };
+    ElementNames,ElementNameEdit,ElementNameCapture, PhotoMode, Seymour, InterfaceLanguage };
 static bool F8RewardPage(NativeSettingsPage page){return page>=NativeSettingsPage::RewardMultipliers&&page<=NativeSettingsPage::MonsterRewardId;}
 static int F8RewardCount(NativeSettingsPage page);
 static const char* const kF8ArenaKeys[]={"arena_plus.master","arena_plus.compose_f7","arena_plus.unlock_all",
@@ -65,13 +84,13 @@ static int g_nativeSettingsDepth=0,g_nativeSettingsParentRow=0,g_nativeSettingsP
 static int g_nativeSettingsAction=0,g_nativeSettingsMapFrom=0,g_nativeSettingsLastEdge=0;
 static int g_nativeSettingsLanguage=0;
 static const char* const g_nativeLanguageKeys[]={"language.voice","language.sfx","language.video"};
-static char g_nativeSettingsNotice[128]{};
+static char g_nativeSettingsNotice[2048]{};
 static unsigned g_vanguardMappingEffect=0,g_vanguardMappingId=135;
 static std::uint64_t g_vanguardMappingStamp=0;
 static unsigned g_vanguardBindingEffect=0,g_vanguardBindingCommand=0x3000,g_vanguardBindingCost=256;
 static std::uint64_t g_vanguardBindingStamp=0;
 static unsigned g_nativeElementIndex=0;
-static char g_nativeHookElementKey[65]{},g_nativeHookElementTitle[80]{};
+static char g_nativeHookElementKey[65]{},g_nativeHookElementTitle[2048]{};
 static unsigned g_nativeElementNameBit=0,g_nativeElementNameCharacter=1;
 static char g_nativeElementNameKey[65]{},g_nativeElementNameDraft[65]{};
 static constexpr char g_nativeElementNameAlphabet[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'()./";
@@ -86,6 +105,7 @@ static void F8NativeScanElementName(unsigned index,char* out,size_t capacity){
 static FfxHooks::ElementScan::Hsv g_nativeElementHsv{};
 static std::uint32_t g_nativeElementRgb=0;
 static bool g_nativeElementDirty=false;
+static bool g_nativeNameRejectionNotified=false;
 static int g_nativeElementRepeat=0;
 static void F8NativeElementAdjust(int row,int delta){
     if(row<0||row>2)return;
@@ -103,6 +123,7 @@ static int F8NativeSettingsCount(NativeSettingsPage page){
         return rows;
     }
     switch(page){
+    case NativeSettingsPage::InterfaceLanguage:return static_cast<int>(FfxHooks::UiLanguage::LocaleCount)+1;
     case NativeSettingsPage::Arena:return 2;
     case NativeSettingsPage::ArenaOptions:return 7;
     case NativeSettingsPage::AdditionalMods:return static_cast<int>(FfxHooks::ModFeatures::Entries.size())+1;
@@ -150,6 +171,9 @@ static void F8NativeSettingsPush(int obj,NativeSettingsPage page){
     if(g_nativeSettingsDepth){auto& frame=g_nativeSettingsFrames[g_nativeSettingsDepth-1];frame.selected=NativeMenu::RdW(obj,NativeMenu::O_SELECTED);frame.top=NativeMenu::RdW(obj,NativeMenu::O_TOP);}
     else {g_nativeSettingsParentRow=NativeMenu::RdW(obj,NativeMenu::O_SELECTED);g_nativeSettingsParentTop=NativeMenu::RdW(obj,NativeMenu::O_TOP);}
     g_nativeSettingsFrames[g_nativeSettingsDepth++]={page,0,0};
+    if(page==NativeSettingsPage::ElementNameCapture)g_nativeNameRejectionNotified=false;
+    if(page==NativeSettingsPage::InterfaceLanguage)
+        g_nativeSettingsFrames[g_nativeSettingsDepth-1].selected=static_cast<int>(FfxHooks::UiLanguage::Settings::Current());
     if(page==NativeSettingsPage::TextLanguages){
         const auto selection=FfxHooks::TextLanguage::Settings::Selection();
         g_nativeSettingsFrames[g_nativeSettingsDepth-1].selected=selection==1?1:0;
@@ -166,7 +190,7 @@ static void F8NativeSettingsPush(int obj,NativeSettingsPage page){
         const FfxHooks::ElementScan::Settings defaults{};
         if(g_nativeElementIndex<4){
             char name[65]{};F8NativeScanElementName(g_nativeElementIndex,name,sizeof(name));
-            _snprintf_s(g_nativeHookElementTitle,sizeof(g_nativeHookElementTitle),_TRUNCATE,"%.64s color",name);
+            F8Format(g_nativeHookElementTitle,sizeof(g_nativeHookElementTitle),"%.64s color",FfxHooks::UiLanguage::Raw{name});
             const auto read=FfxHooks::Config::ReadIntExact(FfxHooks::ElementScan::ColorKeys[g_nativeElementIndex],0,0xFFFFFF);
             g_nativeElementRgb=read.state==FfxHooks::Config::IntReadState::Valid?static_cast<std::uint32_t>(read.value):defaults.rgb[g_nativeElementIndex];
         }else{const auto catalog=FfxHooks::ElementMenu::Read();const auto& item=catalog[8+g_nativeElementIndex-4];bool visible=false;
@@ -190,8 +214,15 @@ static void F8NativeSettingsPop(int obj){
         F7SeedPointerForDestination();g_f7ConfirmTimer=12;g_f7LastEdge=NativeMenu::PadEdge();
     }
 }
+// Native move/confirm=1, rejected action=3, Back/Cancel=4.
+// Information rows return zero; callers never infer outcomes from display text.
+static int F8NativeSettingsEnter(int obj,NativeSettingsPage page){
+    if(g_nativeSettingsDepth>=4)return 3;
+    F8NativeSettingsPush(obj,page);return 1;
+}
 #include "NativeRewardSettings.inl"
 static const char* F8NativeSettingsTitle(NativeSettingsPage page){
+    if(page==NativeSettingsPage::InterfaceLanguage)return F8Tr("Interface language");
     if(F8RewardPage(page))return F8RewardTitle(page);
     if(F8NativeVanguardGroup(page))return FfxHooks::Vanguard::GroupNames[static_cast<unsigned>(page)-static_cast<unsigned>(NativeSettingsPage::VanguardDamage)];
     switch(page){
@@ -233,44 +264,48 @@ static const char* F8NativeSettingsTitle(NativeSettingsPage page){
 static void F8NativeSettingsLabel(NativeSettingsPage page,int row,char* out,size_t capacity){
     using namespace FfxHooks;
     const int count=F8NativeSettingsCount(page);
-    if(row<0||row>=count){strncpy_s(out,capacity,"Invalid selection",_TRUNCATE);return;}
-    if(row==count-1){strncpy_s(out,capacity,page==NativeSettingsPage::RewardRate||page==NativeSettingsPage::KeyCapture||page==NativeSettingsPage::PadCapture||page==NativeSettingsPage::ElementColor||page==NativeSettingsPage::VanguardMappingEdit||page==NativeSettingsPage::VanguardCommandEdit?"Cancel":"Back",_TRUNCATE);return;}
+    if(row<0||row>=count){F8Copy(out,capacity,"Invalid selection");return;}
+    if(row==count-1){F8Copy(out,capacity,page==NativeSettingsPage::RewardRate||page==NativeSettingsPage::KeyCapture||page==NativeSettingsPage::PadCapture||page==NativeSettingsPage::ElementColor||page==NativeSettingsPage::VanguardMappingEdit||page==NativeSettingsPage::VanguardCommandEdit?"Cancel":"Back");return;}
+    if(page==NativeSettingsPage::InterfaceLanguage){
+        F8Format(out,capacity,"%s%s",F8Tr(UiLanguage::EnglishNames[row]),
+            static_cast<int>(UiLanguage::Settings::Current())==row?" *":"");return;
+    }
     if(F8RewardPage(page)){F8RewardLabel(page,row,out,capacity);return;}
-    if(page==NativeSettingsPage::VanguardEquipment&&row==2){strncpy_s(out,capacity,"Command bindings",_TRUNCATE);return;}
+    if(page==NativeSettingsPage::VanguardEquipment&&row==2){F8Copy(out,capacity,"Command bindings");return;}
     if(page==NativeSettingsPage::VanguardCommandBindings){
         Vanguard::BindingState bindings{};
-        if(!Vanguard::ReadUiBindings(bindings)){strncpy_s(out,capacity,"Loaded command data unavailable",_TRUNCATE);return;}
+        if(!Vanguard::ReadUiBindings(bindings)){F8Copy(out,capacity,"Loaded command data unavailable");return;}
         const auto& binding=bindings.entries[row];
-        if(!binding.packed)_snprintf_s(out,capacity,_TRUNCATE,"%s: Disabled",Vanguard::Abilities[row].label);
-        else if(binding.cost==256)_snprintf_s(out,capacity,_TRUNCATE,"%s: %04X | Native OD | %s",Vanguard::Abilities[row].label,binding.command,binding.code==Vanguard::BindingCode::Valid?"Valid":"Invalid");
-        else _snprintf_s(out,capacity,_TRUNCATE,"%s: %04X | OD %u | %s",Vanguard::Abilities[row].label,binding.command,binding.cost,binding.code==Vanguard::BindingCode::Valid?"Valid":"Invalid");
+        if(!binding.packed)F8Format(out,capacity,"%s: Disabled",Vanguard::Abilities[row].label);
+        else if(binding.cost==256)F8Format(out,capacity,"%s: %04X | Native OD | %s",Vanguard::Abilities[row].label,binding.command,binding.code==Vanguard::BindingCode::Valid?"Valid":"Invalid");
+        else F8Format(out,capacity,"%s: %04X | OD %u | %s",Vanguard::Abilities[row].label,binding.command,binding.cost,binding.code==Vanguard::BindingCode::Valid?"Valid":"Invalid");
         return;
     }
     if(page==NativeSettingsPage::VanguardCommandEdit){
-        if(row<2)_snprintf_s(out,capacity,_TRUNCATE,"Command %04X: %s",g_vanguardBindingCommand,row==0?"Increase (+1)":"Decrease (-1)");
+        if(row<2)F8Format(out,capacity,"Command %04X: %s",g_vanguardBindingCommand,row==0?"Increase (+1)":"Decrease (-1)");
         else if(row<4){
-            if(g_vanguardBindingCost==256)_snprintf_s(out,capacity,_TRUNCATE,"OD cost: Native | %s",row==2?"Increase":"Decrease");
-            else _snprintf_s(out,capacity,_TRUNCATE,"OD cost %u: %s",g_vanguardBindingCost,row==2?"Increase (+1)":"Decrease (-1)");
-        }else strncpy_s(out,capacity,row==4?"Use native Overdrive cost":row==5?"Validate and save binding":"Disable this binding",_TRUNCATE);
+            if(g_vanguardBindingCost==256)F8Format(out,capacity,"OD cost: Native | %s",row==2?"Increase":"Decrease");
+            else F8Format(out,capacity,"OD cost %u: %s",g_vanguardBindingCost,row==2?"Increase (+1)":"Decrease (-1)");
+        }else F8Copy(out,capacity,row==4?"Use native Overdrive cost":row==5?"Validate and save binding":"Disable this binding");
         return;
     }
-    if(page==NativeSettingsPage::Arena){strncpy_s(out,capacity,"Options",_TRUNCATE);return;}
-    if(page==NativeSettingsPage::Vanguard){strncpy_s(out,capacity,Vanguard::GroupNames[row],_TRUNCATE);return;}
+    if(page==NativeSettingsPage::Arena){F8Copy(out,capacity,"Options");return;}
+    if(page==NativeSettingsPage::Vanguard){F8Copy(out,capacity,Vanguard::GroupNames[row]);return;}
     if(page==NativeSettingsPage::VanguardMapping){
         Vanguard::MappingState mapping{};Vanguard::ReadUiMapping(mapping);
-        _snprintf_s(out,capacity,_TRUNCATE,"%s: %u | %s",Vanguard::Abilities[row].label,
+        F8Format(out,capacity,"%s: %u | %s",Vanguard::Abilities[row].label,
             mapping.ids[row],Vanguard::UiMappingDetail(mapping.codes[row]));return;
     }
     if(page==NativeSettingsPage::VanguardMappingEdit){
-        if(row<2)_snprintf_s(out,capacity,_TRUNCATE,"ID %u: %s",g_vanguardMappingId,row==0?"Increase (+1)":"Decrease (-1)");
-        else strncpy_s(out,capacity,"Validate and save ID",_TRUNCATE);
+        if(row<2)F8Format(out,capacity,"ID %u: %s",g_vanguardMappingId,row==0?"Increase (+1)":"Decrease (-1)");
+        else F8Copy(out,capacity,"Validate and save ID");
         return;
     }
     if(page==NativeSettingsPage::ArenaOptions||page==NativeSettingsPage::AdditionalMods||page==NativeSettingsPage::FieldScout||F8NativeVanguardGroup(page)){
         const auto* flag=F8NativeNestedSpec(page,row);
-        if(!flag){strncpy_s(out,capacity,"Control unavailable",_TRUNCATE);return;}
+        if(!flag){F8Copy(out,capacity,"Control unavailable");return;}
         const auto runtime=GetF8RuntimeStatus(*flag);
-        _snprintf_s(out,capacity,_TRUNCATE,"%s: %s | %s",flag->label,ResolveF8Flag(*flag).value?"ON":"OFF",
+        F8Format(out,capacity,"%s: %s | %s",flag->label,ResolveF8Flag(*flag).value?"ON":"OFF",
             flag->activation==F8Activation::NotWired?"NOT WIRED":
             runtime.hasAppliedValue?(runtime.appliedValue?"Running ON":"Running OFF"):
             flag->activation==F8Activation::RestartRequired?"Restart required":F8AvailabilityName(runtime.availability));return;
@@ -292,256 +327,275 @@ static void F8NativeSettingsLabel(NativeSettingsPage page,int row,char* out,size
         else FfxHooks::SphereGridProgress8Runtime::Detail(out,capacity);
         return;
     }
-    if(page==NativeSettingsPage::KeyCapture||page==NativeSettingsPage::PadCapture){strncpy_s(out,capacity,"Clear this shortcut",_TRUNCATE);return;}
+    if(page==NativeSettingsPage::KeyCapture||page==NativeSettingsPage::PadCapture){F8Copy(out,capacity,"Clear this shortcut");return;}
     if(page==NativeSettingsPage::ElementNames){
-        const auto catalog=ElementMenu::Read();_snprintf_s(out,capacity,_TRUNCATE,"%.64s",catalog[4+row].label);return;
+        const auto catalog=ElementMenu::Read();F8Format(out,capacity,"%.64s",UiLanguage::Raw{catalog[4+row].label});return;
     }
     if(page==NativeSettingsPage::ElementNameEdit){
-        if(row==0)_snprintf_s(out,capacity,_TRUNCATE,"Name: %.40s",g_nativeElementNameDraft);
+        if(row==0)F8Format(out,capacity,"Name: %.40s",UiLanguage::Raw{g_nativeElementNameDraft});
         else if(row==1){const char ch=g_nativeElementNameAlphabet[g_nativeElementNameCharacter];
-            if(ch==' ')strncpy_s(out,capacity,"Character: (space)",_TRUNCATE);
-            else _snprintf_s(out,capacity,_TRUNCATE,"Character: %c",ch);}
-        else {const char* labels[]={"Add character","Delete last character","Clear draft","Save name","Restore default name"};strncpy_s(out,capacity,labels[row-2],_TRUNCATE);}
+            if(ch==' ')F8Copy(out,capacity,"Character: (space)");
+            else F8Format(out,capacity,"Character: %c",ch);}
+        else {const char* labels[]={"Add character","Delete last character","Clear draft","Save name","Restore default name"};F8Copy(out,capacity,labels[row-2]);}
         return;
     }
     if(page==NativeSettingsPage::ElementNameCapture){
-        if(row==0){char value[65]{};ElementNameInput::Copy(value);_snprintf_s(out,capacity,_TRUNCATE,"Name: %.40s_",value);}
-        else strncpy_s(out,capacity,"Use this name",_TRUNCATE);return;
+        if(row==0){char value[65]{};ElementNameInput::Copy(value);F8Format(out,capacity,"Name: %.40s_",UiLanguage::Raw{value});}
+        else F8Copy(out,capacity,"Use this name");return;
     }
     if(page==NativeSettingsPage::ElementScan){
-        if(row==10){strncpy_s(out,capacity,"Element names",_TRUNCATE);return;}
+        if(row==10){F8Copy(out,capacity,"Element names");return;}
         if(row==8||row==9){
             const auto catalog=ElementMenu::Read();const auto& item=catalog[row];std::uint32_t rgb=0;bool visible=false;
-            if(!item.available)_snprintf_s(out,capacity,_TRUNCATE,"%.32s: enable Core and restart",item.label);
-            else if(!ElementScan::ReadHookPresentation(item,rgb,visible))_snprintf_s(out,capacity,_TRUNCATE,"%.48s color: INVALID",item.label);
-            else _snprintf_s(out,capacity,_TRUNCATE,"%.48s color: #%06X",item.label,rgb);return;
+            if(!item.available)F8Format(out,capacity,"%.32s: enable Core and restart",UiLanguage::Raw{item.label});
+            else if(!ElementScan::ReadHookPresentation(item,rgb,visible))F8Format(out,capacity,"%.48s color: INVALID",UiLanguage::Raw{item.label});
+            else F8Format(out,capacity,"%.48s color: #%06X",UiLanguage::Raw{item.label},rgb);return;
         }
         if(row<2){
             const auto* flag=F8NativeScanFlag(row);
-            if(!flag){strncpy_s(out,capacity,"Scan control unavailable",_TRUNCATE);return;}
+            if(!flag){F8Copy(out,capacity,"Scan control unavailable");return;}
             const bool running=row==0?IsScanExpandedInstalled():IsElementHookInstalled();
-            _snprintf_s(out,capacity,_TRUNCATE,"%s: %s | Running: %s",flag->label,
+            F8Format(out,capacity,"%s: %s | Running: %s",flag->label,
                 ResolveF8Flag(*flag).value?"ON":"OFF",running?"ON":"OFF");return;
         }
         row-=2;
         if(row==4){ElementScan::Settings settings{};
             if(ElementScan::ReadSettings(settings)){unsigned visibleCount=ElementScan::VisibleCount(settings);const auto catalog=ElementMenu::Read();
                 for(unsigned i=8;i<10;++i){std::uint32_t rgb=0;bool visible=false;if(ElementScan::ReadHookPresentation(catalog[i],rgb,visible)&&visible)++visibleCount;}
-                _snprintf_s(out,capacity,_TRUNCATE,"Enabled extra elements: %u / 6",visibleCount);}
-            else strncpy_s(out,capacity,"Enabled extra elements: INVALID settings",_TRUNCATE);return;}
+                F8Format(out,capacity,"Enabled extra elements: %u / 6",visibleCount);}
+            else F8Copy(out,capacity,"Enabled extra elements: INVALID settings");return;}
         // Keep the existing color, bit and visibility row positions for saved
         // navigation; append the complementary Custom color before Back.
         if(row==5)row=3;
         else if(row==3){const auto bit=Config::ReadIntExact(ElementScan::BitKey,32,64);const bool valid=bit.state==Config::IntReadState::Missing||(bit.state==Config::IntReadState::Valid&&(bit.value==32||bit.value==64));
-            if(!valid)strncpy_s(out,capacity,"Custom order: INVALID",_TRUNCATE);
+            if(!valid)F8Copy(out,capacity,"Custom order: INVALID");
             else {char first[65]{},second[65]{};F8NativeScanElementName(2,first,sizeof(first));F8NativeScanElementName(3,second,sizeof(second));
-                _snprintf_s(out,capacity,_TRUNCATE,"Custom order: %.24s / %.24s",first,second);}return;}
+                F8Format(out,capacity,"Custom order: %.24s / %.24s",UiLanguage::Raw{first},UiLanguage::Raw{second});}return;}
         if(row>=0&&row<4){char name[65]{};F8NativeScanElementName(static_cast<unsigned>(row),name,sizeof(name));const ElementScan::Settings defaults{};
             const auto read=Config::ReadIntExact(ElementScan::ColorKeys[row],0,0xFFFFFF);
-            if(read.state==Config::IntReadState::Invalid)_snprintf_s(out,capacity,_TRUNCATE,"%.48s color: INVALID",name);
-            else _snprintf_s(out,capacity,_TRUNCATE,"%.48s color: #%06X",name,read.state==Config::IntReadState::Valid?static_cast<unsigned>(read.value):defaults.rgb[row]);
+            if(read.state==Config::IntReadState::Invalid)F8Format(out,capacity,"%.48s color: INVALID",UiLanguage::Raw{name});
+            else F8Format(out,capacity,"%.48s color: #%06X",UiLanguage::Raw{name},read.state==Config::IntReadState::Valid?static_cast<unsigned>(read.value):defaults.rgb[row]);
         }return;
     }
     if(page==NativeSettingsPage::ElementColor){
-        if(row==0)_snprintf_s(out,capacity,_TRUNCATE,"Hue: %u / 359",g_nativeElementHsv.h);
-        else if(row==1)_snprintf_s(out,capacity,_TRUNCATE,"Saturation: %u%%",g_nativeElementHsv.s);
-        else if(row==2)_snprintf_s(out,capacity,_TRUNCATE,"Brightness: %u%%",g_nativeElementHsv.v);
-        else strncpy_s(out,capacity,"Save color",_TRUNCATE);return;
+        if(row==0)F8Format(out,capacity,"Hue: %u / 359",g_nativeElementHsv.h);
+        else if(row==1)F8Format(out,capacity,"Saturation: %u%%",g_nativeElementHsv.s);
+        else if(row==2)F8Format(out,capacity,"Brightness: %u%%",g_nativeElementHsv.v);
+        else F8Copy(out,capacity,"Save color");return;
     }
     if(page==NativeSettingsPage::ElementBit){const auto catalog=ElementMenu::Read();const auto& item=catalog[6+row];
-        _snprintf_s(out,capacity,_TRUNCATE,"%.40s - bit 0x%02X",item.label,item.nativeBit);return;}
+        F8Format(out,capacity,"%.40s - bit 0x%02X",UiLanguage::Raw{item.label},item.nativeBit);return;}
     if(page==NativeSettingsPage::ElementVisibility){
         if(row>=4){const auto catalog=ElementMenu::Read();const auto& item=catalog[8+row-4];std::uint32_t rgb=0;bool visible=false;
-            _snprintf_s(out,capacity,_TRUNCATE,"%.48s: %s",item.label,!item.available?"Core unavailable":
+            F8Format(out,capacity,"%.48s: %s",UiLanguage::Raw{item.label},!item.available?"Core unavailable":
                 !ElementScan::ReadHookPresentation(item,rgb,visible)?"INVALID":visible?"ON":"OFF");return;}
         if(row<0||row>=4)return;
         char name[65]{};F8NativeScanElementName(static_cast<unsigned>(row),name,sizeof(name));const ElementScan::Settings defaults{};
         const auto read=Config::ReadIntExact(ElementScan::EnabledKeys[row],0,1);
         const bool enabled=read.state==Config::IntReadState::Missing?defaults.enabled[row]!=0:read.value!=0;
         const char* value=read.state==Config::IntReadState::Invalid?"INVALID":enabled?"ON":"OFF";
-        _snprintf_s(out,capacity,_TRUNCATE,"%.48s: %s",name,value);return;
+        F8Format(out,capacity,"%.48s: %s",UiLanguage::Raw{name},value);return;
     }
     if(page==NativeSettingsPage::Workshop){
-        if(row==0){strncpy_s(out,capacity,"Refinement method: A / B",_TRUNCATE);return;}
+        if(row==0){F8Copy(out,capacity,"Refinement method: A / B");return;}
         if(row==4){unsigned recipe=0;const bool valid=EquipmentWorkshop::Settings::ReadExpansion(recipe);
-            _snprintf_s(out,capacity,_TRUNCATE,"Expansion recipe: %s",valid?(recipe==1?"A - one per slot":"B - 1/2/3/4"):"INVALID");return;}
+            F8Format(out,capacity,"Expansion recipe: %s",valid?(recipe==1?"A - one per slot":"B - 1/2/3/4"):"INVALID");return;}
         const char* labels[]={"Free materials","Free Gil","Ignore Customize progression"};
-        if(row<1||row>3){strncpy_s(out,capacity,"Invalid option",_TRUNCATE);return;}
+        if(row<1||row>3){F8Copy(out,capacity,"Invalid option");return;}
         const auto value=Config::ReadIntExact(EquipmentWorkshop::Settings::DevelopmentKeys[row-1],0,1);
         const char* state=value.state==Config::IntReadState::Invalid?"INVALID":value.state==Config::IntReadState::Valid&&value.value?"ON":"OFF";
-        _snprintf_s(out,capacity,_TRUNCATE,"DEV - %s: %s",labels[row-1],state);return;
+        F8Format(out,capacity,"DEV - %s: %s",labels[row-1],state);return;
     }
     if(page==NativeSettingsPage::WorkshopExpansion){
         unsigned recipe=0;const bool valid=EquipmentWorkshop::Settings::ReadExpansion(recipe);
-        _snprintf_s(out,capacity,_TRUNCATE,"%s%s",row==0?"A - one Key Sphere per added slot":"B - 1/2/3/4 Key Spheres by slot",valid&&recipe==static_cast<unsigned>(row+1)?" [Selected]":"");return;
+        F8Format(out,capacity,"%s%s",row==0?"A - one Key Sphere per added slot":"B - 1/2/3/4 Key Spheres by slot",valid&&recipe==static_cast<unsigned>(row+1)?" [Selected]":"");return;
     }
     if(page==NativeSettingsPage::WorkshopRefinement){
         workshop::Policy policy{};const bool valid=EquipmentWorkshop::Settings::Read(policy);const unsigned mode=row==0?2u:1u;
-        _snprintf_s(out,capacity,_TRUNCATE,"%s%s%s",EquipmentWorkshop::Settings::ModeName(mode),mode==2?" (default)":"",valid&&policy.mode==mode?" [Selected]":"");return;
+        F8Format(out,capacity,"%s%s%s",EquipmentWorkshop::Settings::ModeName(mode),mode==2?" (default)":"",valid&&policy.mode==mode?" [Selected]":"");return;
     }
     if(page==NativeSettingsPage::TextLanguages){
         if(row<2){const auto selected=TextLanguage::Settings::Selection();
-            _snprintf_s(out,capacity,_TRUNCATE,"%s%s",row==0?"Original game language":TextLanguage::Settings::BrazilianName,
+            F8Format(out,capacity,"%s%s",row==0?"Original game language":TextLanguage::Settings::BrazilianName,
                 selected==row?" [Selected]":"");
         }else{const auto runtime=TextLanguage::Native::Inspect();
-            _snprintf_s(out,capacity,_TRUNCATE,"Runtime: %s | Text reads: %u",runtime.fontReady?"ON":"OFF",runtime.textOpens);}
+            F8Format(out,capacity,"Runtime: %s | Text reads: %u",runtime.fontReady?"ON":"OFF",runtime.textOpens);}
         return;
     }
     if(page==NativeSettingsPage::Languages){
         const char* names[]={"Voices","Battle sounds","Movie audio"};
         const auto choice=static_cast<NativeLanguage::Choice>(Config::GetInt(g_nativeLanguageKeys[row],0));
-        _snprintf_s(out,capacity,_TRUNCATE,"%s: %s",names[row],NativeLanguage::Valid(choice)?NativeLanguage::Name(choice):"Invalid setting");return;
+        F8Format(out,capacity,"%s: %s",names[row],NativeLanguage::Valid(choice)?NativeLanguage::Name(choice):"Invalid setting");return;
     }
-    if(page==NativeSettingsPage::LanguageChoice){strncpy_s(out,capacity,NativeLanguage::Name(static_cast<NativeLanguage::Choice>(row)),_TRUNCATE);return;}
+    if(page==NativeSettingsPage::LanguageChoice){F8Copy(out,capacity,NativeLanguage::Name(static_cast<NativeLanguage::Choice>(row)));return;}
     if(page==NativeSettingsPage::Keyboard || page==NativeSettingsPage::Gamepad){
         const auto action=static_cast<NativeBindings::Action>(row);
         const char* value=page==NativeSettingsPage::Keyboard?NativePorts::BindingText(action):NativePorts::GamepadBindingText(action);
-        _snprintf_s(out,capacity,_TRUNCATE,"%s: %s",NativeBindings::Name(action),strlen(value)>28?"Configured combination":value);return;
+        F8Format(out,capacity,"%s: %s",NativeBindings::Name(action),UiLanguage::Raw{strlen(value)>28?F8Tr("Configured combination"):value});return;
     }
     if(page==NativeSettingsPage::Controller){
-        if(row==0){const int port=Config::GetInt("gamepad.controller",-1);if(port<0)strncpy_s(out,capacity,"Controller: Automatic",_TRUNCATE);else _snprintf_s(out,capacity,_TRUNCATE,"Controller: Pad %d",port+1);}
-        else strncpy_s(out,capacity,row==1?"Button mapping":"Restore default mapping",_TRUNCATE);
+        if(row==0){const int port=Config::GetInt("gamepad.controller",-1);if(port<0)F8Copy(out,capacity,"Controller: Automatic");else F8Format(out,capacity,"Controller: Pad %d",port+1);}
+        else F8Copy(out,capacity,row==1?"Button mapping":"Restore default mapping");
         return;
     }
-    if(page==NativeSettingsPage::ControllerPort){if(row==0)strncpy_s(out,capacity,"Automatic - first connected controller",_TRUNCATE);else _snprintf_s(out,capacity,_TRUNCATE,"Pad %d",row);return;}
+    if(page==NativeSettingsPage::ControllerPort){if(row==0)F8Copy(out,capacity,"Automatic - first connected controller");else F8Format(out,capacity,"Pad %d",row);return;}
     if(page==NativeSettingsPage::Mapping){
-        if(row==10){strncpy_s(out,capacity,"Restore default mapping",_TRUNCATE);return;}
+        if(row==10){F8Copy(out,capacity,"Restore default mapping");return;}
         const auto map=NativeGamepad::Mapping();
-        _snprintf_s(out,capacity,_TRUNCATE,"%s sends %s",NativeGamepad::kButtonNames[row],NativeGamepad::kButtonNames[map[row]]);return;
+        F8Format(out,capacity,"%s sends %s",UiLanguage::Raw{NativeGamepad::kButtonNames[row]},UiLanguage::Raw{NativeGamepad::kButtonNames[map[row]]});return;
     }
-    if(page==NativeSettingsPage::Destination)_snprintf_s(out,capacity,_TRUNCATE,"%s",NativeGamepad::kButtonNames[row]);
+    if(page==NativeSettingsPage::Destination)F8Format(out,capacity,"%s",UiLanguage::Raw{NativeGamepad::kButtonNames[row]});
 }
-static void F8NativeSettingsActivate(int obj,int row){
+static int F8NativeSettingsAction(int obj,int row){
     using namespace FfxHooks;
+    const UiLanguage::DisplayScope inputLocale(UiOverlay::Displayable(UiLanguage::Settings::Current()));
     const auto page=F8NativeSettingsPage();
-    if(row<0||row>=F8NativeSettingsCount(page))return;
-    if(row==F8NativeSettingsCount(page)-1){F8NativeSettingsPop(obj);return;}
+    if(row<0||row>=F8NativeSettingsCount(page))return 3;
+    if(row==F8NativeSettingsCount(page)-1){F8NativeSettingsPop(obj);return 4;}
+    if(page==NativeSettingsPage::InterfaceLanguage){
+        const bool saved=UiLanguage::Settings::Save(static_cast<unsigned>(row));
+        // Keep the message key in English; the next draw resolves the newly selected locale.
+        strncpy_s(g_nativeSettingsNotice,saved?"Interface language saved.":"Unable to save the interface language.",_TRUNCATE);
+        if(saved)F8NativeSettingsPop(obj);
+        return saved?1:3;
+    }
     if(page==NativeSettingsPage::ElementNames){
         const auto catalog=ElementMenu::Read();const auto& item=catalog[4+row];
         g_nativeElementNameBit=item.nativeBit;strncpy_s(g_nativeElementNameKey,item.key,_TRUNCATE);
         strncpy_s(g_nativeElementNameDraft,item.label,_TRUNCATE);g_nativeElementNameCharacter=1;
-        g_nativeSettingsNotice[0]=0;F8NativeSettingsPush(obj,NativeSettingsPage::ElementNameEdit);return;
+        g_nativeSettingsNotice[0]=0;return F8NativeSettingsEnter(obj,NativeSettingsPage::ElementNameEdit);
     }
     if(page==NativeSettingsPage::ElementNameEdit){
-        if(row==0){if(g_nativeSettingsDepth>=4)return;ElementNameInput::Begin(g_nativeElementNameDraft);F8NativeSettingsPush(obj,NativeSettingsPage::ElementNameCapture);return;}
-        if(row==1){g_nativeElementNameCharacter=(g_nativeElementNameCharacter+1)%(sizeof(g_nativeElementNameAlphabet)-1);return;}
+        if(row==0){if(g_nativeSettingsDepth>=4)return 3;ElementNameInput::Begin(g_nativeElementNameDraft);return F8NativeSettingsEnter(obj,NativeSettingsPage::ElementNameCapture);}
+        if(row==1){g_nativeElementNameCharacter=(g_nativeElementNameCharacter+1)%(sizeof(g_nativeElementNameAlphabet)-1);return 1;}
         if(row==2){const auto length=std::strlen(g_nativeElementNameDraft);
             if(length<ElementNames::MaximumLength){g_nativeElementNameDraft[length]=g_nativeElementNameAlphabet[g_nativeElementNameCharacter];g_nativeElementNameDraft[length+1]=0;}
-            else strncpy_s(g_nativeSettingsNotice,ElementNames::Detail(ElementNames::Result::TooLong),_TRUNCATE);return;}
-        if(row==3){const auto length=std::strlen(g_nativeElementNameDraft);if(length)g_nativeElementNameDraft[length-1]=0;return;}
-        if(row==4){g_nativeElementNameDraft[0]=0;return;}
+            else {strncpy_s(g_nativeSettingsNotice,ElementNames::Detail(ElementNames::Result::TooLong),_TRUNCATE);return 3;}return 1;}
+        if(row==3){const auto length=std::strlen(g_nativeElementNameDraft);if(!length)return 3;g_nativeElementNameDraft[length-1]=0;return 1;}
+        if(row==4){if(!g_nativeElementNameDraft[0])return 0;g_nativeElementNameDraft[0]=0;return 1;}
         const auto result=ElementMenu::SaveName(g_nativeElementNameBit,g_nativeElementNameKey,g_nativeElementNameDraft,row==6);
         strncpy_s(g_nativeSettingsNotice,ElementNames::Detail(result),_TRUNCATE);
-        if(result==ElementNames::Result::Saved)F8NativeSettingsPop(obj);return;
+        if(result==ElementNames::Result::Saved)F8NativeSettingsPop(obj);return result==ElementNames::Result::Saved?1:3;
     }
     if(page==NativeSettingsPage::ElementNameCapture){
         if(row==1){
-            if(!ElementNameInput::Acceptable()){strncpy_s(g_nativeSettingsNotice,"Input rejected. Backspace or Delete to correct the name.",_TRUNCATE);return;}
+            if(!ElementNameInput::Acceptable()){strncpy_s(g_nativeSettingsNotice,"Input rejected. Backspace or Delete to correct the name.",_TRUNCATE);return 3;}
             ElementNameInput::Copy(g_nativeElementNameDraft);F8NativeSettingsPop(obj);
             strncpy_s(g_nativeSettingsNotice,"Name staged. Choose Save name to apply.",_TRUNCATE);}
-        return;
+        return row==1?1:0;
     }
-    if(F8RewardPage(page)){F8RewardActivate(obj,page,row);return;}
-    if(page==NativeSettingsPage::VanguardEquipment&&row==2){F8NativeSettingsPush(obj,NativeSettingsPage::VanguardCommandBindings);return;}
+    if(F8RewardPage(page))return F8RewardActivate(obj,page,row);
+    if(page==NativeSettingsPage::VanguardEquipment&&row==2){return F8NativeSettingsEnter(obj,NativeSettingsPage::VanguardCommandBindings);}
     if(page==NativeSettingsPage::VanguardCommandBindings){
         Vanguard::BindingState bindings{};
-        if(!Vanguard::ReadUiBindings(bindings)||!bindings.stamp){strncpy_s(g_nativeSettingsNotice,"Loaded command validator unavailable. Nothing was changed.",_TRUNCATE);return;}
+        if(!Vanguard::ReadUiBindings(bindings)||!bindings.stamp){strncpy_s(g_nativeSettingsNotice,"Loaded command validator unavailable. Nothing was changed.",_TRUNCATE);return 3;}
         const auto& binding=bindings.entries[row];g_vanguardBindingEffect=static_cast<unsigned>(row);
         g_vanguardBindingCommand=binding.command>=0x3000&&binding.command<=0x313F?binding.command:0x3000;
         g_vanguardBindingCost=binding.cost<=256?binding.cost:256;g_vanguardBindingStamp=bindings.stamp;
-        F8NativeSettingsPush(obj,NativeSettingsPage::VanguardCommandEdit);return;
+        return F8NativeSettingsEnter(obj,NativeSettingsPage::VanguardCommandEdit);
     }
     if(page==NativeSettingsPage::VanguardCommandEdit){
-        if(row==0){if(g_vanguardBindingCommand<0x313F)++g_vanguardBindingCommand;return;}
-        if(row==1){if(g_vanguardBindingCommand>0x3000)--g_vanguardBindingCommand;return;}
-        if(row==2){g_vanguardBindingCost=g_vanguardBindingCost==256?0:(std::min)(255u,g_vanguardBindingCost+1);return;}
-        if(row==3){g_vanguardBindingCost=g_vanguardBindingCost==256?255:g_vanguardBindingCost?g_vanguardBindingCost-1:0;return;}
-        if(row==4){g_vanguardBindingCost=256;return;}
+        if(row==0){if(g_vanguardBindingCommand==0x313F)return 0;++g_vanguardBindingCommand;return 1;}
+        if(row==1){if(g_vanguardBindingCommand==0x3000)return 0;--g_vanguardBindingCommand;return 1;}
+        if(row==2){const auto before=g_vanguardBindingCost;g_vanguardBindingCost=before==256?0:(std::min)(255u,before+1);return before!=g_vanguardBindingCost?1:0;}
+        if(row==3){const auto before=g_vanguardBindingCost;g_vanguardBindingCost=before==256?255:before?before-1:0;return before!=g_vanguardBindingCost?1:0;}
+        if(row==4){if(g_vanguardBindingCost==256)return 0;g_vanguardBindingCost=256;return 1;}
         const unsigned packed=row==6?0:g_vanguardBindingCommand|(g_vanguardBindingCost==256?0:((g_vanguardBindingCost+1)<<16));
         Vanguard::BindingState current{};
         if(!Vanguard::ReadUiBindings(current)||current.stamp!=g_vanguardBindingStamp){
-            strncpy_s(g_nativeSettingsNotice,"Command data or settings changed. Cancel and review a fresh binding.",_TRUNCATE);return;}
+            strncpy_s(g_nativeSettingsNotice,"Command data or settings changed. Cancel and review a fresh binding.",_TRUNCATE);return 3;}
         if(!Vanguard::SaveUiBinding(g_vanguardBindingEffect,packed,g_vanguardBindingStamp)){
-            strncpy_s(g_nativeSettingsNotice,"Binding rejected or save failed. Use a unique executable command outside battle.",_TRUNCATE);return;}
+            strncpy_s(g_nativeSettingsNotice,"Binding rejected or save failed. Use a unique executable command outside battle.",_TRUNCATE);return 3;}
         strncpy_s(g_nativeSettingsNotice,packed?"Binding saved. It grants nothing unless the matching ability is equipped.":"Binding disabled. Native learned commands are unchanged.",_TRUNCATE);
-        F8NativeSettingsPop(obj);return;
+        F8NativeSettingsPop(obj);return 1;
     }
-    if(page==NativeSettingsPage::Arena){F8NativeSettingsPush(obj,NativeSettingsPage::ArenaOptions);return;}
+    if(page==NativeSettingsPage::Arena){return F8NativeSettingsEnter(obj,NativeSettingsPage::ArenaOptions);}
     if(page==NativeSettingsPage::TextLanguages){
-        if(row==2){strncpy_s(g_nativeSettingsNotice,TextLanguage::Native::Detail(),_TRUNCATE);return;}
+        if(row==2){strncpy_s(g_nativeSettingsNotice,TextLanguage::Native::Detail(),_TRUNCATE);return 0;}
         const bool saved=TextLanguage::Settings::Save(row);
         strncpy_s(g_nativeSettingsNotice,saved?"Saved. Restart FFX to apply text language. Audio is unchanged.":"Unable to save text language. Previous choice preserved.",_TRUNCATE);
-        if(saved)F8NativeSettingsPop(obj);
-        return;
+        if(saved)F8NativeSettingsPop(obj);return saved?1:3;
     }
     if(page==NativeSettingsPage::PhotoMode){
-        (void)PhotoMode::MenuAction(row);
-        PhotoMode::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));return;
+        const bool accepted=PhotoMode::MenuAction(row);
+        PhotoMode::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));return accepted?1:3;
     }
     if(page==NativeSettingsPage::Seymour){
         if(row>=13){
-            if(row==14||SphereGridProgress8Runtime::MenuAction())SphereGridProgress8Runtime::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            if(row==14){SphereGridProgress8Runtime::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));return 0;}
+            const bool saved=SphereGridProgress8Runtime::MenuAction();
+            if(saved)SphereGridProgress8Runtime::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
             else strncpy_s(g_nativeSettingsNotice,"Unable to persist Grid8 save setting.",_TRUNCATE);
-            return;
+            return saved?1:3;
         }
         if(row>=11){
-            if(row==12||SeymourMenuList::MenuAction())SeymourMenuList::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            if(row==12){SeymourMenuList::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));return 0;}
+            const bool saved=SeymourMenuList::MenuAction();
+            if(saved)SeymourMenuList::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
             else strncpy_s(g_nativeSettingsNotice,"Unable to persist eight-character menu setting.",_TRUNCATE);
-            return;
+            return saved?1:3;
         }
         if(row>=9){
-            if(row==10||SeymourPersistentRoster::MenuAction())SeymourPersistentRoster::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            if(row==10){SeymourPersistentRoster::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));return 0;}
+            const bool saved=SeymourPersistentRoster::MenuAction();
+            if(saved)SeymourPersistentRoster::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
             else strncpy_s(g_nativeSettingsNotice,"Unable to persist permanent roster setting.",_TRUNCATE);
-            return;
+            return saved?1:3;
         }
         if(row>=7){
-            if(row==8||SeymourGearSort::MenuAction())SeymourGearSort::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            if(row==8){SeymourGearSort::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));return 0;}
+            const bool saved=SeymourGearSort::MenuAction();
+            if(saved)SeymourGearSort::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
             else strncpy_s(g_nativeSettingsNotice,"Unable to persist equipment sorting setting.",_TRUNCATE);
-            return;
+            return saved?1:3;
         }
         if(row>=5){
-            if(row==6||SeymourGearPresentation::MenuAction())SeymourGearPresentation::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            if(row==6){SeymourGearPresentation::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));return 0;}
+            const bool saved=SeymourGearPresentation::MenuAction();
+            if(saved)SeymourGearPresentation::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
             else strncpy_s(g_nativeSettingsNotice,"Unable to persist equipment presentation setting.",_TRUNCATE);
-            return;
+            return saved?1:3;
         }
         if(row>=3){
-            if(row==4||SeymourOverdrive::MenuAction())SeymourOverdrive::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
+            if(row==4){SeymourOverdrive::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));return 0;}
+            const bool saved=SeymourOverdrive::MenuAction();
+            if(saved)SeymourOverdrive::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
             else strncpy_s(g_nativeSettingsNotice,"Unable to persist Overdrive setting.",_TRUNCATE);
-            return;
+            return saved?1:3;
         }
         const bool saved=SeymourCompatibility::MenuAction(row);
         if(row==2||saved)SeymourCompatibility::Detail(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice));
         else strncpy_s(g_nativeSettingsNotice,"Unable to persist Seymour setting.",_TRUNCATE);
-        return;
+        return row==2?0:saved?1:3;
     }
     const auto action=static_cast<NativeBindings::Action>(g_nativeSettingsAction);
     if(page==NativeSettingsPage::Vanguard){
-        F8NativeSettingsPush(obj,row==7?NativeSettingsPage::VanguardMapping:
-            static_cast<NativeSettingsPage>(static_cast<int>(NativeSettingsPage::VanguardDamage)+row));return;
+        return F8NativeSettingsEnter(obj,row==7?NativeSettingsPage::VanguardMapping:
+            static_cast<NativeSettingsPage>(static_cast<int>(NativeSettingsPage::VanguardDamage)+row));
     }
     if(page==NativeSettingsPage::VanguardMapping){
         Vanguard::MappingState mapping{};
-        if(!Vanguard::ReadUiMapping(mapping)){strncpy_s(g_nativeSettingsNotice,"Loaded kernel unavailable. No mapping was changed.",_TRUNCATE);return;}
+        if(!Vanguard::ReadUiMapping(mapping)){strncpy_s(g_nativeSettingsNotice,"Loaded kernel unavailable. No mapping was changed.",_TRUNCATE);return 3;}
         g_vanguardMappingEffect=static_cast<unsigned>(row);
         g_vanguardMappingId=(std::max)(135u,(std::min)(4095u,mapping.ids[row]));
         g_vanguardMappingStamp=mapping.stamp;
-        F8NativeSettingsPush(obj,NativeSettingsPage::VanguardMappingEdit);return;
+        return F8NativeSettingsEnter(obj,NativeSettingsPage::VanguardMappingEdit);
     }
     if(page==NativeSettingsPage::VanguardMappingEdit){
-        if(row==0){if(g_vanguardMappingId<4095)++g_vanguardMappingId;return;}
-        if(row==1){if(g_vanguardMappingId>135)--g_vanguardMappingId;return;}
+        if(row==0){if(g_vanguardMappingId==4095)return 0;++g_vanguardMappingId;return 1;}
+        if(row==1){if(g_vanguardMappingId==135)return 0;--g_vanguardMappingId;return 1;}
         Vanguard::MappingState current{};
         if(!Vanguard::ReadUiMapping(current)||current.stamp!=g_vanguardMappingStamp){
-            strncpy_s(g_nativeSettingsNotice,"Kernel or mapping changed. Cancel and review a fresh selection.",_TRUNCATE);return;
+            strncpy_s(g_nativeSettingsNotice,"Kernel or mapping changed. Cancel and review a fresh selection.",_TRUNCATE);return 3;
         }
         if(!Vanguard::SaveUiMapping(g_vanguardMappingEffect,g_vanguardMappingId)){
-            strncpy_s(g_nativeSettingsNotice,"ID rejected or save failed. Use a matching neutral row outside battle.",_TRUNCATE);return;
+            strncpy_s(g_nativeSettingsNotice,"ID rejected or save failed. Use a matching neutral row outside battle.",_TRUNCATE);return 3;
         }
         strncpy_s(g_nativeSettingsNotice,"Validated mapping saved. Binary names and rows were not modified.",_TRUNCATE);
-        F8NativeSettingsPop(obj);return;
+        F8NativeSettingsPop(obj);return 1;
     }
     if(page==NativeSettingsPage::ArenaOptions||page==NativeSettingsPage::AdditionalMods||page==NativeSettingsPage::FieldScout||F8NativeVanguardGroup(page)){
-        const auto* flag=F8NativeNestedSpec(page,row);if(!flag)return;
+        const auto* flag=F8NativeNestedSpec(page,row);if(!flag)return 3;
         const bool requested=!ResolveF8Flag(*flag).value;const auto result=SetF8FlagValue(*flag,requested);
         if(result.code==F8EditCode::RejectedNotWired||result.code==F8EditCode::RejectedUnavailable)
             strncpy_s(g_nativeSettingsNotice,"Native implementation unavailable. No setting was enabled.",_TRUNCATE);
@@ -549,18 +603,18 @@ static void F8NativeSettingsActivate(int obj,int row){
         else if(result.effective.value!=requested)strncpy_s(g_nativeSettingsNotice,"Preference saved. An external override still controls this feature.",_TRUNCATE);
         else strncpy_s(g_nativeSettingsNotice,flag->activation==F8Activation::RestartRequired?
             "Saved. Restart FFX to apply this feature.":"Saved. The existing runtime will acknowledge the change.",_TRUNCATE);
-        return;
+        return result.code==F8EditCode::Saved&&result.effective.value==requested?1:3;
     }
     if(page==NativeSettingsPage::ElementScan){
-        if(row==10){F8NativeSettingsPush(obj,NativeSettingsPage::ElementNames);return;}
+        if(row==10){return F8NativeSettingsEnter(obj,NativeSettingsPage::ElementNames);}
         if(row==8||row==9){const auto catalog=ElementMenu::Read();const auto& item=catalog[row];
-            if(!item.available){strncpy_s(g_nativeSettingsNotice,"Enable Elemental Core and restart. Built-in custom elements need no pack.",_TRUNCATE);return;}
+            if(!item.available){strncpy_s(g_nativeSettingsNotice,"Enable Elemental Core and restart. Built-in custom elements need no pack.",_TRUNCATE);return 3;}
             g_nativeElementIndex=4+static_cast<unsigned>(row-8);strncpy_s(g_nativeHookElementKey,item.key,_TRUNCATE);
-            _snprintf_s(g_nativeHookElementTitle,sizeof(g_nativeHookElementTitle),_TRUNCATE,"%.64s color",item.label);
-            F8NativeSettingsPush(obj,NativeSettingsPage::ElementColor);return;}
+            F8Format(g_nativeHookElementTitle,sizeof(g_nativeHookElementTitle),"%.64s color",UiLanguage::Raw{item.label});
+            return F8NativeSettingsEnter(obj,NativeSettingsPage::ElementColor);}
         if(row<2){
             const auto* flag=F8NativeScanFlag(row);
-            if(!flag){strncpy_s(g_nativeSettingsNotice,"Scan control unavailable.",_TRUNCATE);return;}
+            if(!flag){strncpy_s(g_nativeSettingsNotice,"Scan control unavailable.",_TRUNCATE);return 3;}
             const bool requested=!ResolveF8Flag(*flag).value;
             const auto result=SetF8FlagValue(*flag,requested);
             if(result.code!=F8EditCode::Saved)
@@ -571,18 +625,18 @@ static void F8NativeSettingsActivate(int obj,int row){
                     requested?"ON":"OFF",result.effective.value?"ON":"OFF");
             else _snprintf_s(g_nativeSettingsNotice,sizeof(g_nativeSettingsNotice),_TRUNCATE,
                 "%s saved %s. Restart FFX to apply.",flag->label,requested?"ON":"OFF");
-            return;
+            return result.code==F8EditCode::Saved&&result.effective.value==requested?1:3;
         }
         row-=2;
-        if(row<3||row==5){g_nativeElementIndex=static_cast<unsigned>(row==5?3:row);F8NativeSettingsPush(obj,NativeSettingsPage::ElementColor);}
-        else F8NativeSettingsPush(obj,row==3?NativeSettingsPage::ElementBit:NativeSettingsPage::ElementVisibility);return;
+        if(row<3||row==5){g_nativeElementIndex=static_cast<unsigned>(row==5?3:row);return F8NativeSettingsEnter(obj,NativeSettingsPage::ElementColor);}
+        else return F8NativeSettingsEnter(obj,row==3?NativeSettingsPage::ElementBit:NativeSettingsPage::ElementVisibility);
     }else if(page==NativeSettingsPage::ElementVisibility){
         if(row>=4){const auto catalog=ElementMenu::Read();const auto& item=catalog[8+row-4];char key[128]{};
-            if(!item.available||!ElementScan::HookSettingKey(item.key,"enabled",key)){strncpy_s(g_nativeSettingsNotice,"Hook element unavailable. Nothing changed.",_TRUNCATE);return;}
+            if(!item.available||!ElementScan::HookSettingKey(item.key,"enabled",key)){strncpy_s(g_nativeSettingsNotice,"Hook element unavailable. Nothing changed.",_TRUNCATE);return 3;}
             const auto value=Config::ReadIntExact(key,0,1);
             const unsigned next=value.state==Config::IntReadState::Valid&&value.value==0?1u:0u;
             const bool saved=ElementScan::SaveHookPresentation(item.key,"enabled",next);
-            strncpy_s(g_nativeSettingsNotice,saved?"Saved. Scan visibility changes next frame.":"Unable to save. Previous visibility preserved.",_TRUNCATE);return;}
+            strncpy_s(g_nativeSettingsNotice,saved?"Saved. Scan visibility changes next frame.":"Unable to save. Previous visibility preserved.",_TRUNCATE);return saved?1:3;}
         const auto current=Config::ReadIntExact(ElementScan::EnabledKeys[row],0,1);
         const ElementScan::Settings defaults{};
         // Missing uses the per-column migration default. Invalid is repaired to
@@ -591,63 +645,73 @@ static void F8NativeSettingsActivate(int obj,int row){
             current.state==Config::IntReadState::Valid&&current.value==0;
         const bool saved=ElementScan::SaveEnabled(static_cast<unsigned>(row),next);
         strncpy_s(g_nativeSettingsNotice,saved?"Element choice saved. Applies next Scan frame when the master is enabled.":"Unable to save element choice. Previous value preserved.",_TRUNCATE);
-        return;
+        return saved?1:3;
     }else if(page==NativeSettingsPage::ElementColor){
-        if(row<3){F8NativeElementAdjust(row,row==0?15:10);return;}
+        if(row<3){const auto before=g_nativeElementHsv;F8NativeElementAdjust(row,row==0?15:10);
+            return before.h!=g_nativeElementHsv.h||before.s!=g_nativeElementHsv.s||before.v!=g_nativeElementHsv.v?1:0;}
         const auto rgb=g_nativeElementDirty?ElementScan::FromHsv(g_nativeElementHsv):g_nativeElementRgb;
         const bool saved=g_nativeElementIndex<4?ElementScan::SaveColor(g_nativeElementIndex,rgb):
             ElementScan::SaveHookPresentation(g_nativeHookElementKey,"rgb",rgb);
         strncpy_s(g_nativeSettingsNotice,saved?"Color saved. Visible on the next Scan frame when enabled.":"Unable to save color. Previous value preserved.",_TRUNCATE);
-        if(saved)F8NativeSettingsPop(obj);return;
+        if(saved)F8NativeSettingsPop(obj);return saved?1:3;
     }else if(page==NativeSettingsPage::ElementBit){
         const bool saved=ElementScan::SaveBit(row==0?32u:64u);
         strncpy_s(g_nativeSettingsNotice,saved?"Third element selected. Gameplay masks are unchanged.":"Unable to save the third element. Previous value preserved.",_TRUNCATE);
-        if(saved)F8NativeSettingsPop(obj);return;
+        if(saved)F8NativeSettingsPop(obj);return saved?1:3;
     }else if(page==NativeSettingsPage::Workshop){
-        if(row==0){F8NativeSettingsPush(obj,NativeSettingsPage::WorkshopRefinement);return;}
-        if(row==4){F8NativeSettingsPush(obj,NativeSettingsPage::WorkshopExpansion);return;}
-        if(row<1||row>3)return;
+        if(row==0){return F8NativeSettingsEnter(obj,NativeSettingsPage::WorkshopRefinement);}
+        if(row==4){return F8NativeSettingsEnter(obj,NativeSettingsPage::WorkshopExpansion);}
+        if(row<1||row>3)return 1;
         const auto current=Config::ReadIntExact(EquipmentWorkshop::Settings::DevelopmentKeys[row-1],0,1);
         // An invalid value is repaired to OFF, never silently enabled.
         const bool enabled=current.state==Config::IntReadState::Missing || (current.state==Config::IntReadState::Valid&&current.value==0);
         const bool saved=EquipmentWorkshop::Settings::SaveDevelopment(static_cast<unsigned>(row-1),enabled);
-        strncpy_s(g_nativeSettingsNotice,saved?"Development setting saved. Prices stay visible; fusion still destroys its donor.":"Unable to save the development setting. Previous value preserved.",_TRUNCATE);
+        strncpy_s(g_nativeSettingsNotice,saved?"Development setting saved. Prices stay visible; fusion still destroys its donor.":"Unable to save the development setting. Previous value preserved.",_TRUNCATE);return saved?1:3;
     }else if(page==NativeSettingsPage::WorkshopExpansion){
         const bool saved=EquipmentWorkshop::Settings::SaveExpansion(static_cast<unsigned>(row+1));
         strncpy_s(g_nativeSettingsNotice,saved?"Expansion recipe saved. Existing slots are unchanged.":"Unable to save expansion recipe. Previous choice preserved.",_TRUNCATE);
-        if(saved)F8NativeSettingsPop(obj);
+        if(saved)F8NativeSettingsPop(obj);return saved?1:3;
     }else if(page==NativeSettingsPage::WorkshopRefinement){
         const bool saved=EquipmentWorkshop::Settings::SaveMode(row==0?2u:1u);
         strncpy_s(g_nativeSettingsNotice,saved?"Saved for future refinements. Existing ability ranks are unchanged.":"Unable to save the refinement mode. Previous setting preserved.",_TRUNCATE);
-        if(saved)F8NativeSettingsPop(obj);
-    }else if(page==NativeSettingsPage::Languages){g_nativeSettingsLanguage=row;F8NativeSettingsPush(obj,NativeSettingsPage::LanguageChoice);}
+        if(saved)F8NativeSettingsPop(obj);return saved?1:3;
+    }else if(page==NativeSettingsPage::Languages){g_nativeSettingsLanguage=row;return F8NativeSettingsEnter(obj,NativeSettingsPage::LanguageChoice);}
     else if(page==NativeSettingsPage::LanguageChoice){
         const bool saved=Config::SetInt(g_nativeLanguageKeys[g_nativeSettingsLanguage],row);
         strncpy_s(g_nativeSettingsNotice,saved?"Saved. Restart FFX to apply the audio language.":"Unable to save the audio language.",_TRUNCATE);
-        if(saved)F8NativeSettingsPop(obj);
+        if(saved)F8NativeSettingsPop(obj);return saved?1:3;
     } else if(page==NativeSettingsPage::Keyboard||page==NativeSettingsPage::Gamepad){
+        if(g_nativeSettingsDepth>=4)return 3;
         g_nativeSettingsAction=row;const auto selected=static_cast<NativeBindings::Action>(row);
         const bool opened=page==NativeSettingsPage::Keyboard?NativePorts::BeginBindingCapture(selected):NativePorts::BeginGamepadCapture(selected);
         if(opened){g_nativeSettingsNotice[0]=0;F8NativeSettingsPush(obj,page==NativeSettingsPage::Keyboard?NativeSettingsPage::KeyCapture:NativeSettingsPage::PadCapture);}
-        else strncpy_s(g_nativeSettingsNotice,"No XInput controller detected. Connect it or enable Steam Input.",_TRUNCATE);
+        else strncpy_s(g_nativeSettingsNotice,"No XInput controller detected. Connect it or enable Steam Input.",_TRUNCATE);return opened?1:3;
     } else if(page==NativeSettingsPage::KeyCapture||page==NativeSettingsPage::PadCapture){
         const bool saved=page==NativeSettingsPage::KeyCapture?NativePorts::SaveBinding(action,{})==NativeBindings::BindResult::Ok:NativePorts::SaveGamepadBinding(action,0);
-        strncpy_s(g_nativeSettingsNotice,saved?"Shortcut cleared.":"Unable to save the shortcut.",_TRUNCATE);F8NativeSettingsPop(obj);
+        strncpy_s(g_nativeSettingsNotice,saved?"Shortcut cleared.":"Unable to save the shortcut.",_TRUNCATE);if(saved)F8NativeSettingsPop(obj);return saved?1:3;
     } else if(page==NativeSettingsPage::Controller){
-        if(row<2)F8NativeSettingsPush(obj,row==0?NativeSettingsPage::ControllerPort:NativeSettingsPage::Mapping);
-        else strncpy_s(g_nativeSettingsNotice,NativeGamepad::SaveMapping(NativeGamepad::IdentityMap())?"Default mapping restored.":"Unable to save mapping.",_TRUNCATE);
+        if(row<2)return F8NativeSettingsEnter(obj,row==0?NativeSettingsPage::ControllerPort:NativeSettingsPage::Mapping);
+        else {const bool saved=NativeGamepad::SaveMapping(NativeGamepad::IdentityMap());strncpy_s(g_nativeSettingsNotice,saved?"Default mapping restored.":"Unable to save mapping.",_TRUNCATE);return saved?1:3;}
     } else if(page==NativeSettingsPage::ControllerPort){
-        const bool saved=Config::SetInt("gamepad.controller",row-1);strncpy_s(g_nativeSettingsNotice,saved?"Controller selection saved.":"Unable to save controller selection.",_TRUNCATE);if(saved){NativeGamepad::RefreshMapping();F8NativeSettingsPop(obj);}
+        const bool saved=Config::SetInt("gamepad.controller",row-1);strncpy_s(g_nativeSettingsNotice,saved?"Controller selection saved.":"Unable to save controller selection.",_TRUNCATE);if(saved){NativeGamepad::RefreshMapping();F8NativeSettingsPop(obj);}return saved?1:3;
     } else if(page==NativeSettingsPage::Mapping){
-        if(row==10)strncpy_s(g_nativeSettingsNotice,NativeGamepad::SaveMapping(NativeGamepad::IdentityMap())?"Default mapping restored.":"Unable to save mapping.",_TRUNCATE);
-        else {g_nativeSettingsMapFrom=row;F8NativeSettingsPush(obj,NativeSettingsPage::Destination);}
+        if(row==10){const bool saved=NativeGamepad::SaveMapping(NativeGamepad::IdentityMap());strncpy_s(g_nativeSettingsNotice,saved?"Default mapping restored.":"Unable to save mapping.",_TRUNCATE);return saved?1:3;}
+        else {g_nativeSettingsMapFrom=row;return F8NativeSettingsEnter(obj,NativeSettingsPage::Destination);}
     } else if(page==NativeSettingsPage::Destination){
         auto map=NativeGamepad::Mapping();NativeGamepad::SwapDestination(map,static_cast<unsigned>(g_nativeSettingsMapFrom),static_cast<unsigned>(row));
-        const bool saved=NativeGamepad::SaveMapping(map);strncpy_s(g_nativeSettingsNotice,saved?"Mapping saved. Shortcuts still use physical buttons.":"Unable to save mapping.",_TRUNCATE);if(saved)F8NativeSettingsPop(obj);
+        const bool saved=NativeGamepad::SaveMapping(map);strncpy_s(g_nativeSettingsNotice,saved?"Mapping saved. Shortcuts still use physical buttons.":"Unable to save mapping.",_TRUNCATE);if(saved)F8NativeSettingsPop(obj);return saved?1:3;
     }
+    return 1;
+}
+static void F8NativeSettingsActivate(int obj,int row){
+    const int feedback=F8NativeSettingsAction(obj,row);
+    if(feedback)NativeMenu::PlaySfx(feedback);
 }
 static void F8NativeSettingsInput(int obj){
+    FfxHooks::MenuAudio::Scope feedbackScope;
     using namespace NativeMenu;using namespace FfxHooks;
+    if(!obj||!F8NativeSettingsActive()||!F7IsForegroundWindow())return;
+    const UiLanguage::DisplayScope inputLocale(UiOverlay::Displayable(UiLanguage::Settings::Current()));
     const auto page=F8NativeSettingsPage();const bool naming=page==NativeSettingsPage::ElementNameCapture;
     const bool capturing=page==NativeSettingsPage::KeyCapture||page==NativeSettingsPage::PadCapture||naming;
     if(g_f7ConfirmTimer>0)--g_f7ConfirmTimer;
@@ -656,26 +720,33 @@ static void F8NativeSettingsInput(int obj){
         if(ElementNameInput::Consume(value,cancelled)){
             if(!cancelled)strncpy_s(g_nativeElementNameDraft,value,_TRUNCATE);
             F8NativeSettingsPop(obj);
-            strncpy_s(g_nativeSettingsNotice,cancelled?"Typing cancelled.":"Name staged. Choose Save name to apply.",_TRUNCATE);return;
+            strncpy_s(g_nativeSettingsNotice,cancelled?"Typing cancelled.":"Name staged. Choose Save name to apply.",_TRUNCATE);PlaySfx(cancelled?4:1);return;
         }
-        if(!ElementNameInput::Acceptable())strncpy_s(g_nativeSettingsNotice,"Input rejected. Backspace or Delete to correct the name.",_TRUNCATE);
+        if(!ElementNameInput::Acceptable()){
+            strncpy_s(g_nativeSettingsNotice,"Input rejected. Backspace or Delete to correct the name.",_TRUNCATE);
+            if(!g_nativeNameRejectionNotified)PlaySfx(3);
+            g_nativeNameRejectionNotified=true;
+        }else g_nativeNameRejectionNotified=false;
     }
     if(capturing&&!naming){
         bool done=false,saved=false,cancelled=false;
         if(page==NativeSettingsPage::KeyCapture){NativeBindings::BindResult result{};done=NativePorts::ConsumeBindingCapture(&result,&cancelled);saved=done&&!cancelled&&result==NativeBindings::BindResult::Ok;}
         else done=NativePorts::ConsumeGamepadCapture(&saved,&cancelled);
-        if(done){strncpy_s(g_nativeSettingsNotice,cancelled?"Shortcut edit cancelled.":saved?"Shortcut saved.":"Shortcut not saved. Avoid reserved or duplicate combinations.",_TRUNCATE);F8NativeSettingsPop(obj);PlaySfx(saved?4:3);return;}
+        if(done){strncpy_s(g_nativeSettingsNotice,cancelled?"Shortcut edit cancelled.":saved?"Shortcut saved.":"Shortcut not saved. Avoid reserved or duplicate combinations.",_TRUNCATE);F8NativeSettingsPop(obj);PlaySfx(cancelled?4:saved?1:3);return;}
     }
+    const int previousSelection=RdW(obj,O_SELECTED),previousTop=RdW(obj,O_TOP);
+    bool adjusted=false;
     const auto mouse=F7ListMouseTick(obj,NX(0.250f),NY(F8NativeSettingsTop()+0.175f),NW(0.500f),NH(0.052f),NH(0.045f),RdW(obj,O_COUNT),9);
     const int edge=PadEdge(),dir=capturing&&!naming?0:F7Ui::ResolveDirectionalInput(PadDir(),mouse.ownsDirectionalFrame);
     int selected=RdW(obj,O_SELECTED),top=RdW(obj,O_TOP),count=RdW(obj,O_COUNT);
     if(g_nativeElementRepeat>0)--g_nativeElementRepeat;
     if(page==NativeSettingsPage::ElementColor&&selected<3&&(dir&0xA000)&&!g_nativeElementRepeat){
-        F8NativeElementAdjust(selected,(dir&0x8000)?-1:1);g_nativeElementRepeat=6;
+        const auto before=g_nativeElementHsv;F8NativeElementAdjust(selected,(dir&0x8000)?-1:1);g_nativeElementRepeat=6;
+        adjusted=before.h!=g_nativeElementHsv.h||before.s!=g_nativeElementHsv.s||before.v!=g_nativeElementHsv.v;
     }
     if(page==NativeSettingsPage::ElementNameEdit&&selected==1&&(dir&0xA000)&&!g_nativeElementRepeat){
         const unsigned alphabetCount=static_cast<unsigned>(sizeof(g_nativeElementNameAlphabet)-1);
-        g_nativeElementNameCharacter=(g_nativeElementNameCharacter+((dir&0x8000)?alphabetCount-1:1))%alphabetCount;g_nativeElementRepeat=6;
+        g_nativeElementNameCharacter=(g_nativeElementNameCharacter+((dir&0x8000)?alphabetCount-1:1))%alphabetCount;g_nativeElementRepeat=6;adjusted=true;
     }
     if(dir&0x1000){if(selected>0)--selected;}
     else if(dir&0x4000){if(selected+1<count)++selected;}
@@ -684,9 +755,10 @@ static void F8NativeSettingsInput(int obj){
     const bool confirm=mouse.confirm||((!capturing||naming)&&(edge&0x20)&&!(g_nativeSettingsLastEdge&0x20));
     const bool cancel=(!capturing||naming)&&(edge&0x40)&&!(g_nativeSettingsLastEdge&0x40);
     g_nativeSettingsLastEdge=edge;
+    if(adjusted||selected!=previousSelection||top!=previousTop)PlaySfx(1);
     if(g_f7ConfirmTimer==0 && (confirm||cancel)){
-        if(cancel)F8NativeSettingsPop(obj);else F8NativeSettingsActivate(obj,selected);
-        g_f7ConfirmTimer=12;PlaySfx(1);
+        if(cancel){F8NativeSettingsPop(obj);PlaySfx(4);}else F8NativeSettingsActivate(obj,selected);
+        g_f7ConfirmTimer=12;
     }
 }
 static void F8NativeSettingsDraw(int obj,int frame){
@@ -695,6 +767,7 @@ static void F8NativeSettingsDraw(int obj,int frame){
     if(page==NativeSettingsPage::Vanguard||F8NativeVanguardGroup(page)||page==NativeSettingsPage::VanguardMapping||page==NativeSettingsPage::VanguardMappingEdit||page==NativeSettingsPage::VanguardCommandBindings||page==NativeSettingsPage::VanguardCommandEdit)Vanguard::RefreshUi();
     const float panelTop=F8NativeSettingsTop(),panelHeight=F8NativeSettingsHeight();
     auto text=[page](const char* label,float x,float y,bool title=false){
+        if(UiOverlay::Caption(label,x/NX(1.0f),y/NY(1.0f),.49f,title?.052f:.038f,title))return;
         unsigned char value[128]{};
         if(page==NativeSettingsPage::TextLanguages&&std::strchr(label,static_cast<char>(0xC3))){
             std::vector<std::uint8_t> bytes;std::string error;
@@ -706,9 +779,10 @@ static void F8NativeSettingsDraw(int obj,int frame){
     };
     DrawMenuBackdrop();DrawMenuNeonFrame(frame);
     DrawMenuGlassPanel(NX(0.205f),NY(panelTop),NW(0.590f),NH(panelHeight),frame,1);
-    text(F8NativeSettingsTitle(page),NX(0.250f),NY(panelTop+0.037f),true);
+    text(F8Tr(F8NativeSettingsTitle(page)),NX(0.250f),NY(panelTop+0.037f),true);
     const auto pad=NativeGamepad::Poll();
     const char* help="Select an option. Back returns to F8.";
+    if(page==NativeSettingsPage::InterfaceLanguage)help="Choose the language of the DLL menus. Game text and audio are independent.";
     if(F8RewardPage(page))help=F8RewardHelp(page);
     else if(page==NativeSettingsPage::Arena)help="Open Arena+ options. Back returns to Reforge.";
     else if(page==NativeSettingsPage::ArenaOptions)help="Existing Arena+ controls. Back returns to Arena+.";
@@ -748,12 +822,12 @@ static void F8NativeSettingsDraw(int obj,int frame){
     if(page==NativeSettingsPage::Seymour){
         help="All default OFF. Master required. First enable: restart.";
     }
-    text(help,NX(0.250f),NY(panelTop+0.106f));
+    F8DrawUiText(F8Tr(help),NX(0.250f),NY(panelTop+0.095f),.49f,.070f,false,true);
     for(int row=top;row<count&&row<top+9;++row){
         const float y=NY(panelTop+0.175f+(row-top)*0.052f);
         DrawSolidRect(NX(0.250f),y,NW(0.500f),NH(0.045f),0x50314558u,0x30303A48u);
         if(row==selected){DrawSolidRect(NX(0.250f),y,NW(0.500f),NH(0.045f),0x60345263u,0x40273849u);DrawSolidRect(NX(0.250f),y+NH(0.043f),NW(0.500f),NH(0.002f),kMenuNeonGreenLine,kMenuNeonGreenLineLo);DrawCursor(NX(0.223f),y);}
-        char label[100]{};F8NativeSettingsLabel(page,row,label,sizeof(label));text(label,NX(0.265f),y+NH(0.012f));
+        char label[2048]{};F8NativeSettingsLabel(page,row,label,sizeof(label));text(label,NX(0.265f),y+NH(0.008f));
     }
     if(page==NativeSettingsPage::ElementColor){
         const auto rgb=g_nativeElementDirty?ElementScan::FromHsv(g_nativeElementHsv):g_nativeElementRgb;
@@ -762,8 +836,12 @@ static void F8NativeSettingsDraw(int obj,int frame){
             DrawSolidRect(NX(.25f+static_cast<float>(i)*(.5f/36)),NY(panelTop+panelHeight-.111f),NW(.5f/36),NH(.012f),color,color);}
         DrawSolidRect(NX(.25f+static_cast<float>(g_nativeElementHsv.h)/360*.5f),NY(panelTop+panelHeight-.114f),NW(.002f),NH(.018f),0x80FFFFFFu,0x80FFFFFFu);
     }
-    char first[57]{},second[73]{};strncpy_s(first,g_nativeSettingsNotice,56);
-    if(strlen(g_nativeSettingsNotice)>56)strncpy_s(second,g_nativeSettingsNotice+56,_TRUNCATE);
-    text(first,NX(0.250f),NY(panelTop+panelHeight-0.09f));text(second,NX(0.250f),NY(panelTop+panelHeight-0.06f));
-    text("Mouse/Scroll  Arrows: move  Enter: select  Back: return",NX(0.250f),NY(panelTop+panelHeight-0.03f));
+    if(UiOverlay::Building){
+        F8DrawUiText(F8Tr(g_nativeSettingsNotice),NX(0.250f),NY(panelTop+panelHeight-.09f),.49f,.06f,false,true);
+    }else{
+        char first[57]{},second[73]{};strncpy_s(first,g_nativeSettingsNotice,56);
+        if(strlen(g_nativeSettingsNotice)>56)strncpy_s(second,g_nativeSettingsNotice+56,_TRUNCATE);
+        text(first,NX(0.250f),NY(panelTop+panelHeight-0.09f));text(second,NX(0.250f),NY(panelTop+panelHeight-0.06f));
+    }
+    text(F8Tr("Mouse/Scroll  Arrows: move  Enter: select  Back: return"),NX(0.250f),NY(panelTop+panelHeight-0.03f));
 }

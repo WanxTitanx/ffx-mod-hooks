@@ -216,7 +216,7 @@ NovaSuperDamageInstallResult InstallNovaSuperDamageHook(
     uintptr_t base,bool bypass,bool logHits,bool ronsoMana,NovaSuperDamageLogFn log) {
     NovaSuperDamageInstallResult result{false,0};
     const bool damage=bypass||logHits||CombatExtensions::Required();
-    const bool poolRequested=ronsoMana||RonsoPool::HasPersistentOwnership()||NativeSaveEvents::Requested()||RonsoPool::CommandCosts::Requested();
+    const bool poolRequested=Coexistence::runtime.SaveServicesAllowed()||ronsoMana||RonsoPool::HasPersistentOwnership()||NativeSaveEvents::Requested()||RonsoPool::CommandCosts::Requested();
     if(!damage&&!poolRequested)return result;
     LifecycleScope lock;
     if(!lock.held)return result;

@@ -8,7 +8,7 @@
 #include <stdarg.h>
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #endif
 
 namespace FfxHooks {
@@ -27,10 +27,8 @@ static volatile LONG             g_playLogCount = 0;
 static volatile LONG             g_handoffLogCount = 0;
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-static PlayBattleStreamingFn     g_playTrampoline = nullptr;
-static BattleStreamingHandoffFn  g_handoffTrampoline = nullptr;
-static PLH::x86Detour*           g_playDetour = nullptr;
-static PLH::x86Detour*           g_handoffDetour = nullptr;
+static FfxHooks::CompatibleDetour*           g_playDetour = nullptr;
+static FfxHooks::CompatibleDetour*           g_handoffDetour = nullptr;
 static uint64_t                  g_playTrampolineVa = 0;
 static uint64_t                  g_handoffTrampolineVa = 0;
 #endif
@@ -87,7 +85,10 @@ static void __fastcall PlayBattleStreaming_Hook(
             p3,
             p4);
     }
-    g_playTrampoline(self, ctx, sequenceId, p3, p4);
+    // The shared backend publishes this continuation before enabling the detour.
+    // A typed alias assigned after hook() returns leaves an early entrant unbound.
+    reinterpret_cast<PlayBattleStreamingFn>(static_cast<uintptr_t>(g_playTrampolineVa))(
+        self, ctx, sequenceId, p3, p4);
 }
 
 static int __cdecl BattleStreamingHandoff_Hook(int pendingA, int pendingB) {
@@ -109,23 +110,21 @@ static int __cdecl BattleStreamingHandoff_Hook(int pendingA, int pendingB) {
             static_cast<unsigned>(pendingA),
             static_cast<unsigned>(pendingB));
     }
-    return g_handoffTrampoline(pendingA, pendingB);
+    return reinterpret_cast<BattleStreamingHandoffFn>(static_cast<uintptr_t>(g_handoffTrampolineVa))(pendingA, pendingB);
 }
 
 static bool InstallDetour(
     uintptr_t targetVa,
     uint64_t* trampolineOut,
     void* hookFn,
-    void** origOut,
-    PLH::x86Detour** detourOut,
+    FfxHooks::CompatibleDetour** detourOut,
     const char* label) {
-    auto detour = new PLH::x86Detour(targetVa, reinterpret_cast<uint64_t>(hookFn), trampolineOut);
+    auto detour = new FfxHooks::CompatibleDetour(targetVa, reinterpret_cast<uint64_t>(hookFn), trampolineOut);
     if (!detour->hook()) {
         HookLog("[ffx-hooks] ERROR AbilitySfx %s detour hook() failed @0x%08X", label, static_cast<unsigned>(targetVa));
         delete detour;
         return false;
     }
-    *origOut = reinterpret_cast<void*>(*trampolineOut);
     *detourOut = detour;
     HookLog("[ffx-hooks] AbilitySfx %s detour ok target=0x%08X trampoline=0x%llX",
         label,
@@ -160,11 +159,11 @@ AbilitySfxInstallResult InstallAbilitySfxHook(
     const uintptr_t handoffVa = moduleBase + RVA_MAGIC_BATTLE_STREAMING_HANDOFF;
 
     if (!InstallDetour(playVa, &g_playTrampolineVa, &PlayBattleStreaming_Hook,
-            reinterpret_cast<void**>(&g_playTrampoline), &g_playDetour, "playBattleStreaming"))
+            &g_playDetour, "playBattleStreaming"))
         return result;
 
     if (!InstallDetour(handoffVa, &g_handoffTrampolineVa, &BattleStreamingHandoff_Hook,
-            reinterpret_cast<void**>(&g_handoffTrampoline), &g_handoffDetour, "handoff")) {
+            &g_handoffDetour, "handoff")) {
         RemoveAbilitySfxHook(log);
         return result;
     }
@@ -182,6 +181,7 @@ AbilitySfxInstallResult InstallAbilitySfxHook(
 
 bool RemoveAbilitySfxHook(AbilitySfxLogFn log) {
 #ifdef FFXHOOKS_HAVE_POLYHOOK
+    if (Coexistence::runtime.PeerPresent()) return false;
     bool ok = true;
     if (g_playDetour) {
         ok &= g_playDetour->unHook();
@@ -193,8 +193,8 @@ bool RemoveAbilitySfxHook(AbilitySfxLogFn log) {
         delete g_handoffDetour;
         g_handoffDetour = nullptr;
     }
-    g_playTrampoline = nullptr;
-    g_handoffTrampoline = nullptr;
+    g_playTrampolineVa = 0;
+    g_handoffTrampolineVa = 0;
     g_installed = false;
     if (log) log(ok ? "[ffx-hooks] AbilitySfx removed ok" : "[ffx-hooks] AbilitySfx remove FAILED");
     return ok;

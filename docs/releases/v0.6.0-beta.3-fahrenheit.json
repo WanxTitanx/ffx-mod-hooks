@@ -1,0 +1,108 @@
+{
+  "schema": "ffx.fahrenheit-addon.v1",
+  "producer": "Jarvis-HOOK",
+  "version": "v0.6.0-beta.3",
+  "runtime_source_commit": "c18fb5602a688dd0de5e7e85677c5d5102402788",
+  "upstream": "https://github.com/fahrenheit-crew/fahrenheit.git",
+  "upstream_revision": "cdb145d93295c1c6e2bf4766fda5a12877369f54",
+  "upstream_files": 501,
+  "provider_source_files": 503,
+  "required_native_dll": {
+    "bytes": 4683264,
+    "sha256": "4e7dfe943e9496729b69c9c3af24dfef465ec4efddfb93dba5b6fdcd77af8a6e"
+  },
+  "rt2": false,
+  "complete_fahrenheit_distribution": false,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 5073,
+      "sha256": "de9c4fcfcd63d5d73c53fe3bb614600baae8d93ac105a2f6bd64ecee0f1edbf8"
+    },
+    {
+      "path": "fahrenheit/bin/fh.deps.json",
+      "bytes": 5778,
+      "sha256": "d03106971ba5b79383e8d346000bfc3f08afe1a7da32fe898d0d49cb1982bcd3"
+    },
+    {
+      "path": "fahrenheit/bin/fh.dll",
+      "bytes": 34123776,
+      "sha256": "0f234751a573601a8e7f5dd44bfefa863ef9f91acd6383545e68f37e2b2dbc05"
+    },
+    {
+      "path": "fahrenheit/bin/fh.runtimeconfig.json",
+      "bytes": 364,
+      "sha256": "eb44ca1507e88c662f243469a2d0a822e0f5f7914bd7ec26cfc7fbdee08192e3"
+    },
+    {
+      "path": "fahrenheit/bin/fhr.deps.json",
+      "bytes": 450,
+      "sha256": "bdf06666853eda7db03dba8d580366e436e2405e86e5a0f565142bb557761e77"
+    },
+    {
+      "path": "fahrenheit/bin/fhr.dll",
+      "bytes": 88064,
+      "sha256": "6b92759bd8766e4fcc36df64d80dbb99905936be1cbe2d6352499265b011c0bf"
+    },
+    {
+      "path": "fahrenheit/bin/fhr.manifest.json",
+      "bytes": 339,
+      "sha256": "a1284de5a18327e270cc5579edc9756e4b387952c851b46c65a550c9e3f9a868"
+    },
+    {
+      "path": "fahrenheit/bin/fhr.runtimeconfig.json",
+      "bytes": 364,
+      "sha256": "eb44ca1507e88c662f243469a2d0a822e0f5f7914bd7ec26cfc7fbdee08192e3"
+    },
+    {
+      "path": "fahrenheit/mods/ffxhooks_fahrenheit/ffxhooks_fahrenheit.deps.json",
+      "bytes": 482,
+      "sha256": "5809423702fe78e70dafb54dedcb58663aec9d201a0ba8e5fa812657e659cec4"
+    },
+    {
+      "path": "fahrenheit/mods/ffxhooks_fahrenheit/ffxhooks_fahrenheit.dll",
+      "bytes": 19456,
+      "sha256": "521851b53e74cd3bf9299a6f7e7f77ed910f335a7319ce1f1b81891e94f06284"
+    },
+    {
+      "path": "fahrenheit/mods/ffxhooks_fahrenheit/ffxhooks_fahrenheit.manifest.json",
+      "bytes": 391,
+      "sha256": "2c5b46dba3e67ae9be4e00794e1f66e4b433149cbb7b05645edbb25ed7c05561"
+    },
+    {
+      "path": "fahrenheit/mods/ffxhooks_fahrenheit/ffxhooks_fahrenheit.runtimeconfig.json",
+      "bytes": 364,
+      "sha256": "eb44ca1507e88c662f243469a2d0a822e0f5f7914bd7ec26cfc7fbdee08192e3"
+    },
+    {
+      "path": "licenses/fahrenheit/COPYING",
+      "bytes": 35148,
+      "sha256": "8b1ba204bb69a0ade2bfcf65ef294a920f6bb361b317dba43c7ef29d96332b9b"
+    },
+    {
+      "path": "licenses/fahrenheit/COPYING.LESSER",
+      "bytes": 7651,
+      "sha256": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b"
+    },
+    {
+      "path": "licenses/fahrenheit/NOTICE.md",
+      "bytes": 909,
+      "sha256": "e4244707a10a0aba713b646069c93c412e8efe3102425eb94081edfd919fdcc4"
+    },
+    {
+      "path": "licenses/ffx-hooks/LICENSE",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "path": "licenses/ffx-hooks/NOTICE",
+      "bytes": 3568,
+      "sha256": "cac3d2a69e7409dd46fb0074b4dc14984c91b79d04ed5faf058c5769b6c55a5e"
+    },
+    {
+      "path": "source/fahrenheit-provider-source-v0.6.0-beta.3.tar.gz",
+      "bytes": 24196870,
+      "sha256": "e46bc42a44e65fdcc60e4f081d8ddd34950f7fb813ccfbc238aedfb195ff86da"
+    }
+  ]
+}

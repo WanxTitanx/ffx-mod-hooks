@@ -9,7 +9,7 @@
 **Hooks de runtime para FINAL FANTASY X HD Remaster (Steam, PC)**
 
 [![Status](https://img.shields.io/badge/status-BETA-red)](#status-beta)
-[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.6.0--beta.2-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2)
+[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.6.0--beta.3-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.3)
 [![Licença](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Plataforma](https://img.shields.io/badge/platform-Windows%20x86-lightgrey)](#compatibilidade)
 [![Doar](https://img.shields.io/badge/Doar-PayPal-blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wandersonwpires%40hotmail.com&currency_code=USD)
@@ -35,7 +35,15 @@ equivalente ao FFX-2.
 - [Dossiê completo de integração com o Editor](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
 - [Apoie o projeto](#apoie-o-projeto)
 
-## Nuls elementais e integração de 29/09/2026
+## Novidades da v0.6.0-beta.3
+
+- **Nove idiomas da interface:** inglês, português (Brasil), espanhol, francês, italiano, alemão, japonês, coreano e chinês simplificado. Selecione em **F8 > System > Interface language**. A escolha é independente do texto e do áudio do jogo. As páginas F7 fora de FLAGS continuam no inglês nativo.
+- **Integração Fahrenheit V2:** coordenação dos hooks, renderização e input, transações de save gerenciadas e recursos de texto/fontes com provider e bridge correspondentes. O Fahrenheit original/V1 mantém restrições; consulte o [guia do complemento](docs/FAHRENHEIT_V2.md).
+- **Correções:** sons conforme o resultado real das ações F7/F8; preservação do idioma anterior se a gravação falhar; limpeza ao perder foco sem violar o controle de renderização do Fahrenheit; encerramento único das leituras com falha e verificação dos 501 arquivos do provider.
+
+A publicação usa o código consolidado da `main`. Os testes comprovam RT0/RT1 isolado; áudio, imagem, gameplay e ciclo de saves em jogo ainda precisam de RT2. Não há garantia para qualquer combinação de mods.
+
+## Nuls elementais e integração anterior de 29/09/2026
 
 A integração reúne a branch publicada de recuperação/Seymour/Sphere Grid com os
 fixes atuais de elementos, Tarot, recompensas, idiomas e efeitos de armas da main.
@@ -81,58 +89,26 @@ Os problemas conhecidos estão em [KNOWN_BUGS](docs/KNOWN_BUGS.md) e no
 
 ## Download e instalação
 
-A DLL de trabalho instalada em 2026-09-29 inclui o registro interno e o editor de
-nomes descritos abaixo. Os arquivos públicos v0.6.0-beta.2 indicados nesta seção
-continuam identificando a DLL anterior; a identidade atual está em **DLL atual**.
+Baixe a [release v0.6.0-beta.3](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.3): DLL consolidada, arte do Arcana, guias EN/PT-BR, exemplos com opções OFF, código-fonte e checksums. O complemento Fahrenheit V2 e o código-fonte completo do provider modificado são downloads separados e opcionais.
 
-A **v0.6.0-beta.2** inclui a DLL x86 consolidada, as 78 cartas selecionadas do
-Arcana, ícone e verso, licenças de terceiros, exemplos de configuração OFF,
-instruções, proveniência e checksums SHA-256. O arquivo de código-fonte contém
-a árvore pública da tag, incluindo os arquivos necessários para build, testes
-e artes.
+Siga o [guia em português](docs/INSTALACAO_PT-BR.md) ou o [guia em inglês](docs/INSTALL.md). Com o FFX fechado, copie a DLL e `mods/` do pacote principal para `modules/`, preservando suas configurações, saves e sidecars. A instalação legal do jogo e seu carregador de módulos não são distribuídos aqui.
 
-Esta revisão de documentação restaura a seção de doações e acrescenta este
-README completo em PT-BR. A DLL e seu hash são os mesmos da v0.6.0-beta.
-
-Baixe o ZIP binário, o arquivo de fonte e os checksums na
-[release v0.6.0-beta.2](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2).
-Consulte o [guia de instalação em português](https://github.com/WanxTitanx/ffx-mod-hooks/blob/v0.6.0-beta.2/docs/INSTALACAO_PT-BR.md) ou o
-[guia em inglês](https://github.com/WanxTitanx/ffx-mod-hooks/blob/v0.6.0-beta.2/docs/INSTALL.md).
-
-Com o FFX fechado, copie `ffx-hooks.dll` e `mods/` do ZIP para `modules/` na
-pasta do jogo. Preserve a DLL anterior, suas configurações e os sidecars.
-Mescle apenas as opções desejadas dos exemplos; não sobrescreva um INI existente.
-Você precisa do carregador normal de módulos FFX e de uma instalação legal do
-jogo no perfil suportado; eles não estão incluídos. As opções de gameplay
-permanecem OFF por padrão.
-
-As artes próprias do Arcana estão incluídas. Recursos traduzidos do jogo,
-pacotes Elemental, tabelas personalizadas de habilidades/dados do jogo e os
-pacotes privados de AI do S.I.N. são produtos de authoring separados. Ter suporte
-para carregá-los não significa que esses assets derivados do jogo sejam
-redistribuídos aqui. O inventário e o roadmap descrevem essas dependências.
+Para Fahrenheit, use o [conjunto V2 correspondente](docs/FAHRENHEIT_V2.md). Não misture bridge V2 com provider V1. Pacotes de tradução do jogo, tabelas proprietárias e recursos particulares continuam separados.
 
 ## DLL atual
 
-Checkpoint Jarvis-HOOK: **2026-09-29**, implementação e deploy feitos na `main`.
+Jarvis-HOOK — publicação pública de 2026-09-29.
 
-| Identidade | Valor registrado |
+| Identidade | Valor |
 |---|---|
-| Commit do código de runtime | `2787386a7144af04c16f194029a4a35616bf8dea` (development integration) |
-| Módulo instalado | `<game>/modules/ffx-hooks.dll` |
-| Tamanho da DLL | 4.011.008 bytes |
-| SHA-256 da DLL | `5f6a76f3260a1aa0f5a36e0ff6e9f641f7d92e0dda969910d0d66a2debc3016e` |
-| Deploy | 2026-09-29 10:28:24 UTC; backup verificado e substituição atômica |
-| Vínculo com o fonte | 363 entradas de código/recursos conferidas com o build testado |
-| Escopo protegido da instalação | 1.116 arquivos inventariados permaneceram iguais |
-| Executável suportado | `FFX.exe` PE32/i386, image base preferida `0x00400000` |
-| SHA-256 do executável | `78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced` |
+| Código de runtime | `c18fb5602a688dd0de5e7e85677c5d5102402788` |
+| DLL | Windows x86 / PE32, 4.683.264 bytes |
+| SHA-256 | `4e7dfe943e9496729b69c9c3af24dfef465ec4efddfb93dba5b6fdcd77af8a6e` |
+| Correspondência | 383 arquivos públicos de código/recursos; todos os 750 insumos originais conferidos com o commit consolidado |
+| Versão interna do PE | `0.2.0.0`; versão do pacote `v0.6.0-beta.3` |
+| Validação em jogo | RT2 pendente; publicação não equivale a instalação ou promoção para Production |
 
-Esta DLL reúne os seis Nuls e a integração publicada de recuperação/Seymour/
-Sphere Grid com as funções já presentes na main. Veja o
-[registro de implementação, validação e instalação](docs/ai/NUL_ELEMENTS_INTEGRATION_2026_09_29.md).
-O recurso de versão do PE continua `0.2.0.0`; identifique este build pelo hash e
-pelo commit acima. A aceitação RT2 em jogo e a promoção Production são separadas.
+O pacote contém a DLL validada junto ao fonte público correspondente. Releases anteriores permanecem intactas.
 
 ## O que compõe o projeto
 

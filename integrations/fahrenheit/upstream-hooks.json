@@ -1,0 +1,144 @@
+{
+  "upstream_commit": "cdb145d93295c1c6e2bf4766fda5a12877369f54",
+  "evidence": "source registration only; no ABI or live validation implied",
+  "hooks": [
+    {
+      "symbol": "FhCall.Phyre_PSerialization_PStreamFile_ctor",
+      "registration": "src/runtime/fileloader.cs:67",
+      "location": "0x207D80, 0x490E40",
+      "declaration": "src/core/call.cs:409"
+    },
+    {
+      "symbol": "FhCall.ClusterManager_loadPCluster",
+      "registration": "src/runtime/fileloader.cs:68",
+      "location": "0x29BA80, 0x9E880",
+      "declaration": "src/core/call.cs:444"
+    },
+    {
+      "symbol": "FhCall.ClusterManager_getPClusterByName",
+      "registration": "src/runtime/fileloader.cs:69",
+      "location": "0x29B5F0, 0x09E2E0",
+      "declaration": "src/core/call.cs:101"
+    },
+    {
+      "symbol": "FhCall.Phyre_PSerialization_PStreamFile_SetStreamPrefix",
+      "registration": "src/runtime/fileloader.cs:70",
+      "location": "0x207F00, 0x491090",
+      "declaration": "src/core/call.cs:131"
+    },
+    {
+      "symbol": "FhCall.BigFileStream_setStreamPrefix",
+      "registration": "src/runtime/fileloader.cs:71",
+      "location": "0x21C560, 0x543030",
+      "declaration": "src/core/call.cs:116"
+    },
+    {
+      "symbol": "FhCall.BigFileStream_openFile",
+      "registration": "src/runtime/fileloader.cs:72",
+      "location": "0x21C0D0, 0x542BA0",
+      "declaration": "src/core/call.cs:136"
+    },
+    {
+      "symbol": "FhCall.fiosUnifyFilename",
+      "registration": "src/runtime/fileloader.cs:73",
+      "location": "0x2799D0, 0x094E90",
+      "declaration": "src/core/call.cs:141"
+    },
+    {
+      "symbol": "FhCall.Phyre_PFramework_PInput_Update",
+      "registration": "src/runtime/imgui.cs:60",
+      "location": "0x225930, 0x6B51E0",
+      "declaration": "src/core/call.cs:389"
+    },
+    {
+      "symbol": "FhCall.DXGI_IDXGISwapChain_Present",
+      "registration": "src/runtime/imgui.cs:131",
+      "location": "ptr_swapchain->lpVtbl[8]",
+      "declaration": "src/core/call.cs:371"
+    },
+    {
+      "symbol": "FhCall.DXGI_IDXGISwapChain_ResizeBuffers",
+      "registration": "src/runtime/imgui.cs:132",
+      "location": "ptr_swapchain->lpVtbl[13]",
+      "declaration": "src/core/call.cs:383"
+    },
+    {
+      "symbol": "FhCall._malloc_pool_init",
+      "registration": "src/runtime/malloc.cs:52",
+      "location": "0x2FBA90, 0x121F90",
+      "declaration": "src/core/call.cs:168"
+    },
+    {
+      "symbol": "FhCall._VirtualAlloc_Reserve_NA",
+      "registration": "src/runtime/malloc.cs:53",
+      "location": "0x5439A0, 0x4783A0",
+      "declaration": "src/core/call.cs:158"
+    },
+    {
+      "symbol": "FhCall.D3D11_D3D11CreateDeviceAndSwapChain",
+      "registration": "src/runtime/platform.cs:70",
+      "location": "\"D3D11.dll\", \"D3D11CreateDeviceAndSwapChain\"",
+      "declaration": "src/core/call.cs:351"
+    },
+    {
+      "symbol": "FhCall.CDfileSize_PC",
+      "registration": "src/runtime/cd.cs:49",
+      "location": "0x6428A0, 0x74E9A0",
+      "declaration": "src/core/call.cs:461"
+    },
+    {
+      "symbol": "FhCall.check_ex_file_size",
+      "registration": "src/runtime/cd.cs:50",
+      "location": "0x36D770, 0x1396A0",
+      "declaration": "src/core/call.cs:466"
+    },
+    {
+      "symbol": "FhCall.SaveDataManager_debugSave_Internal_6F0650",
+      "registration": "src/runtime/save_impl.cs:39",
+      "location": "0x2F0650, 0x11D510",
+      "declaration": "src/core/call.cs:474"
+    },
+    {
+      "symbol": "FhCall.TkMenuJumpToLoadedScene",
+      "registration": "src/runtime/save_impl.cs:40",
+      "location": "0x4B4E70, 0x36AD50",
+      "declaration": "src/core/call.cs:489"
+    },
+    {
+      "symbol": "FhCall.SaveDataToSave",
+      "registration": "src/runtime/save_impl.cs:41",
+      "location": "0x248950, 0x884D0",
+      "declaration": "src/core/call.cs:479"
+    },
+    {
+      "symbol": "FhCall.SaveDataToLoad",
+      "registration": "src/runtime/save_impl.cs:42",
+      "location": "0x248910, 0x884A0",
+      "declaration": "src/core/call.cs:484"
+    },
+    {
+      "symbol": "FFX.FhCall.FUN_2EFFF0",
+      "registration": "src/runtime/save_impl.cs:43",
+      "location": "\"FFX.exe\", 0x2EFFF0",
+      "declaration": "src/core/ffx/call.cs:750"
+    },
+    {
+      "symbol": "FhCall.Sg_MainLoop",
+      "registration": "src/runtime/events/game_loop.cs:17",
+      "location": "0x420C00, 0x205150",
+      "declaration": "src/core/call.cs:396"
+    },
+    {
+      "symbol": "FFX.FhCall.AtelSetEventJump2",
+      "registration": "src/runtime/events/game_loop.cs:18",
+      "location": "\"FFX.exe\", 0x46FED0",
+      "declaration": "src/core/ffx/call.cs:1211"
+    },
+    {
+      "symbol": "FFX.FhCall.MsMessageCueProcess",
+      "registration": "src/runtime/battle/message_cue.cs:21",
+      "location": "\"FFX.exe\", 0x39CE10",
+      "declaration": "src/core/ffx/call.cs:1031"
+    }
+  ]
+}

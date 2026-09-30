@@ -1,0 +1,91 @@
+# Jarvis-HOOK: DLL option labels; en pt es fr it de ja ko zh.
+Borderless window	Janela sem bordas	Ventana sin bordes	Fenêtre sans bordure	Finestra senza bordi	Randloses Fenster	ボーダーレスウィンドウ	테두리 없는 창	无边框窗口
+Keep cursor in game	Manter cursor no jogo	Mantener el cursor en el juego	Garder le curseur dans le jeu	Mantieni il cursore nel gioco	Mauszeiger im Spiel halten	カーソルをゲーム内に固定	게임 안에 커서 고정	将光标限制在游戏内
+Hide idle cursor	Ocultar cursor inativo	Ocultar el cursor inactivo	Masquer le curseur inactif	Nascondi il cursore inattivo	Inaktiven Mauszeiger ausblenden	未操作時にカーソルを隠す	사용하지 않는 커서 숨기기	隐藏闲置光标
+Performance display	Exibir desempenho	Mostrar rendimiento	Afficher les performances	Mostra prestazioni	Leistungsanzeige	パフォーマンス表示	성능 표시	性能显示
+Free battle camera	Câmera livre em batalha	Cámara libre en combate	Caméra libre en combat	Telecamera libera in battaglia	Freie Kampfkamera	戦闘フリーカメラ	전투 자유 카메라	战斗自由视角
+Freeze field scene	Congelar cena de campo	Congelar la escena de campo	Figer la scène d'exploration	Blocca la scena sul campo	Feldszene anhalten	フィールドを静止	필드 장면 정지	暂停场景
+Native Hooks	Funções nativas	Funciones nativas	Fonctions natives	Funzioni native	Native Funktionen	ネイティブ機能	기본 기능	原生功能
+External render module	Módulo gráfico externo	Módulo gráfico externo	Module graphique externe	Modulo grafico esterno	Externes Grafikmodul	外部描画モジュール	외부 렌더링 모듈	外部渲染模块
+External UnX module	Módulo UnX externo	Módulo UnX externo	Module UnX externe	Modulo UnX esterno	Externes UnX-Modul	外部UnXモジュール	외부 UnX 모듈	外部 UnX 模块
+Native diagnostics	Diagnóstico nativo	Diagnóstico nativo	Diagnostic natif	Diagnostica nativa	Native Diagnose	ネイティブ診断	기본 진단	原生诊断
+Permanent Sensor	Sensor permanente	Sensor permanente	Analyse permanente	Sensore permanente	Dauerhafter Sensor	常時みやぶる	항상 간파	永久识破
+Playable Seymour	Seymour jogável	Seymour jugable	Seymour jouable	Seymour giocabile	Seymour spielbar	シーモアを操作	시모어 조작	可操作西摩
+Speed Hack	Velocidade do jogo	Velocidad del juego	Vitesse du jeu	Velocità di gioco	Spielgeschwindigkeit	ゲーム速度	게임 속도	游戏速度
+SpeedHack FMV acceleration	Acelerar vídeos com SpeedHack	Acelerar vídeos con SpeedHack	Accélérer les vidéos avec SpeedHack	Accelera filmati con SpeedHack	Filmsequenzen mit SpeedHack beschleunigen	SpeedHackでムービーを高速化	SpeedHack 영상 가속	SpeedHack 过场动画加速
+Entire Party Earns AP	AP para todo o grupo	AP para todo el grupo	PC pour toute l'équipe	AP a tutto il gruppo	AP für die ganze Gruppe	全員がAPを獲得	전원 AP 획득	全队获得 AP
+Invincible Party	Grupo invencível	Grupo invencible	Équipe invincible	Gruppo invincibile	Unverwundbare Gruppe	味方を無敵化	아군 무적	全队无敌
+Invincible Enemies	Inimigos invencíveis	Enemigos invencibles	Ennemis invincibles	Nemici invincibili	Unverwundbare Gegner	敵を無敵化	적 무적	敌人无敌
+Always Overdrive	Overdrive sempre cheio	Overdrive siempre lleno	Overdrive toujours plein	Overdrive sempre pieno	Overdrive immer voll	常時オーバードライブ満タン	오버드라이브 항상 최대	超限技槽始终满值
+Always Critical	Crítico garantido	Crítico garantizado	Critiques garantis	Critico garantito	Immer kritische Treffer	常時クリティカル	항상 치명타	必定暴击
+Damage 99999	Dano 99999	Daño 99999	Dégâts 99999	Danno 99999	Schaden 99999	ダメージ99999	피해량 99999	伤害 99999
+Always Rare Drop	Saque raro garantido	Botín raro garantizado	Butin rare garanti	Bottino raro garantito	Immer seltene Beute	常にレアアイテム獲得	항상 희귀 아이템 획득	必定稀有掉落
+AP Multiplier	Multiplicador de AP	Multiplicador de AP	Multiplicateur de PC	Moltiplicatore AP	AP-Multiplikator	AP倍率	AP 배율	AP 倍率
+Gil Multiplier	Multiplicador de Gil	Multiplicador de guiles	Multiplicateur de Gils	Moltiplicatore Guil	Gil-Multiplikator	ギル倍率	길 배율	金币倍率
+FieldScout Master	FieldScout principal	FieldScout principal	FieldScout principal	FieldScout principale	FieldScout-Hauptschalter	FieldScout基本設定	FieldScout 기본	FieldScout 主开关
+FieldScout Heavy	FieldScout detalhado	FieldScout detallado	FieldScout détaillé	FieldScout dettagliato	FieldScout erweitert	FieldScout詳細	FieldScout 상세	FieldScout 详细模式
+FieldScout Max	FieldScout máximo	FieldScout máximo	FieldScout maximal	FieldScout massimo	FieldScout maximal	FieldScout最大	FieldScout 최대	FieldScout 最大模式
+FieldScout Ultra	FieldScout Ultra	FieldScout Ultra	FieldScout Ultra	FieldScout Ultra	FieldScout Ultra	FieldScout Ultra	FieldScout Ultra	FieldScout Ultra
+Arena+ Master	Arena+ principal	Arena+ principal	Arena+ principal	Arena+ principale	Arena+-Hauptschalter	Arena+基本設定	Arena+ 기본	Arena+ 主开关
+Arena+ Compose F7	Editor Arena+ no F7	Editor Arena+ en F7	Éditeur Arena+ dans F7	Editor Arena+ in F7	Arena+-Editor in F7	F7のArena+エディター	F7 Arena+ 편집기	F7 Arena+ 编辑器
+Bypass Progression	Ignorar progressão	Omitir progresión	Ignorer la progression	Ignora progressione	Fortschritt umgehen	進行条件を無視	진행 조건 무시	跳过进度限制
+Arena+ Victory Hook	Registro de vitórias Arena+	Registro de victorias Arena+	Journal des victoires Arena+	Registro vittorie Arena+	Arena+-Siegesprotokoll	Arena+勝利ログ	Arena+ 승리 기록	Arena+ 胜利记录
+Arena+ Resolver Log	Registro de seleção Arena+	Registro de selección Arena+	Journal des choix Arena+	Registro scelte Arena+	Arena+-Auswahlprotokoll	Arena+選択ログ	Arena+ 선택 기록	Arena+ 选择日志
+Arena+ Music	Música da Arena+	Música de Arena+	Musique Arena+	Musica Arena+	Arena+-Musik	Arena+音楽	Arena+ 음악	Arena+ 音乐
+Block Windows Key	Bloquear tecla Windows	Bloquear la tecla Windows	Bloquer la touche Windows	Blocca il tasto Windows	Windows-Taste sperren	Windowsキーを無効化	Windows 키 차단	禁用 Windows 键
+Fix Background Input	Corrigir entrada em segundo plano	Corregir entrada en segundo plano	Corriger les entrées en arrière-plan	Correggi input in background	Hintergrundeingaben korrigieren	バックグラウンド入力を抑止	백그라운드 입력 차단	修正后台输入
+Filter IME	Filtrar IME	Filtrar IME	Filtrer l'IME	Filtra IME	IME filtern	IME入力を制御	IME 필터	过滤输入法
+Dialog Skip	Pular diálogos	Saltar diálogos	Passer les dialogues	Salta dialoghi	Dialoge überspringen	セリフスキップ	대사 건너뛰기	跳过对话
+Fastload Autosave	Carregar salvamento automático	Cargar autoguardado	Chargement de sauvegarde automatique	Carica salvataggio automatico	Schnellstart mit Autosave	オートセーブを高速ロード	자동 저장 빠른 불러오기	快速加载自动存档
+Arcana: full deck	Arcana: baralho completo	Arcana: baraja completa	Arcana : jeu complet	Arcana: mazzo completo	Arcana: vollständiges Deck	Arcana: 全カード	Arcana: 전체 덱	Arcana：完整牌组
+Arcana of the Fayth	Arcana of the Fayth	Arcana of the Fayth	Arcana of the Fayth	Arcana of the Fayth	Arcana of the Fayth	Arcana of the Fayth	Arcana of the Fayth	Arcana of the Fayth
+Nova Super Damage	Superdano de Nova	Superdaño de Nova	Super dégâts de Nova	Super danno Nova	Nova-Superschaden	サンシャインの超ダメージ	노바 초과 피해	新星超高伤害
+Ronso Mana	Mana Ronso	Maná Ronso	Mana Ronso	Mana Ronso	Ronso-Mana	ロンゾのマナ	론조 마나	隆索魔力
+Equipment Workshop	Oficina de equipamentos	Taller de equipo	Atelier d'équipement	Officina equipaggiamento	Ausrüstungswerkstatt	装備工房	장비 공방	装备工坊
+Native equipment details	Detalhes nativos de equipamento	Detalles de equipo nativos	Détails d'équipement natifs	Dettagli equipaggiamento nativi	Native Ausrüstungsdetails	標準画面の装備詳細	기본 화면 장비 상세	原生装备详情
+Scan Expanded	Scan expandido	Scan ampliado	Scan étendu	Scan esteso	Erweitertes Scan	ライブラ詳細表示	라이브라 확장	扩展侦测
+Scan Extra Elements	Scan de elementos extras	Scan de elementos adicionales	Scan des éléments supplémentaires	Scan elementi aggiuntivi	Scan zusätzlicher Elemente	ライブラ追加属性	라이브라 추가 속성	侦测额外属性
+Grid Teach	Ensinar pela Sphere Grid	Aprendizaje en la esfera	Apprentissage via le Sphérier	Apprendimento Sferografia	Lernen am Sphärobrett	スフィア盤で習得	스피어반 학습	晶球盘学习
+Lancet Dual Grant	Aprendizado duplo de Lancet	Aprendizaje doble de Lancet	Double apprentissage Lancet	Doppio apprendimento Lancet	Doppeltes Lernen mit Lancet	竜剣の二重習得	용검 이중 습득	龙剑双重学习
+Item Stack Cap	Limite de itens por pilha	Límite de objetos por pila	Limite d'objets par pile	Limite oggetti per pila	Maximale Stapelgröße	アイテム所持上限	아이템 중첩 한도	物品堆叠上限
+Double/Triple Drop	Saque duplo/triplo	Botín doble/triple	Butin double/triple	Bottino doppio/triplo	Doppelte/dreifache Beute	アイテム2倍・3倍	아이템 2배/3배	双倍/三倍掉落
+Universal stat percentages	Bônus percentuais universais	Bonificaciones porcentuales universales	Bonus de statistiques universels	Bonus percentuali universali	Universelle Prozentboni	能力値の割合ボーナス	범용 능력치 비율 보너스	通用属性百分比加成
+Effective-HP defense bonuses	Defesa com HP efetivo	Defensa con HP efectivo	Défense en PV effectifs	Difesa con HP effettivi	Verteidigung nach effektiven HP	実効HPによる防御補正	실효 HP 방어 보너스	基于有效生命的防御加成
+Unhindered healing	Cura sem redução	Curación sin reducción	Soins sans réduction	Cura senza riduzioni	Ungehinderte Heilung	回復量の減衰を無効化	회복량 감소 무시	不受阻碍的治疗
+Additive Armor/Mental Break	Armor/Mental Break aditivo	Armor/Mental Break aditivo	Armor/Mental Break additif	Armor/Mental Break additivo	Additiver Armor/Mental Break	アーマー・メンタルブレイク加算	아머/멘탈 브레이크 가산	破甲/精神破坏加算
+Consume buffs at action end	Consumir bônus após a ação	Consumir mejoras al terminar la acción	Consommer les bonus en fin d'action	Consuma bonus a fine azione	Boni am Aktionsende verbrauchen	行動終了時に強化を消費	행동 종료 시 강화 소모	行动结束时消耗增益
+Opposite-element weakness	Fraqueza do elemento oposto	Debilidad al elemento opuesto	Faiblesse à l'élément opposé	Debolezza all'elemento opposto	Schwäche gegen Gegenelement	対属性の弱点	반대 속성 약점	相反属性弱点
+Refresh status duration	Renovar duração dos estados	Renovar duración de estados	Renouveler la durée des états	Rinnova durata degli stati	Statusdauer erneuern	状態異常の時間を更新	상태 지속 시간 갱신	刷新状态持续时间
+Enemy duration resistance	Resistência à duração inimiga	Resistencia a duración enemiga	Résistance ennemie à la durée	Resistenza nemica alla durata	Gegnerische Dauerresistenz	敵の持続時間耐性	적 지속 시간 저항	敌方持续时间抗性
+Single-use Threaten	Threaten uma vez por inimigo	Threaten una vez por enemigo	Threaten unique par ennemi	Threaten una volta per nemico	Threaten einmal pro Gegner	おどすは各敵1回	적마다 위협 1회	每个敌人仅可威胁一次
+Guaranteed-hit policy	Regras de acerto garantido	Reglas de acierto garantizado	Règles des coups garantis	Regole colpi garantiti	Regeln für sichere Treffer	必中攻撃のルール	필중 공격 규칙	必中规则
+Quickcast	Quickcast	Quickcast	Quickcast	Quickcast	Quickcast	クイックキャスト	퀵캐스트	快速施法
+White Magic in Double/Quickcast	Magia Branca no Double/Quickcast	Magia blanca en Double/Quickcast	Magie blanche dans Double/Quickcast	Magia bianca in Double/Quickcast	Weißmagie in Double/Quickcast	連続魔・クイックキャストの白魔法	연속 마법/퀵캐스트의 백마법	连续/快速施法中的白魔法
+Current-MP magic power	Poder mágico pelo MP atual	Poder mágico según PM actuales	Puissance magique selon les PM	Potenza magica dai MP attuali	Magiekraft nach aktuellen MP	現在MPによる魔力補正	현재 MP 기반 마력	当前 MP 魔力加成
+Switch costs a turn	Troca consome turno	Cambiar consume turno	Le changement consomme un tour	Il cambio consuma un turno	Wechsel verbraucht einen Zug	交代でターン消費	교체 시 턴 소모	换人消耗回合
+Auto-reinforce Eject/Shatter	Reposição após Eject/Shatter	Relevo tras Eject/Shatter	Renfort après Eject/Shatter	Rinforzo dopo Eject/Shatter	Ersatz nach Eject/Shatter	退場・粉砕時に自動補充	추방/파괴 시 자동 보충	放逐/粉碎后自动补位
+Single/multi-hit scaling	Escala de golpes únicos/múltiplos	Escala de golpes únicos/múltiples	Échelle des coups uniques/multiples	Scala colpi singoli/multipli	Skalierung einzelner/mehrfacher Treffer	単発・多段攻撃の倍率	단일/다단 공격 배율	单段/多段攻击倍率
+Hero's Bravery	Bravura do Herói	Valentía del héroe	Bravoure du héros	Coraggio dell'eroe	Heldenmut	英雄の勇気	영웅의 용기	英雄勇气
+Energy Boost	Impulso de Energia	Impulso de energía	Gain d'énergie	Spinta energetica	Energieschub	エナジーブースト	에너지 부스트	能量提升
+Energy Burst	Explosão de Energia	Estallido de energía	Explosion d'énergie	Esplosione energetica	Energieausbruch	エナジーバースト	에너지 버스트	能量爆发
+Efficiency	Eficiência	Eficiencia	Efficacité	Efficienza	Effizienz	効率化	효율	高效
+Vampirism	Vampirismo	Vampirismo	Vampirisme	Vampirismo	Vampirismus	吸血	흡혈	吸血
+Follow Up	Ataque de Apoio	Ataque de apoyo	Attaque de soutien	Attacco di supporto	Unterstützungsangriff	追撃	후속 공격	追击
+P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade
+M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade
+Hero's Caution	Cautela do Herói	Cautela del héroe	Prudence du héros	Cautela dell'eroe	Heldenvorsicht	英雄の慎重さ	영웅의 신중함	英雄警戒
+MP Regen	Regeneração de MP	Regeneración de PM	Régénération de PM	Rigenerazione MP	MP-Regeneration	MPリジェネ	MP 재생	MP 再生
+Elude	Esquiva	Evasión	Esquive	Elusione	Ausweichen	回避	회피	闪避
+Energy Wall	Muralha de Energia	Muro de energía	Mur d'énergie	Muro energetico	Energiewall	エナジーウォール	에너지 월	能量墙
+Energy Barrier	Barreira de Energia	Barrera de energía	Barrière d'énergie	Barriera energetica	Energiebarriere	エナジーバリア	에너지 배리어	能量屏障
+Equipped active commands	Comandos ativos de equipamento	Comandos activos equipados	Commandes actives équipées	Comandi attivi equipaggiati	Aktive Ausrüstungsbefehle	装備によるコマンド	장비 활성 명령	装备主动指令
+Partial Overdrive costs	Custos parciais de Overdrive	Costes parciales de Overdrive	Coûts partiels d'Overdrive	Costi parziali Overdrive	Teilkosten für Overdrive	オーバードライブ部分消費	오버드라이브 부분 소모	超限技部分消耗
+Elemental Dominion: Core	Elemental Dominion: núcleo	Elemental Dominion: núcleo	Elemental Dominion : base	Elemental Dominion: base	Elemental Dominion: Basis	Elemental Dominion: 基本	Elemental Dominion: 기본	Elemental Dominion：核心
+Elemental Dominion: Tactics	Elemental Dominion: táticas	Elemental Dominion: tácticas	Elemental Dominion : tactiques	Elemental Dominion: tattiche	Elemental Dominion: Taktik	Elemental Dominion: 戦術	Elemental Dominion: 전술	Elemental Dominion：战术
+Elemental Dominion: Gravity	Elemental Dominion: gravidade	Elemental Dominion: gravedad	Elemental Dominion : gravité	Elemental Dominion: gravità	Elemental Dominion: Gravitation	Elemental Dominion: 重力	Elemental Dominion: 중력	Elemental Dominion：重力
+Magic Break Damage Limit	Quebra do limite de dano mágico	Romper límite de daño mágico	Dépassement des dégâts magiques	Supera limite danno magico	Magische Schadensgrenze brechen	魔法ダメージ限界突破	마법 피해 한계 돌파	魔法伤害突破上限
+Spira Reforge abilities	Habilidades Spira Reforge	Habilidades Spira Reforge	Compétences Spira Reforge	Abilità Spira Reforge	Spira-Reforge-Fähigkeiten	Spira Reforgeアビリティ	Spira Reforge 능력	Spira Reforge 能力
+Aeon Ascension upgrades	Melhorias Aeon Ascension	Mejoras Aeon Ascension	Améliorations Aeon Ascension	Potenziamenti Aeon Ascension	Aeon-Ascension-Verbesserungen	Aeon Ascension強化	Aeon Ascension 강화	Aeon Ascension 升级
+Per-monster AP/Gil	AP/Gil por monstro	AP/Guiles por monstruo	PC/Gils par monstre	AP/Guil per mostro	AP/Gil je Monster	モンスター別AP・ギル	몬스터별 AP/길	每种怪物的 AP/金币
+Holy / Shadow weapon effects	Efeitos de arma Sagrado/Sombra	Efectos de arma Luz/Sombra	Effets d'arme Sacré/Ombre	Effetti arma Sacro/Ombra	Waffeneffekte Heilig/Schatten	武器の聖・闇エフェクト	무기 신성/암흑 효과	武器神圣/暗影特效
+Elemental Nul spells	Magias Nul elementais	Magias Nul elementales	Sorts Nul élémentaires	Magie Nul elementali	Elementare Nul-Zauber	属性バ系魔法	속성 무효화 마법	属性无效化魔法

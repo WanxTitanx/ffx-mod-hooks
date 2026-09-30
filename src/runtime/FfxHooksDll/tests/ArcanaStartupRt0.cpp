@@ -16,7 +16,8 @@ struct x86Detour {
     ~x86Detour(){++deleted;}
 };
 }
-static PLH::x86Detour* g_nativeTextOutlineDetour=nullptr;
+namespace FfxHooks {using CompatibleDetour=PLH::x86Detour;}
+static FfxHooks::CompatibleDetour* g_nativeTextOutlineDetour=nullptr;
 #include "ArcanaStartupAdapter.inc"
 static void Check(bool ok,const char* label){++checks;if(!ok){++failures;std::printf("FAIL %s\n",label);}}
 static void Reset(){delete g_nativeTextOutlineDetour;g_nativeTextOutlineDetour=nullptr;g_base=0;lastTarget=0;installs=deleted=0;succeeds=true;}

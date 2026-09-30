@@ -139,6 +139,7 @@ if ($WithPolyHook) {
         "`"$here\hooks\F7UiCore.cpp`"",
         "`"$here\hooks\FieldScoutAdmissionCore.cpp`"",
         "`"$here\hooks\MinHookBatchCoordinator.cpp`"",
+        "`"$here\hooks\FahrenheitBridge.cpp`"",
         "`"$here\hooks\MonsterAiObserverCore.cpp`"",
         "`"$here\hooks\MonsterAiDispatchShadow.cpp`"",
         "`"$here\hooks\MonsterAiDispatchTelemetry.cpp`"",
@@ -189,8 +190,8 @@ if ($WithPolyHook) {
     $resArg = if (Test-Path "$objDir\version.res") { "`"$objDir\version.res`"" } else { "" }
 
     $clCmd = (
-        "cl /nologo /LD /O2 /MT /W3 /EHsc /std:c++17" +
-        " /D_WINDOWS /D_USRDLL /DFFXHOOKS_EXPORTS /DFFXHOOKS_HAVE_POLYHOOK" +
+        "cl /nologo /LD /O2 /MT /W3 /EHsc /std:c++17 /utf-8" +
+        " /D_WINDOWS /D_USRDLL /DFFXHOOKS_EXPORTS /DFFXHOOKS_HAVE_POLYHOOK /DFFXHOOKS_COEXISTENCE" +
         " /I`"$here`" /I`"$here\third_party\minhook\include`" /I`"$vcpkgInclude`" /I`"$here\..\..\..\research\equipment_workshop\include`"" +
         " $sources" +
         " $resArg" +

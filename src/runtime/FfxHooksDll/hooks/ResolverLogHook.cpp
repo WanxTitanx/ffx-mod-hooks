@@ -12,7 +12,7 @@
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #include <exception>
 #include <stdarg.h>
 #include <stdio.h>
@@ -28,7 +28,7 @@ namespace {
 constexpr long kDefaultMaxLoggedCalls = 256;
 constexpr size_t kMaxRedirects = 64;
 
-static PLH::x86Detour* g_detour = nullptr;
+static FfxHooks::CompatibleDetour* g_detour = nullptr;
 static uint64_t        g_trampoline = 0;
 static ResolverLogFn   g_logFn = nullptr;
 static bool            g_installed = false;
@@ -148,7 +148,7 @@ ResolverLogInstallResult InstallResolverLogHook(uintptr_t base, ResolverLogFn lo
         g_maxLoggedCalls);
 
     try {
-        g_detour = new PLH::x86Detour(
+        g_detour = new FfxHooks::CompatibleDetour(
             targetVa,
             reinterpret_cast<uint64_t>(&ResolverLog_Shim),
             &g_trampoline);
@@ -182,6 +182,7 @@ ResolverLogInstallResult InstallResolverLogHook(uintptr_t base, ResolverLogFn lo
 }
 
 void RemoveResolverLogHook() {
+    if (Coexistence::runtime.PeerPresent()) return;
     if (!g_installed) return;
     if (g_detour) {
         g_detour->unHook();

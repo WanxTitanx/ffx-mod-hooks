@@ -705,7 +705,7 @@ void TestObserverSource() {
         Expect(source.find(forbidden)==std::string::npos,"adapter has no save writer, warp, legacy resolver or reachable gateway destruction");
     Expect(source.find("alignas(8) uint64_t g_sceneTrampoline")!=std::string::npos && source.find("alignas(8) uint64_t g_openingTrampoline")!=std::string::npos,"trampolines have stable aligned process-lifetime storage");
     const auto install=FunctionBody(source,"InstallFastloadHook(");
-    Expect(install.find("ValidateTarget") < install.find("new PLH::x86Detour"),"all signatures precede detour construction");
+    Expect(install.find("ValidateTarget") < install.find("new FfxHooks::CompatibleDetour"),"all signatures precede detour construction");
     Expect(source.find("ParseExecutableIdentity")!=std::string::npos,"installer reuses shared PE parser");
     const auto openingProbe=FunctionBody(source,"OpeningEvidence ReadOpeningEvidence()");
     Expect(openingProbe.find("g_publication.Read().phase") < openingProbe.find("ReadObservedMemory"),
@@ -714,7 +714,7 @@ void TestObserverSource() {
     Expect(openingShim.find("!evidence.sampled")<openingShim.find("Failure::ReadFault"),
            "late readiness publication cannot turn a skipped opening probe into a read fault");
 
-    const size_t openingConstruct=install.find("g_openingDetour=new PLH::x86Detour");
+    const size_t openingConstruct=install.find("g_openingDetour=new FfxHooks::CompatibleDetour");
     const size_t optionalAdmission=install.find("if(IsTerminal(g_publication.Read().phase))");
     Expect(optionalAdmission!=std::string::npos&&optionalAdmission<openingConstruct,
            "a terminal scene callback during installation must block the optional opening detour");
@@ -738,7 +738,7 @@ void TestEarlyStartup() {
         Expect(dllmain.find(forbidden)==std::string::npos,"DllMain cannot install, remove, wait, log telemetry, or query input");
     Expect(worker.find("FlushFastloadTelemetry()")!=std::string::npos&&worker.find("FastloadNeedsPump()")!=std::string::npos,"existing worker flushes bounded telemetry independent of Present");
     const auto adapter=Source("hooks/BootSkipHook.cpp");const auto install=FunctionBody(adapter,"InstallResult InstallFastloadHook(");
-    const size_t firstDetour=install.find("new PLH::x86Detour");
+    const size_t firstDetour=install.find("new FfxHooks::CompatibleDetour");
     Expect(install.find("if(!options.gateEnabled)return")<firstDetour&&install.find("if(options.startupShiftHeld)")<firstDetour&&install.find("if(options.validateOnly)")<firstDetour,"OFF, Shift and validate-only return before detour construction");
     Expect(early.find("options.observeOnly = EnvFlagEnabled(\"FFXHOOKS_FASTLOAD_OBSERVE_ONLY\")")!=std::string::npos,
            "the immutable research override selects observer mode explicitly");

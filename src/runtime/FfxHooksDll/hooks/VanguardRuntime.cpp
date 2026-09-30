@@ -351,6 +351,7 @@ static const char* WorkshopAbilityName(unsigned word) noexcept {
 }
 static const EquipmentWorkshop::CatalogBridge::Provider nativeCatalogProvider{WorkshopCatalog,WorkshopAbilityName};
 bool Start(std::uintptr_t base,bool validateOnly,LogFn log) {
+    if(!Coexistence::FeatureAllowed("vanguard.enabled")){PublishStatus(nullptr,F8RuntimeAvailability::PeerOwned);return false;}
     if(validateOnly)return false;
     if(installed)return running.load();
     if(!Profile(base)){if(log)log("[ffx-hooks] Vanguard rejected: profile/signature mismatch\n");PublishStatus(nullptr,F8RuntimeAvailability::SignatureMismatch);return false;}

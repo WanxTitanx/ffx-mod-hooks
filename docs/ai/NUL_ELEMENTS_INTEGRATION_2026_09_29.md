@@ -141,3 +141,38 @@ Primary checkout advanced to main without reset or cleanup. The other task's
 dirty Grid8 work remains untouched. Publication receipts are retained beside
 the ignored installation/build evidence. This documentation-only follow-up does
 not change the installed DLL or its 355 matching production inputs.
+
+
+## Public release — 2026-09-29 11:18:57 UTC
+
+[v0.6.0-beta.2](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2) is published as a beta, not Production promotion.
+Public source/tag: `0c454b527e731b38aa1270d742908cdcfc8be78c` in
+`WanxTitanx/ffx-mod-hooks`. English/PT-BR READMEs and release notes include
+support/donation links. The runtime DLL is byte-identical to the installed
+candidate. Four uploaded assets were read back through GitHub's SHA-256 digests:
+
+| Asset | Bytes | SHA-256 |
+|---|---:|---|
+| `ffx-hooks.dll` | 4,011,008 | `5f6a76f3260a1aa0f5a36e0ff6e9f641f7d92e0dda969910d0d66a2debc3016e` |
+| `ffx-hooks-release-v0.6.0-beta.2.zip` | 243,948,596 | `04442b47c0284929c8dadbe951e838c0751092887637e66ae211e0afe93d7d1d` |
+| `ffx-hooks-source-v0.6.0-beta.2.tar.gz` | 251,997,044 | `f5d8af732970d793b2b927fd4510a8f19f68ce46c029aec86370c7f32f386bd7` |
+| `ffx-hooks-v0.6.0-beta.2.sha256` | three archive/DLL entries | GitHub digest verified against the local checksum file |
+
+The binary ZIP has 102 verified members, including 78 cards and two shared
+Arcana images. The source archive contains exactly 1,263 tracked public files.
+All 363 C/C++/include/resource/definition inputs match the recorded candidate
+packet, including the Workshop dependencies; the separate 355-input runtime
+count above also includes project files and uses a different scope.
+
+Public-copy checks: normal/sanitized Workshop; 48 Python checks with two optional
+private fixtures skipped; all 12 sanitized Arcana cases; language core 2,109,
+payload 73 and field 48 plus Python contracts; 12 Nul tests (menu 43/43); 122
+Sphere helper tests; two source-packet tests; negative packager checks and complete
+archive readback. No private pack or live game session was supplied/run.
+
+The mirror commit deliberately uses `[skip ci]` to reuse byte-identical native
+validation and avoid another paid hosted build. No branch protection/ruleset
+required extra statuses; public portable/release checks ran locally. Private PR
+and main hosted checks completed successfully. This does not waive RT2 or
+Production gates. No proprietary command banks, animation DLLs/textures, loaders,
+saves, private fixtures or raw development report archive are distributed.

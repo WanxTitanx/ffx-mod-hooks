@@ -8,7 +8,7 @@
 #include <intrin.h>
 #include <atomic>
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #endif
 
 namespace FfxHooks::SinAi {
@@ -40,9 +40,9 @@ struct Metadata {
 };
 std::array<Metadata,8> g_metadata{};
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-PLH::x86Detour* g_hook=nullptr;
-PLH::x86Detour* g_stepHook=nullptr;
-PLH::x86Detour* g_rewardHook=nullptr;
+FfxHooks::CompatibleDetour* g_hook=nullptr;
+FfxHooks::CompatibleDetour* g_stepHook=nullptr;
+FfxHooks::CompatibleDetour* g_rewardHook=nullptr;
 #endif
 bool ReadMemory(void*,std::uintptr_t at,void* target,std::size_t count){
     if(!target || !count || at<0x10000u || at+count<at)return false;
@@ -247,11 +247,11 @@ bool Start(std::uintptr_t base,const wchar_t* path,ContextReader reader,Registra
     HMODULE own=nullptr;
     if(!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,reinterpret_cast<LPCWSTR>(&RegisterShim),&own)){g_status=StatusCode::Conflict;return false;}
     try {
-        g_hook=new PLH::x86Detour(base+kRegisterRva,reinterpret_cast<std::uintptr_t>(&RegisterShim),&g_original);
+        g_hook=new FfxHooks::CompatibleDetour(base+kRegisterRva,reinterpret_cast<std::uintptr_t>(&RegisterShim),&g_original);
         if(!g_hook->hook()){g_status=StatusCode::Conflict;return false;}
-        g_stepHook=new PLH::x86Detour(base+SinNatural::kStepRva,reinterpret_cast<std::uintptr_t>(&NaturalStepShim),&g_originalStep);
+        g_stepHook=new FfxHooks::CompatibleDetour(base+SinNatural::kStepRva,reinterpret_cast<std::uintptr_t>(&NaturalStepShim),&g_originalStep);
         if(!g_stepHook->hook()){g_status=StatusCode::Conflict;return false;}
-        g_rewardHook=new PLH::x86Detour(base+SinMetadata::kRewardRva,reinterpret_cast<std::uintptr_t>(&RewardShim),&g_originalReward);
+        g_rewardHook=new FfxHooks::CompatibleDetour(base+SinMetadata::kRewardRva,reinterpret_cast<std::uintptr_t>(&RewardShim),&g_originalReward);
         if(!g_rewardHook->hook()){g_status=StatusCode::Conflict;return false;}
     } catch(...){g_status=StatusCode::Conflict;return false;}
     // Channel contexts retain pointers into these buffers. Both the applied

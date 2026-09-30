@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  MinHook - The Minimalistic API Hooking Library for x64/x86
  *  Copyright (C) 2009-2017 Tsuda Kageyu.
  *  All rights reserved.
@@ -64,6 +64,9 @@ typedef struct _HOOK_ENTRY
     LPVOID pDetour;             // Address of the detour or relay function.
     LPVOID pTrampoline;         // Address of the trampoline function.
     UINT8  backup[8];           // Original prologue of the target function.
+    UINT8  trampolineBackup[MEMORY_SLOT_SIZE]; // Detect foreign trampoline owners.
+    UINT8  sharedAbove[5];      // Before-image if the shared provider chooses hotpatch.
+    BOOL   sharedAboveReadable;
 
     UINT8  patchAbove  : 1;     // Uses the hot patch area.
     UINT8  isEnabled   : 1;     // Enabled.
@@ -196,6 +199,104 @@ static DWORD_PTR FindNewIP(PHOOK_ENTRY pHook, DWORD_PTR ip)
 }
 
 //-------------------------------------------------------------------------
+// Jarvis-HOOK: independent MinHook DLLs do not share g_hooks or g_isLocked.
+// A second provider may change an entry after creation or chain through our
+// trampoline. Refuse to overwrite it or release still-reachable code.
+static BOOL ReadCode(LPCVOID address, LPVOID output, SIZE_T size)
+{
+    SIZE_T read = 0;
+    return ReadProcessMemory(GetCurrentProcess(), address, output, size, &read)
+        && read == size;
+}
+
+static BOOL CodeMatches(LPCVOID address, const UINT8 *expected, SIZE_T size)
+{
+    UINT8 current[MEMORY_SLOT_SIZE];
+    return size <= sizeof(current) && ReadCode(address, current, size)
+        && memcmp(current, expected, size) == 0;
+}
+
+static BOOL TrampolineIntact(PHOOK_ENTRY hook)
+{
+    return CodeMatches(hook->pTrampoline, hook->trampolineBackup,
+        sizeof(hook->trampolineBackup));
+}
+
+static BOOL PatchIntact(PHOOK_ENTRY hook)
+{
+    UINT8 expected[8];
+    LPBYTE address = (LPBYTE)hook->pTarget;
+    SIZE_T size = sizeof(JMP_REL);
+    if (hook->patchAbove) {
+        address -= sizeof(JMP_REL);
+        size += sizeof(JMP_REL_SHORT);
+    }
+    memcpy(expected, hook->backup, size);
+    if (hook->isEnabled) {
+        JMP_REL jump;
+        jump.opcode = 0xE9;
+        jump.operand = (UINT32)((LPBYTE)hook->pDetour - (address + sizeof(JMP_REL)));
+        memcpy(expected, &jump, sizeof(jump));
+        if (hook->patchAbove) {
+            expected[sizeof(JMP_REL)] = 0xEB;
+            expected[sizeof(JMP_REL) + 1] = (UINT8)(0 - size);
+        }
+    }
+    return CodeMatches(address, expected, size) && TrampolineIntact(hook);
+}
+
+static BOOL TransitionsIntact(UINT pos, UINT action)
+{
+    UINT count = pos == ALL_HOOKS_POS ? g_hooks.size : pos + 1;
+    if (pos == ALL_HOOKS_POS) pos = 0;
+    for (; pos < count; ++pos) {
+        PHOOK_ENTRY hook = &g_hooks.pItems[pos];
+        BOOL enable = action == ACTION_ENABLE ? TRUE :
+            action == ACTION_DISABLE ? FALSE : hook->queueEnable;
+        if (hook->isEnabled != enable && !PatchIntact(hook)) return FALSE;
+    }
+    return TRUE;
+}
+
+static BOOL ForeignEntryJump(LPVOID target)
+{
+    UINT8 bytes[6];
+    LPBYTE cursor = (LPBYTE)target;
+    MEMORY_BASIC_INFORMATION source, destination;
+    UINT hops;
+    if (!VirtualQuery(target, &source, sizeof(source))) return TRUE;
+    // Follow only entry thunks, including the short jump of an x86 hotpatch.
+    // Internal compiler thunks are allowed; crossing allocation ownership is
+    // not permission to chain into an unknown provider.
+    for (hops = 0; hops < 4; ++hops) {
+        LPBYTE next;
+        if (!ReadCode(cursor, bytes, 2)) return TRUE;
+        if (bytes[0] == 0xE9) {
+            INT32 relative;
+            if (!ReadCode(cursor, bytes, 5)) return TRUE;
+            memcpy(&relative, bytes + 1, sizeof(relative));
+            next = cursor + 5 + relative;
+        } else if (bytes[0] == 0xEB) {
+            next = cursor + 2 + (INT8)bytes[1];
+        } else if (bytes[0] == 0xFF && bytes[1] == 0x25) {
+            INT32 operand;
+            LPCVOID slot;
+            if (!ReadCode(cursor, bytes, 6)) return TRUE;
+            memcpy(&operand, bytes + 2, sizeof(operand));
+#if defined(_M_X64) || defined(__x86_64__)
+            slot = cursor + 6 + operand;
+#else
+            slot = (LPCVOID)(ULONG_PTR)(UINT32)operand;
+#endif
+            if (!ReadCode(slot, &next, sizeof(next))) return TRUE;
+        } else return FALSE;
+        if (!VirtualQuery(next, &destination, sizeof(destination)) ||
+            source.AllocationBase != destination.AllocationBase) return TRUE;
+        cursor = next;
+    }
+    return TRUE; // Cyclic/opaque chains are not an owned vanilla entry.
+}
+
 static VOID ProcessThreadIPs(HANDLE hThread, UINT pos, UINT action)
 {
     // If the thread suspended in the overwritten area,
@@ -325,6 +426,8 @@ static BOOL EnumerateThreads(PFROZEN_THREADS pThreads)
 }
 
 //-------------------------------------------------------------------------
+static VOID Unfreeze(PFROZEN_THREADS pThreads);
+
 static MH_STATUS Freeze(PFROZEN_THREADS pThreads, UINT pos, UINT action)
 {
     MH_STATUS status = MH_OK;
@@ -349,7 +452,6 @@ static MH_STATUS Freeze(PFROZEN_THREADS pThreads, UINT pos, UINT action)
                 if (result != 0xFFFFFFFF)
                 {
                     suspended = TRUE;
-                    ProcessThreadIPs(hThread, pos, action);
                 }
                 CloseHandle(hThread);
             }
@@ -362,6 +464,27 @@ static MH_STATUS Freeze(PFROZEN_THREADS pThreads, UINT pos, UINT action)
         }
     }
 
+    if (status == MH_OK) {
+        UINT i;
+        // Validate the complete transaction after suspension and BEFORE any
+        // thread's IP is relocated. A conflict must leave both bytes and IPs
+        // untouched; checking only inside EnableHookLL would be too late.
+        if (!TransitionsIntact(pos, action)) {
+            Unfreeze(pThreads);
+            pThreads->pItems = NULL;
+            pThreads->size = pThreads->capacity = 0;
+            return MH_ERROR_PATCH_CONFLICT;
+        }
+        for (i = 0; i < pThreads->size; ++i) {
+            if (pThreads->pItems[i] != 0) {
+                HANDLE thread = OpenThread(THREAD_ACCESS, FALSE, pThreads->pItems[i]);
+                if (thread != NULL) {
+                    ProcessThreadIPs(thread, pos, action);
+                    CloseHandle(thread);
+                }
+            }
+        }
+    }
     return status;
 }
 
@@ -507,6 +630,8 @@ static VOID LeaveSpinLock(VOID)
 }
 
 //-------------------------------------------------------------------------
+#include "shared_provider.inl"
+
 MH_STATUS WINAPI MH_Initialize(VOID)
 {
     MH_STATUS status = MH_OK;
@@ -515,6 +640,14 @@ MH_STATUS WINAPI MH_Initialize(VOID)
 
     if (g_hHeap == NULL)
     {
+        if (g_shared.module != NULL) {
+            status = g_shared.initialize();
+            if (status != MH_OK && status != MH_ERROR_ALREADY_INITIALIZED) {
+                LeaveSpinLock();
+                return status;
+            }
+            status = MH_OK;
+        }
         g_hHeap = HeapCreate(0, 0, 0);
         if (g_hHeap != NULL)
         {
@@ -540,12 +673,24 @@ MH_STATUS WINAPI MH_Initialize(VOID)
 MH_STATUS WINAPI MH_Uninitialize(VOID)
 {
     MH_STATUS status = MH_OK;
+    UINT i;
 
     EnterSpinLock();
+    if (g_shared.module != NULL) {
+        status = SharedRelease();
+        LeaveSpinLock();
+        return status;
+    }
 
     if (g_hHeap != NULL)
     {
-        status = EnableAllHooksLL(FALSE);
+        for (i = 0; i < g_hooks.size; ++i) {
+            if (!TrampolineIntact(&g_hooks.pItems[i])) {
+                status = MH_ERROR_PATCH_CONFLICT;
+                break;
+            }
+        }
+        if (status == MH_OK) status = EnableAllHooksLL(FALSE);
         if (status == MH_OK)
         {
             // Free the internal function buffer.
@@ -581,6 +726,11 @@ MH_STATUS WINAPI MH_CreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOrigina
     MH_STATUS status = MH_OK;
 
     EnterSpinLock();
+    if (g_shared.module != NULL) {
+        status = SharedCreate(pTarget, pDetour, ppOriginal);
+        LeaveSpinLock();
+        return status;
+    }
 
     if (g_hHeap != NULL)
     {
@@ -589,6 +739,12 @@ MH_STATUS WINAPI MH_CreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOrigina
             UINT pos = FindHookEntry(pTarget);
             if (pos == INVALID_HOOK_POS)
             {
+                UINT8 original[MEMORY_SLOT_SIZE], above[sizeof(JMP_REL)];
+                BOOL aboveReadable = ReadCode((LPBYTE)pTarget - sizeof(JMP_REL), above, sizeof(above));
+                if (ForeignEntryJump(pTarget) || !ReadCode(pTarget, original, sizeof(original))) {
+                    LeaveSpinLock();
+                    return MH_ERROR_PATCH_CONFLICT;
+                }
                 LPVOID pBuffer = AllocateBuffer(pTarget);
                 if (pBuffer != NULL)
                 {
@@ -599,7 +755,12 @@ MH_STATUS WINAPI MH_CreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOrigina
                     ct.pTrampoline = pBuffer;
                     if (CreateTrampolineFunction(&ct))
                     {
-                        PHOOK_ENTRY pHook = AddHookEntry();
+                        PHOOK_ENTRY pHook = NULL;
+                        if (!CodeMatches(pTarget, original, sizeof(original)) ||
+                            (ct.patchAbove && (!aboveReadable ||
+                             !CodeMatches((LPBYTE)pTarget - sizeof(JMP_REL), above, sizeof(above))))) {
+                            status = MH_ERROR_PATCH_CONFLICT;
+                        } else pHook = AddHookEntry();
                         if (pHook != NULL)
                         {
                             pHook->pTarget     = ct.pTarget;
@@ -609,6 +770,7 @@ MH_STATUS WINAPI MH_CreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOrigina
                             pHook->pDetour     = ct.pDetour;
 #endif
                             pHook->pTrampoline = ct.pTrampoline;
+                            memcpy(pHook->trampolineBackup, ct.pTrampoline, MEMORY_SLOT_SIZE);
                             pHook->patchAbove  = ct.patchAbove;
                             pHook->isEnabled   = FALSE;
                             pHook->queueEnable = FALSE;
@@ -620,14 +782,12 @@ MH_STATUS WINAPI MH_CreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOrigina
 
                             if (ct.patchAbove)
                             {
-                                memcpy(
-                                    pHook->backup,
-                                    (LPBYTE)pTarget - sizeof(JMP_REL),
-                                    sizeof(JMP_REL) + sizeof(JMP_REL_SHORT));
+                                memcpy(pHook->backup, above, sizeof(JMP_REL));
+                                memcpy(pHook->backup + sizeof(JMP_REL), original, sizeof(JMP_REL_SHORT));
                             }
                             else
                             {
-                                memcpy(pHook->backup, pTarget, sizeof(JMP_REL));
+                                memcpy(pHook->backup, original, sizeof(JMP_REL));
                             }
 
                             if (ppOriginal != NULL)
@@ -635,7 +795,7 @@ MH_STATUS WINAPI MH_CreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOrigina
                         }
                         else
                         {
-                            status = MH_ERROR_MEMORY_ALLOC;
+                            if (status == MH_OK) status = MH_ERROR_MEMORY_ALLOC;
                         }
                     }
                     else
@@ -679,13 +839,20 @@ MH_STATUS WINAPI MH_RemoveHook(LPVOID pTarget)
     MH_STATUS status = MH_OK;
 
     EnterSpinLock();
+    if (g_shared.module != NULL) {
+        status = SharedRemove(pTarget);
+        LeaveSpinLock();
+        return status;
+    }
 
     if (g_hHeap != NULL)
     {
         UINT pos = FindHookEntry(pTarget);
         if (pos != INVALID_HOOK_POS)
         {
-            if (g_hooks.pItems[pos].isEnabled)
+            if (!TrampolineIntact(&g_hooks.pItems[pos])) {
+                status = MH_ERROR_PATCH_CONFLICT;
+            } else if (g_hooks.pItems[pos].isEnabled)
             {
                 FROZEN_THREADS threads;
                 status = Freeze(&threads, pos, ACTION_DISABLE);
@@ -724,6 +891,14 @@ static MH_STATUS EnableHook(LPVOID pTarget, BOOL enable)
     MH_STATUS status = MH_OK;
 
     EnterSpinLock();
+    if (g_shared.module != NULL) {
+        const UINT pos = FindHookEntry(pTarget);
+        status = g_hHeap == NULL ? MH_ERROR_NOT_INITIALIZED :
+            pTarget == MH_ALL_HOOKS ? SharedApply(FALSE, enable) :
+            pos == INVALID_HOOK_POS ? MH_ERROR_NOT_CREATED : SharedTransition(pos, enable);
+        LeaveSpinLock();
+        return status;
+    }
 
     if (g_hHeap != NULL)
     {
@@ -739,7 +914,7 @@ static MH_STATUS EnableHook(LPVOID pTarget, BOOL enable)
                 if (g_hooks.pItems[pos].isEnabled != enable)
                 {
                     FROZEN_THREADS threads;
-                    status = Freeze(&threads, pos, ACTION_ENABLE);
+                    status = Freeze(&threads, pos, enable ? ACTION_ENABLE : ACTION_DISABLE);
                     if (status == MH_OK)
                     {
                         status = EnableHookLL(pos, enable);
@@ -837,6 +1012,11 @@ MH_STATUS WINAPI MH_ApplyQueued(VOID)
     UINT i, first = INVALID_HOOK_POS;
 
     EnterSpinLock();
+    if (g_shared.module != NULL) {
+        status = g_hHeap == NULL ? MH_ERROR_NOT_INITIALIZED : SharedApply(TRUE, FALSE);
+        LeaveSpinLock();
+        return status;
+    }
 
     if (g_hHeap != NULL)
     {
@@ -931,6 +1111,7 @@ const char *WINAPI MH_StatusToString(MH_STATUS status)
         MH_ST2STR(MH_ERROR_MEMORY_PROTECT)
         MH_ST2STR(MH_ERROR_MODULE_NOT_FOUND)
         MH_ST2STR(MH_ERROR_FUNCTION_NOT_FOUND)
+        MH_ST2STR(MH_ERROR_PATCH_CONFLICT)
     }
 
 #undef MH_ST2STR

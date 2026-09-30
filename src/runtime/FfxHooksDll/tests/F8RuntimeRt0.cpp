@@ -1,6 +1,7 @@
 #include "../shared/Config.h"
 #include "../shared/ffx_addresses.h"
 #include "../hooks/F8FlagCatalog.h"
+#include "../hooks/FahrenheitCoexistenceCore.h"
 #include "../hooks/VanguardCatalog.h"
 #include "../hooks/F8RuntimeCore.h"
 #include "../hooks/F7UnsafePrototypePolicy.h"
@@ -598,7 +599,7 @@ bool ReplaceFirstSourceToken(std::string& source, const char* from, const char* 
 
 bool ValidateTask6DetachBody(const std::string& body) {
     return CompactSourceCode(body) ==
-           "caseDLL_PROCESS_DETACH:FfxHooks::Arcana::NativeUi::Stop();FfxHooks::Arcana::Combat::Stop();FfxHooks::SetSupplementalDropProvider(nullptr);FfxHooks::Arcana::Assets::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::ElementalDominion::RequestDetachStop();FfxHooks::SpiraAbilities::RequestDetachStop();FfxHooks::MonsterRewards::RequestStop();FfxHooks::WeaponStrikeVfx::RequestStop();FfxHooks::RequestNulWardDetachStop();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::Vanguard::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::ElementNameInput::Abort();FfxHooks::NativeLanguage::RequestStop();FfxHooks::TextLanguage::Native::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
+           "caseDLL_PROCESS_DETACH:FfxHooks::Coexistence::runtime.Stop();FfxHooks::Arcana::NativeUi::Stop();FfxHooks::Arcana::Combat::Stop();FfxHooks::SetSupplementalDropProvider(nullptr);FfxHooks::Arcana::Assets::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::ElementalDominion::RequestDetachStop();FfxHooks::SpiraAbilities::RequestDetachStop();FfxHooks::MonsterRewards::RequestStop();FfxHooks::WeaponStrikeVfx::RequestStop();FfxHooks::RequestNulWardDetachStop();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::Vanguard::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::ElementNameInput::Abort();FfxHooks::NativeLanguage::RequestStop();FfxHooks::TextLanguage::Native::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
            "FfxHooks::SeymourMenuList::RequestStop();"
            "FfxHooks::SeymourPersistentRoster::RequestStop();"
            "FfxHooks::SeymourSession::RequestStop();"
@@ -1444,7 +1445,7 @@ void TestF8BulkUiSourceContracts() {
                apply.body.find("result.externalOverride") != std::string::npos &&
                apply.body.find("result.unavailable") != std::string::npos,
            "the bulk summary must name the first actionable blocker and its artifact");
-    Expect(apply.body.find("PlaySfx(clean ? 4 : 3)") != std::string::npos &&
+    Expect(apply.body.find("PlaySfx(clean ? 1 : 3)") != std::string::npos &&
                apply.body.find("result.unavailable == 0") == std::string::npos,
            "expected unavailable skips must keep the success tone; only real failures warn");
     // R8-U1: per-row verdict writeback — rows skipped by the bulk run must explain
@@ -1979,7 +1980,8 @@ void TestTask6DllmainIntegrationContracts() {
         source, "static void AuroraD3DRender(IDXGISwapChain* swapChain)");
     Expect(render.Valid() && SourceTokensInOrder(render.body, {
                "UnXBoosterFrameTick(GetTickCount())",
-               "if (!actorVisible && !menuOpen && !speedIndicatorVisible) return",
+               "if (!actorVisible && !menuOpen && !speedIndicatorVisible && !uiCaptionsVisible)",
+               "FfxHooks::UiOverlay::Unavailable();return;",
            }),
            "real guarded Present rendering must tick F8 before visual-overlay early-outs");
 
@@ -2300,6 +2302,7 @@ void TestTask6SourceValidatorMutationPressure() {
            "UnX booster source must be readable for Task 6 mutation pressure");
     const std::string validDetach =
         "case DLL_PROCESS_DETACH:\n"
+        "FfxHooks::Coexistence::runtime.Stop();\n"
         "FfxHooks::Arcana::NativeUi::Stop();\n"
         "FfxHooks::Arcana::Combat::Stop();\n"
         "FfxHooks::SetSupplementalDropProvider(nullptr);\n"
@@ -3669,9 +3672,9 @@ void TestSpeedHackIndicatorContract() {
            "the shared overlay texture must draw the Speed Hack indicator");
     Expect(renderBody.Valid() && renderBody.body.find("speedIndicatorVisible") != std::string::npos &&
                renderBody.body.find(
-                   "if (!actorVisible && !menuOpen && !speedIndicatorVisible) return;") !=
+                   "if (!actorVisible && !menuOpen && !speedIndicatorVisible && !uiCaptionsVisible)") !=
                    std::string::npos,
-           "the Present renderer must stay admitted when only the Speed Hack indicator is visible");
+           "the Present renderer must admit either the speed indicator or localized captions alone");
 
     const SourceBlock focusNotify =
         SourceFunctionBody(speedHackSource, "void SpeedHackNotifyForegroundLost() noexcept");
@@ -3785,7 +3788,7 @@ void TestSpeedHackIndicatorContract() {
     Expect(removeSpeed.Valid() &&
                removeSpeed.body.find("RequestSpeedHackStop();") != std::string::npos &&
                removeSpeed.body.find("unHook()") == std::string::npos &&
-               removeSpeed.body.find("delete static_cast<PLH::x86Detour*>") == std::string::npos &&
+               removeSpeed.body.find("delete static_cast<FfxHooks::CompatibleDetour*>") == std::string::npos &&
                removeSpeed.body.find("g_globalTickTrampoline = 0") == std::string::npos &&
                removeSpeed.body.find("g_nativeStateAddress = nullptr") == std::string::npos,
            "Speed teardown must close admission while retaining detour/trampoline storage for process lifetime");
@@ -3955,7 +3958,7 @@ void TestSpeedHackRelocatedTargetValidation() {
                "RVA_FFX_NATIVE_SPEED_BOOSTER",
                "RVA_FFX_NATIVE_SPEED_BOOSTER_AVAILABILITY",
                "ValidateSpeedHackGlobalTargetSignature(",
-               "new PLH::x86Detour",
+               "new FfxHooks::CompatibleDetour",
            }),
            "Speed install must validate profile, native ranges, and relocated global bytes before detouring");
     Expect(installBody.Valid() &&
@@ -4157,7 +4160,7 @@ void TestDialogSkipCorrectedTargetAndOwnership() {
                "F8Runtime::ParseExecutableIdentity(",
                "F8Runtime::ValidateImageRange(",
                "ValidateDialogSkipTargetSignature(target, kDialogSkipTargetLength)",
-               "new PLH::x86Detour",
+               "new FfxHooks::CompatibleDetour",
            }),
            "Dialog Skip must validate profile, range, and exact corrected entry before detouring");
     const size_t dialogTry = installCode.find("try");
@@ -4166,7 +4169,7 @@ void TestDialogSkipCorrectedTargetAndOwnership() {
     Expect(dialogTry != std::string::npos && dialogHook != std::string::npos &&
                dialogCatch != std::string::npos && dialogTry < dialogHook &&
                dialogHook < dialogCatch && installCode.find("unHook()") == std::string::npos &&
-               installCode.find("delete static_cast<PLH::x86Detour*>") == std::string::npos,
+               installCode.find("delete static_cast<FfxHooks::CompatibleDetour*>") == std::string::npos,
            "Dialog installation must guard hook() exceptions and retain ambiguous failure state");
 
     const SourceBlock removeHooks = SourceFunctionBody(dllmainSource, "static void RemoveHooks()");
@@ -4274,7 +4277,7 @@ void TestCatalogMetadataAndInvariants() {
 
     const SourceBlock presentBody = SourceFunctionBody(
         dllmainSource,
-        "static HRESULT STDMETHODCALLTYPE AuroraD3DPresentShim(IDXGISwapChain* swapChain, UINT syncInterval, UINT flags)");
+        "static void AuroraD3DFrameTick(IDXGISwapChain* swapChain, UINT syncInterval, UINT flags)");
     const std::string presentCode = SourceCodeOnly(presentBody.body);
     Expect(presentBody.Valid() && SourceTokensInOrder(presentCode, {
                "FpsScoutOnPresent(syncInterval, flags)",
@@ -4365,7 +4368,7 @@ void TestCatalogMetadataAndInvariants() {
         "RVA_FFX_NATIVE_SPEED_BOOSTER_AVAILABILITY");
     const size_t globalSignatureValidation = speedHackSource.find(
         "ValidateSpeedHackGlobalTargetSignature(");
-    const size_t detourConstruction = speedHackSource.find("new PLH::x86Detour");
+    const size_t detourConstruction = speedHackSource.find("new FfxHooks::CompatibleDetour");
     Expect(profileValidation != std::string::npos && supportedProfile != std::string::npos &&
                rangeValidation != std::string::npos && nativeStateRange != std::string::npos &&
                nativeAvailabilityRange != std::string::npos &&
@@ -4386,7 +4389,7 @@ void TestCatalogMetadataAndInvariants() {
                CountSourceToken(speedInstallCode, "try") == 1 &&
                CountSourceToken(speedInstallCode, "catch (...)") == 1 &&
                speedInstallCode.find("unHook()") == std::string::npos &&
-               speedInstallCode.find("delete static_cast<PLH::x86Detour*>") ==
+               speedInstallCode.find("delete static_cast<FfxHooks::CompatibleDetour*>") ==
                    std::string::npos &&
                speedInstallCode.find("g_terminalInstallStatus") != std::string::npos,
            "the sole global Speed detour must guard hook() and retain an ambiguous failure gateway");
@@ -5417,7 +5420,8 @@ void TestF7DifficultyTruthfulUiContracts() {
     const SourceBlock toggle = SourceFunctionBody(source, "static void F7DiffToggleBit(int valIdx, int bit)");
     const SourceBlock input = SourceFunctionBody(source, "static int __cdecl F7Sub_InputCb(int obj)");
     const SourceBlock draw = SourceFunctionBody(source, "static void F7Diff_Draw(int F)");
-    const SourceBlock commit = SourceFunctionBody(source, "static void F7_CommitValsToConfig()");
+    const SourceBlock commit = SourceFunctionBody(source, "static bool F7_CommitValsToConfig()");
+    const SourceBlock storeDraft = SourceFunctionBody(source, "static void F7DiffStoreVisibleDraft()");
     Expect(build.Valid() && preset.Valid() && toggle.Valid() && input.Valid() &&
                draw.Valid() && commit.Valid(),
            "F7 Difficulty UI functions must remain structurally readable");
@@ -5427,8 +5431,10 @@ void TestF7DifficultyTruthfulUiContracts() {
     Expect(build.body.find("g_f7DifficultyEnabled = p.enabled") != std::string::npos &&
                build.body.find("g_f7Vals[0] = 0") == std::string::npos,
            "opening a custom preset must preserve configured enabled state");
-    Expect(commit.body.find("p.enabled = g_f7DifficultyEnabled") != std::string::npos &&
-               commit.body.find("p.enabled = g_f7Vals[0]") == std::string::npos,
+    Expect(storeDraft.Valid() &&
+               CompactSourceCode(storeDraft.body).find("p.enabled=g_f7DifficultyEnabled") != std::string::npos &&
+               CompactSourceCode(storeDraft.body).find("p.enabled=g_f7Vals[0]") == std::string::npos &&
+               commit.body.find("F7DiffStoreVisibleDraft()") != std::string::npos,
            "saving a custom preset must not derive enabled state from its preset ID");
     Expect(preset.body.find("g_f7DifficultyEnabled = preset != 0") != std::string::npos &&
                toggle.body.find("g_f7DifficultyEnabled = true") != std::string::npos &&
@@ -12569,19 +12575,20 @@ void TestF7UnsafePrototypePolicyAndSourceContainment() {
         dllmain, "static void SinCurse_BuildLabels()");
     const SourceBlock sinConfirm = SourceFunctionBody(
         dllmain, "static void SinCurse_HandleConfirm(int row)");
-    Expect(sinInput.Valid() &&
-               sinInput.body.find("else if (sel != SIN_RAM_ROW_SAVE)") != std::string::npos &&
-               sinInput.body.find(
-                   "PlaySfx(sel == SIN_RAM_ROW_BACK ? 4 : 1)") == std::string::npos,
+    const SourceBlock sinConfirmPublication=SourceBlockAfterToken(sinInput.body,"if (confirmPressed)");
+    Expect(sinInput.Valid() && sinConfirmPublication.Valid() &&
+               sinConfirmPublication.body.find("feedback.Discard()") != std::string::npos &&
+               sinConfirmPublication.body.find("g_sinMenuResult = sel") != std::string::npos &&
+               sinConfirmPublication.body.find("PlaySfx(") == std::string::npos,
            "S.I.N. Save confirm must not play generic success-like feedback before persistence");
     Expect(sinConfirm.Valid() && SourceTokensInOrder(sinConfirm.body, {
                "SIN_RAM_ROW_SAVE",
                "F7_SetSinRamConfig(g_sinDraft)",
                "F7_SaveConfig()",
                "g_sinSaveFeedback = saved ?",
-               "NativeMenu::PlaySfx(saved ? 4 : 3)",
+               "NativeMenu::PlaySfx(saved ? 1 : 3)",
            }),
-           "S.I.N. Save must map true to success SFX 4 and false to failure SFX 3");
+           "S.I.N. Save must map true to success SFX 1 and false to failure SFX 3");
     Expect(sinLabels.Valid() &&
                sinLabels.body.find("Saved for next encounter") != std::string::npos &&
                sinLabels.body.find("Save failed - memory only") != std::string::npos &&
@@ -13368,6 +13375,34 @@ void TestMaechenPumpDrawContract() {
 
 } // namespace
 
+void TestCooperativeCatalogAdmission() {
+    using namespace FfxHooks;
+    FakeState state;
+    Configure(state,"[labs]\nequipment_workshop = 0\n[f8_authority]\nequipment_workshop = 1\n");
+    const auto* workshop=FindF8Flag("labs.equipment_workshop");
+    const auto* arcana=FindF8Flag("arcana.enabled");
+    Expect(workshop&&arcana,"cooperative admission covers real catalog rows");
+    if(!workshop||!arcana)return;
+    PublishF8RuntimeStatus(workshop->gate.canonicalKey,F8RuntimeAvailability::Available,false,false);
+    PublishF8RuntimeStatus(arcana->gate.canonicalKey,F8RuntimeAvailability::SignatureMismatch,false,false);
+    Coexistence::runtime.Observe(true);
+    const int previousWrites=state.persistCalls;
+    Expect(GetF8RuntimeStatus(*workshop).availability==F8RuntimeAvailability::PeerOwned,
+           "V1 bridge visibly blocks persistence-dependent rows");
+    Expect(SetF8FlagValue(*workshop,true).code==F8EditCode::RejectedUnavailable&&state.persistCalls==previousWrites,
+           "V1 rejection never overwrites the user's saved preference");
+    Expect(Coexistence::runtime.ConfigureServices(2,12),"V2 catalog capabilities negotiate before bootstrap");
+    Expect(GetF8RuntimeStatus(*workshop).availability==F8RuntimeAvailability::Available,
+           "negotiated save transport restores the actual producer's availability");
+    Expect(GetF8RuntimeStatus(*arcana).availability==F8RuntimeAvailability::SignatureMismatch,
+           "service readiness never hides a per-feature signature failure");
+    Expect(!Coexistence::runtime.NativeSaveIoAllowed()&&!Coexistence::runtime.NativeRenderAllowed(),
+           "catalog readiness never installs competing CRT or Present hooks");
+    Coexistence::runtime.Stop();
+    Expect(GetF8RuntimeStatus(*workshop).availability==F8RuntimeAvailability::PeerOwned&&state.persistCalls==previousWrites,
+           "terminal service shutdown revokes admission without changing configuration");
+}
+
 int main(int argc, char** argv) {
     if(argc==2 && std::strcmp(argv[1],"--arena-music-io")==0) {
         TestArenaMusicMarkerIo();
@@ -13494,6 +13529,7 @@ int main(int argc, char** argv) {
     TestRealFileDefaultsOnlyForConfirmedAbsence();
     TestConcurrentReadersSeeWholeValues();
     TestConcurrentWritersCannotLoseUpdates();
+    TestCooperativeCatalogAdmission();
     ResetForTests();
 
     if (g_failures != 0) {

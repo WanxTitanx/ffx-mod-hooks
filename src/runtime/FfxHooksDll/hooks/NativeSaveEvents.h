@@ -1,4 +1,5 @@
 #pragma once
+#include "FahrenheitCoexistenceCore.h"
 #include <array>
 #include <atomic>
 #include <cstddef>
@@ -78,6 +79,7 @@ inline bool ValidObserver(const Observer* value) noexcept {
            (!loads||(value->loadStarting&&value->loadCompleted));
 }
 inline bool Subscribe(const Observer* value) noexcept {
+    if(!Coexistence::runtime.SavePipelineAllowed())return false;
     if(!ValidObserver(value))return false;
     // Registration happens outside callbacks/teardown. Serializing registrations
     // prevents the same permanent observer from acquiring two different slots.

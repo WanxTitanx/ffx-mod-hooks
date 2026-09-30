@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include "../hooks/F7UiCore.h"
+#include "../../NativeMenuShell/MenuFeedback.h"
 #include "../hooks/F8FlagsUiState.h"
 #include "../hooks/EquipmentWorkshopRuntime.h"
 #include "../hooks/AeonAscensionBridge.h"
@@ -41,7 +42,8 @@ void CloseMenu(Menu& m){if(m.obj)WrB(m.obj,65,1);m.obj=0;}
 int padDirection=0,padEdge=0;
 std::vector<int> sounds;
 int PadDir(){return padDirection;} int PadEdge(){return padEdge;}
-void PlaySfx(int id){sounds.push_back(id);}
+void PlaySfxDirect(int id){sounds.push_back(id);}
+void PlaySfx(int id){FfxHooks::MenuAudio::Dispatch(id,PlaySfxDirect);}
 float NX(float x){return x;}float NY(float x){return x;}float NW(float x){return x;}float NH(float x){return x;}
 float MenuBorderPx(){return .002f;}float Osc01(int,int){return .5f;}
 constexpr unsigned kMenuNeonGreenLine=1,kMenuNeonGreenLineLo=1;
@@ -192,6 +194,7 @@ static void Check(bool ok,const char* name){++checks;if(!ok){++failures;std::pri
 #include "ExtendedElementMenuCases.inl"
 #include "ElementNameMenuCases.inl"
 #include "MonsterRewardMenuCases.inl"
+#include "F8SoundFeedbackCases.inl"
 static void FullFifthPickerCases(){
     using A=EquipmentMenu::Action;
     for(unsigned kind=0;kind<2;++kind){
@@ -258,6 +261,7 @@ int main(){
     ElementNameMenuCases();
     NestedFeatureMenuCases();
     MonsterRewardMenuCases();
+    F8SoundFeedbackCases();
     TestHost::nativeDetails=false;Check(WorkshopTestOpen(),"native display status fixture opens");
     NativeMenu::rendered.clear();EquipmentMenu::Draw(EquipmentMenu::menu.obj);
     Check(WorkshopRendered("Native detail hook: OFF")&&WorkshopRendered("Reforge"),"Workshop explains disabled native display");

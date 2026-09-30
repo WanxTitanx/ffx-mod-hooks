@@ -10,7 +10,7 @@
 #include <atomic>
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #include "RecoveryNative.h"
 #include "FieldProbeEvidence.h"
 #endif
@@ -45,10 +45,10 @@ static bool                      g_attempted = false;
 static bool                      g_retired = false;
 static bool                      g_retireResult = true;
 static unsigned                  g_hookedCount = 0;
-static PLH::x86Detour*            g_encounterDetour = nullptr;
-static PLH::x86Detour*            g_decodeDetour = nullptr;
-static PLH::x86Detour*            g_zoneDetour = nullptr;
-static PLH::x86Detour*            g_textureDetour = nullptr;
+static FfxHooks::CompatibleDetour*            g_encounterDetour = nullptr;
+static FfxHooks::CompatibleDetour*            g_decodeDetour = nullptr;
+static FfxHooks::CompatibleDetour*            g_zoneDetour = nullptr;
+static FfxHooks::CompatibleDetour*            g_textureDetour = nullptr;
 // PLH's output storage is also the callback's forwarding source. Do not create a
 // second pointer published only after hook() returns, or clear it during stop.
 static uint64_t                   g_encounterTrampolineVa = 0;
@@ -182,10 +182,10 @@ static int __cdecl BuildTextureSlot_FieldProbeHook(
 
 static bool InstallDetour(
     uintptr_t targetVa, uint64_t* trampolineOut, void* hookFn,
-    PLH::x86Detour** detourOut, const char* label) {
+    FfxHooks::CompatibleDetour** detourOut, const char* label) {
     // Retain even a failed publication attempt: hook() failure alone is not proof
     // that no thread can reach its generated storage. The pinned module owns it.
-    *detourOut = new PLH::x86Detour(targetVa, reinterpret_cast<uint64_t>(hookFn), trampolineOut);
+    *detourOut = new FfxHooks::CompatibleDetour(targetVa, reinterpret_cast<uint64_t>(hookFn), trampolineOut);
     if (!(*detourOut)->hook()) {
         HookLog("[ffx-hooks] ERROR FieldProbe %s detour hook() failed @0x%08X",
             label, static_cast<unsigned>(targetVa));

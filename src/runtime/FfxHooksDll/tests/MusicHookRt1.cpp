@@ -8,6 +8,7 @@
 #include "../hooks/MusicHook.cpp"
 #pragma warning(pop)
 #include "../hooks/ArenaSoundtrack.h"
+#include "../hooks/FahrenheitCoexistenceCore.h"
 
 using namespace FfxHooks;
 static FFXHooksBlock block;
@@ -170,7 +171,7 @@ int main() {
         "invalid pending selection clears queue qualification");
 
     // Repeated-install fast path must reject a partially installed music family.
-    PLH::x86Detour existing(0, 0, &g_trampolinePreload);
+    FfxHooks::CompatibleDetour existing(0, 0, &g_trampolinePreload);
     g_detourPreload = &existing; g_hookedPreload = true; g_hookedSwitch = true; g_hookedPlay = false;
     Check(!InstallMusicHookArenaBattle(0, &block, nullptr).ok, "missing playback hook is not a usable music family");
     g_hookedPlay = true;
@@ -179,6 +180,17 @@ int main() {
     Check(!InstallMusicHookArenaBattle(0, &block, nullptr).ok, "missing native loader rejects partial music family");
     g_detourPreload = nullptr; g_hookedPreload = g_hookedSwitch = g_hookedPlay = false;
     Check(RemoveMusicHook(nullptr) && !g_readEvent, "teardown clears the native reader with the callback family");
+
+    // A callback may already be past the relay when retirement is requested.
+    // Its native continuation must survive for the complete process lifetime.
+    Reset(); resident[8] = true;
+    Coexistence::runtime.Observe(true);
+    const auto continuation = g_trampolinePlay;
+    Check(!RemoveMusicHook(nullptr), "peer-owned process does not claim physical music teardown");
+    Check(g_trampolinePlay == continuation && g_readEvent != nullptr,
+        "peer teardown retains callable native continuations");
+    Check(g_trampolinePlay == continuation && MusicHook_Shim(&systemToken, nullptr, 8) == 1 && plays == 1,
+        "a delayed callback still invokes the original exactly once after rejected teardown");
 
     std::printf("MusicHook RT1: %d/%d checks passed; failures=%d\n", checks - failures, checks, failures);
     return failures ? 1 : 0;

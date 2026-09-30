@@ -13,7 +13,7 @@
 #include <atomic>
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-#include <polyhook2/Detour/x86Detour.hpp>
+#include "CompatibleDetour.h"
 #endif
 
 namespace FfxHooks {
@@ -24,7 +24,7 @@ static bool g_terminalInstallFailure = false;
 static SpeedHackInstallStatus g_terminalInstallStatus =
     SpeedHackInstallStatus::PolyHookUnavailable;
 static void (*g_logFn)(const char*) = nullptr;
-static void* g_globalTickDetour = nullptr;  /* PLH::x86Detour* in PolyHook builds. */
+static void* g_globalTickDetour = nullptr;  /* FfxHooks::CompatibleDetour* in PolyHook builds. */
 
 /* PolyHook publishes the target patch only after writing the gateway. This durable storage is
  * callback-visible from the first possible detoured instruction. */
@@ -619,11 +619,11 @@ bool InstallSpeedHackHook(uintptr_t moduleBase, bool dialogBypassReady, void* lo
 
     bool globalHooked = false;
     try {
-        g_globalTickDetour = new PLH::x86Detour(
+        g_globalTickDetour = new FfxHooks::CompatibleDetour(
             static_cast<uint64_t>(g_globalTargetAddress),
             reinterpret_cast<uint64_t>(&SpeedHackGlobalTickBridge),
             &g_globalTickTrampoline);
-        globalHooked = static_cast<PLH::x86Detour*>(g_globalTickDetour)->hook();
+        globalHooked = static_cast<FfxHooks::CompatibleDetour*>(g_globalTickDetour)->hook();
     } catch (...) {
         globalHooked = false;
     }

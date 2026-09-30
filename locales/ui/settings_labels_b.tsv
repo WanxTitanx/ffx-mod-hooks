@@ -1,0 +1,51 @@
+# Jarvis-HOOK: remaining editor labels.
+Global AP	AP global	AP globales	PC globaux	AP globali	Globale AP	全体AP	전역 AP	全局 AP
+Global Gil	Gil global	Guiles globales	Gils globaux	Guil globali	Globale Gil	全体ギル	전역 길	全局金币
+Hue: %u / 359	Matiz: %u / 359	Tono: %u / 359	Teinte : %u / 359	Tonalità: %u / 359	Farbton: %u / 359	色相: %u / 359	색조: %u / 359	色相：%u / 359
+Increase (+1)	Aumentar (+1)	Aumentar (+1)	Augmenter (+1)	Aumenta (+1)	Erhöhen (+1)	増やす (+1)	증가 (+1)	增加 (+1)
+Increase (+10)	Aumentar (+10)	Aumentar (+10)	Augmenter (+10)	Aumenta (+10)	Erhöhen (+10)	増やす (+10)	증가 (+10)	增加 (+10)
+Increase (+100)	Aumentar (+100)	Aumentar (+100)	Augmenter (+100)	Aumenta (+100)	Erhöhen (+100)	増やす (+100)	증가 (+100)	增加 (+100)
+Increase	Aumentar	Aumentar	Augmenter	Aumenta	Erhöhen	増やす	증가	增加
+Decrease	Diminuir	Reducir	Diminuer	Diminuisci	Verringern	減らす	감소	减少
+Invalid setting	Configuração inválida	Configuración no válida	Réglage invalide	Impostazione non valida	Ungültige Einstellung	無効な設定	잘못된 설정	设置无效
+Keyboard shortcuts	Atalhos do teclado	Atajos de teclado	Raccourcis clavier	Scorciatoie tastiera	Tastaturkürzel	キーボードショートカット	키보드 단축키	键盘快捷键
+Monster reward preview	Prévia das recompensas do monstro	Vista previa de recompensas del monstruo	Aperçu des récompenses du monstre	Anteprima ricompense del mostro	Vorschau der Monsterbelohnungen	モンスター報酬プレビュー	몬스터 보상 미리보기	怪物奖励预览
+Monster unavailable	Monstro indisponível	Monstruo no disponible	Monstre indisponible	Mostro non disponibile	Monster nicht verfügbar	モンスターが利用不可	몬스터 사용 불가	怪物不可用
+Multiplier: x%u	Multiplicador: x%u	Multiplicador: x%u	Multiplicateur : x%u	Moltiplicatore: x%u	Multiplikator: x%u	倍率: x%u	배율: x%u	倍率：x%u
+Name: %.40s	Nome: %.40s	Nombre: %.40s	Nom : %.40s	Nome: %.40s	Name: %.40s	名前: %.40s	이름: %.40s	名称：%.40s
+Name: %.40s_	Nome: %.40s_	Nombre: %.40s_	Nom : %.40s_	Nome: %.40s_	Name: %.40s_	名前: %.40s_	이름: %.40s_	名称：%.40s_
+OD cost %u: %s	Custo de OD %u: %s	Coste de OD %u: %s	Coût OD %u : %s	Costo OD %u: %s	OD-Kosten %u: %s	OD消費 %u: %s	OD 비용 %u: %s	OD 消耗 %u：%s
+Open this monster	Abrir este monstro	Abrir este monstruo	Ouvrir ce monstre	Apri questo mostro	Dieses Monster öffnen	このモンスターを開く	이 몬스터 열기	打开此怪物
+Overkill AP	AP de Overkill	AP de Overkill	PC d'Overkill	AP Overkill	Overkill-AP	オーバーキルAP	오버킬 AP	超杀 AP
+Pad %d	Controle %d	Mando %d	Manette %d	Controller %d	Controller %d	コントローラー %d	컨트롤러 %d	控制器 %d
+Per-monster mode	Modo por monstro	Modo por monstruo	Mode par monstre	Modalità per mostro	Modus je Monster	モンスター別モード	몬스터별 모드	按怪物模式
+Per-monster mode: %s	Modo por monstro: %s	Modo por monstruo: %s	Mode par monstre : %s	Modalità per mostro: %s	Modus je Monster: %s	モンスター別モード: %s	몬스터별 모드: %s	按怪物模式：%s
+Per-monster rewards	Recompensas por monstro	Recompensas por monstruo	Récompenses par monstre	Ricompense per mostro	Belohnungen je Monster	モンスター別報酬	몬스터별 보상	每种怪物的奖励
+Save color	Salvar cor	Guardar color	Enregistrer la couleur	Salva colore	Farbe speichern	色を保存	색상 저장	保存颜色
+Save multiplier	Salvar multiplicador	Guardar multiplicador	Enregistrer le multiplicateur	Salva moltiplicatore	Multiplikator speichern	倍率を保存	배율 저장	保存倍率
+Save name	Salvar nome	Guardar nombre	Enregistrer le nom	Salva nome	Namen speichern	名前を保存	이름 저장	保存名称
+Scan settings	Configurações do Scan	Configuración de Scan	Paramètres Scan	Impostazioni Scan	Scan-Einstellungen	ライブラ設定	라이브라 설정	侦测设置
+Seymour compatibility	Compatibilidade de Seymour	Compatibilidad de Seymour	Compatibilité Seymour	Compatibilità Seymour	Seymour-Kompatibilität	シーモア互換設定	시모어 호환 설정	西摩兼容性
+Type element name	Digite o nome do elemento	Escribe el nombre del elemento	Saisissez le nom de l'élément	Digita il nome dell'elemento	Elementnamen eingeben	属性名を入力	속성 이름 입력	输入元素名称
+Use default: x%u	Usar padrão: x%u	Usar predeterminado: x%u	Valeur par défaut : x%u	Usa predefinito: x%u	Standard verwenden: x%u	標準値を使用: x%u	기본값 사용: x%u	使用默认值：x%u
+Use this name	Usar este nome	Usar este nombre	Utiliser ce nom	Usa questo nome	Diesen Namen verwenden	この名前を使用	이 이름 사용	使用此名称
+Validate and save ID	Validar e salvar ID	Validar y guardar ID	Valider et enregistrer l'ID	Convalida e salva ID	ID prüfen und speichern	IDを検証して保存	ID 검증 및 저장	验证并保存 ID
+Validate and save binding	Validar e salvar vínculo	Validar y guardar vínculo	Valider et enregistrer l'association	Convalida e salva associazione	Zuordnung prüfen und speichern	割り当てを検証して保存	연결 검증 및 저장	验证并保存绑定
+Workshop refinement	Refinamento da oficina	Refinamiento del taller	Amélioration de l'atelier	Perfezionamento officina	Werkstatt-Veredelung	工房の精錬	공방 정련	工坊精炼
+Damage & formulas	Dano e fórmulas	Daño y fórmulas	Dégâts et formules	Danno e formule	Schaden und Formeln	ダメージ・計算式	피해 및 공식	伤害与公式
+Magic	Magia	Magia	Magie	Magia	Magie	魔法	마법	魔法
+Status & affinities	Estados e afinidades	Estados y afinidades	Altérations et affinités	Stati e affinità	Zustände und Affinitäten	状態・属性相性	상태 및 속성 상성	状态与属性相性
+Formation & CTB	Formação e CTB	Formación y CTB	Formation et CTB	Formazione e CTB	Formation und CTB	編成・CTB	편성 및 CTB	编队与 CTB
+Weapon abilities	Habilidades de armas	Habilidades de armas	Compétences d'armes	Abilità armi	Waffenfähigkeiten	武器アビリティ	무기 능력	武器能力
+Armor abilities	Habilidades de armaduras	Habilidades de armaduras	Compétences d'armures	Abilità armature	Rüstungsfähigkeiten	防具アビリティ	방어구 능력	防具能力
+Equipment systems	Sistemas de equipamentos	Sistemas de equipo	Systèmes d'équipement	Sistemi equipaggiamento	Ausrüstungssysteme	装備システム	장비 시스템	装备系统
+No loaded kernel	Kernel não carregado	Kernel sin cargar	Kernel non chargé	Kernel non caricato	Kernel nicht geladen	カーネル未読込	커널 로드되지 않음	未加载内核数据
+Invalid ID	ID inválido	ID no válido	ID invalide	ID non valido	Ungültige ID	無効なID	잘못된 ID	ID 无效
+Duplicate ID	ID duplicado	ID duplicado	ID en double	ID duplicato	Doppelte ID	ID重複	중복 ID	ID 重复
+Native payload	Dados nativos	Datos nativos	Données natives	Dati nativi	Native Daten	標準データ	기본 데이터	原生数据
+Wrong identity	Identidade incorreta	Identidad incorrecta	Identité incorrecte	Identità errata	Falsche Identität	識別情報が不一致	식별 정보 불일치	标识不匹配
+Unassigned	Sem atribuição	Sin asignar	Non attribué	Non assegnato	Nicht zugewiesen	未割り当て	미할당	未分配
+Arena+	Arena+	Arena+	Arena+	Arena+	Arena+	Arena+	Arena+	Arena+
+Vanguard Combat Engine	Vanguard Combat Engine	Vanguard Combat Engine	Vanguard Combat Engine	Vanguard Combat Engine	Vanguard Combat Engine	Vanguard Combat Engine	Vanguard Combat Engine	Vanguard Combat Engine
+%s: %u > %llu > %u%s	%s: %u > %llu > %u%s	%s: %u > %llu > %u%s	%s: %u > %llu > %u%s	%s: %u > %llu > %u%s	%s: %u > %llu > %u%s	%s: %u > %llu > %u%s	%s: %u > %llu > %u%s	%s: %u > %llu > %u%s
+ID %u: %s	ID %u: %s	ID %u: %s	ID %u: %s	ID %u: %s	ID %u: %s	ID %u: %s	ID %u: %s	ID %u: %s

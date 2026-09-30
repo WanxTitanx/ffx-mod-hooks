@@ -1,3 +1,11 @@
+# v0.6.0-beta.3 — 2026-09-29
+
+- Add nine selectable F8 interface languages with Unicode captions and independent persistence. Failed saves preserve the prior locale. Non-FLAGS F7 pages remain native English.
+- Publish optional Fahrenheit V2 bridge/provider for shared hooks, frame/input ownership, managed saves and paired text/font resources, plus complete corresponding modified provider source. Stock V1 remains restricted.
+- Correct navigation, confirmation, rejection and Back sounds according to the actual F7/F8 action outcome; retain persistence drafts on failure.
+- Harden focus loss, render ownership, provider cleanup and source verification across all 501 pinned upstream files.
+- Bind the public source to merged runtime c18fb5602a688dd0de5e7e85677c5d5102402788 and the 4,683,264-byte validated DLL. Eleven Windows suites and isolated CLR transport passed; live RT2 remains pending.
+
 # v0.6.0-beta.2 — 2026-09-29
 
 - Integrate the published recovery, Seymour and Sphere Grid work with the current runtime.

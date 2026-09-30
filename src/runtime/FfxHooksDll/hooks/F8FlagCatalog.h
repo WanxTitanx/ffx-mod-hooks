@@ -20,7 +20,8 @@ enum class F8RuntimeAvailability : uint8_t {
     SignatureMismatch,
     RestorePending,
     Conflict,
-    PlatformLimited
+    PlatformLimited,
+    PeerOwned
 };
 
 struct F8ScalarSpec {
