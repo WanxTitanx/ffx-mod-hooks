@@ -8,11 +8,11 @@ static void ThreatenCases(){
     W16(ctb.data()+14,512);W32(ctb.data()+16,20);
     for(unsigned i=0;i<256;++i)ctb[20+2*i]=5;
     const auto ctbPointer=reinterpret_cast<std::uintptr_t>(ctb.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A94C),&ctbPointer,4);
+    std::memcpy(reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A94C>())),&ctbPointer,4);
     using Status=int(__cdecl*)(unsigned,unsigned char*,unsigned,unsigned char*,const unsigned char*,unsigned*,unsigned*,unsigned char*,int,int*,int*);
-    const auto calculate=reinterpret_cast<Status>(base+0x38AEC0);
+    const auto calculate=reinterpret_cast<Status>(base+(::FfxHooks::ExecutableProfile::Rva<0x38AEC0>()));
     using Apply=int(__cdecl*)(unsigned,unsigned,unsigned,int*,void*);
-    const auto apply=reinterpret_cast<Apply>(base+0x38F0B0);
+    const auto apply=reinterpret_cast<Apply>(base+(::FfxHooks::ExecutableProfile::Rva<0x38F0B0>()));
     auto* source=Actor(0);auto* target=Actor(18);
     std::array<unsigned char,96> command{};command[0x2E+11]=254;
     W32(source+0x5D0,1000);source[0x65D]=5;source[0xDE8]=3;

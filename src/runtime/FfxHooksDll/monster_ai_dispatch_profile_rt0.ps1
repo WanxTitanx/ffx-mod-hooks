@@ -2,10 +2,11 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ExecutablePath
 )
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 
 # Read-only RT0 proof for the one supported FFX.exe Monster AI dispatcher profile.
 $ErrorActionPreference = 'Stop'
-$expectedHash = '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'
+$expectedHash = (Get-FfxTestExecutableHash)
 $expectedLength = 10675712L
 $expectedTimestamp = [uint32]0x55D2F3CC
 $expectedImageBase = [uint32]0x00400000

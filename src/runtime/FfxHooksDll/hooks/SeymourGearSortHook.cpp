@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "SeymourGearSortHook.h"
 #include "SeymourGearSortCore.h"
 #include "SeymourGearWithinCore.h"
@@ -15,23 +16,39 @@ namespace FfxHooks::SeymourGearSort {
 namespace {
 namespace N=RecoveryNative;
 constexpr char KeyName[]="seymour.gear_sorting";
-constexpr std::uint32_t SwapRva=0x3aba10,CountRva=0x4c1ba0,WithinRva=0x4c9c10;
-constexpr std::uint32_t RefreshRva=0x4c94b0,CountsRva=0x146a3a4;
-constexpr std::uint32_t RowsRva=0x1197730,GearRva=0xd30f2c,PlayerRva=0xd3205c,BattleRva=0xd2a8e0;
+constexpr std::uint32_t SwapRva=(::FfxHooks::ExecutableProfile::Rva<0x3aba10>()),CountRva=(::FfxHooks::ExecutableProfile::Rva<0x4c1ba0>()),WithinRva=(::FfxHooks::ExecutableProfile::Rva<0x4c9c10>());
+constexpr std::uint32_t RefreshRva=(::FfxHooks::ExecutableProfile::Rva<0x4c94b0>()),CountsRva=(::FfxHooks::ExecutableProfile::Rva<0x146a3a4>());
+constexpr std::uint32_t RowsRva=(::FfxHooks::ExecutableProfile::Rva<0x1197730>()),GearRva=(::FfxHooks::ExecutableProfile::Rva<0xd30f2c>()),PlayerRva=(::FfxHooks::ExecutableProfile::Rva<0xd3205c>()),BattleRva=(::FfxHooks::ExecutableProfile::Rva<0xd2a8e0>());
 // Verified instruction boundaries from the exact 78ce... image. These are entry
 // signatures, not a claim that a prefix proves every caller or entire function.
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::uint8_t GroupEntry[]={0x55,0x8B,0xEC,0x81,0xEC,0x20,0x04};
+#else
 constexpr std::uint8_t GroupEntry[]={0x55,0x8b,0xec,0x81,0xec,0x20,0x04,0,0};
+#endif
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::uint8_t WithinEntry[]={0x55,0x8B,0xEC,0x51,0x53,0x56,0x57,0x33,0xDB,0xBE,0xE4,0xA3,0x86,0x01};
+#else
 constexpr std::uint8_t WithinEntry[]={0x55,0x8b,0xec,0x51,0x53,0x56,0x57,0x33,0xdb,0xbe,0xa4,0xa3,0x86,0x01};
+#endif
 constexpr std::uint16_t WithinRelocations[]={10};
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::uint8_t RefreshEntry[]={0x55,0x8B,0xEC,0x51,0x56,0x57,0xE8,0xD5,0x86,0xFF,0xFF};
+#else
 constexpr std::uint8_t RefreshEntry[]={0x55,0x8b,0xec,0x51,0x56,0x57,0xe8,0xe5,0x86,0xff,0xff};
+#endif
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::uint8_t GroupHelperEntry[]={0x55,0x8b,0xec,0xb8,0x34,0x19,0,0,0xe8,0xd3,0xf9,0x07,0};
+#else
 constexpr std::uint8_t GroupHelperEntry[]={0x55,0x8b,0xec,0xb8,0x34,0x19,0,0,0xe8,0x03,0xfa,0x07,0};
+#endif
 constexpr RecoveryEvidence::Proof HelperProofs[]={
     {RefreshRva,RefreshEntry,sizeof(RefreshEntry),nullptr,0},
     {WithinRva,GroupHelperEntry,sizeof(GroupHelperEntry),nullptr,0}};
 constexpr RecoveryEvidence::Proof Proofs[]={
-    {0x4c9f80,GroupEntry,sizeof(GroupEntry),nullptr,0},
-    {0x4ca180,GroupEntry,sizeof(GroupEntry),nullptr,0},
-    {0x4c9bc0,WithinEntry,sizeof(WithinEntry),WithinRelocations,1}};
+    {::FfxHooks::ExecutableProfile::Rva<0x4c9f80>(),GroupEntry,sizeof(GroupEntry),nullptr,0},
+    {::FfxHooks::ExecutableProfile::Rva<0x4ca180>(),GroupEntry,sizeof(GroupEntry),nullptr,0},
+    {::FfxHooks::ExecutableProfile::Rva<0x4c9bc0>(),WithinEntry,sizeof(WithinEntry),WithinRelocations,1}};
 enum class Phase:unsigned {NotStarted,Off,Unavailable,Installed,Stopped,StopPending,Partial};
 std::atomic<Phase> g_phase{Phase::NotStarted};
 std::atomic<bool> g_attempted{false},g_ready{false};

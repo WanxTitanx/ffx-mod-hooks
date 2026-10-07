@@ -38,3 +38,11 @@ Research reports `FFX_MISLABEL_AUDIT_R2_2026-09-16.md` and `FFX_FONT_RUNTIME_202
 The native atlas inspection `work/mod006/cedilla-proof.png` confirms uppercase `Ç` at byte `A7` and lowercase `ç` at `BE`. This supersedes the Editor table's duplicated lowercase label for `A7`. The C++ and Python codecs now map both explicitly; no new atlas output is required for `Ç`.
 
 No game executable, extracted table, font/atlas payload, personal save, image preview, or private reference snapshot is included in the source delivery. A translation distributor must separately resolve rights to its content and use the declared package contract; this implementation does not grant asset redistribution rights.
+
+
+## API 4 update
+
+See the [public language-pack contract](../TEXT_LANGUAGE_PACKS.md) for bounded
+text growth, source-bound controls and the closed UI texture/font profiles.
+The public source contains path/size/hash metadata and synthetic tests only.
+The game translation and native font/image payloads are not distributed.

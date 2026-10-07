@@ -12,13 +12,14 @@ static unsigned Word(const std::uint8_t* p){return p[0]|(unsigned(p[1])<<8);}
 int main(){
     const auto preview=S::BuildAssignment(340,1259714269u,1,S::Distribution::Most,true);
     const auto realSnowfield=S::BuildAssignment(333,1259714269u,1,S::Distribution::Most,true);
-    Check(realSnowfield.supported && realSnowfield.count==4 && realSnowfield.cursed==3,
-        "the reported native Macalania field333 admits the saved eighty-percent seed");
+    Check(realSnowfield.supported && realSnowfield.count==6 && realSnowfield.cursed==4,
+        "the native Macalania field333 admits eighty percent of the complete installed regional roster");
     Check(realSnowfield.Find(19) && preview.Find(19) && realSnowfield.Find(19)->curse==preview.Find(19)->curse &&
         realSnowfield.Find(12) && realSnowfield.Find(12)->curse==preview.Find(12)->curse,
         "the real snowfield uses the same Flan and Wolf assignments shown in its preview");
-    Check(preview.Find(19)->curse==5 && preview.Find(12)->curse==1 && preview.Find(4)->curse==2 && preview.Find(37)->curse==0,
-        "the reported seed reproduces Frost-Flood Flan, Veil Wolf, Counter Mafdet and unchanged Evil Eye");
+    const auto allSnowfield=S::BuildAssignment(333,1259714269u,1,S::Distribution::All,true);
+    Check(allSnowfield.Find(19)->curse==5 && allSnowfield.Find(12)->curse==1 && allSnowfield.Find(4)->curse==2 && allSnowfield.Find(37)->curse!=0,
+        "per-monster curse selection remains stable while the complete hundred-percent pool includes Evil Eye");
     N::Evidence good{N::kCallerRva,-1,310,2,41,2,3};
     Check(N::Admitted(good),"a real walking caller carries field identity independently of row index");
     auto bad=good;bad.caller=0x381D8C;Check(!N::Admitted(bad),"script/label entry cannot manufacture a natural encounter");
@@ -53,10 +54,10 @@ int main(){
     Check(std::equal(scaled.begin()+6,scaled.end(),loot.begin()+6)&&loot==base,"items, gear, steals and source data remain exact");
     Check(M::RewardView(loot,2,&scaled)&&Word(scaled.data())==300&&Word(scaled.data()+2)==504&&Word(scaled.data()+4)==1008,"T2 uses twenty percent without compounding");
     Check(Word(scaled.data()+2)*10u==5040u,"existing global reward multipliers act on the scaled input");
-    for(unsigned value:{0u,1u,5u,99u,32767u,60000u,65535u})for(unsigned threat:{1u,2u}){
+    for(unsigned value:{0u,1u,5u,99u,32767u,60000u,65535u})for(unsigned threat:{1u,2u,3u,4u,5u,6u}){
         const auto expected=std::min(65535u,value*(100u+threat*10u)/100u);
         Check(M::ScaledReward(static_cast<std::uint16_t>(value),threat)==expected,"native u16 reward bounds and truncation hold");
     }
-    unchanged=marked;auto same=scaled;Check(!M::RewardView(loot,0,&scaled)&&scaled==same&&!M::RewardView(loot,3,&scaled),"unsupported threats do not publish a reward view");
+    unchanged=marked;auto same=scaled;Check(!M::RewardView(loot,0,&scaled)&&scaled==same&&!M::RewardView(loot,7,&scaled),"unsupported threats do not publish a reward view");
     std::printf("SinMetadataRt0: %d/%d passed; failures=%d\n",checks-failures,checks,failures);return failures?1:0;
 }

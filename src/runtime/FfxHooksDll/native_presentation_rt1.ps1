@@ -1,4 +1,6 @@
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 $ErrorActionPreference='Stop'
+$env:FFXHOOKS_TRACE_WORKSHOP_GEAR='1'
 $here=$PSScriptRoot
 $repo=(Resolve-Path (Join-Path $here '..\..\..')).Path
 $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio\Installer\vswhere.exe'
@@ -19,7 +21,7 @@ try {
  & $env:ComSpec /d /s /c $cmd
  if($LASTEXITCODE -ne 0){throw 'Workshop runtime build failed'}
  $fixture=Join-Path $repo 'native-fixtures\FFX.exe'
- if((Get-FileHash $fixture -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Wrong private PE fixture'}
+ if((Get-FileHash $fixture -Algorithm SHA256).Hash -ne (Get-FfxTestExecutableHash)){throw 'Wrong private PE fixture'}
  $data=Join-Path $obj ('private-'+[guid]::NewGuid().ToString('N'))
  foreach($scanMode in 0..5){
   & $exe $fixture (Join-Path $repo 'native-fixtures\ffx_000') ($data+'-'+$scanMode) (Join-Path $repo 'sin-fixtures\a_ability.bin') $scanMode

@@ -50,7 +50,8 @@ bool ValidTargets(Owner owner, const uintptr_t* targets, size_t targetCount) {
                             owner == Owner::SeymourOverdrive ||
                             owner == Owner::SeymourGearPresentation ||
                             owner == Owner::SeymourGearSort ||
-                            owner == Owner::SeymourMenuList;
+                            owner == Owner::SeymourMenuList ||
+                            owner == Owner::OriginalPs2Rng;
     if (!knownOwner || !targets || targetCount == 0u ||
         targetCount > kMaximumTargets) {
         return false;

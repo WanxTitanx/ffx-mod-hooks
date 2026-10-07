@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 
 #include "MinHookBatchCoordinator.h"
@@ -16,7 +17,7 @@ inline constexpr uint8_t kAcceptedBattleDiscriminator = 7u;
 inline constexpr size_t kStateListSize = 3u;
 inline constexpr size_t kAbilityListSize = 17u;
 inline constexpr size_t kCombinedListSize = kStateListSize + kAbilityListSize;
-inline constexpr uintptr_t kBattleExitSyncReturnRva = 0x00390F07u;
+inline constexpr uintptr_t kBattleExitSyncReturnRva = (::FfxHooks::ExecutableProfile::Rva<0x00390F07u>());
 
 // Admission is exact equality against SharedBattleRuntime::kBattleStateInitSceneReturnRva and
 // kBattleExitSyncReturnRva; no nearby caller, generic InitScene invocation, or inferred battle

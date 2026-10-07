@@ -21,11 +21,11 @@ static void EquipmentCases(std::uintptr_t base,std::vector<unsigned char>& actor
                             std::vector<unsigned char>& commands,std::vector<unsigned char>& kernel){
     coreImage=base;amount=1000;W::DamageProducerForTests(reinterpret_cast<void*>(&CoreEndpoint));
     for(unsigned owner=0;owner<18;++owner){actors[owner*0xF90+0x592]=255;actors[owner*0xF90+0x593]=255;}
-    auto* gear=reinterpret_cast<unsigned char*>(base+0xD30F2C);
+    auto* gear=reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD30F2C>()));
     std::memset(gear,0,44);gear[2]=1;gear[4]=gear[6]=1;gear[5]=1;gear[11]=4;
     for(unsigned i=0;i<4;++i)W16(gear+14+2*i,255);
     W16(gear+14,0x80B4);actors[0xF90+0x593]=0;
-    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+0x38E680);
+    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
     std::array<unsigned char,44> info{};
     const auto hit=[&](unsigned owner=1){return static_cast<int>(producer(0,actors.data(),owner,actors.data()+owner*0xF90,
         commands.data()+20+96*88,0x3058,info.data(),0,0,0,0));};
@@ -46,11 +46,11 @@ static void EquipmentCases(std::uintptr_t base,std::vector<unsigned char>& actor
     kernel[20+180*108+0x20]^=1;
     Check(hit()==1000&&!E::ReadElement(1,8,view),"changed equipped row data closes the whole affected custom affinity view");
     kernel[20+180*108+0x20]^=1;Check(hit()==1250,"restored exact admitted payload is recognized without a fabricated item ID");
-    W16(reinterpret_cast<unsigned char*>(base+0xD2A970),static_cast<unsigned>(kernel.size()-1));
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A970>())),static_cast<unsigned>(kernel.size()-1));
     Check(hit()==1000,"native ability-bank byte length participates in the live admission stamp");
-    W16(reinterpret_cast<unsigned char*>(base+0xD2A970),static_cast<unsigned>(kernel.size()));
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A970>())),static_cast<unsigned>(kernel.size()));
     auto replacement=kernel;const auto pointer=reinterpret_cast<std::uintptr_t>(replacement.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&pointer,4);
+    std::memcpy(reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A944>())),&pointer,4);
     Check(hit()==1000,"replacement ability banks cannot borrow old row pointers");
     E::TickMainThread();Check(hit()==1250,"fresh bank admission binds the replacement equipment payload");
     gear[4]=gear[6]=8;actors[8*0xF90+0x593]=0;actors[0xF90+0x593]=255;

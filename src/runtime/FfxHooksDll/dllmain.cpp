@@ -1,3 +1,4 @@
+#include "shared/ExecutableProfile.h"
 /* ffx-hooks.dll - FFX runtime hook layer (C++, PolyHook2/MinHook).
  *
  * The FF10 module loader loads this DLL from modules\. Player-facing gameplay writers
@@ -23,6 +24,8 @@
 #include <math.h>
 #include <float.h>
 #include <intrin.h>
+#include "hooks/ExecutableStartupGate.h"
+#include "hooks/ExecutableStartupHash.h"
 
 /* PolyHook2 and D3D types are present only in the full runtime build. */
 #ifdef FFXHOOKS_HAVE_POLYHOOK
@@ -55,6 +58,9 @@
 #include "hooks/PhaseTurnEdgeHook.h"
 #include "hooks/PhaseTurnEdgeSidecar.h"
 #include "hooks/ElementHook.h"
+#include "hooks/NativePlainText.h"
+#include "hooks/NativeUiHookSupport.h"
+#include "hooks/NativePresentationEvidence.h"
 #include "hooks/AbilitySfxHook.h"
 #include "hooks/ResolverLogHook.h"
 #include "hooks/ResolverOwnerPolicy.h"
@@ -109,7 +115,9 @@
 #include "hooks/ArcanaAssets.h"
 #include <filesystem>
 #include "hooks/FmvSpeedHook.h"
+#include "hooks/OriginalPs2RngRuntime.h"
 #include "hooks/SinSpreadCore.h"
+#include "hooks/SinThreatPalette.h"
 #include "hooks/F8RuntimeCore.h"
 #include "hooks/InGameMenuDashboard.h"   // F8 dashboard renderer and input adapter.
 #include "hooks/UnXBoosterHook.h"        // F8 booster/cheat runtime consumer (30 Hz).
@@ -1255,11 +1263,11 @@ static const InGameMenuFlag kInGameMenuFlags[] = {
 static const int kInGameMenuFlagCount = (int)(sizeof(kInGameMenuFlags) / sizeof(kInGameMenuFlags[0]));
 static volatile LONG g_ingameMenuMode = 0;  /* 0 = plugin switchboard (F11), 1 = flags panel (F5) */
 
-static const uint32_t RVA_ACTIVE_CHR_COUNT = 0x01FC44E0u; /* VA 0x23C44E0 - 0x400000 */
-static const uint32_t RVA_ACTIVE_CHR_TABLE = 0x01FC44E4u; /* VA 0x23C44E4 - 0x400000 */
-static const uint32_t RVA_CONTROLLED_CHR_INSTANCE = 0x00F00740u; /* VA 0x1300740 - 0x400000 */
-static const uint32_t RVA_BATTLE_PLAYER_LIST = 0x00D334CCu;
-static const uint32_t RVA_BATTLE_ENEMY_LIST = 0x00D34460u;
+static const uint32_t RVA_ACTIVE_CHR_COUNT = (::FfxHooks::ExecutableProfile::Rva<0x01FC44E0u>()); /* VA 0x23C44E0 - 0x400000 */
+static const uint32_t RVA_ACTIVE_CHR_TABLE = (::FfxHooks::ExecutableProfile::Rva<0x01FC44E4u>()); /* VA 0x23C44E4 - 0x400000 */
+static const uint32_t RVA_CONTROLLED_CHR_INSTANCE = (::FfxHooks::ExecutableProfile::Rva<0x00F00740u>()); /* VA 0x1300740 - 0x400000 */
+static const uint32_t RVA_BATTLE_PLAYER_LIST = (::FfxHooks::ExecutableProfile::Rva<0x00D334CCu>());
+static const uint32_t RVA_BATTLE_ENEMY_LIST = (::FfxHooks::ExecutableProfile::Rva<0x00D34460u>());
 static const uint32_t ACTIVE_CHR_STRIDE = 0x880u;
 static const uint32_t BATTLE_CHR_STRIDE = 0xF90u;
 static const uint32_t ACTIVE_CHR_MAX_COUNT = 4096u;
@@ -5157,13 +5165,16 @@ static bool AuroraD3DUpdateTexture() {
     InGameMenuDraw(g_auroraD3DMemDc, rc);
     InGameDrawSpeedHackIndicator(g_auroraD3DMemDc, rc);
     InGameDrawNativePerformance(g_auroraD3DMemDc,rc);
+    GdiFlush();
+    // Preserve the existing opacity contract of the other GDI producers before
+    // native caption sprites add their own fractional glyph coverage.
+    for(size_t i=0;i<pixelCount;++i)
+        if(g_auroraD3DPixels[i]&0x00FFFFFFu)g_auroraD3DPixels[i]|=0xFF000000u;
     FfxHooks::UiOverlay::Paint(g_auroraD3DMemDc,rc);
     GdiFlush();
 
     for (size_t i = 0; i < pixelCount; ++i) {
-        if ((g_auroraD3DPixels[i] & 0x00FFFFFFu) != 0) {
-            g_auroraD3DPixels[i] |= 0xFF000000u;
-        }
+        g_auroraD3DPixels[i]=FfxHooks::UiCaption::ResolveOverlayAlpha(g_auroraD3DPixels[i]);
     }
 
     D3D11_MAPPED_SUBRESOURCE mapped = {};
@@ -6152,8 +6163,8 @@ static int           g_labLastMusicTrack = -1;
 static bool          g_musicHookArmed = false;
 static char          g_labMenuStatus[256] = "F6 show/hide; click/double-click; Enter plays; scanner uses Left/Right/PageUp/PageDown";
 
-static const uint32_t RVA_ENCOUNTER_GET_CURRENT_FIELD = 0x0048D600u;
-static const uint32_t RVA_ENCOUNTER_GET_SCENE_STATE   = 0x0048C7A0u;
+static const uint32_t RVA_ENCOUNTER_GET_CURRENT_FIELD = (::FfxHooks::ExecutableProfile::Rva<0x0048D600u>());
+static const uint32_t RVA_ENCOUNTER_GET_SCENE_STATE   = (::FfxHooks::ExecutableProfile::Rva<0x0048C7A0u>());
 static const uint32_t ENCOUNTER_SCENE_GROUP_OFFSET    = 16u;
 
 struct LabMenuItem {
@@ -7174,8 +7185,8 @@ static void NativeMenuPollHubCloseDrainAfterPump() {
  * subsystem alive" semantic 0x8AA5C0 itself applies) so 0x8AA5C0 stays nonzero
  * and the subsystem state stays vanilla-consistent until a real close clears
  * both the gate and the bit without touching the game's callback. */
-static constexpr uint32_t kNativeMenuGateRva = 0x13407E4u;
-static constexpr uint32_t kNativeMenuRequestRva = 0x18408ACu;
+static constexpr uint32_t kNativeMenuGateRva = (::FfxHooks::ExecutableProfile::Va<0x13407E4u>());
+static constexpr uint32_t kNativeMenuRequestRva = (::FfxHooks::ExecutableProfile::Va<0x18408ACu>());
 static constexpr uint32_t kNativeMenuKeepAliveBit = 0x80000000u;
 static volatile LONG g_nativeMenuKeepAlivePublished = 0;
 
@@ -7258,41 +7269,41 @@ struct NativeMenuTraceField {
 };
 
 static const NativeMenuTraceField kNativeMenuTraceFields[] = {
-    {0x13407E4u, 0, 0, 0x000, "gate"},      /* dispatcher/pump gate */
-    {0x13407E8u, 0, 0, 0x000, "fade"},      /* menu transition/fade flag */
-    {0x13407ECu, 0, 0, 0x000, "maskEC"},    /* field-block mask (PC stub clears it) */
-    {0x13407F8u, 0, 0, 0x000, "fadeCtr"},   /* fade counter 0x80 -> 0 by -4/frame */
-    {0x1340804u, 0, 0, 0x000, "rdyBlk"},    /* request-ready block in 0x820860 */
-    {0x134080Cu, 0, 0, 0x000, "trB0C"},     /* transition bookkeeping */
-    {0x1340810u, 0, 0, 0x000, "trB10"},     /* set by 0x8AADB0, drives 0x8AB2F0 */
-    {0x1340814u, 0, 0, 0x000, "sys814"},    /* system-menu marker (arg 0x800003) */
-    {0x1340819u, 2, 0, 0x000, "init819"},   /* cleared by dispatcher init */
-    {0x1840834u, 0, 0, 0x000, "contCb"},    /* continuation callback record */
-    {0x18408B8u, 0, 0, 0x000, "initArg"},   /* dispatcher init arg */
-    {0x1840844u, 2, 0, 0x000, "boot844"},   /* bootstrap flag */
-    {0x1840845u, 2, 0, 0x000, "dispSeen"},  /* dispatcher-entered marker */
-    {0x18408ACu, 0, 0, 0x000, "reqMask"},   /* layer request bitmask */
-    {0x12FBBF0u, 0, 0, 0x000, "pendId"},    /* pending native-menu request id */
-    {0x12FBBF4u, 0, 0, 0x000, "pendSt"},    /* pending request status (-1 idle) */
-    {0x12FB790u, 0, 0, 0x000, "kill790"},   /* 2D render disable */
-    {0x12FB794u, 0, 0, 0x000, "kill794"},   /* 2D kill (aux) */
-    {0x12FB798u, 0, 0, 0x000, "kill798"},   /* 2D batch-upload skip */
-    {0x12FB7C0u, 0, 0, 0x000, "cd7C0"},     /* transition spin countdown */
-    {0x12FB79Cu, 0, 0, 0x000, "fldLatch"},  /* field-mode renderer latch */
-    {0xCCB994u,  0, 0, 0x000, "mode"},      /* menu mode: 0 free / 2 postbattle */
-    {0xCCB998u,  0, 0, 0x000, "subBusy"},   /* mode sub-operation busy */
-    {0xCCB99Cu,  0, 0, 0x000, "modeReq"},   /* mode request written by 0x648860 */
-    {0x12FB878u, 0, 0, 0x000, "defer878"},  /* deferred spawn flag (mode 2->4) */
-    {0x1597F34u, 2, 0, 0x000, "uiInit34"},  /* UI subsystem init byte */
-    {0x133C8D0u, 2, 0, 0x000, "flg8D0"},    /* field-entry flag (0x822520) */
-    {0x1841C24u, 0, 0, 0x000, "fadeDl"},    /* pump fade alpha delta */
-    {0x1841C28u, 0, 0, 0x000, "fadeAl"},    /* pump fade alpha accumulator */
-    {0xCE81E4u,  0, 0, 0x000, "uiMgr"},     /* UI manager singleton pointer */
-    {0xCE81E4u,  3, 0, 0x008, "uiSt8"},     /* inner state: mode 2 needs ==4 */
-    {0xCE81E4u,  3, 0, 0x00C, "uiFldC"},    /* deferred spawn cookie (-1 check) */
-    {0xCE81E4u,  3, 0, 0x358, "uiF358"},    /* mode-2 spawn gate */
-    {0xCE81E4u,  3, 0, 0x360, "uiF360"},    /* 0x648220 check */
-    {0xCE81E4u,  3, 0, 0x3B0, "uiF3B0"},    /* 0x648260 check */
+    {::FfxHooks::ExecutableProfile::Va<0x13407E4u>(), 0, 0, 0x000, "gate"},      /* dispatcher/pump gate */
+    {::FfxHooks::ExecutableProfile::Va<0x13407E8u>(), 0, 0, 0x000, "fade"},      /* menu transition/fade flag */
+    {::FfxHooks::ExecutableProfile::Va<0x13407ECu>(), 0, 0, 0x000, "maskEC"},    /* field-block mask (PC stub clears it) */
+    {::FfxHooks::ExecutableProfile::Va<0x13407F8u>(), 0, 0, 0x000, "fadeCtr"},   /* fade counter 0x80 -> 0 by -4/frame */
+    {::FfxHooks::ExecutableProfile::Va<0x1340804u>(), 0, 0, 0x000, "rdyBlk"},    /* request-ready block in 0x820860 */
+    {::FfxHooks::ExecutableProfile::Va<0x134080Cu>(), 0, 0, 0x000, "trB0C"},     /* transition bookkeeping */
+    {::FfxHooks::ExecutableProfile::Va<0x1340810u>(), 0, 0, 0x000, "trB10"},     /* set by 0x8AADB0, drives 0x8AB2F0 */
+    {::FfxHooks::ExecutableProfile::Va<0x1340814u>(), 0, 0, 0x000, "sys814"},    /* system-menu marker (arg 0x800003) */
+    {::FfxHooks::ExecutableProfile::Va<0x1340819u>(), 2, 0, 0x000, "init819"},   /* cleared by dispatcher init */
+    {::FfxHooks::ExecutableProfile::Va<0x1840834u>(), 0, 0, 0x000, "contCb"},    /* continuation callback record */
+    {::FfxHooks::ExecutableProfile::Va<0x18408B8u>(), 0, 0, 0x000, "initArg"},   /* dispatcher init arg */
+    {::FfxHooks::ExecutableProfile::Va<0x1840844u>(), 2, 0, 0x000, "boot844"},   /* bootstrap flag */
+    {::FfxHooks::ExecutableProfile::Va<0x1840845u>(), 2, 0, 0x000, "dispSeen"},  /* dispatcher-entered marker */
+    {::FfxHooks::ExecutableProfile::Va<0x18408ACu>(), 0, 0, 0x000, "reqMask"},   /* layer request bitmask */
+    {::FfxHooks::ExecutableProfile::Va<0x12FBBF0u>(), 0, 0, 0x000, "pendId"},    /* pending native-menu request id */
+    {::FfxHooks::ExecutableProfile::Va<0x12FBBF4u>(), 0, 0, 0x000, "pendSt"},    /* pending request status (-1 idle) */
+    {::FfxHooks::ExecutableProfile::Va<0x12FB790u>(), 0, 0, 0x000, "kill790"},   /* 2D render disable */
+    {::FfxHooks::ExecutableProfile::Va<0x12FB794u>(), 0, 0, 0x000, "kill794"},   /* 2D kill (aux) */
+    {::FfxHooks::ExecutableProfile::Va<0x12FB798u>(), 0, 0, 0x000, "kill798"},   /* 2D batch-upload skip */
+    {::FfxHooks::ExecutableProfile::Va<0x12FB7C0u>(), 0, 0, 0x000, "cd7C0"},     /* transition spin countdown */
+    {::FfxHooks::ExecutableProfile::Va<0x12FB79Cu>(), 0, 0, 0x000, "fldLatch"},  /* field-mode renderer latch */
+    {::FfxHooks::ExecutableProfile::Va<0xCCB994u>(),  0, 0, 0x000, "mode"},      /* menu mode: 0 free / 2 postbattle */
+    {::FfxHooks::ExecutableProfile::Va<0xCCB998u>(),  0, 0, 0x000, "subBusy"},   /* mode sub-operation busy */
+    {::FfxHooks::ExecutableProfile::Va<0xCCB99Cu>(),  0, 0, 0x000, "modeReq"},   /* mode request written by 0x648860 */
+    {::FfxHooks::ExecutableProfile::Va<0x12FB878u>(), 0, 0, 0x000, "defer878"},  /* deferred spawn flag (mode 2->4) */
+    {::FfxHooks::ExecutableProfile::Va<0x1597F34u>(), 2, 0, 0x000, "uiInit34"},  /* UI subsystem init byte */
+    {::FfxHooks::ExecutableProfile::Va<0x133C8D0u>(), 2, 0, 0x000, "flg8D0"},    /* field-entry flag (0x822520) */
+    {::FfxHooks::ExecutableProfile::Va<0x1841C24u>(), 0, 0, 0x000, "fadeDl"},    /* pump fade alpha delta */
+    {::FfxHooks::ExecutableProfile::Va<0x1841C28u>(), 0, 0, 0x000, "fadeAl"},    /* pump fade alpha accumulator */
+    {::FfxHooks::ExecutableProfile::Va<0xCE81E4u>(),  0, 0, 0x000, "uiMgr"},     /* UI manager singleton pointer */
+    {::FfxHooks::ExecutableProfile::Va<0xCE81E4u>(),  3, 0, 0x008, "uiSt8"},     /* inner state: mode 2 needs ==4 */
+    {::FfxHooks::ExecutableProfile::Va<0xCE81E4u>(),  3, 0, 0x00C, "uiFldC"},    /* deferred spawn cookie (-1 check) */
+    {::FfxHooks::ExecutableProfile::Va<0xCE81E4u>(),  3, 0, 0x358, "uiF358"},    /* mode-2 spawn gate */
+    {::FfxHooks::ExecutableProfile::Va<0xCE81E4u>(),  3, 0, 0x360, "uiF360"},    /* 0x648220 check */
+    {::FfxHooks::ExecutableProfile::Va<0xCE81E4u>(),  3, 0, 0x3B0, "uiF3B0"},    /* 0x648260 check */
 };
 
 static volatile LONG g_nativeMenuTraceBusy = 0;
@@ -7373,32 +7384,32 @@ static void NativeMenuBoundaryTraceTick() {
     InterlockedExchange(&g_nativeMenuTraceBusy, 0);
 }
 
-static const uint32_t RVA_FFX_EVENT_STRING_RESOLVE = 0x0046BEC0u; /* IDA FFX_EventStringResolve @ 0x86BEC0 */
+static const uint32_t RVA_FFX_EVENT_STRING_RESOLVE = (::FfxHooks::ExecutableProfile::Rva<0x0046BEC0u>()); /* IDA FFX_EventStringResolve @ 0x86BEC0 */
 
-static const uint32_t RVA_ARENA_CAPTURE_COUNTS = 0x00D30C9Cu;
-static const uint32_t RVA_ARENA_UNLOCK_FLAGS   = 0x00D30D04u;
+static const uint32_t RVA_ARENA_CAPTURE_COUNTS = (::FfxHooks::ExecutableProfile::Rva<0x00D30C9Cu>());
+static const uint32_t RVA_ARENA_UNLOCK_FLAGS   = ::FfxHooks::ExecutableProfile::Rva<0x00D30C9Cu>()+104u;
 // Dark Aeon defeat: FFXED save bits (3273..3280 bit7) may be zero in RAM; game runtime uses SaveData+0x18F4.
-static const uint32_t RVA_DARK_AEON_FFXED_BASE   = 0x00D2D759u; // save+3273 (FFXED Optional Bosses)
-static const uint32_t RVA_DARK_AEON_RUNTIME_BASE = 0x00D2E384u; // save+0x18F4 (vanilla runtime array, 9 bytes)
+static const uint32_t RVA_DARK_AEON_FFXED_BASE   = ::FfxHooks::ExecutableProfile::Rva<0x00D2CA90u>()+3273u; // save+3273 (FFXED Optional Bosses)
+static const uint32_t RVA_DARK_AEON_RUNTIME_BASE = ::FfxHooks::ExecutableProfile::Rva<0x00D2CA90u>()+0x18F4u; // save+0x18F4 (vanilla runtime array, 9 bytes)
 // RVA_SAVE_GIL 0x00D307D8u â€” defined in ffx_addresses.h
-static const uint32_t RVA_SCRIPTED_ENCOUNTER_0 = 0x00D2CA20u;
-static const uint32_t RVA_SCRIPTED_ENCOUNTER_1 = 0x00D2CA24u;
-static const uint32_t RVA_SCRIPTED_FORMATION   = 0x00D2CA28u;
-static const uint32_t RVA_MS_BATTLE_ENCOUNT_EXE = 0x00380DE0u;
-static const uint32_t RVA_BATTLE_LAUNCH_7002 = 0x003A3550u; // IDA VA 0x7A3550, Battle.launchBattle
-static const uint32_t RVA_BATTLE_REQUEST_781D60 = 0x00381D60u; // IDA VA 0x781D60, queue battleToken
-static const uint32_t RVA_COMMON_SET_BATTLE_FLAGS = 0x0046FBB0u; // IDA VA 0x86FBB0, Common.SetBattleFlags backend
-static const uint32_t RVA_BATTLE_QUEUE_GATE = 0x00D2A8E0u; // byte_112A8E0, sub_7817C0 gate
-static const uint32_t RVA_BATTLE_QUEUE_STATE = 0x00D2A8E2u; // n2 / encounter state
-static const uint32_t RVA_BATTLE_QUEUE_MODE = 0x00D2A9D4u; // word_112A9D4
-static const uint32_t RVA_BATTLE_BUSY_GATE = 0x00D2CA2Cu; // byte_112CA2C
-static const uint32_t RVA_BATTLE_QUEUE_FIELD = 0x00D2C254u; // dword_112C254, HIWORD consumed by sub_790C60
-static const uint32_t RVA_BATTLE_QUEUE_GROUP = 0x00D2C258u; // byte_112C258
-static const uint32_t RVA_BATTLE_QUEUE_FORMATION = 0x00D2C259u; // byte_112C259
-static const uint32_t RVA_BATTLE_NAME = 0x00D2C25Au; // g_FFX_Battle_EncounterName (13 bytes)
-static const uint32_t RVA_BATTLE_FLAGS_0 = 0x00F26B08u; // dword_1326B08
-static const uint32_t RVA_BATTLE_FLAGS_1 = 0x00F26B10u; // dword_1326B10
-static const uint32_t RVA_BATTLE_FLAGS_2 = 0x00F26B14u; // dword_1326B14
+static const uint32_t RVA_SCRIPTED_ENCOUNTER_0 = (::FfxHooks::ExecutableProfile::Rva<0x00D2CA20u>());
+static const uint32_t RVA_SCRIPTED_ENCOUNTER_1 = (::FfxHooks::ExecutableProfile::Rva<0x00D2CA24u>());
+static const uint32_t RVA_SCRIPTED_FORMATION   = (::FfxHooks::ExecutableProfile::Rva<0x00D2CA28u>());
+static const uint32_t RVA_MS_BATTLE_ENCOUNT_EXE = (::FfxHooks::ExecutableProfile::Rva<0x00380DE0u>());
+static const uint32_t RVA_BATTLE_LAUNCH_7002 = (::FfxHooks::ExecutableProfile::Rva<0x003A3550u>()); // IDA VA 0x7A3550, Battle.launchBattle
+static const uint32_t RVA_BATTLE_REQUEST_781D60 = (::FfxHooks::ExecutableProfile::Rva<0x00381D60u>()); // IDA VA 0x781D60, queue battleToken
+static const uint32_t RVA_COMMON_SET_BATTLE_FLAGS = (::FfxHooks::ExecutableProfile::Rva<0x0046FBB0u>()); // IDA VA 0x86FBB0, Common.SetBattleFlags backend
+static const uint32_t RVA_BATTLE_QUEUE_GATE = (::FfxHooks::ExecutableProfile::Rva<0x00D2A8E0u>()); // byte_112A8E0, sub_7817C0 gate
+static const uint32_t RVA_BATTLE_QUEUE_STATE = (::FfxHooks::ExecutableProfile::Rva<0x00D2A8E2u>()); // n2 / encounter state
+static const uint32_t RVA_BATTLE_QUEUE_MODE = (::FfxHooks::ExecutableProfile::Rva<0x00D2A9D4u>()); // word_112A9D4
+static const uint32_t RVA_BATTLE_BUSY_GATE = (::FfxHooks::ExecutableProfile::Rva<0x00D2CA2Cu>()); // byte_112CA2C
+static const uint32_t RVA_BATTLE_QUEUE_FIELD = (::FfxHooks::ExecutableProfile::Rva<0x00D2C254u>()); // dword_112C254, HIWORD consumed by sub_790C60
+static const uint32_t RVA_BATTLE_QUEUE_GROUP = (::FfxHooks::ExecutableProfile::Rva<0x00D2C258u>()); // byte_112C258
+static const uint32_t RVA_BATTLE_QUEUE_FORMATION = (::FfxHooks::ExecutableProfile::Rva<0x00D2C259u>()); // byte_112C259
+static const uint32_t RVA_BATTLE_NAME = (::FfxHooks::ExecutableProfile::Rva<0x00D2C25Au>()); // g_FFX_Battle_EncounterName (13 bytes)
+static const uint32_t RVA_BATTLE_FLAGS_0 = (::FfxHooks::ExecutableProfile::Rva<0x00F26B08u>()); // dword_1326B08
+static const uint32_t RVA_BATTLE_FLAGS_1 = (::FfxHooks::ExecutableProfile::Rva<0x00F26B10u>()); // dword_1326B10
+static const uint32_t RVA_BATTLE_FLAGS_2 = (::FfxHooks::ExecutableProfile::Rva<0x00F26B14u>()); // dword_1326B14
 static const int ARENA_CAPTURE_COUNT_LEN = 104;
 static const int ARENA_UNLOCK_FLAG_LEN = 35;
 static const int ARENA_DARK_FLAG_LEN = 9;
@@ -7573,10 +7584,11 @@ static const FfxHooks::CustomMixUltra::MonsterChoice
 #define SIN_RAM_ROW_SEED          2
 #define SIN_RAM_ROW_SHUFFLE       3
 #define SIN_RAM_ROW_AREA          4
-#define SIN_RAM_ROW_SAVE          5
-#define SIN_RAM_ROW_GUIDE         6
-#define SIN_RAM_ROW_BACK          7
-#define SIN_RAM_ROW_COUNT         8
+#define SIN_RAM_ROW_PAGE          5
+#define SIN_RAM_ROW_SAVE          6
+#define SIN_RAM_ROW_GUIDE         7
+#define SIN_RAM_ROW_BACK          8
+#define SIN_RAM_ROW_COUNT         9
 
 static NativeMenu::Menu  g_sinMenu             = { 0 };
 static int               g_sinMenuResult       = 0;
@@ -7588,6 +7600,7 @@ static int               g_sinLastRow          = SIN_RAM_ROW_ENABLED;
 static float             g_sinEasedRowY        = -1.0f;
 static FfxHooks::SinRam::Config g_sinDraft     = {};
 static uint16_t g_sinPreviewField=310;
+static unsigned g_sinPreviewPage=0;
 static bool g_sinShowGuide=false,g_sinSeedEditing=false;
 static char g_sinNotice[96] = {};
 static bool              g_sinDraftActive      = false;
@@ -7628,8 +7641,8 @@ static int __cdecl SinCurse_DrawCb(int obj) {
     auto text=[](const char* value,float x,float y,bool smallFont){unsigned char encoded[128]{};EncodeLabel(value,encoded,sizeof(encoded));if(smallFont)DrawStringSub(encoded,x,y);else DrawString(encoded,x,y);};
     DrawMenuGlassPanel(NX(0.047f),NY(0.054f),NW(0.906f),NH(0.126f),F,0);
     text("S.I.N. - Curses of Sin",NX(0.071f),NY(0.081f),false);
-    text("Seeded encounters in Macalania",NX(0.071f),NY(0.137f),true);
-    const float left=NX(0.075f),top=NY(0.235f),width=NW(0.325f),step=NH(0.066f),height=NH(0.057f);
+    text("Seeded encounters from Macalania to Zanarkand",NX(0.071f),NY(0.137f),true);
+    const float left=NX(0.075f),top=NY(0.235f),width=NW(0.325f),step=NH(0.061f),height=NH(0.053f);
     BOOL animations=FALSE;SystemParametersInfoW(SPI_GETCLIENTAREAANIMATION,0,&animations,0);
     const bool motion=animations && !EnvFlagEnabled("FFXHOOKS_REDUCED_MOTION") && !EnvFlagEnabled("FFXHOOKS_ARENAPLUS_REDUCED_MOTION");
     const float selectedY=top+selected*step;
@@ -7653,7 +7666,7 @@ static int __cdecl SinCurse_DrawCb(int obj) {
     DrawMenuGlassPanel(pane,NY(0.215f),paneWidth,NH(0.60f),F,1);
     if(g_sinShowGuide){
         text("How curses spread",pane+NW(0.02f),NY(0.244f),false);
-        const char* lines[]={"Threat comes from the curse, not a slider.","Each monster has its own compatible traits.","Random may leave an area without curses.","Fixed shares: 20%, 50% or 80% of the roster.","Changing screens produces another seeded layout.","A battle in progress keeps its assignment.","Save changes for the next natural encounter."};
+        const char* lines[]={"Threat comes from the curse, not a slider.","Each monster has its own compatible traits.","Random may leave an area without curses.","Fixed shares: 20%, 50%, 80% or 100%.","Changing screens produces another seeded layout.","A battle in progress keeps its assignment.","Save changes for the next natural encounter."};
         for(int i=0;i<7;++i)text(lines[i],pane+NW(0.02f),NY(0.32f+i*0.055f),true);
     }else{
         const auto status=FfxHooks::F7_SinRamStatus();
@@ -7663,11 +7676,13 @@ static int __cdecl SinCurse_DrawCb(int obj) {
         char line[128]{};
         _snprintf_s(line,sizeof(line),_TRUNCATE,"Area preview | %u of %u marked | T0 = unchanged",preview.cursed,preview.count);
         text(line,pane+NW(0.02f),NY(0.306f),true);
-        for(unsigned i=0;i<preview.count;++i){
-            const auto& item=preview.monsters[i];const auto* monster=FfxHooks::SinSpread::FindMonster(item.monster);
-            const float y=NY(0.368f+i*(preview.count>5?0.056f:0.068f));
-            const unsigned shade=item.threat==2?0x503F315Au:item.threat==1?0x40305060u:0x20243342u;
-            DrawSolidRect(pane+NW(0.012f),y,paneWidth-NW(0.024f),NH(preview.count>5?0.048f:0.059f),shade,shade-0x10000000u);
+        const auto page=FfxHooks::SinSpread::Page(preview.count,g_sinPreviewPage);
+        for(unsigned row=0;row<page.count;++row){
+            const auto& item=preview.monsters[page.first+row];const auto* monster=FfxHooks::SinSpread::FindMonster(item.monster,FfxHooks::SinSpread::AreaForField(preview.field));
+            const float y=NY(0.368f+row*0.052f);
+            const auto colors=FfxHooks::SinSpread::ThreatPalette(item.threat);
+            DrawSolidRect(pane+NW(0.012f),y,paneWidth-NW(0.024f),NH(0.045f),colors.top,colors.bottom);
+            DrawSolidRect(pane+NW(0.012f),y,NW(0.003f),NH(0.045f),colors.marker,colors.marker);
             _snprintf_s(line,sizeof(line),_TRUNCATE,"%s - T%u %s",monster?monster->name:"Monster",item.threat,FfxHooks::SinSpread::Curse(item.curse).name);
             text(line,pane+NW(0.022f),y+NH(0.017f),true);
         }
@@ -7713,7 +7728,7 @@ static int __cdecl SinCurse_InputCb(int obj) {
     const int selectionBeforeMouse = NativeMenu::RdW(obj, NativeMenu::O_SELECTED);
     const F7MouseInputResult mouse = F7ListMouseTick(
         obj, NativeMenu::NX(0.075f), NativeMenu::NY(0.235f),
-        NativeMenu::NW(0.325f), NativeMenu::NH(0.066f), NativeMenu::NH(0.057f),
+        NativeMenu::NW(0.325f), NativeMenu::NH(0.061f), NativeMenu::NH(0.053f),
         NativeMenu::RdW(obj, NativeMenu::O_COUNT), NativeMenu::RdW(obj, NativeMenu::O_PAGE));
     if (NativeMenu::RdW(obj, NativeMenu::O_SELECTED) != selectionBeforeMouse) {
         g_sinEasedRowY = -1.0f;
@@ -7746,16 +7761,19 @@ static int __cdecl SinCurse_InputCb(int obj) {
                 draftChanged = g_sinDraft.enabled != nextEnabled;
                 g_sinDraft.enabled = nextEnabled;
             } else if (sel == SIN_RAM_ROW_DISTRIBUTION) {
-                const unsigned choices[]={0,20,50,80};unsigned index=0;
-                for(;index<3 && choices[index]!=g_sinDraft.distribution;++index){}
-                g_sinDraft.distribution=choices[(index+((dir&0x8000)?3u:1u))%4u];draftChanged=true;
+                const unsigned choices[]={0,20,50,80,100};unsigned index=0;
+                for(;index<4 && choices[index]!=g_sinDraft.distribution;++index){}
+                g_sinDraft.distribution=choices[(index+((dir&0x8000)?4u:1u))%5u];draftChanged=true;
             } else if (sel == SIN_RAM_ROW_SEED) {
                 const uint32_t previous=g_sinDraft.seed;
                 if((dir&0x8000) && g_sinDraft.seed>0)--g_sinDraft.seed;
                 if((dir&0x2000) && g_sinDraft.seed<UINT32_MAX)++g_sinDraft.seed;
                 draftChanged=previous!=g_sinDraft.seed;
             } else if (sel == SIN_RAM_ROW_AREA) {
-                g_sinPreviewField=g_sinPreviewField==310?340:310;draftChanged=true;
+                g_sinPreviewField=static_cast<uint16_t>(FfxHooks::SinSpread::NextArea(g_sinPreviewField,(dir&0x8000)!=0));g_sinPreviewPage=0;draftChanged=true;
+            } else if (sel == SIN_RAM_ROW_PAGE) {
+                const auto page=FfxHooks::SinSpread::Page(FfxHooks::SinSpread::BuildAssignment(g_sinPreviewField,g_sinDraft.seed,0,FfxHooks::SinSpread::Distribution::All,true).count,g_sinPreviewPage);
+                g_sinPreviewPage=(page.page+((dir&0x8000)?page.pages-1:1))%page.pages;draftChanged=true;
             }
             if (draftChanged) {
                 SinRam_ClearSaveFeedback();
@@ -7821,7 +7839,9 @@ static void SinCurse_BuildLabels() {
     _snprintf_s(line,sizeof(line),_TRUNCATE,"Cursed monsters: %s",FfxHooks::SinSpread::DistributionName(static_cast<FfxHooks::SinSpread::Distribution>(g_sinDraft.distribution)));set(SIN_RAM_ROW_DISTRIBUTION,line);
     _snprintf_s(line,sizeof(line),_TRUNCATE,"Seed: %u",static_cast<unsigned>(g_sinDraft.seed));set(SIN_RAM_ROW_SEED,line);
     set(SIN_RAM_ROW_SHUFFLE,"Generate a new seed");
-    set(SIN_RAM_ROW_AREA,g_sinPreviewField==310?"Preview: Woods":"Preview: Snowfield");
+    _snprintf_s(line,sizeof(line),_TRUNCATE,"Preview: %s",FfxHooks::SinSpread::AreaName(g_sinPreviewField));set(SIN_RAM_ROW_AREA,line);
+    const auto page=FfxHooks::SinSpread::Page(FfxHooks::SinSpread::BuildAssignment(g_sinPreviewField,g_sinDraft.seed,0,FfxHooks::SinSpread::Distribution::All,true).count,g_sinPreviewPage);
+    _snprintf_s(line,sizeof(line),_TRUNCATE,"Preview page: %u/%u",page.page+1,page.pages);set(SIN_RAM_ROW_PAGE,line);
     set(SIN_RAM_ROW_SAVE,g_sinSaveFeedback==SinRamSaveFeedback::Saved?"Saved for next encounter":
         g_sinSaveFeedback==SinRamSaveFeedback::Failed?"Save failed - memory only":"Save for next encounter");
     set(SIN_RAM_ROW_GUIDE,g_sinShowGuide?"Show area preview":"How curses work");set(SIN_RAM_ROW_BACK,"Back");
@@ -7869,7 +7889,9 @@ static NativeMenu::Menu SinCurse_SpawnMenu() {
         g_sinDraft = snapshot.sinRamValid ? snapshot.sinRam : FfxHooks::SinRam::Config{};
         g_sinDraft.seeded=true;g_sinDraft.threatLevel=0;g_sinSeedEditing=false;
         const auto location=FfxHooks::F7_SinRamStatus();
-        if(location.areaField==310 || location.areaField==340)g_sinPreviewField=location.areaField;
+        const auto area=FfxHooks::SinSpread::AreaForField(location.areaField);
+        if(area)g_sinPreviewField=area;
+        g_sinPreviewPage=0;
         g_sinDraftActive = true;
         SinRam_ClearSaveFeedback();
     }
@@ -7923,14 +7945,15 @@ static void SinCurse_HandleConfirm(int row) {
         return;
     }
     if(row==SIN_RAM_ROW_ENABLED){SinRam_ClearSaveFeedback();g_sinDraft.enabled=!g_sinDraft.enabled;}
-    else if(row==SIN_RAM_ROW_DISTRIBUTION){const unsigned choices[]={0,20,50,80};unsigned i=0;for(;i<3 && choices[i]!=g_sinDraft.distribution;++i){}g_sinDraft.distribution=choices[(i+1)%4];SinRam_ClearSaveFeedback();}
+    else if(row==SIN_RAM_ROW_DISTRIBUTION){const unsigned choices[]={0,20,50,80,100};unsigned i=0;for(;i<4 && choices[i]!=g_sinDraft.distribution;++i){}g_sinDraft.distribution=choices[(i+1)%5];SinRam_ClearSaveFeedback();}
     else if(row==SIN_RAM_ROW_SEED){
         ArenaMixRenameAbort();AcquireSRWLockExclusive(&g_arenaRenameLock);
         _snprintf_s(g_arenaRenameDraft,sizeof(g_arenaRenameDraft),_TRUNCATE,"%u",static_cast<unsigned>(g_sinDraft.seed));g_arenaRenameSelectAll=true;
         ReleaseSRWLockExclusive(&g_arenaRenameLock);g_sinSeedEditing=true;InterlockedExchange(&g_arenaRenameActive,1);
     }else if(row==SIN_RAM_ROW_SHUFFLE){
         g_sinDraft.seed=FfxHooks::SinSpread::Mix(g_sinDraft.seed^static_cast<uint32_t>(GetTickCount64())^0x53494E31u);SinRam_ClearSaveFeedback();
-    }else if(row==SIN_RAM_ROW_AREA){g_sinPreviewField=g_sinPreviewField==310?340:310;}
+    }else if(row==SIN_RAM_ROW_AREA){g_sinPreviewField=static_cast<uint16_t>(FfxHooks::SinSpread::NextArea(g_sinPreviewField));g_sinPreviewPage=0;}
+    else if(row==SIN_RAM_ROW_PAGE){const auto count=FfxHooks::SinSpread::BuildAssignment(g_sinPreviewField,g_sinDraft.seed,0,FfxHooks::SinSpread::Distribution::All,true).count;g_sinPreviewPage=FfxHooks::SinSpread::Page(count,g_sinPreviewPage+1).page;}
     else if(row==SIN_RAM_ROW_GUIDE){g_sinShowGuide=!g_sinShowGuide;}
     else if(row==SIN_RAM_ROW_SAVE){
         g_sinDraft.seeded=true;g_sinDraft.threatLevel=0;
@@ -8107,7 +8130,7 @@ static uint32_t g_arenaPlusBattle7002TemplateStack[8] = {};
 // g_FFX_MenuSubsystemActive (VA 0x13407E4): allocate only while this value proves the subsystem is live.
 static bool NativeMenu_SubsystemLive() {
     if (!g_base) return false;
-    return *reinterpret_cast<volatile int*>(g_base + (0x13407E4u - 0x400000u)) != 0;
+    return *reinterpret_cast<volatile int*>(g_base + (::FfxHooks::ExecutableProfile::Va<0x13407E4u>() - 0x400000u)) != 0;
 }
 
 static bool ArenaPlus_IsEnabled() {
@@ -11104,7 +11127,7 @@ static bool ArenaPlus_ReadCurrentEncounterRoute(int* outField, int* outGroup, ch
     return true;
 }
 
-static const uint32_t RVA_BTL_BATTLEFIELD_FIELD = 0x00D2C254u; // MemoryBtl: LO=battlefield_id HI=field_idx
+static const uint32_t RVA_BTL_BATTLEFIELD_FIELD = (::FfxHooks::ExecutableProfile::Rva<0x00D2C254u>()); // MemoryBtl: LO=battlefield_id HI=field_idx
 static int g_pendingScenarioBackdropFieldIdx = -1;
 static uint16_t g_pendingScenarioBackdropBfId = 0;
 static int g_pendingScenarioBackdropFrames = 0;
@@ -13033,15 +13056,15 @@ static void StartArenaTraceIfEnabled() {
         npcHookEnabled ? 1 : 0,
         arenaOverrideEnabled ? 1 : 0);
     if (traceEnabled || npcHookEnabled) {
-        ArenaTrace_InstallDetour("Common.013B", 0x8600E0u, reinterpret_cast<void*>(&ArenaPlus_Common013B),
+        ArenaTrace_InstallDetour("Common.013B", ::FfxHooks::ExecutableProfile::Va<0x8600E0u>(), reinterpret_cast<void*>(&ArenaPlus_Common013B),
             &g_arenaTraceCommon013BDetour, &g_arenaTraceCommon013BTramp);
     }
     if (traceEnabled) {
-        ArenaTrace_InstallDetour("SgEvent.401D", 0xA78210u, reinterpret_cast<void*>(&ArenaTrace_SgEvent401D),
+        ArenaTrace_InstallDetour("SgEvent.401D", ::FfxHooks::ExecutableProfile::Va<0xA78210u>(), reinterpret_cast<void*>(&ArenaTrace_SgEvent401D),
             &g_arenaTraceSgEvent401DDetour, &g_arenaTraceSgEvent401DTramp);
     }
     if (arenaOverrideEnabled) {
-        ArenaTrace_InstallDetour("Battle.7002", 0x7A3550u, reinterpret_cast<void*>(&ArenaTrace_Battle7002),
+        ArenaTrace_InstallDetour("Battle.7002", ::FfxHooks::ExecutableProfile::Va<0x7A3550u>(), reinterpret_cast<void*>(&ArenaTrace_Battle7002),
             &g_arenaTraceBattle7002Detour, &g_arenaTraceBattle7002Tramp);
     }
 }
@@ -13072,7 +13095,7 @@ static void ArenaTrace_MenuPoolTick(const char* source) {
     static uint32_t s_lastObj = 0;
     static uint32_t s_lastSig = 0;
 
-    const uintptr_t pool = g_base + (0x18408C0u - 0x400000u);
+    const uintptr_t pool = g_base + FfxHooks::ExecutableProfile::Rva<0x014408C0u>();
     bool found = false;
 
     for (int i = 0; i < 32; ++i) {
@@ -13549,6 +13572,7 @@ static void NativeMenu_PresentTick() {
     const bool f7Foreground = F7IsForegroundWindow();
 
     FfxHooks::NativePorts::Tick(!F7OwnsUiPublishedForPresent() && !g_f8MenuOpen.Load());
+    FfxHooks::OriginalPs2Rng::Runtime::Service();
     FfxHooks::Dash_Tick(f7Foreground);
     FfxHooks::F7_SinObserveLocation();
     static bool workshopHeld=false;
@@ -13557,7 +13581,7 @@ static void NativeMenu_PresentTick() {
     if(f7Foreground&&workshopDown&&!workshopHeld&&!FfxHooks::NativePorts::BindingCaptureActive()&&!FfxHooks::ElementNameInput::Active()){
         if(EquipmentMenu::Active())InterlockedExchange(&EquipmentMenu::wantClose,1);
         else if(!F7OwnsUiPublishedForPresent()&&!g_f8MenuOpen.Load()&&!FfxHooks::Maechen_BlocksNativeModalAllocation()&&
-            *reinterpret_cast<volatile int*>(g_base+(0x13407E4u-0x400000u))==0){
+            *reinterpret_cast<volatile int*>(g_base+(::FfxHooks::ExecutableProfile::Va<0x13407E4u>()-0x400000u))==0){
             InterlockedExchange(&EquipmentMenu::wantOpen,1);InterlockedExchange(&g_forceSubsystem,1);
         }
     }
@@ -13573,7 +13597,7 @@ static void NativeMenu_PresentTick() {
             Log("[ffx-hooks] F8 BLOCKED (Maechen owns the native pump)\n");
         } else {
             const bool gameMenuOpen =
-                *reinterpret_cast<volatile int*>(g_base + (0x13407E4u - 0x400000u)) != 0;
+                *reinterpret_cast<volatile int*>(g_base + (::FfxHooks::ExecutableProfile::Va<0x13407E4u>() - 0x400000u)) != 0;
             if (gameMenuOpen) {
                 Log("[ffx-hooks] F8 BLOCKED (game menu already open) - close the game menu first\n");
             } else {
@@ -13634,7 +13658,7 @@ static void NativeMenu_PresentTick() {
             // a GAME menu is open -> do NOT open ours on top (two menus navigating = chaos).
             // Only open when the game is "clean".
             const bool gameMenuOpen =
-                *reinterpret_cast<volatile int*>(g_base + (0x13407E4u - 0x400000u)) != 0;
+                *reinterpret_cast<volatile int*>(g_base + (::FfxHooks::ExecutableProfile::Va<0x13407E4u>() - 0x400000u)) != 0;
             if (gameMenuOpen) {
                 Log("[ffx-hooks] NativeMenu: F7 BLOCKED (game menu already open) - close the game menu first\n");
             } else {
@@ -13656,7 +13680,7 @@ static void NativeMenu_PresentTick() {
     const bool forcedByCustomMenu =
         InterlockedCompareExchange(&g_forceSubsystem, 0, 0) != 0;
     const bool gameMenuOpen =
-        *reinterpret_cast<volatile int*>(g_base + (0x13407E4u - 0x400000u)) != 0 &&
+        *reinterpret_cast<volatile int*>(g_base + (::FfxHooks::ExecutableProfile::Va<0x13407E4u>() - 0x400000u)) != 0 &&
         !forcedByCustomMenu;
     const bool otherCustomMenuOpen =
         g_f8MenuOpen.Load() || NativeMenuOtherOwnerOrRequestPublished();
@@ -13720,8 +13744,8 @@ static int __cdecl NativeMenu_PumpHook(unsigned int a1) {
     // High-confidence render-visibility RE: clear both 2D kill switches before the pump because
     // its menu batch enqueue/flush runs inside this call. 0x12FB790 disables 2D; 0x12FB798 skips upload.
     if (InterlockedCompareExchange(&g_forceSubsystem, 0, 0) != 0 && g_base) {
-        *reinterpret_cast<volatile int*>(g_base + (0x12FB790u - 0x400000u)) = 0;  // g_Render2D_Disabled = 0
-        *reinterpret_cast<volatile int*>(g_base + (0x12FB798u - 0x400000u)) = 0;  // Do not skip batch upload.
+        *reinterpret_cast<volatile int*>(g_base + (::FfxHooks::ExecutableProfile::Va<0x12FB790u>() - 0x400000u)) = 0;  // g_Render2D_Disabled = 0
+        *reinterpret_cast<volatile int*>(g_base + (::FfxHooks::ExecutableProfile::Va<0x12FB798u>() - 0x400000u)) = 0;  // Do not skip batch upload.
     }
     // Resolve hub pointer input before the native update callback samples the
     // controller. A pressed row is authoritative for this frame; movement-only
@@ -14724,6 +14748,13 @@ static void F8BuildSelectedStatus(int sel, char* out, size_t outSize) {
     if (sel >= g_f7FlagCount) return;
 
     const FfxHooks::F8FlagSpec& flag = *g_f7FlagSpecs[sel];
+    if(strcmp(flag.gate.canonicalKey,"rng.original_ps2")==0){
+        FfxHooks::OriginalPs2Rng::Runtime::Service();
+        const auto rng=FfxHooks::OriginalPs2Rng::Runtime::Status();
+        _snprintf_s(out,outSize,_TRUNCATE,"%s%s",FfxHooks::OriginalPs2Rng::Runtime::Detail(),
+            FfxHooks::ResolveF8Flag(flag).value!=rng.bootRequested?" Restart required to apply the saved setting.":"");
+        return;
+    }
     if(strcmp(flag.gate.canonicalKey,"boosters.speed_hack_fmv")==0){_snprintf_s(out,outSize,_TRUNCATE,"%s",FfxHooks::FmvSpeed::Detail());return;}
     if (flag.activation == FfxHooks::F8Activation::ReadOnly) {
         _snprintf_s(out,outSize,_TRUNCATE,"Runtime information - read only");
@@ -16064,7 +16095,7 @@ static int __cdecl NativeTextOutline_MenuGuard(
     const bool menuActive = EquipmentMenu::Active() || g_nativeMenu.obj || g_arenaPlusMenu.obj || g_sinMenu.obj || g_f7Menu.obj ||
         ArenaPlusComposePick_IsActive() || FfxHooks::Maechen_MenuOwned() ||
         FfxHooks::Arcana::NativeUi::TextDrawingActive();
-    if (menuActive || NativeMenuHubCloseDrainPending()) return 0;
+    if (menuActive || NativeMenuHubCloseDrainPending() || FfxHooks::NativeText::PlainTextActive()) return 0;
     return reinterpret_cast<FnNativeTextOutline>(g_nativeTextOutlineTramp)(
         renderState, glyphMetrics, scale);
 }
@@ -16075,10 +16106,11 @@ static bool StartNativeTextOutlineGuard(uintptr_t moduleBase = 0) {
     // Its admitted executable must bind this dependency directly.
     const uintptr_t base = moduleBase ? moduleBase : g_base;
     if (!base) return false;
+    if (!FfxHooks::NativeUiSupport::Profile(base,FfxHooks::NativePresentationEvidence::textOutline)) return false;
     FfxHooks::CompatibleDetour* detour = nullptr;
     try {
         detour = new FfxHooks::CompatibleDetour(
-            (uint64_t)(base + 0x4FAE40u),
+            (uint64_t)(base + (::FfxHooks::ExecutableProfile::Rva<0x4FAE40u>())),
             (uint64_t)&NativeTextOutline_MenuGuard, &g_nativeTextOutlineTramp);
         const bool ok = detour->hook();
         Log("[ffx-hooks] Native text-outline guard hook ok=%d target_rva=0x004FAE40\n",
@@ -16129,7 +16161,7 @@ static bool StartNativeMenuIfEnabled() {
         Log("[ffx-hooks] NativeMenu hotkey remapped requested=0x%02X effective=F7 reason=%s\n",
             hk, FfxHooks::F7Ui::HotkeyReasonText(hotkey.reason));
     }
-    const uintptr_t pumpVa = g_base + (0x8A9C50u - 0x400000u); // FFX_Menu_PerFramePump int __cdecl(uint) [IDA d091ab12]
+    const uintptr_t pumpVa = g_base + RVA_FFX_MENU_PER_FRAME_PUMP; // Selected-profile FFX_Menu_PerFramePump, int __cdecl(uint).
     try {
         g_nativeMenuPumpDetour = new FfxHooks::CompatibleDetour(
             static_cast<uint64_t>(pumpVa),
@@ -16184,6 +16216,17 @@ static void StopNativeMenu() {
 #endif // FFXHOOKS_HAVE_POLYHOOK
 
 /* â”€â”€ Hook install / remove â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+static bool ScanPresentationTextReady(uintptr_t base,bool extraElements,bool expandedStats,bool validateOnly) {
+    if(validateOnly||(!extraElements&&!expandedStats&&!FfxHooks::Config::GetBool("elemental.numeric_scan",false)))return false;
+#ifdef FFXHOOKS_HAVE_POLYHOOK
+    if(StartNativeTextOutlineGuard(base))return true;
+#else
+    (void)base;
+#endif
+    Log("[ffx-hooks] Scan presentation unavailable: native text-outline guard missing\n");
+    return false;
+}
+
 static void StartNovaPoolEarlyIfRequested();
 static void InstallHooks() {
     StartupTiming("install-enter");
@@ -16495,7 +16538,8 @@ static void InstallHooks() {
         if (validateOnly) {
             Log("[ffx-hooks] ElementHook install blocked by FFXHOOKS_VALIDATE_ONLY=1\n");
         } else {
-            FfxHooks::InstallElementHook(g_base, scanExtraElements, scanExpanded, LogLine);
+            if(ScanPresentationTextReady(g_base,scanExtraElements,scanExpanded,validateOnly))
+                FfxHooks::InstallElementHook(g_base, scanExtraElements, scanExpanded, LogLine);
         }
     }
     const bool enableAbilitySfxLog = AbilitySfxLogFlagEnabled();
@@ -16870,6 +16914,13 @@ static void InstallHooks() {
  * Process termination discards process-owned state. Dynamic FreeLibrary is unsupported until that owner first stops
  * the Present producer, drains admitted frames, and restores every owned byte outside DllMain. */
 static void RemoveHooks() {
+#ifdef FFXHOOKS_HAVE_POLYHOOK
+    if(!FfxHooks::OriginalPs2Rng::Runtime::Stop()){
+        Log("[ffx-hooks] Original PS2 RNG initialization active; teardown deferred\n");
+        return;
+    }
+#endif
+    FfxHooks::UiNativeFont::Stop();
     // Cross-framework callbacks and shared blocks are retained until exit.
     // DllMain still issues the existing bounded logical stop requests.
     if (FfxHooks::Coexistence::runtime.PeerPresent()) return;
@@ -17070,6 +17121,12 @@ static const FfxHooks::Coexistence::BridgeCallbacks g_fahrenheitCallbacks{
     ScheduleFahrenheitWorker,FahrenheitFrame,FahrenheitResize};
 static SRWLOCK g_fahrenheitStartupLock=SRWLOCK_INIT;
 
+static bool ReadStartupPeHeader(HMODULE host, unsigned char* header, size_t size) noexcept {
+    if (!host || !header) return false;
+    __try { memcpy(header, host, size); return true; }
+    __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
+}
+
 // The worker owns file-backed logging, delay, config I/O, and hook installation outside DllMain.
 static DWORD WINAPI HooksWorkerThread(LPVOID) {
     OpenLog();
@@ -17081,11 +17138,37 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
         OutputDebugStringA("[ffx-hooks] Native startup deferred or already owned; Fahrenheit bridge readiness required\n");
         return 0;
     }
+    // This common boundary precedes every feature, provider install, config
+    // load and native service. A rebuilt Steam PE cannot inherit old RVAs.
+    HMODULE ffxHost = GetModuleHandleW(L"FFX.exe");
+    unsigned char startupHeader[0x1000]{};
+    const bool startupHeaderReadable = ReadStartupPeHeader(ffxHost, startupHeader, sizeof(startupHeader));
+    FfxHooks::F8Runtime::ExecutableIdentity startupIdentity{};
+    if (!FfxHooks::ExecutableStartup::CanStart(ffxHost != nullptr,
+        startupHeaderReadable ? startupHeader : nullptr,
+        startupHeaderReadable ? sizeof(startupHeader) : 0, &startupIdentity)) {
+        FfxHooks::Coexistence::runtime.Finish(false);
+        Log("[ffx-hooks] Native startup rejected: unsupported executable profile host=%d header=%d machine=0x%04X timestamp=0x%08X image=0x%08X; no features started\n",
+            ffxHost != nullptr ? 1 : 0, startupHeaderReadable ? 1 : 0,
+            static_cast<unsigned>(startupIdentity.machine), static_cast<unsigned>(startupIdentity.timestamp),
+            static_cast<unsigned>(startupIdentity.sizeOfImage));
+        return 0;
+    }
     HMODULE lifetime=nullptr;
     if(!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,
-        reinterpret_cast<LPCWSTR>(&HooksWorkerThread),&lifetime) || !FfxHooks::Coexistence::PrepareProvider()){
+        reinterpret_cast<LPCWSTR>(&HooksWorkerThread),&lifetime)){
         FfxHooks::Coexistence::runtime.Finish(false);
-        Log("[ffx-hooks] Compatibility startup rejected: provider or lifetime unavailable\n");
+        Log("[ffx-hooks] Compatibility startup rejected: lifetime unavailable\n");
+        return 0;
+    }
+    if(!FfxHooks::ExecutableStartup::VerifyModuleFile(ffxHost)){
+        FfxHooks::Coexistence::runtime.Finish(false);
+        Log("[ffx-hooks] Native startup rejected: executable file hash differs or cannot be verified; no features started\n");
+        return 0;
+    }
+    if(!FfxHooks::Coexistence::PrepareProvider()){
+        FfxHooks::Coexistence::runtime.Finish(false);
+        Log("[ffx-hooks] Compatibility startup rejected: provider unavailable\n");
         return 0;
     }
     Log("[ffx-hooks] coexistence peer=%d managedSaveCompatible=0 nativeRenderOwner=%d\n",
@@ -17117,6 +17200,11 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
     CaptureF8StartupGates();
     StartupTiming("config-ready");
 #ifdef FFXHOOKS_HAVE_POLYHOOK
+    // The RNG epoch must observe the native reset. Install before language/font
+    // work and the optional delayed install path; never invent a late epoch.
+    FfxHooks::OriginalPs2Rng::Runtime::Start(reinterpret_cast<uintptr_t>(ffxHost),
+        F8CatalogGateEnabled("rng.original_ps2"),
+        FfxHooks::Config::GetBool("core.validate_only",false)||EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
     FfxHooks::TextLanguage::Native::StartConfigured(reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr)),EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY"),LogLine);
     Log("[ffx-hooks] Text language startup: %s\n",FfxHooks::TextLanguage::Native::Detail());
     if(!EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY")){
@@ -17190,7 +17278,13 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
     // entrypoints once its Equip layout is installed, so admit Scan first.
     // Keep this outside the Arcana gate: Scan remains an independent feature.
     const auto nativePresentationBase=reinterpret_cast<uintptr_t>(GetModuleHandleW(nullptr));
-    FfxHooks::InstallElementHook(nativePresentationBase,ElementScanDarkEnabled(),ScanExpandedEnabled(),LogLine);
+    wchar_t nativeFontExecutable[4096]{};
+    const DWORD nativeFontPathSize=GetModuleFileNameW(nullptr,nativeFontExecutable,4096);
+    if(nativeFontPathSize&&nativeFontPathSize<4096)
+        FfxHooks::UiNativeFont::Configure(std::filesystem::path(nativeFontExecutable).parent_path()/L"data"/L"FFX_Data.vbf",LogLine);
+    if(ScanPresentationTextReady(nativePresentationBase,ElementScanDarkEnabled(),ScanExpandedEnabled(),
+        FfxHooks::Config::GetBool("core.validate_only",false)||EnvFlagEnabled("FFXHOOKS_VALIDATE_ONLY")))
+        FfxHooks::InstallElementHook(nativePresentationBase,ElementScanDarkEnabled(),ScanExpandedEnabled(),LogLine);
     bool arcanaUiOperational=false;
 #ifdef FFXHOOKS_HAVE_POLYHOOK
     if(FfxHooks::Arcana::Runtime::Requested()){
@@ -17233,6 +17327,9 @@ static DWORD WINAPI HooksWorkerThread(LPVOID) {
     EarlyLogLine("[ffx-hooks] early worker calling InstallHooks\r\n");
     Log("[ffx-hooks] worker thread woke; calling InstallHooks\n");
     InstallHooks();
+#ifdef FFXHOOKS_HAVE_POLYHOOK
+    FfxHooks::OriginalPs2Rng::Runtime::Service();
+#endif
     // The existing worker is the only telemetry consumer. No callback needs a logger,
     // renderer, file handle, or additional background thread. The observer owns deadlines.
     while (FfxHooks::Fastload::FastloadNeedsPump()) {
@@ -17296,6 +17393,10 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID) {
         // Present frame could publish 8x during the tiny interval after Dialog admission closed.
         // Full teardown still needs a normal-context owner and callback drain.
         case DLL_PROCESS_DETACH:
+#ifdef FFXHOOKS_HAVE_POLYHOOK
+            FfxHooks::OriginalPs2Rng::Runtime::RequestStop();
+#endif
+            FfxHooks::UiNativeFont::Stop();
             FfxHooks::Coexistence::runtime.Stop();
             FfxHooks::Arcana::NativeUi::Stop();
             FfxHooks::Arcana::Combat::Stop();

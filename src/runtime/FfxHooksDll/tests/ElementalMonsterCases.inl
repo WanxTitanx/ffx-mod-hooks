@@ -11,7 +11,7 @@ static std::string MonsterPack(const std::vector<unsigned char>& bank,const std:
 static void MonsterCases(std::uintptr_t base,std::vector<unsigned char>& actors,
                          std::vector<unsigned char>& bank,std::vector<unsigned char>& file){
     coreImage=base;amount=1000;W::DamageProducerForTests(reinterpret_cast<void*>(&CoreEndpoint));
-    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+0x38E680);
+    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
     std::array<unsigned char,44> info{};
     auto* target=actors.data()+18*0xF90;
     const auto hit=[&](unsigned id,unsigned slot=18){return static_cast<int>(producer(0,actors.data(),slot,

@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 // Jarvis-HOOK: one native Nul owner composes complete coverage before either
 // native or external charges can be spent. Published callbacks are permanent.
@@ -24,7 +25,7 @@ inline std::mutex installation;
 inline std::uintptr_t imageBase=0;
 inline void* original[1]{};
 inline std::array<unsigned char,16> owned{};
-inline constexpr unsigned Rva=0x38C070;
+inline constexpr unsigned Rva=(::FfxHooks::ExecutableProfile::Rva<0x38C070>());
 inline Function Original() noexcept {return reinterpret_cast<Function>(original[0]);}
 inline bool Register(Resolve callback) noexcept {
     if(!callback)return false;Resolve empty=nullptr;

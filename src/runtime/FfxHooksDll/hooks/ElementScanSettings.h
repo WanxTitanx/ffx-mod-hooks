@@ -59,13 +59,22 @@ inline bool SaveBit(unsigned bit){
 inline bool RegisteredPresentation(const char* key,unsigned nativeBit,std::uint32_t originalRgb,std::uint32_t& rgb,bool& visible){
     rgb=originalRgb;visible=true;
     if(nativeBit){
-        if(nativeBit<0x10)return true;
+        if(nativeBit<0x10){
+            // The original four elements use colored atlas artwork, while the
+            // numerical Scan draws a neutral sphere. Supply their display hue.
+            if(originalRgb==0xFFFFFFu)rgb=nativeBit==1?0xF47758u:nativeBit==2?0x74CDF1u:nativeBit==4?0xEFCC57u:0x629FEFu;
+            return true;
+        }
         Settings settings{};if(!ReadSettings(settings))return false;
         const unsigned index=nativeBit==0x10?0:nativeBit==0x80?1:nativeBit==settings.extraBit?2:3;
         rgb=settings.rgb[index];visible=settings.enabled[index]!=0;return true;
     }
     ElementMenu::Item item{};item.available=true;item.rgb=originalRgb;
     if(!key||!ElementalDominion::ValidKey(key))return false;
+    if(originalRgb==0xFFFFFFu){
+        if(std::strcmp(key,"hook.custom03")==0||std::strcmp(key,"spira.poison")==0)item.rgb=0xA7CF65u;
+        else if(std::strcmp(key,"hook.custom04")==0||std::strcmp(key,"spira.gravity")==0)item.rgb=0xDB91C3u;
+    }
     std::snprintf(item.key,sizeof(item.key),"%s",key);return ReadHookPresentation(item,rgb,visible);
 }
 }

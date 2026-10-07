@@ -9,9 +9,12 @@ using System.Text;
 using System.Text.Json;
 using FFXProjectEditor.FfxLib.Ai;
 using FFXProjectEditor.FfxLib.Ai.Sin;
+using FfxHooks.SinProfiles;
 
 internal static class Program
 {
+    private sealed record CatalogMonster(ushort Monster, ushort Area, int[] Allowed);
+    private sealed record ExportCatalog(CatalogMonster[] Monsters);
     private static string Required(string[] args,string name)
     {
         int index=Array.IndexOf(args,name);
@@ -21,15 +24,19 @@ internal static class Program
     {
         try
         {
-            string editor=Required(args,"--editor"),source=Required(args,"--source"),output=Required(args,"--output");
+            string editor=Required(args,"--editor");
             string editorDirectory=Path.GetDirectoryName(editor)!;
             AssemblyLoadContext.Default.Resolving+=(_,name)=>
             {
                 string file=Path.Combine(editorDirectory,name.Name+".dll");
                 return File.Exists(file)?AssemblyLoadContext.Default.LoadFromAssemblyPath(file):null;
             };
+            if(Array.IndexOf(args,"--self-test")>=0)return SinPostActionContract.Run();
+            string source=Required(args,"--source"),output=Required(args,"--output");
             Directory.CreateDirectory(output);
-            return Export(source,output,editor);
+            int catalogAt=Array.IndexOf(args,"--catalog");
+            string? catalog=catalogAt>=0&&catalogAt+1<args.Length?Path.GetFullPath(args[catalogAt+1]):null;
+            return Export(source,output,editor,catalog);
         }
         catch(Exception error){Console.Error.WriteLine(error);return 1;}
     }
@@ -103,9 +110,9 @@ internal static class Program
         {
             if(!AiWorkerMapping.TryResolveCombatOnHit(mon,script,out var hit,out error))throw new InvalidDataException(error);
             var snippet=AiSnippetLibrary.ById("guard-counterattack-cmd")??throw new InvalidDataException("Missing canonical counter template");
-            // Match the Editor's explicit Counter March bake: native Delay
-            // Attack, not the later experimental custom animation/caster row.
-            var (guard,counterBody)=snippet.ExpandGuarded(new AiSnippetArgs(0x3006,0,0xFFEF));
+            // Counter March is monster2 row 272 (0x6110). The player command
+            // 0x3006 is Delay Attack and must never stand in for this authored move.
+            var (guard,counterBody)=snippet.ExpandGuarded(new AiSnippetArgs(0x6110,0,0xFFEF));
             return Require(SinSandboxApplySession.TryEmitRawAction(mon,id,counterBody,entrypointOverride:hit.EntrypointIndex,guardOverride:guard,stopAfterAction:true));
         }
         var recipe=SinPresetRecipeResolver.Resolve(id);
@@ -207,21 +214,35 @@ internal static class Program
             throw new InvalidDataException("Frost-Flood must select its verified command268");
     }
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static int Export(string source,string output,string editor)
+    private static int Export(string source,string output,string editor,string? catalog)
     {
         var roster=new (ushort Monster,byte Mask)[]{(3,0x4D),(26,0x0F),(33,0x27),(81,0x3D),(217,0x6F),(4,0x0F),(12,0x2F),(19,0x3D),(37,0x2F),(87,0xAD)};
+        var planned=catalog is null
+            ? roster.SelectMany(m=>Enumerable.Range(1,8).Where(c=>(m.Mask&(1<<(c-1)))!=0).Select(c=>(m.Monster,Curse:c)))
+            : (JsonSerializer.Deserialize<ExportCatalog>(File.ReadAllText(catalog),new JsonSerializerOptions{PropertyNameCaseInsensitive=true})
+                ??throw new InvalidDataException("Missing catalog")).Monsters
+                .SelectMany(m=>m.Allowed.Select(c=>(m.Monster,Curse:c)));
         var records=new List<(ushort Monster,byte Curse,ulong BaseHash,byte[] Ai)>();
         var report=new List<object>();
-        foreach(var (monster,mask) in roster)
+        foreach(var (monster,curse) in planned.Distinct().OrderBy(x=>x.Monster).ThenBy(x=>x.Curse))
         {
             string file=Path.Combine(source,$"_m{monster:D3}",$"m{monster:D3}.bin");byte[] original=File.ReadAllBytes(file);byte[] baseline=Ai(original);
-            for(int curse=1;curse<=8;++curse)
-            {
-                if((mask&(1<<(curse-1)))==0)continue;
-                byte[] baked=Emit(original,curse),ai=Ai(baked);
-                SinBehaviorContract.Verify(original,baked,curse);
-                if(curse==1)VerifyOpeningVeil(original,baked);
-                if(curse>=5)VerifyTurnCommandOverride(original,baked,curse);
+                if(curse<1||curse>41)throw new InvalidDataException("Unknown bounded curse identity");
+                string preset=curse==13?"UNI-013A":curse==41?"UNI-013B":$"UNI-{curse:D3}";
+                int nativeActionCount=0;
+                byte[] baked;
+                if(curse<=8){
+                    baked=Emit(original,curse);
+                    SinBehaviorContract.Verify(original,baked,curse);
+                    if(curse==1)VerifyOpeningVeil(original,baked);
+                    if(curse>=5)VerifyTurnCommandOverride(original,baked,curse);
+                }else{
+                    if(!SinPostActionCompiler.TryBuild(original,$"m{monster:D3}",preset,out var edit,out string error)||edit is null)
+                        throw new InvalidDataException($"m{monster:D3}/{preset}: {error}");
+                    nativeActionCount=edit.NativeActionCount;
+                    baked=AiScript_File.SpliceAiFileIntoMonsterGrow(original,edit.AiFile);
+                }
+                byte[] ai=Ai(baked);
                 if(ai.Length>65536)throw new InvalidDataException("AI profile is too large");
                 var parsed=AiScript_File.Read(ai);
                 if(!parsed.CodeWalkClosedExactly || parsed.UnknownOpcodes.Count!=0)throw new InvalidDataException("Bytecode verification failed");
@@ -230,8 +251,8 @@ internal static class Program
                 if(!original.AsSpan(beforeStats).SequenceEqual(baked.AsSpan(afterStats)))throw new InvalidDataException("Non-AI monster content changed");
                 File.WriteAllBytes(Path.Combine(output,$"m{monster:D3}-uni{curse:D3}.ai"),ai);
                 records.Add((monster,(byte)curse,Hash(baseline),ai));
-                report.Add(new{monster,curse,originalAiLength=baseline.Length,aiLength=ai.Length,originalAiHash=Hash(baseline).ToString("X16"),aiHash=Hash(ai).ToString("X16"),workers=parsed.Workers.Count,privateLengths=parsed.Workers.Select(w=>w.PrivateDataLength)});
-            }
+                var requiredCommands=curse==2?new[]{272}:curse<=8?new[]{268,269,270,271}:SinPostActionPresetCatalog.Find(preset)!.Skills.Select(s=>s.Operand&0xFFF).ToArray();
+                report.Add(new{monster,curse,preset,nativeActionCount,requiredCommands,originalAiLength=baseline.Length,aiLength=ai.Length,originalAiHash=Hash(baseline).ToString("X16"),aiHash=Hash(ai).ToString("X16"),workers=parsed.Workers.Count,privateLengths=parsed.Workers.Select(w=>w.PrivateDataLength)});
         }
         string pack=Path.Combine(output,"_sin-ai-v1.bin");
         using(var stream=File.Create(pack))using(var writer=new BinaryWriter(stream,Encoding.ASCII))

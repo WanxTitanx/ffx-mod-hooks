@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 
 #include <atomic>
@@ -8,9 +9,9 @@ namespace FfxHooks::SharedBattleRuntime {
 
 // Executable identity: FFX.exe SHA-256 78CE3439...D3DB5CED, PE32 image base 0x00400000.
 // IDA read-only xrefs prove that InitScene RVA 0x00383ED0 has exactly these three callers.
-inline constexpr uintptr_t kBootstrapInitSceneReturnRva = 0x00381C76u;
-inline constexpr uintptr_t kSphereGridStartupInitSceneReturnRva = 0x003821CFu;
-inline constexpr uintptr_t kBattleStateInitSceneReturnRva = 0x0038321Cu;
+inline constexpr uintptr_t kBootstrapInitSceneReturnRva = (::FfxHooks::ExecutableProfile::Rva<0x00381C76u>());
+inline constexpr uintptr_t kSphereGridStartupInitSceneReturnRva = (::FfxHooks::ExecutableProfile::Rva<0x003821CFu>());
+inline constexpr uintptr_t kBattleStateInitSceneReturnRva = (::FfxHooks::ExecutableProfile::Rva<0x0038321Cu>());
 
 enum class InitSceneCaller : uint8_t {
     Unknown = 0,

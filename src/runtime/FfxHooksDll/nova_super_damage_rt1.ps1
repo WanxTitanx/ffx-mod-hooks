@@ -1,3 +1,4 @@
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 $ErrorActionPreference = 'Stop'
 $here = $PSScriptRoot
 $vswhere = Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio\Installer\vswhere.exe'
@@ -11,7 +12,7 @@ $cSources = @('hook.c','buffer.c','trampoline.c','hde\hde32.c') | ForEach-Object
 $compileC = 'call "{0}" x86 >nul && cl /nologo /TC /O2 /MT /W3 /I"{1}\include" /c {2}' -f $vcvars,$mh,($cSources -join ' ')
 $exe = Join-Path $obj 'NovaSuperDamageRt1.exe'
 $fixture = Join-Path (Resolve-Path (Join-Path $here '..\..\..')).Path 'native-fixtures\FFX.exe'
-if (-not (Test-Path -LiteralPath $fixture) -or (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED') { throw 'Exact supported FFX.exe fixture missing; do not launch the game' }
+if (-not (Test-Path -LiteralPath $fixture) -or (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -ne (Get-FfxTestExecutableHash)) { throw 'Exact supported FFX.exe fixture missing; do not launch the game' }
 $crtFixture = Join-Path (Split-Path $fixture) 'msvcr110.dll'
 if ((Get-FileHash -Algorithm SHA256 -LiteralPath $crtFixture).Hash -ne 'B30160E759115E24425B9BCDF606EF6EBCE4657487525EDE7F1AC40B90FF7E49') { throw 'Exact game CRT fixture required' }
 Copy-Item -LiteralPath $crtFixture -Destination (Join-Path $obj 'msvcr110.dll') -Force

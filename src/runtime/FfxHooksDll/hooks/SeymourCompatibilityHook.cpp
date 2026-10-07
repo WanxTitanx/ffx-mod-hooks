@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "SeymourCompatibilityHook.h"
 #include "SeymourCompatibilityService.h"
 #include "RecoveryNative.h"
@@ -12,8 +13,8 @@ namespace FfxHooks::SeymourCompatibility {
 namespace {
 namespace N=RecoveryNative;
 constexpr const char* Keys[]={"seymour.command_safety","seymour.gear_visibility"};
-constexpr std::uint32_t QueryRva=0x39a5c0,VisibilityRva=0x3ad5f0;
-constexpr std::uint32_t ActorTableRva=0xd334cc,PlayerRva=0xd3205c,InventoryRva=0xd30f2c;
+constexpr std::uint32_t QueryRva=(::FfxHooks::ExecutableProfile::Rva<0x39a5c0>()),VisibilityRva=(::FfxHooks::ExecutableProfile::Rva<0x3ad5f0>());
+constexpr std::uint32_t ActorTableRva=(::FfxHooks::ExecutableProfile::Rva<0xd334cc>()),PlayerRva=(::FfxHooks::ExecutableProfile::Rva<0xd3205c>()),InventoryRva=(::FfxHooks::ExecutableProfile::Rva<0xd30f2c>());
 constexpr std::uint8_t QueryBytes[]={0x55,0x8b,0xec,0x51,0x8b,0x4d,0x0c,0x53,0x56,0x8b,0xc1,0x8b,0xf1,0x81,0xe6,0xff,0x0f,0,0,0x33,0xdb};
 constexpr std::uint8_t VisibilityBytes[]={0x55,0x8b,0xec,0x57,0x8b,0x7d,0x08,0x81,0xe7,0xff,0,0,0,0x83,0xff,7,0x7d,0x48,0x69,0xff,0x94,0,0,0,0x53,0x8b,0x5d,0x0c,0x56};
 constexpr RecoveryEvidence::Proof QueryProof{QueryRva,QueryBytes,sizeof(QueryBytes),nullptr,0};

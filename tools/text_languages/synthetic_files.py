@@ -9,7 +9,9 @@ from pathlib import Path
 from pack import EXE_SHA
 
 
-def create(output: Path) -> None:
+def create(output: Path, executable_sha256: str = EXE_SHA) -> None:
+    if executable_sha256 not in (EXE_SHA, '0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d'):
+        raise ValueError('Unknown executable identity for the isolated IO fixture')
     output.mkdir(parents=True, exist_ok=False)
     resources = []
     def add(identity, family, request, path, data, font=None):
@@ -36,7 +38,7 @@ def create(output: Path) -> None:
                 'font/' + filename, f'Synthetic {identity}; no glyph pixels.'.encode('ascii'))
     manifest = dict(schema_version=1, capability='ffx.text-locale', hook_api=1,
                     locale='pt-BR', display_name='Synthetic IO test - not a game package', pack_version='1.0.0',
-                    base_locale=1, fallback='native', activation='restart', executable_sha256=EXE_SHA,
+                    base_locale=1, fallback='native', activation='restart', executable_sha256=executable_sha256,
                     coverage=dict(menu='partial', battle='unavailable', events='unavailable', texture_text='unavailable'),
                     resources=resources, fonts=[dict(id='western', encoding='ffx-western-v1', preserve_native=True,
                     metrics='metrics', atlases=atlases, glyphs=[])])
@@ -46,4 +48,6 @@ def create(output: Path) -> None:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
-    create(parser.parse_args().output)
+    parser.add_argument('--executable-sha256', default=EXE_SHA)
+    args = parser.parse_args()
+    create(args.output, args.executable_sha256)

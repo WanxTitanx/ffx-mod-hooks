@@ -13,6 +13,7 @@ SOURCE_HASHES = {
 }
 # F0/F1 contain native ink despite having no assigned Unicode character.
 CUSTOM_GLYPHS = ((227,242,112,199),(245,243,126,199),(195,244,80,176),(213,245,94,176))
+ORDINAL_GLYPHS = ((186,246,126),(170,247,112))
 
 
 def _rgb565(rgb):
@@ -107,7 +108,7 @@ def _patch_empty_blocks(original,desired,targets):
     return bytes(output),changed
 
 
-def build_font(originals):
+def build_font(originals, *, ordinals=False):
     from PIL import Image
     if set(originals)!=set(SOURCE_HASHES):
         raise AssetError('All font, shadow and metric inputs are required')
@@ -144,6 +145,21 @@ def build_font(originals):
             targets[key].append(box)
         metrics[ftc.metrics+index]=width
         glyphs.append({'unicode':unicode,'code':code,'width':width})
+    if ordinals:
+        for unicode,code,base in ORDINAL_GLYPHS:
+            index=code-48;scale=.65
+            width=round(metrics[ftc.metrics+base-48]*scale)
+            for role in ('font','shadow'):
+                key=f'{role}_0_{index&1}.dds.phyre';box=cell_box(code,*pages[key].size)
+                old=pages[key].crop(box)
+                if old.getchannel('A').getbbox() is not None:
+                    raise AssetError('Ordinal would overwrite native glyph ink')
+                original=_crop(pages,role,base)
+                letter=original.resize((round(original.width*scale),round(original.height*scale)),Image.Resampling.LANCZOS)
+                tile=Image.new('RGBA',old.size);tile.alpha_composite(letter,(0,1))
+                edited[key].paste(tile,box);targets[key].append(box)
+            metrics[ftc.metrics+index]=width
+            glyphs.append({'unicode':unicode,'code':code,'width':width})
     output={'base.ftc':bytes(metrics)}
     audit={'native_count_unchanged':ftc.count,'glyphs':glyphs,'changed_blocks':{}}
     for name in ATLAS_NAMES:

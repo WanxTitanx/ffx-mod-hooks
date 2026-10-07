@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "ArcanaRuntime.h"
 #include "ArcanaElemental.h"
 #include "ArcanaAcquisition.h"
@@ -20,7 +21,7 @@
 
 namespace FfxHooks::Arcana::Runtime {
 namespace {
-constexpr std::uint32_t saveRva=0xD2CA90,playerRva=0xD3205C,playerFile=0x560C,actorTableRva=0xD334CC;
+constexpr std::uint32_t saveRva=(::FfxHooks::ExecutableProfile::Rva<0xD2CA90>()),playerRva=(::FfxHooks::ExecutableProfile::Rva<0xD3205C>()),playerFile=0x560C,actorTableRva=(::FfxHooks::ExecutableProfile::Rva<0xD334CC>());
 using SaveImage=RonsoPool::SaveImage;
 std::uintptr_t base=0;
 Settings settings{};
@@ -63,7 +64,7 @@ bool Payload(const unsigned char* bytes,std::size_t size,Hash& hash){
     std::fill(copy.begin()+25844,copy.begin()+25848,static_cast<unsigned char>(0));
     return Fingerprint(copy.data()+64,copy.size()-64,hash);
 }
-bool InBattle() noexcept {unsigned char value=1;return !Copy(&value,reinterpret_cast<void*>(base+0xD2A8E0),1)||value!=0;}
+bool InBattle() noexcept {unsigned char value=1;return !Copy(&value,reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())),1)||value!=0;}
 bool OnOwner() noexcept {return ownerThread.load()==GetCurrentThreadId();}
 bool Development() noexcept {return settings.developmentEnabled?settings.developmentEnabled():settings.fullDeck;}
 void CacheEffects(){for(unsigned actor=0;actor<kActorCount;++actor)effects[actor]=Aggregate(state,actor);}
@@ -89,7 +90,7 @@ std::uintptr_t BattleActor(unsigned actor){
 }
 void Refresh(unsigned actor){
     if(actor>=kActorCount||!started.load()||!OnOwner())return;
-    reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x3861B0)(actor);
+    reinterpret_cast<int(__cdecl*)(unsigned)>(base + (::FfxHooks::ExecutableProfile::Rva<0x3861B0>()))(actor);
 }
 void ReadEvent(const wchar_t* path,const unsigned char* disk,const unsigned char* loaded,std::size_t size) noexcept {
     if(!primed.load()||!enabled.load()||!path||size!=RonsoPool::kSaveSize)return;
@@ -223,7 +224,7 @@ void EndAggregate(bool completed) noexcept {
             for(unsigned i=0;i<after.size();++i)if(after[i]!=before[i])Copy(reinterpret_cast<void*>(scope.pointer+0x540+i),after.data()+i,1);
             // Re-evaluate max-HP/MP and current values with the composed native
             // BHP/BDL flags. Native battle buffs (Stamina/Mana) stay authoritative.
-            reinterpret_cast<int(__cdecl*)(unsigned,void*,int)>(base+0x38D330)(scope.actor,reinterpret_cast<void*>(scope.pointer),-1);
+            reinterpret_cast<int(__cdecl*)(unsigned,void*,int)>(base + (::FfxHooks::ExecutableProfile::Rva<0x38D330>()))(scope.actor,reinterpret_cast<void*>(scope.pointer),-1);
             std::uint32_t hpMax=0,mpMax=0;
             if(Copy(&hpMax,reinterpret_cast<void*>(scope.pointer+0x594),4)&&Copy(&mpMax,reinterpret_cast<void*>(scope.pointer+0x598),4)){
                 const auto hp=(std::min)(scope.hp,hpMax),mp=(std::min)(scope.mp,mpMax);
@@ -352,7 +353,7 @@ bool Start(){
     if(!SharedClamp::Profile(base)||(standalone&&!NativeUiSupport::Profile(base,Evidence::basic))){code=Code::Unsupported;return false;}
     if(!SharedClamp::Start(base)||!SharedClamp::Register(SharedClamp::Slot::Arcana,&AdjustSharedClamp)){code=Code::Conflict;return false;}
     if(standalone){
-        const std::uint32_t rvas[]={0x4B5450u,0x3861B0u,0x39C610u,0x38E680u};
+        const std::uint32_t rvas[]={(::FfxHooks::ExecutableProfile::Rva<0x4B5450u>()),(::FfxHooks::ExecutableProfile::Rva<0x3861B0u>()),(::FfxHooks::ExecutableProfile::Rva<0x39C610u>()),(::FfxHooks::ExecutableProfile::Rva<0x38E680u>())};
         void* replacements[]={reinterpret_cast<void*>(LoadShim),reinterpret_cast<void*>(FieldShim),reinterpret_cast<void*>(AggregateShim),reinterpret_cast<void*>(DamageShim)};
         if(!NativeUiSupport::Install(base,rvas,replacements,standaloneOriginals,MinHookBatch::Owner::ArcanaGameplay,reinterpret_cast<const void*>(&Start))){code=Code::Conflict;return false;}
         NativeGameplayEvents::provider=NativeGameplayEvents::Provider::Arcana;

@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "SeymourOverdriveHook.h"
 #include "SeymourOverdrivePlan.h"
 #include "SeymourOverdriveControl.h"
@@ -23,7 +24,7 @@ using DeathFn=int(__cdecl*)(int,void*,int,void*);
 using WinFn=int(__cdecl*)();
 using GaugeFn=int(__cdecl*)(int,void*,int);
 constexpr char Key[]="seymour.overdrive_events";
-constexpr unsigned ActorTableRva=0xd334cc,ActorStride=0xf90;
+constexpr unsigned ActorTableRva=(::FfxHooks::ExecutableProfile::Rva<0xd334cc>()),ActorStride=0xf90;
 std::uintptr_t g_base=0;
 std::atomic<State> g_state{State::NotStarted};
 std::atomic<bool> g_attempted{false},g_ready{false};

@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -65,13 +66,13 @@ void ReadMappings(Mapping& ids,ForeignMapping& foreign){
     }
 }
 bool Language(std::uint32_t& manager,std::uint32_t& id) noexcept {
-    return Read(module+0x8DED48,manager)&&manager>=0x10000&&manager<=UINT32_MAX-8&&Read(manager+4,id)&&id<=18;
+    return Read(module + (::FfxHooks::ExecutableProfile::Rva<0x8DED48>()),manager)&&manager>=0x10000&&manager<=UINT32_MAX-8&&Read(manager+4,id)&&id<=18;
 }
 bool Current() noexcept {
     std::uint32_t pointer=0;std::uint16_t size=0;
     std::uint32_t manager=0,language=0;
     if(!ready.load()||!armed.load()||ownerThread.load()!=GetCurrentThreadId()||
-       !Read(module+0xD2A944,pointer)||pointer!=bankAddress||!Read(module+0xD2A970,size)||size!=bankBytes||
+       !Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),pointer)||pointer!=bankAddress||!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),size)||size!=bankBytes||
        !Language(manager,language)||manager!=languageManager||language!=languageId||kernelSnapshot.size()!=size)return false;
     // A pointer/length or row-prefix check misses changed names, headers and
     // reused allocations. Compare the bounded admitted bank without allocating
@@ -100,7 +101,7 @@ bool EnabledIndex(unsigned index) noexcept {
 Byte* Actor(unsigned owner) noexcept {
     if(owner>=31||SharedActor::Busy(owner))return nullptr;
     std::uint32_t pool=0;std::uint16_t slot=65535,identity=65535;
-    if(!Read(module+0xD334CC,pool)||pool<0x10000||pool>UINT32_MAX-31*0xF90u)return nullptr;
+    if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),pool)||pool<0x10000||pool>UINT32_MAX-31*0xF90u)return nullptr;
     auto* actor=reinterpret_cast<Byte*>(std::uintptr_t(pool)+owner*0xF90u);
     if(!Copy(&slot,actor+0xC,2)||slot!=owner||!Copy(&identity,actor+0xE,2)||(owner<18&&identity!=owner))return nullptr;
     return actor;
@@ -111,8 +112,8 @@ bool Equipped(unsigned owner,unsigned effect) noexcept {
     const auto kind=definition.kind;Byte slot=255;
     // Field and battle share canonical persistent equipped identities; never
     // infer an exclusive owner from a monster appearance or table word.
-    if(!Read(module+0xD3205C+owner*0x94u+0x2Du+kind,slot)||slot>=200)return false;
-    const auto address=module+0xD30F2C+slot*22u;std::array<Byte,22> gear{};
+    if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD3205C>())+owner*0x94u+0x2Du+kind,slot)||slot>=200)return false;
+    const auto address=module + (::FfxHooks::ExecutableProfile::Rva<0xD30F2C>())+slot*22u;std::array<Byte,22> gear{};
     if(!Copy(gear.data(),reinterpret_cast<const void*>(address),gear.size())||!gear[2]||
        gear[4]!=owner||gear[5]!=kind||gear[6]!=owner||gear[11]>4)return false;
     if(effect<2)return W::AscensionEffect(owner,effect);
@@ -160,10 +161,10 @@ thread_local DoubleScope* doubleScope=nullptr;
 void AdjustClamp(std::uintptr_t caller,int&,int&,int& maximum) noexcept {
     unsigned owner=31;bool hp=false,mp=false;
     if(Current()&&Pipeline::current&&Pipeline::current->depth<=16&&!Pipeline::current->battle){
-        owner=Pipeline::current->owner;hp=caller==0x3868A7;mp=caller==0x3868CF;
+        owner=Pipeline::current->owner;hp=caller==(::FfxHooks::ExecutableProfile::Rva<0x3868A7>());mp=caller==(::FfxHooks::ExecutableProfile::Rva<0x3868CF>());
     }
     if(Current()&&doubleScope&&doubleScope->depth<=16&&Actor(doubleScope->owner)==doubleScope->actor){
-        owner=doubleScope->owner;hp=caller==0x38D3A4;mp=caller==0x38D418;
+        owner=doubleScope->owner;hp=caller==(::FfxHooks::ExecutableProfile::Rva<0x38D3A4>());mp=caller==(::FfxHooks::ExecutableProfile::Rva<0x38D418>());
     }
     if((hp||mp)&&owner<18){
         const bool paid=options.ascension&&W::AscensionEffect(owner,0);
@@ -178,7 +179,7 @@ int __cdecl DoubleShim(unsigned owner,Byte* actor,int mask){
     return result;
 }
 int __cdecl RewardShim(unsigned item,int quantity,void* rewards){
-    if(rewards==reinterpret_cast<void*>(module+0x1F10EA0)&&
+    if(rewards==reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0x1F10EA0>()))&&
        (item&0xFFFFF000u)==0x2000u&&quantity>0){
         const auto multiplier=PartyDropMultiplier();
         if(multiplier>1){
@@ -239,14 +240,14 @@ bool Profile(std::uintptr_t base){
     const Byte doubled[]={0x55,0x8B,0xEC,0x53,0x8B,0x5D,0x10,0x56,0x8B,0x75,0x0C,0x57,0x0F,0xB6,0x96,0x40};
     const Byte reward[]={0x55,0x8B,0xEC,0x8B,0x55,0x08,0x85,0xD2,0x74,0x62,0x8B,0x45,0x0C,0x85,0xC0,0x7E,0x5B};
     Byte actual[sizeof(clamp)]{};
-    if(!Copy(actual,reinterpret_cast<void*>(base+0x39A0D0),sizeof(clamp))||
+    if(!Copy(actual,reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x39A0D0>())),sizeof(clamp))||
        (std::memcmp(actual,clamp,sizeof(clamp))&&!SharedClamp::MatchesOwned(base,actual,sizeof(clamp)))||
-       !Copy(actual,reinterpret_cast<void*>(base+0x38D330),sizeof(doubled))||std::memcmp(actual,doubled,sizeof(doubled))||
-       !Copy(actual,reinterpret_cast<void*>(base+0x398AD0),sizeof(reward))||std::memcmp(actual,reward,sizeof(reward)))return false;
-    for(const unsigned caller:{0x3868A7u,0x3868CFu,0x38D3A4u,0x38D418u}){
+       !Copy(actual,reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x38D330>())),sizeof(doubled))||std::memcmp(actual,doubled,sizeof(doubled))||
+       !Copy(actual,reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x398AD0>())),sizeof(reward))||std::memcmp(actual,reward,sizeof(reward)))return false;
+    for(const unsigned caller:{::FfxHooks::ExecutableProfile::Rva<0x3868A7u>(),::FfxHooks::ExecutableProfile::Rva<0x3868CFu>(),::FfxHooks::ExecutableProfile::Rva<0x38D3A4u>(),::FfxHooks::ExecutableProfile::Rva<0x38D418u>()}){
         Byte bytes[5]{};std::int32_t relative=0;
         if(!Copy(bytes,reinterpret_cast<void*>(base+caller-5),5)||bytes[0]!=0xE8)return false;
-        std::memcpy(&relative,bytes+1,4);if(caller+relative!=0x39A0D0u)return false;
+        std::memcpy(&relative,bytes+1,4);if(caller+relative!=::FfxHooks::ExecutableProfile::Rva<0x39A0D0u>())return false;
     }
     return true;
 }
@@ -256,7 +257,7 @@ bool Prepare(std::uintptr_t image,RuntimeOptions selected,bool validateOnly,LogF
     if(configured.load()||terminal.load()||validateOnly||(!selected.spira&&!selected.ascension))return false;
     if(!Profile(image))return false;
     module=image;options=selected;logger=log;
-    const std::uint32_t rvas[]={0x38D330,0x398AD0};
+    const std::uint32_t rvas[]={(::FfxHooks::ExecutableProfile::Rva<0x38D330>()),(::FfxHooks::ExecutableProfile::Rva<0x398AD0>())};
     void* replacements[]={reinterpret_cast<void*>(&DoubleShim),reinterpret_cast<void*>(&RewardShim)};
     if(!SharedClamp::Start(image)||!SharedClamp::Register(SharedClamp::Slot::Spira,&AdjustClamp))return false;
     if(!NativeUiSupport::Install(image,rvas,replacements,originals,MinHookBatch::Owner::SpiraRuntime,reinterpret_cast<const void*>(&DoubleShim))){RequestStop();return false;}
@@ -278,7 +279,7 @@ void TickMainThread() noexcept {
     inTick=true;struct Leave{~Leave(){inTick=false;}} leave;
     try{
         std::uint32_t address=0;std::uint16_t size=0;
-        if(!Read(module+0xD2A944,address)||!Read(module+0xD2A970,size)||address<0x10000||size<20||address>UINT32_MAX-size){ready=false;return;}
+        if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),address)||!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),size)||address<0x10000||size<20||address>UINT32_MAX-size){ready=false;return;}
         if(Current())return;
         ready=false;
         std::uint32_t manager=0,language=0;if(!Language(manager,language))return;

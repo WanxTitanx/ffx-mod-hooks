@@ -21,10 +21,10 @@ struct Fake {
     bool Inert()const{for(auto i:active)if(i.second)return false;return true;}
 };
 constexpr std::array<uintptr_t,7> targets={0x1100,0x2200,0x3300,0x4400,0x5500,0x6600,0x7700};
-constexpr std::array<Owner,18> owners={Owner::MonsterAiObserver,Owner::FieldScout,Owner::Difficulty,
+constexpr std::array<Owner,19> owners={Owner::MonsterAiObserver,Owner::FieldScout,Owner::Difficulty,
     Owner::SeymourBattle,Owner::NovaSuperDamage,Owner::ArenaPositions,Owner::EquipmentWorkshop,
     Owner::EquipmentWorkshopUi,Owner::ElementScan,Owner::NulWardRecovery,Owner::GridTeachSave,
-    Owner::GridTeachRecovery,Owner::SphereGridRecovery,Owner::SeymourCompatibility,Owner::SeymourOverdrive,Owner::SeymourGearPresentation,Owner::SeymourGearSort,Owner::SeymourMenuList};
+    Owner::GridTeachRecovery,Owner::SphereGridRecovery,Owner::SeymourCompatibility,Owner::SeymourOverdrive,Owner::SeymourGearPresentation,Owner::SeymourGearSort,Owner::SeymourMenuList,Owner::OriginalPs2Rng};
 constexpr std::array<Owner,4> recovery={Owner::NulWardRecovery,Owner::GridTeachSave,Owner::GridTeachRecovery,Owner::SphereGridRecovery};
 void Init(Coordinator& c,Fake& f){Check(EnsureInitialized(&c,{&f,Fake::Init})==InitializationResult::Ready,"initialization");}
 BatchReport Enable(Coordinator& c,Fake& f,Owner o){return EnableBatch(&c,f.Io(),o,targets.data(),targets.size());}

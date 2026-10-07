@@ -4,6 +4,7 @@ param(
     [string]$ReferenceDirectory,
     [switch]$BuildDll
 )
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 # Jarvis-HOOK: isolated harnesses only. No game entry point or deploy is invoked.
 $ErrorActionPreference = 'Stop'
 $here = $PSScriptRoot
@@ -16,7 +17,7 @@ $private = [bool]$ExecutablePath -or [bool]$PackageDirectory -or [bool]$Referenc
 if ($private -and (!$ExecutablePath -or !$PackageDirectory -or !$ReferenceDirectory)) {
     throw 'Supply ExecutablePath, PackageDirectory and ReferenceDirectory together'
 }
-if ($private -and (Get-FileHash -Algorithm SHA256 -LiteralPath $ExecutablePath).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED') {
+if ($private -and (Get-FileHash -Algorithm SHA256 -LiteralPath $ExecutablePath).Hash -ne (Get-FfxTestExecutableHash)) {
     throw 'The private fixture does not match the reviewed FFX executable'
 }
 $vswhere = Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio\Installer\vswhere.exe'
@@ -50,7 +51,7 @@ Push-Location $obj
 try {
     $core = @('hooks\TextLanguageCore.cpp')
     $payload = $core + @('hooks\TextLanguagePayload.cpp')
-    foreach ($name in @('Core','Payload','Field')) {
+    foreach ($name in @('Core','Payload','Field','Extended')) {
         [string[]]$sources = if ($name -eq 'Core') {$core} else {$payload}
         $exe = Compile ('TextLanguage'+$name+'Rt0') ($sources + @('tests\TextLanguage'+$name+'Rt0.cpp'))
         Execute $name $exe
@@ -68,7 +69,7 @@ try {
         Record 'Received-pack-private' $LASTEXITCODE
     } else {
         $synthetic = Join-Path $obj ('synthetic-'+[guid]::NewGuid().ToString('N'))
-        & python (Join-Path $repo 'tools\text_languages\synthetic_files.py') --output $synthetic
+        & python (Join-Path $repo 'tools\text_languages\synthetic_files.py') --output $synthetic --executable-sha256 ((Get-FfxTestExecutableHash).ToLowerInvariant())
         Record 'Synthetic-fixture' $LASTEXITCODE
         Execute 'Files-synthetic' $fileTest @($synthetic)
         & $validator $synthetic $synthetic

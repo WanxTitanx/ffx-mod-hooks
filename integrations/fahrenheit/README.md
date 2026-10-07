@@ -23,7 +23,7 @@ dotnet run --project integrations/fahrenheit/tests/BridgeLifecycleTests.csproj -
 python3 integrations/fahrenheit/validate_package.py
 ```
 
-The managed build also runs the 501-file source-reference check automatically;
+The managed build also runs the 36-file source-reference check automatically;
 it rejects a changed bootstrap, hook, save or SDK contract. An already-restored
 checkout can be built with --no-restore only when its dependency assets exist.
 

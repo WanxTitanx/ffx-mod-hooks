@@ -2,6 +2,7 @@
 // shared damage producer. Fixtures never load a game session or installed DLL.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "PrivatePeFixture.h"
 #include "WorkshopFieldFixture.h"
@@ -33,8 +34,8 @@ static void W16(unsigned char* p,unsigned v){SpiraKernelFixture::Word(p,v);}
 static void W32(unsigned char* p,unsigned v){std::memcpy(p,&v,4);}
 static int R32(const unsigned char* p){int v=0;std::memcpy(&v,p,4);return v;}
 static unsigned char* Actor(unsigned id){return actors.data()+id*0xF90;}
-static unsigned char* Ply(unsigned id){return reinterpret_cast<unsigned char*>(base+0xD3205C+id*0x94);}
-static unsigned char* Gear(unsigned id,unsigned kind){return reinterpret_cast<unsigned char*>(base+0xD30F2C+(id*2+kind)*22);}
+static unsigned char* Ply(unsigned id){return reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD3205C>()+id*0x94);}
+static unsigned char* Gear(unsigned id,unsigned kind){return reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD30F2C>()+(id*2+kind)*22);}
 static void Equip(unsigned owner,unsigned kind,std::initializer_list<unsigned> words){
     auto* gear=Gear(owner,kind);std::memset(gear,0,22);gear[2]=1;gear[4]=gear[6]=static_cast<unsigned char>(owner);
     gear[5]=static_cast<unsigned char>(kind);gear[11]=4;
@@ -53,24 +54,24 @@ struct FieldLimits {
         for(int n=-0x74;n<=-8;n+=4){bytes.insert(bytes.end(),{0xC7,0x85});imm(static_cast<std::uint32_t>(n));imm(n>=-0x3C?100:0);}
         bytes.insert(bytes.end(),{0x8B,0x75,0x08,0x89,0xB5});imm(static_cast<std::uint32_t>(-0x98));
         bytes.insert(bytes.end(),{0x8B,0xDE,0x69,0xDB});imm(0x94);
-        bytes.insert(bytes.end(),{0x81,0xC3});imm(static_cast<std::uint32_t>(base+0xD3205C));
+        bytes.insert(bytes.end(),{0x81,0xC3});imm(static_cast<std::uint32_t>(base+::FfxHooks::ExecutableProfile::Rva<0xD3205C>()));
         bytes.insert(bytes.end(),{0xC7,0x45,0xE4});imm(600000);
         bytes.insert(bytes.end(),{0xC7,0x45,0xE8});imm(20000);
-        bytes.push_back(0xE9);imm(static_cast<std::uint32_t>(base+0x386850-reinterpret_cast<std::uintptr_t>(memory)-bytes.size()-4));
+        bytes.push_back(0xE9);imm(static_cast<std::uint32_t>(base+::FfxHooks::ExecutableProfile::Rva<0x386850>()-reinterpret_cast<std::uintptr_t>(memory)-bytes.size()-4));
         const auto tail=bytes.size();bytes.insert(bytes.end(),{0x8B,0x43,0x24,0x5F,0x5E,0x5B,0x8B,0xE5,0x5D,0xC3});
         std::memcpy(memory,bytes.data(),bytes.size());DWORD previous=0;
         if(!VirtualProtect(memory,1024,PAGE_EXECUTE_READ,&previous))return;
         FlushInstructionCache(GetCurrentProcess(),memory,bytes.size());
-        std::memcpy(first.data(),reinterpret_cast<void*>(base+0x3861B9),5);
-        std::memcpy(last.data(),reinterpret_cast<void*>(base+0x386988),5);
+        std::memcpy(first.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x3861B9>()),5);
+        std::memcpy(last.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x386988>()),5);
         unsigned char jump[5]={0xE9};
-        auto relative=static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(memory)-base-0x3861B9-5);std::memcpy(jump+1,&relative,4);
-        if(!WorkshopFieldFixture::Write(base+0x3861B9,jump,5))return;
-        relative=static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(memory)+tail-base-0x386988-5);std::memcpy(jump+1,&relative,4);
-        if(!WorkshopFieldFixture::Write(base+0x386988,jump,5)){WorkshopFieldFixture::Write(base+0x3861B9,first.data(),5);return;}
+        auto relative=static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(memory)-base-::FfxHooks::ExecutableProfile::Rva<0x3861B9>()-5);std::memcpy(jump+1,&relative,4);
+        if(!WorkshopFieldFixture::Write(base+::FfxHooks::ExecutableProfile::Rva<0x3861B9>(),jump,5))return;
+        relative=static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(memory)+tail-base-::FfxHooks::ExecutableProfile::Rva<0x386988>()-5);std::memcpy(jump+1,&relative,4);
+        if(!WorkshopFieldFixture::Write(base+::FfxHooks::ExecutableProfile::Rva<0x386988>(),jump,5)){WorkshopFieldFixture::Write(base+::FfxHooks::ExecutableProfile::Rva<0x3861B9>(),first.data(),5);return;}
         armed=true;
     }
-    ~FieldLimits(){if(armed){WorkshopFieldFixture::Write(base+0x3861B9,first.data(),5);WorkshopFieldFixture::Write(base+0x386988,last.data(),5);}if(memory)VirtualFree(memory,0,MEM_RELEASE);}
+    ~FieldLimits(){if(armed){WorkshopFieldFixture::Write(base+::FfxHooks::ExecutableProfile::Rva<0x3861B9>(),first.data(),5);WorkshopFieldFixture::Write(base+::FfxHooks::ExecutableProfile::Rva<0x386988>(),last.data(),5);}if(memory)VirtualFree(memory,0,MEM_RELEASE);}
 };
 static int amount=450000;static unsigned component=3;
 static unsigned __cdecl DamageEndpoint(unsigned user,void*,unsigned,void*,const void* command,unsigned id,void*,unsigned,unsigned,unsigned,unsigned){
@@ -88,10 +89,10 @@ int main(int argc,char** argv){
     std::ifstream input(argv[2],std::ios::binary);std::vector<unsigned char> source((std::istreambuf_iterator<char>(input)),{});
     auto kernel=SpiraKernelFixture::Build(source);
     const auto kp=reinterpret_cast<std::uintptr_t>(kernel.data()),ap=reinterpret_cast<std::uintptr_t>(actors.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&kp,4);W16(reinterpret_cast<unsigned char*>(base+0xD2A970),static_cast<unsigned>(kernel.size()));
-    std::memcpy(reinterpret_cast<void*>(base+0xD334CC),&ap,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&kp,4);W16(reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),static_cast<unsigned>(kernel.size()));
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&ap,4);
     static std::array<unsigned,8> language{};const auto lp=reinterpret_cast<std::uintptr_t>(language.data());
-    std::memcpy(reinterpret_cast<void*>(base+0x8DED48),&lp,4);language[1]=0;
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x8DED48>()),&lp,4);language[1]=0;
     for(unsigned owner=0;owner<18;++owner){auto* actor=Actor(owner);W16(actor+0xC,owner);W16(actor+0xE,owner);actor[0xDC8]=1;
         W32(actor+0x594,1000);W32(actor+0x5D0,500);W32(actor+0x598,999);W32(actor+0x5D4,100);Equip(owner,0,{});Equip(owner,1,{});}
     FfxHooks::Config::LoadTextForTests("[spira]\nenabled=1\n[aeon_ascension]\nenabled=1\n","C:\\private-spira.ini");
@@ -114,10 +115,10 @@ int main(int argc,char** argv){
     {
         FieldLimits limits;Check(limits.armed,"private field bridge isolates growth while running actual max/current clamp sites");
         for(unsigned owner:{0u,2u}){W16(Ply(owner)+0x4C,0x600);W32(Ply(owner)+0x1C,12345);W32(Ply(owner)+0x20,123);
-            reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x3861B0)(owner);
+            reinterpret_cast<int(__cdecl*)(unsigned)>(base+::FfxHooks::ExecutableProfile::Rva<0x3861B0>())(owner);
             Check(R32(Ply(owner)+0x24)==(owner==2?600000:99999)&&R32(Ply(owner)+0x28)==9999,"only Auron with Warden expands the original pre-clamp maximum");
             Check(R32(Ply(owner)+0x1C)==12345&&R32(Ply(owner)+0x20)==123,"maximum growth does not heal or refill current pools");}
-        W16(Ply(2)+0x4C,0);reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x3861B0)(2);
+        W16(Ply(2)+0x4C,0);reinterpret_cast<int(__cdecl*)(unsigned)>(base+::FfxHooks::ExecutableProfile::Rva<0x3861B0>())(2);
         Check(R32(Ply(2)+0x24)==9999&&R32(Ply(2)+0x1C)==9999,"removing BHP closes Warden and clamps current downward");
     }
     Equip(0,1,{0x809E});
@@ -125,14 +126,14 @@ int main(int argc,char** argv){
     Equip(0,1,{0x80A2});
     for(unsigned stat=0;stat<14;++stat)
         Check(WorkshopFieldFixture::Percent(base,0,stat)==(stat>=8?103:100),"AIO changes only HP MP STR MAG DEF MDEF at native indices8 through13");
-    Equip(8,0,{0x8096});*reinterpret_cast<unsigned char*>(base+0xD2A8E0)=1;
-    const auto edge=reinterpret_cast<void(__cdecl*)(unsigned,void*)>(base+0x3B13D0);
+    Equip(8,0,{0x8096});*reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())=1;
+    const auto edge=reinterpret_cast<void(__cdecl*)(unsigned,void*)>(base+::FfxHooks::ExecutableProfile::Rva<0x3B13D0>());
     edge(8,Actor(8));Check(R32(Actor(8)+0x5D4)==105,"Mana Spring grants exactly five MP at the real native turn edge");
     W32(Actor(8)+0x5D4,997);edge(8,Actor(8));Check(R32(Actor(8)+0x5D4)==999,"Mana Spring saturates at current maximum");
     W32(Actor(8)+0x5D4,100);W32(Actor(8)+0x5D0,0);edge(8,Actor(8));Check(R32(Actor(8)+0x5D4)==100,"dead actor receives no turn regeneration");W32(Actor(8)+0x5D0,500);
     W::DamageProducerForTests(reinterpret_cast<void*>(&DamageEndpoint));
     using Damage=unsigned(__cdecl*)(unsigned,void*,unsigned,void*,const void*,unsigned,void*,unsigned,unsigned,unsigned,unsigned);
-    const auto damage=reinterpret_cast<Damage>(base+0x38E680);
+    const auto damage=reinterpret_cast<Damage>(base+::FfxHooks::ExecutableProfile::Rva<0x38E680>());
     unsigned char row[96]{},info[128]{};row[0x20]=0x81;row[0x23]=1;row[0x28]=1;row[0x2A]=16;
     Equip(0,1,{0x8098});Equip(1,1,{});amount=1000;
     auto hit=[&](){return damage(0,Actor(0),1,Actor(1),row,0x3000,info,0,0,0,0);};

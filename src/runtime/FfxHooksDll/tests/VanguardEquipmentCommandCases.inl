@@ -1,7 +1,7 @@
 // Real Ronso cost owner, temporary equipment commands and native scalar debit.
 static void EquipmentCommandCases(unsigned char* actor,unsigned char* gear,std::vector<unsigned char>& commands){
     using Availability=int(__cdecl*)(unsigned,unsigned);using Commit=int(__cdecl*)(const unsigned char*,int);using Debit=void(__cdecl*)(unsigned);
-    const auto available=reinterpret_cast<Availability>(base+0x39AD40);const auto commit=reinterpret_cast<Commit>(base+0x38ABE0);const auto debit=reinterpret_cast<Debit>(base+0x38E5F0);
+    const auto available=reinterpret_cast<Availability>(base+(::FfxHooks::ExecutableProfile::Rva<0x39AD40>()));const auto commit=reinterpret_cast<Commit>(base+(::FfxHooks::ExecutableProfile::Rva<0x38ABE0>()));const auto debit=reinterpret_cast<Debit>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E5F0>()));
     auto* command=commands.data()+20+65*96;std::memcpy(command,commands.data()+20+64*96,96);W32(command+0x1C,2);W16(actor+0x6BC,0);
     W32(actor+0x5D4,1000);W16(gear+16,0x8087);actor[0x5BC]=9;
     const auto learnedBefore=std::array<unsigned char,2>{actor[0x66C],actor[0x66D]};
@@ -17,7 +17,7 @@ static void EquipmentCommandCases(unsigned char* actor,unsigned char* gear,std::
     Check(R::CommandCosts::Read(0,command,quote)&&quote.allowed&&quote.cost==9,"equipment fee12 receives Efficiency exactly once to become9");
     Check(commit(action.data(),0)==-1&&actor[0x6CD]==9&&actor[0x6CC]==15,"temporary command stages its validated OD and native MP fees");
     using ResolveCost=void(__cdecl*)(unsigned,unsigned char*,const unsigned char*,unsigned);
-    reinterpret_cast<ResolveCost>(base+0x3B03F0)(0,actor,action.data(),0);
+    reinterpret_cast<ResolveCost>(base+(::FfxHooks::ExecutableProfile::Rva<0x3B03F0>()))(0,actor,action.data(),0);
     Check(actor[0x6CD]==9&&actor[0x6CC]==15,"the subsequent native selected-command producer must not overwrite the approved equipment price");
     debit(0);Check(actor[0x5BC]==0&&*reinterpret_cast<int*>(actor+0x5D4)==985,"equipment command uses the same one-time native debit");
     W16(gear+16,255);actor[0x5BC]=100;
@@ -30,12 +30,12 @@ static void EquipmentCommandCases(unsigned char* actor,unsigned char* gear,std::
     Check(available(0,0x3041)==0&&commit(action.data(),0)==0,
           "a binding cannot expose another character's exclusive command");
     command[0x19]=255;
-    *reinterpret_cast<unsigned char*>(base+0xD2A8E0)=0;
+    *reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>()))=0;
     C::SetProvidersForTests({nullptr,nullptr,nullptr,[](void*,const char*,const char*){return true;}});
     Check(!V::SaveBinding(1,(13u<<16)|0x3041,bindings.stamp),"two abilities cannot disagree about one command's owner or price");
     Check(!V::SaveBinding(0,UINT_MAX,bindings.stamp),"malformed packed bindings cannot wrap IDs or costs");
     Check(V::SaveBinding(0,0,bindings.stamp),"an explicit disabled binding is persisted through the authoritative writer");
     Check(!V::SaveBinding(0,(13u<<16)|0x3041,bindings.stamp),"old editor proof cannot overwrite a newer configuration");
-    *reinterpret_cast<unsigned char*>(base+0xD2A8E0)=1;
+    *reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>()))=1;
     Check(available(0,0x3041)==0&&commit(action.data(),0)==0,"deleted binding leaves no usable unlearned command in a stale menu");
 }

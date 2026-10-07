@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "WeaponStrikeVfxRuntime.h"
 #include "WeaponStrikeVfxCore.h"
 #include "WeaponStrikeVfxEvidence.generated.h"
@@ -11,9 +12,9 @@
 namespace FfxHooks::WeaponStrikeVfx {
 namespace {
 static_assert(sizeof(void*) == 4, "The admitted game and effect VM are x86");
-constexpr std::uint32_t kProducer = 0x39ED60, kCleanup = 0x3FB090;
-constexpr std::uint32_t kRoot = 0xD2A95C, kPool = 0xEA4080, kSlots = 0xEA40C0;
-constexpr std::uint32_t kActorTable = 0xD334CC, kActorStride = 0xF90;
+constexpr std::uint32_t kProducer = ::FfxHooks::ExecutableProfile::Rva<0x39ED60>(), kCleanup = ::FfxHooks::ExecutableProfile::Rva<0x3FB090>();
+constexpr std::uint32_t kRoot = ::FfxHooks::ExecutableProfile::Rva<0xD2A95C>(), kPool = ::FfxHooks::ExecutableProfile::Rva<0xEA4080>(), kSlots = ::FfxHooks::ExecutableProfile::Rva<0xEA40C0>();
+constexpr std::uint32_t kActorTable = ::FfxHooks::ExecutableProfile::Rva<0xD334CC>(), kActorStride = 0xF90;
 constexpr std::uint32_t kCodeOffset = 0x140, kCodeBytes = 0x1BB0;
 constexpr EquipmentWorkshop::Hash kCodeHash{{
     0x70,0x60,0xA7,0xE6,0x39,0x6A,0xF9,0x23,0xD8,0x59,0xA3,0xE3,0x27,0x84,0xCA,0x70,
@@ -170,7 +171,7 @@ struct NativeIo {
         if (!Alive(handle)) return false;
         std::uint32_t record = 0; unsigned slot = 0;
         if (Find(handle.key, record, slot) != 1 || record != handle.record) return false;
-        reinterpret_cast<void(__cdecl*)(std::uint32_t)>(base + 0x3FC370)(handle.key);
+        reinterpret_cast<void(__cdecl*)(std::uint32_t)>(base + (::FfxHooks::ExecutableProfile::Rva<0x3FC370>()))(handle.key);
         return true;
     }
     Handle Spawn(unsigned actor, std::uintptr_t pointer, Visual visual) noexcept {
@@ -199,8 +200,8 @@ struct NativeIo {
             key = 0;
         }
         if (!key) return {};
-        auto allocate = reinterpret_cast<std::uint32_t(__cdecl*)(std::uint32_t, unsigned)>(base + 0x3FF6A0);
-        auto release = reinterpret_cast<void(__cdecl*)(std::uint32_t, std::uint32_t)>(base + 0x3FF0F0);
+        auto allocate = reinterpret_cast<std::uint32_t(__cdecl*)(std::uint32_t, unsigned)>(base + (::FfxHooks::ExecutableProfile::Rva<0x3FF6A0>()));
+        auto release = reinterpret_cast<void(__cdecl*)(std::uint32_t, std::uint32_t)>(base + (::FfxHooks::ExecutableProfile::Rva<0x3FF0F0>()));
         const auto buffer = allocate(pool.arena, kParticleBytes);
         if (buffer != allocation.address) {
             // A violated native allocation contract disables the adapter. Never
@@ -211,7 +212,7 @@ struct NativeIo {
         // Registration is synchronous and does not execute bytecode. Borrow only
         // the canonical resource association; publish our program before returning
         // to the game's VM. None of actor+0xE90..0xE9F is written here.
-        reinterpret_cast<int(__cdecl*)(std::uint32_t, int, int, std::uint32_t)>(base + 0x3FD710)(state.root, 0, 60, key);
+        reinterpret_cast<int(__cdecl*)(std::uint32_t, int, int, std::uint32_t)>(base + (::FfxHooks::ExecutableProfile::Rva<0x3FD710>()))(state.root, 0, 60, key);
         std::uint32_t record = 0; unsigned slot = 0;
         if (Find(key, record, slot) != 1 || record < pool.records ||
             record >= pool.records + pool.capacity * 256 || ((record - pool.records) & 255)) {
@@ -227,7 +228,7 @@ struct NativeIo {
         Write(record + 0xBC, buffer);
         const std::uint8_t type = 9; Write(record + 0xBB, type);
         const auto index = static_cast<std::uint16_t>((record - pool.records) / 256);
-        reinterpret_cast<int(__cdecl*)(std::uint32_t, std::uint16_t)>(base + 0x400C80)(pool.address, index);
+        reinterpret_cast<int(__cdecl*)(std::uint32_t, std::uint16_t)>(base + (::FfxHooks::ExecutableProfile::Rva<0x400C80>()))(pool.address, index);
         const auto pc = static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(kPrograms[static_cast<unsigned>(visual)].words.data()));
         Write(record, pc);
         status = Status::Active;
@@ -258,7 +259,7 @@ void Tick() noexcept {
 }
 int __cdecl ProducerShim(unsigned actor, void* pointer) {
     const auto caller = reinterpret_cast<std::uintptr_t>(_ReturnAddress()) - base;
-    const bool nativeCaller = caller == 0x393B98 || caller == 0x3A726A || caller == 0x3B7D70;
+    const bool nativeCaller = caller == (::FfxHooks::ExecutableProfile::Rva<0x393B98>()) || caller == (::FfxHooks::ExecutableProfile::Rva<0x3A726A>()) || caller == (::FfxHooks::ExecutableProfile::Rva<0x3B7D70>());
     const auto result = reinterpret_cast<int(__cdecl*)(unsigned, void*)>(originals[0])(actor, pointer);
     std::uint8_t mask = 0;
     if (nativeCaller && !cleanupDepth.load() && !stopRequested.load() && Actor(actor, reinterpret_cast<std::uintptr_t>(pointer), mask)) {

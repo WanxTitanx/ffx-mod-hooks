@@ -1,8 +1,9 @@
+#include "../shared/ExecutableProfile.h"
 // Private views for shared comparison, Items and Status consumers.
 int __cdecl FrameShim(float x,float y,float width,float height,int style){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
     if(Enabled()&&scope->admitted&&scope->piece.fifthUnlocked&&
-       ((scope->kind==Shared&&caller==0x4D8ACE)||(scope->kind==Inventory&&(caller==0x4BD1AA||caller==0x4BD205)))){
+       ((scope->kind==Shared&&caller==(::FfxHooks::ExecutableProfile::Rva<0x4D8ACE>()))||(scope->kind==Inventory&&(caller==(::FfxHooks::ExecutableProfile::Rva<0x4BD1AA>())||caller==(::FfxHooks::ExecutableProfile::Rva<0x4BD205>()))))){
         if(!scope->hasOrigin){scope->originY=y;scope->hasOrigin=true;}
         y=scope->originY+(y-scope->originY)*.8f;height*=.8f;
     }
@@ -47,14 +48,14 @@ int __cdecl StatusShim(void* object){
 int __cdecl StatusListShim(int page,int mode,int category,int character,unsigned* output){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
     const int count=reinterpret_cast<ListFn>(originals[StatusList])(page,mode,category,character,output);
-    if(!Enabled()||scope->kind!=StatusPage||caller!=0x4D27DC||page!=0||mode==1||character<0||character>6||count!=8||!output)return count;
+    if(!Enabled()||scope->kind!=StatusPage||caller!=(::FfxHooks::ExecutableProfile::Rva<0x4D27DC>())||page!=0||mode==1||character<0||character>6||count!=8||!output)return count;
     workshop::Piece pieces[2]{};unsigned nativeWords[8]{},words[10]{},ranks[10]{},nativeCount=0,total=0,extra=0;
     bool found=false;
     for(unsigned kind=0;kind<2;++kind){
-        const unsigned id=reinterpret_cast<CharacterGearFn>(module+(kind?0x4A97D0:0x4A9C20))(character);
+        const unsigned id=reinterpret_cast<CharacterGearFn>(module+(kind?(::FfxHooks::ExecutableProfile::Rva<0x4A97D0>()):(::FfxHooks::ExecutableProfile::Rva<0x4A9C20>())))(character);
         if(id==255)continue;
         const unsigned char* text=nullptr;
-        const auto* record=reinterpret_cast<GetGearFn>(module+0x3ABBF0)(id,&text);
+        const auto* record=reinterpret_cast<GetGearFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x3ABBF0>()))(id,&text);
         auto& piece=pieces[kind];
         if(!ReadPresentation(record,piece)||piece.native[4]!=character||piece.native[6]!=character||piece.native[5]!=kind)return count;
         found=true;extra+=piece.fifthUnlocked;

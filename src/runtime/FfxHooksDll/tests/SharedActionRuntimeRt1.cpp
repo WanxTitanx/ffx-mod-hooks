@@ -1,5 +1,6 @@
 // Jarvis-HOOK: one action owner with process-lived observers and exactly one
 // native call. Only the graphics-heavy result suffix is isolated in this test.
+#include "../shared/ExecutableProfile.h"
 #include <cstdio>
 #if __has_include("../hooks/SharedActionRuntime.h")
 #define WIN32_LEAN_AND_MEAN
@@ -64,23 +65,23 @@ int main(int argc,char** argv){
     const auto image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES);if(!image)return 2;
     const auto base=reinterpret_cast<std::uintptr_t>(image);
     Check(PrivatePeFixture::NormalizeRelocations(image),"private mapped image relocates");
-    Check(Patch(base+0x38F0C0,reinterpret_cast<void*>(&ResultSuffix)),"only the graphical result suffix is isolated");
+    Check(Patch(base + (::FfxHooks::ExecutableProfile::Rva<0x38F0C0>()),reinterpret_cast<void*>(&ResultSuffix)),"only the graphical result suffix is isolated");
     if(first)Check(A::RegisterLegacy(&legacy),"legacy registers first");
     Check(A::Subscribe(A::Slot::Elemental,&observer),"independent action observer registers");
     Check(A::Start(base),"one profile-gated action owner starts");
     if(!first)Check(A::RegisterLegacy(&legacy),"legacy joins an existing action owner");
     Check(A::Start(base),"same installed owner is reused without a duplicate detour");
-    const auto result=reinterpret_cast<A::ResultFunction>(base+0x38F0B0);
+    const auto result=reinterpret_cast<A::ResultFunction>(base + (::FfxHooks::ExecutableProfile::Rva<0x38F0B0>()));
     Check(InvokeResult(result)&&nativeResults==1&&beginResults==1&&endResults==1,"actual result executes once between observer boundaries");
     fault=true;Check(!InvokeResult(result)&&nativeResults==2&&beginResults==2&&endResults==2,"native exception retires the observer before propagating");fault=false;
     std::array<unsigned char,31*0xF90> actors{};const auto pointer=reinterpret_cast<std::uintptr_t>(actors.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD334CC),&pointer,4);
+    std::memcpy(reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>())),&pointer,4);
     auto* actor=actors.data()+2*0xF90;actor[0xC]=2;actor[0xDE5]=0;actor[0xDE7]=1;
-    auto* queue=reinterpret_cast<unsigned char*>(base+0xD2AC70);std::memset(queue,0,72);
+    auto* queue=reinterpret_cast<unsigned char*>(base + (::FfxHooks::ExecutableProfile::Rva<0xD2AC70>()));std::memset(queue,0,72);
     queue[0]=2;queue[2]=queue[3]=1;queue[8]=0;queue[9]=0x30;queue[10]=255;
-    *reinterpret_cast<unsigned char*>(base+0xD2BDE1)=1;
-    const auto finish=reinterpret_cast<A::FinishFunction>(base+0x3B0870);
-    Check(finish(2,0,0)==1&&beginFinishes==1&&endFinishes==1&&*reinterpret_cast<unsigned char*>(base+0xD2BDE1)==0,
+    *reinterpret_cast<unsigned char*>(base + (::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>()))=1;
+    const auto finish=reinterpret_cast<A::FinishFunction>(base + (::FfxHooks::ExecutableProfile::Rva<0x3B0870>()));
+    Check(finish(2,0,0)==1&&beginFinishes==1&&endFinishes==1&&*reinterpret_cast<unsigned char*>(base + (::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>()))==0,
           "the actual native queue removal runs once with observers attached");
     Check(A::UnregisterLegacy(&legacy),"legacy stops without disabling the observer");
     Check(InvokeResult(result)&&beginResults==3&&endResults==3,"observer-only startup remains operational");

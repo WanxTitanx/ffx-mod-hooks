@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 // Jarvis-HOOK: sole native affinity owner. Descriptors and published trampolines
 // have process lifetime; an unhandled external policy delegates exactly once.
@@ -17,7 +18,7 @@ using NativeFn=int(__cdecl*)(const unsigned char*,const unsigned char*,unsigned,
 struct Resolver {
     bool (*resolve)(const unsigned char*,const unsigned char*,unsigned,int,int*) noexcept=nullptr;
 };
-inline constexpr std::uint32_t kRva=0x38A420;
+inline constexpr std::uint32_t kRva=(::FfxHooks::ExecutableProfile::Rva<0x38A420>());
 inline constexpr unsigned char kExpected[16]={
     0x55,0x8B,0xEC,0x83,0xEC,0x20,0x57,0x8B,0x7D,0x10,0x85,0xFF,0x75,0x08,0x8B,0x45};
 inline std::atomic<NativeFn> legacy{nullptr};

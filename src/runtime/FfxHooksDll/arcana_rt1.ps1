@@ -6,12 +6,13 @@ param(
     [string]$OutputDirectory=(Join-Path $PSScriptRoot 'obj\arcana-rt1'),
     [ValidateSet('ui','runtime','combat','assets','save')][string[]]$Cases=@('ui','runtime','combat','assets','save')
 )
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 # Jarvis-HOOK: private PE/CRT fixtures and WARP only. Never starts or deploys FFX.
 $ErrorActionPreference='Stop'
 $GameExecutable=(Resolve-Path -LiteralPath $GameExecutable).Path
 $NativeSaveFixture=(Resolve-Path -LiteralPath $NativeSaveFixture).Path
 $AssetsRoot=(Resolve-Path -LiteralPath $AssetsRoot).Path
-if((Get-FileHash -LiteralPath $GameExecutable -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED') {throw 'Unsupported private PE fixture'}
+if((Get-FileHash -LiteralPath $GameExecutable -Algorithm SHA256).Hash -ne (Get-FfxTestExecutableHash)) {throw 'Unsupported private PE fixture'}
 if($Cases -contains 'save') {
     $crt=Join-Path ([IO.Path]::GetDirectoryName($GameExecutable)) 'msvcr110.dll'
     if(-not (Test-Path -LiteralPath $crt) -or (Get-FileHash -LiteralPath $crt -Algorithm SHA256).Hash -ne 'B30160E759115E24425B9BCDF606EF6EBCE4657487525EDE7F1AC40B90FF7E49') {throw 'Place the supported game CRT beside the private PE fixture'}

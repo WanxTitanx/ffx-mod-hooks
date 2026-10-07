@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 
 #include "SeymourBattleCore.h"
@@ -18,18 +19,18 @@ using SeymourBattleLogFn = void (*)(const char*);
 // VA 0x00790F02 / RVA 0x00390F02 targets void __cdecl SyncPartyStatsFromActors() at
 // VA 0x00786080 / RVA 0x00386080 and admits only return VA 0x00790F07 / RVA 0x00390F07.
 // The canonical entry target belongs to F7's shared composer; Seymour owns only the unique exit.
-inline constexpr uint32_t kSeymourBattleEntryCallRva = 0x00383217u;
-inline constexpr uint32_t kSeymourBattleEntryReturnRva = 0x0038321Cu;
-inline constexpr uint32_t kSeymourBattleExitCallRva = 0x00390F02u;
-inline constexpr uint32_t kSeymourBattleExitReturnRva = 0x00390F07u;
-inline constexpr uint32_t kExitTargetRva = 0x00386080u;
-inline constexpr uint32_t kSeymourBattleAssignRva = 0x00386A70u;
-inline constexpr uint32_t kSeymourBattlePersistentStateRva = 0x00D307E8u;
-inline constexpr uint32_t kSeymourBattlePersistentAbilityRva = 0x00D307EBu;
-inline constexpr uint32_t kSeymourBattlePartyByteRva = 0x00D32494u;
-inline constexpr uint32_t kSeymourBattleDiscriminatorRva = 0x00D2A8E0u;
-inline constexpr uint32_t kSeymourBattleLocalStateRva = 0x00D2C895u;
-inline constexpr uint32_t kSeymourBattleLocalAbilityRva = 0x00D2C8A3u;
+inline constexpr uint32_t kSeymourBattleEntryCallRva = (::FfxHooks::ExecutableProfile::Rva<0x00383217u>());
+inline constexpr uint32_t kSeymourBattleEntryReturnRva = (::FfxHooks::ExecutableProfile::Rva<0x0038321Cu>());
+inline constexpr uint32_t kSeymourBattleExitCallRva = (::FfxHooks::ExecutableProfile::Rva<0x00390F02u>());
+inline constexpr uint32_t kSeymourBattleExitReturnRva = (::FfxHooks::ExecutableProfile::Rva<0x00390F07u>());
+inline constexpr uint32_t kExitTargetRva = (::FfxHooks::ExecutableProfile::Rva<0x00386080u>());
+inline constexpr uint32_t kSeymourBattleAssignRva = (::FfxHooks::ExecutableProfile::Rva<0x00386A70u>());
+inline constexpr uint32_t kSeymourBattlePersistentStateRva = (::FfxHooks::ExecutableProfile::Rva<0x00D307E8u>());
+inline constexpr uint32_t kSeymourBattlePersistentAbilityRva = (::FfxHooks::ExecutableProfile::Rva<0x00D307EBu>());
+inline constexpr uint32_t kSeymourBattlePartyByteRva = (::FfxHooks::ExecutableProfile::Rva<0x00D32494u>());
+inline constexpr uint32_t kSeymourBattleDiscriminatorRva = (::FfxHooks::ExecutableProfile::Rva<0x00D2A8E0u>());
+inline constexpr uint32_t kSeymourBattleLocalStateRva = (::FfxHooks::ExecutableProfile::Rva<0x00D2C895u>());
+inline constexpr uint32_t kSeymourBattleLocalAbilityRva = (::FfxHooks::ExecutableProfile::Rva<0x00D2C8A3u>());
 
 // The official formation routine is int __cdecl(uint8_t slot, int active) at preferred
 // VA 0x00786A70 / RVA 0x00386A70. Slot 7 and discriminator byte 7 at VA 0x0112A8E0 /

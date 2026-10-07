@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include <MinHook.h>
 #include "../hooks/MinHookBatchCoordinator.h"
@@ -147,20 +148,20 @@ bool Write(void* address,const void* bytes,size_t size) {
 void TestNativeCommandList(uintptr_t base,uint8_t* kimahri,uint8_t* auron,bool active=true) {
     std::array<uint8_t,0xF90> actorBefore{},otherBefore{};
     std::memcpy(actorBefore.data(),kimahri,actorBefore.size());std::memcpy(otherBefore.data(),auron,otherBefore.size());
-    uint8_t priorGroup[5]={};std::memcpy(priorGroup,reinterpret_cast<void*>(base+0x3B6BD0),5);
+    uint8_t priorGroup[5]={};std::memcpy(priorGroup,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x3B6BD0>()),5);
     uint8_t stopOtherGroups[5]={0xE9};const uint32_t displacement=static_cast<uint32_t>(
-        reinterpret_cast<uintptr_t>(&UnrelatedGroupList)-(base+0x3B6BD0+5));
+        reinterpret_cast<uintptr_t>(&UnrelatedGroupList)-(base+::FfxHooks::ExecutableProfile::Rva<0x3B6BD0>()+5));
     std::memcpy(stopOtherGroups+1,&displacement,4);
-    Expect(Write(reinterpret_cast<void*>(base+0x3B6BD0),stopOtherGroups,5),
+    Expect(Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x3B6BD0>()),stopOtherGroups,5),
            "native list fixture replaces only unrelated summon/special group enumeration");
     std::vector<uint16_t> ring(0x8A88/2,0xFF);auto* ringPointer=ring.data();uint32_t previousRing=0;
-    std::memcpy(&previousRing,reinterpret_cast<void*>(base+0x1F10CD8),4);
-    Expect(Write(reinterpret_cast<void*>(base+0x1F10CD8),&ringPointer,4),"actual native list builder gets private ring storage");
-    std::array<uint8_t,32> learnedBefore{};std::memcpy(learnedBefore.data(),reinterpret_cast<void*>(base+0xD307FC),32);
+    std::memcpy(&previousRing,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x1F10CD8>()),4);
+    Expect(Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x1F10CD8>()),&ringPointer,4),"actual native list builder gets private ring storage");
+    std::array<uint8_t,32> learnedBefore{};std::memcpy(learnedBefore.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),32);
     const auto tableBefore=commands;
     std::memset(kimahri+0x690,0,40);kimahri[0x6CB]=0;
-    const auto build=reinterpret_cast<void(__cdecl*)(int,uint8_t*)>(base+0x39BB70);
-    const auto classify=reinterpret_cast<int(__cdecl*)(int,int)>(base+0x49AC10);
+    const auto build=reinterpret_cast<void(__cdecl*)(int,uint8_t*)>(base+::FfxHooks::ExecutableProfile::Rva<0x39BB70>());
+    const auto classify=reinterpret_cast<int(__cdecl*)(int,int)>(base+::FfxHooks::ExecutableProfile::Rva<0x49AC10>());
     const auto listed=[&](int slot,uint16_t command) {
         const size_t start=(slot*0x478+0x128)/2;
         for(size_t i=0;i<24;++i)if(ring[start+i]==command)return true;
@@ -183,20 +184,20 @@ void TestNativeCommandList(uintptr_t base,uint8_t* kimahri,uint8_t* auron,bool a
                "list membership and cost100 affordability are independent");
         Expect(kimahri[0x5BC]==balance&&kimahri[0x5BD]==200,"building/classifying the list cannot change charge or capacity");
     }
-    uint16_t learned=0;std::memcpy(&learned,reinterpret_cast<void*>(base+0xD307FE),2);
+    uint16_t learned=0;std::memcpy(&learned,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FE>()),2);
     const uint16_t noNova=learned&~uint16_t(1u<<3);
-    Write(reinterpret_cast<void*>(base+0xD307FE),&noNova,2);build(3,kimahri);
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FE>()),&noNova,2);build(3,kimahri);
     Expect(!listed(3,0x3073),"unlearned Nova is absent even at200");
-    Write(reinterpret_cast<void*>(base+0xD307FE),&learned,2);build(3,kimahri);
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FE>()),&learned,2);build(3,kimahri);
     Expect(listed(3,0x3073),"native rebuilding restores a genuinely learned Nova without fabricating a save flag");
     const uint16_t disabled=1u<<3;std::memcpy(kimahri+0x69E,&disabled,2);build(3,kimahri);
     Expect(listed(3,0x3073)&&classify(3,0x3073)<0,"disabled learned Nova remains listed while native selection restriction wins");
     auron[0x6CB]=0;build(2,auron);
     Expect(!listed(2,0x3073)&&!listed(2,0x3068),"another actor cannot inherit Kimahri's learned Ronso list");
-    Expect(commands==tableBefore&&std::memcmp(learnedBefore.data(),reinterpret_cast<void*>(base+0xD307FC),32)==0,
+    Expect(commands==tableBefore&&std::memcmp(learnedBefore.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),32)==0,
            "native list cases leave the command table and learned save bank unchanged");
-    Write(reinterpret_cast<void*>(base+0x1F10CD8),&previousRing,4);
-    Write(reinterpret_cast<void*>(base+0x3B6BD0),priorGroup,5);
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x1F10CD8>()),&previousRing,4);
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x3B6BD0>()),priorGroup,5);
     std::memcpy(kimahri,actorBefore.data(),actorBefore.size());std::memcpy(auron,otherBefore.data(),otherBefore.size());
 }
 void TestLeftKeyRoute(uintptr_t base,uint8_t* kimahri,uint8_t* auron,bool active=true) {
@@ -210,12 +211,12 @@ void TestLeftKeyRoute(uintptr_t base,uint8_t* kimahri,uint8_t* auron,bool active
     Expect(jump(0x49A2A0,reinterpret_cast<uintptr_t>(&LeftMenuBoundary))&&
            jump(0x486B00,reinterpret_cast<uintptr_t>(&InactiveOtherInput))&&
            jump(0x230EA0,reinterpret_cast<uintptr_t>(&InactiveOtherInput))&&
-           Write(reinterpret_cast<void*>(base+0x49CA65),epilogue,sizeof(epilogue))&&
-           Write(reinterpret_cast<void*>(base+0x49CF42),epilogue,sizeof(epilogue)),
+           Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x49CA65>()),epilogue,sizeof(epilogue))&&
+           Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x49CF42>()),epilogue,sizeof(epilogue)),
            "LEFT fixture preserves real input/admission and replaces only external UI/audio boundaries");
     std::vector<uint16_t> ring(0x8A88/2,0xFF);
     auto* ringPointer=ring.data();
-    Expect(Write(reinterpret_cast<void*>(base+0x1F10CD8),&ringPointer,4),"real native left-header list uses private ring storage");
+    Expect(Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x1F10CD8>()),&ringPointer,4),"real native left-header list uses private ring storage");
     const size_t kimLeft=(3*0x478+0x28)/2,auronLeft=(2*0x478+0x28)/2;
     ring[kimLeft]=0x311A;ring[auronLeft]=0x311A;
     constexpr size_t headerMask=0x690+(282/16)*2;
@@ -228,20 +229,20 @@ void TestLeftKeyRoute(uintptr_t base,uint8_t* kimahri,uint8_t* auron,bool active
     std::memcpy(&presentBefore,kimahri+presentMask,2);
     const uint16_t present=presentBefore|uint16_t(1u<<(282%16));std::memcpy(kimahri+presentMask,&present,2);
     const uint32_t zero=0,padLeft=0x8000,menuOpen=1;
-    Write(reinterpret_cast<void*>(base+0xD333E8),&zero,4); // Native full-OD cheat OFF.
-    Write(reinterpret_cast<void*>(base+0xF3D6A0),&zero,4);Write(reinterpret_cast<void*>(base+0xF3D6AC),&zero,4);
-    Write(reinterpret_cast<void*>(base+0x1FCC08C),&menuOpen,4);
-    Write(reinterpret_cast<void*>(base+0x1FCC092),&zero,1);
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD333E8>()),&zero,4); // Native full-OD cheat OFF.
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xF3D6A0>()),&zero,4);Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xF3D6AC>()),&zero,4);
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x1FCC08C>()),&menuOpen,4);
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x1FCC092>()),&zero,1);
     const auto press=[&](int slot,uint32_t route) {
         uint8_t widget[0x90]={};const uint16_t id=static_cast<uint16_t>(slot);
-        const uintptr_t renderer=base+0x498DB0;
+        const uintptr_t renderer=base+::FfxHooks::ExecutableProfile::Rva<0x498DB0>();
         std::memcpy(widget+8,&id,2);std::memcpy(widget+0x88,&renderer,4);
-        Write(reinterpret_cast<void*>(base+0x21D09D4),&padLeft,4);
+        Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x21D09D4>()),&padLeft,4);
         leftRequests=0;leftActor=-1;leftCommand=-1;
         reinterpret_cast<void(__cdecl*)(void*)>(base+route)(widget);
         return leftRequests==1&&leftActor==slot&&leftCommand==0xFFFF;
     };
-    const auto nativeLeft=reinterpret_cast<int(__cdecl*)(int)>(base+0x38F750);
+    const auto nativeLeft=reinterpret_cast<int(__cdecl*)(int)>(base+::FfxHooks::ExecutableProfile::Rva<0x38F750>());
     const size_t headerCost=20+96*282+38;
     Expect(commands[headerCost]==100,"installed Ronso header retains its real nonzero100 cost");
     kimahri[0x5BC]=20;
@@ -258,14 +259,14 @@ void TestLeftKeyRoute(uintptr_t base,uint8_t* kimahri,uint8_t* auron,bool active
     }
     const size_t children=(3*0x478+0x128)/2;
     ring[children]=0x3068;ring[children+1]=0x3069;ring[children+2]=0x3073;
-    Write(reinterpret_cast<void*>(base+0xF3C90C),&zero,4);
-    Write(reinterpret_cast<void*>(base+0xF3F0C6),&zero,2);
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xF3C90C>()),&zero,4);
+    Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xF3F0C6>()),&zero,2);
     Expect(jump(0x3B06C0,reinterpret_cast<uintptr_t>(&InactiveOtherInput))&&
            jump(0x3B0CE0,reinterpret_cast<uintptr_t>(&InactiveOtherInput)),
            "native debit keeps its scalar writes and stops only at post-debit notifications");
-    const auto classify=reinterpret_cast<int(__cdecl*)(int,int)>(base+0x49AC10);
-    const auto commit=reinterpret_cast<int(__cdecl*)(const void*,int)>(base+0x38ABE0);
-    const auto debit=reinterpret_cast<void(__cdecl*)(int)>(base+0x38E5F0);
+    const auto classify=reinterpret_cast<int(__cdecl*)(int,int)>(base+::FfxHooks::ExecutableProfile::Rva<0x49AC10>());
+    const auto commit=reinterpret_cast<int(__cdecl*)(const void*,int)>(base+::FfxHooks::ExecutableProfile::Rva<0x38ABE0>());
+    const auto debit=reinterpret_cast<void(__cdecl*)(int)>(base+::FfxHooks::ExecutableProfile::Rva<0x38E5F0>());
     for(uint8_t balance:{uint8_t(20),uint8_t(100),uint8_t(180),uint8_t(200)}) {
         kimahri[0x5BC]=balance;const bool affordable=active||balance==200;
         const auto beforeCharge=kimahri[0x5BC];
@@ -327,7 +328,7 @@ void TestLeftKeyRoute(uintptr_t base,uint8_t* kimahri,uint8_t* auron,bool active
         Expect(classify(3,0x3068)==-2,"removing the extension restores the original Kimahri partial-cost rule");
     }
     kimahri[0x5BC]=180;
-    const auto rawCost=reinterpret_cast<int(__cdecl*)(int,const uint8_t*,int)>(base+0x38C750);
+    const auto rawCost=reinterpret_cast<int(__cdecl*)(int,const uint8_t*,int)>(base+::FfxHooks::ExecutableProfile::Rva<0x38C750>());
     Expect(rawCost(3,jumpRow,0)==-1,"unknown callers retain the native full-gauge gate");
     std::memcpy(kimahri+0x690,disabledMasks.data(),disabledMasks.size());
     for(uint32_t route:{0x49C870u,0x49CD50u}) {
@@ -345,27 +346,27 @@ void TestLeftKeyRoute(uintptr_t base,uint8_t* kimahri,uint8_t* auron,bool active
         ring[kimLeft]=0xFF;Expect(!press(3,route),"absent native left header cannot be fabricated");ring[kimLeft]=0x311A;
         ring[kimLeft+1]=0x3068;
         Expect(!press(3,route),"a foreign costed left header prevents widening the shared native mask");ring[kimLeft+1]=0xFF;
-        uint16_t learned=0;std::memcpy(&learned,reinterpret_cast<void*>(base+0xD307FC),2);
+        uint16_t learned=0;std::memcpy(&learned,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),2);
         const uint16_t withoutJump=learned&~uint16_t(0x100);
-        Write(reinterpret_cast<void*>(base+0xD307FC),&withoutJump,2);
+        Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),&withoutJump,2);
         Expect(!press(3,route),"the LEFT handler cannot use an unlearned cheap skill as its admission floor");
-        Write(reinterpret_cast<void*>(base+0xD307FC),&learned,2);
+        Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),&learned,2);
         uint16_t cursed=0x400;std::memcpy(kimahri+0x616,&cursed,2);
         Expect(!press(3,route),"Curse also blocks actual LEFT input");cursed=0;std::memcpy(kimahri+0x616,&cursed,2);
         kimahri[0x5BD]=100;Expect(!press(3,route),"unowned capacity cannot gain partial LEFT input");kimahri[0x5BD]=200;
         ring[kimLeft+1]=0x3000;kimahri[0x5BC]=19;
         Expect(press(3,route),"native zero-cost left neighbors remain available below Ronso affordability");ring[kimLeft+1]=0xFF;
         kimahri[0x5BC]=20;
-        const uint32_t nativeCheat=1;Write(reinterpret_cast<void*>(base+0xD333E8),&nativeCheat,4);
+        const uint32_t nativeCheat=1;Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD333E8>()),&nativeCheat,4);
         Expect(press(3,route)&&kimahri[0x5BC]==200,"existing native full-OD cheat side effects are forwarded exactly once");
-        Write(reinterpret_cast<void*>(base+0xD333E8),&zero,4);
+        Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD333E8>()),&zero,4);
         auron[0x5BC]=20;auron[0x5BD]=100;
         Expect(!press(2,route),"another character's partial gauge retains the native LEFT block");
         auron[0x5BC]=100;Expect(press(2,route),"another character's full native gauge still opens LEFT");
     }
     Expect(commands[headerCost]==100&&commands[20+96*115+38]==200,"header and Nova costs remain unchanged after LEFT scenarios");
     std::memcpy(kimahri+headerMask,&blockedBefore,2);std::memcpy(kimahri+presentMask,&presentBefore,2);
-    ringPointer=nullptr;Write(reinterpret_cast<void*>(base+0x1F10CD8),&ringPointer,4);
+    ringPointer=nullptr;Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x1F10CD8>()),&ringPointer,4);
 }
 void Signatures() {
     for(const auto& span:Evidence::kSpans)for(uintptr_t base:{uintptr_t(0x400000),uintptr_t(0x10000000)}) {
@@ -392,8 +393,8 @@ int main(int argc,char** argv) {
     if(!game||!crt)return 1;
     const uintptr_t base=reinterpret_cast<uintptr_t>(game);
     const auto freadFn=GetProcAddress(crt,"fread"),fwriteFn=GetProcAddress(crt,"fwrite");
-    Expect(freadFn&&fwriteFn&&Write(reinterpret_cast<void*>(base+0x70C3F4),&freadFn,4)&&
-           Write(reinterpret_cast<void*>(base+0x70C428),&fwriteFn,4),"fixture resolves only the two native save imports");
+    Expect(freadFn&&fwriteFn&&Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>()),&freadFn,4)&&
+           Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C428>()),&fwriteFn,4),"fixture resolves only the two native save imports");
     const std::wstring root(argv[3],argv[3]+std::strlen(argv[3]));
     PreparedRuntime prepared{};
     Expect(PrepareRuntime(base,true,nullptr,&prepared,root.c_str()),"production preparation accepts exact image and private store");
@@ -401,23 +402,23 @@ int main(int argc,char** argv) {
     if(prepared.count==5) {
         SetImportProtectionForFixture(&FailSecondProtection);
         Expect(!InstallIoImports(),"page-protection restoration failure rejects publication");
-        Expect(*reinterpret_cast<FARPROC*>(base+0x70C3F4)==freadFn,
+        Expect(*reinterpret_cast<FARPROC*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>())==freadFn,
                "a CAS mutation remains owned and is rolled back even when protection restoration fails");
         SetImportProtectionForFixture(nullptr);
-        Write(reinterpret_cast<void*>(base+0x70C3F4),&freadFn,4);
+        Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>()),&freadFn,4);
         Expect(InstallIoImports(),"FFX-only IO imports publish atomically with ownership checks");
         Expect(RestoreIoImports(),"unpublished IO rollback restores exactly the original imports");
         auto* actors=static_cast<uint8_t*>(VirtualAlloc(nullptr,31*0xF90,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE));
         Expect(actors!=nullptr,"private party actor table allocated");
         if(actors) {
-            Expect(Write(reinterpret_cast<void*>(base+0xD334CC),&actors,4),"private native actor table pointer published");
+            Expect(Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&actors,4),"private native actor table pointer published");
             SaveImage saved{};std::ifstream saveFile(argv[2],std::ios::binary);
             Expect(static_cast<bool>(saveFile.read(reinterpret_cast<char*>(saved.data()),saved.size())),"actual autosave copied as learned-mask fixture");
-            Expect(Write(reinterpret_cast<void*>(base+0xD307FC),saved.data()+15788,32),"native party command bank seeded from save");
-            const auto learned=reinterpret_cast<int(__cdecl*)(int,int)>(base+0x3850E0);
+            Expect(Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),saved.data()+15788,32),"native party command bank seeded from save");
+            const auto learned=reinterpret_cast<int(__cdecl*)(int,int)>(base+::FfxHooks::ExecutableProfile::Rva<0x3850E0>());
             Expect(learned(3,0x3073)==1&&learned(3,0x3071)==0,
                    "actual encoded learned helper agrees with saved Nova and missing Bad Breath");
-            const auto nativeCrc=reinterpret_cast<uint16_t(__cdecl*)(int,const void*)>(base+0x4B1400);
+            const auto nativeCrc=reinterpret_cast<uint16_t(__cdecl*)(int,const void*)>(base+::FfxHooks::ExecutableProfile::Rva<0x4B1400>());
             for(unsigned seed=0;seed<16;++seed) {
                 auto sample=saved;sample[1000+seed*37]^=static_cast<uint8_t>(seed*17);
                 std::memset(sample.data()+25844,0,4);
@@ -427,11 +428,11 @@ int main(int argc,char** argv) {
             std::string kernelPath=argv[2];kernelPath=kernelPath.substr(0,kernelPath.find_last_of("/\\")+1)+"command.bin";
             std::ifstream kernel(kernelPath,std::ios::binary);commands.assign(std::istreambuf_iterator<char>(kernel),{});
             Expect(commands.size()==51867,"actual modified command table loaded privately");
-            uint8_t jump[5]={0xE9};uint32_t relative=static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&KernelEntry)-(base+0x390AE0+5));
+            uint8_t jump[5]={0xE9};uint32_t relative=static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&KernelEntry)-(base+::FfxHooks::ExecutableProfile::Rva<0x390AE0>()+5));
             std::memcpy(jump+1,&relative,4);
-            Expect(Write(reinterpret_cast<void*>(base+0x390AE0),jump,5),"fixture substitutes only the command table provider after profile validation");
+            Expect(Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x390AE0>()),jump,5),"fixture substitutes only the command table provider after profile validation");
             const uint8_t ret=0xC3;
-            Expect(Write(reinterpret_cast<void*>(base+0x39B5BE),&ret,1),"fixture returns immediately after the native maximum store");
+            Expect(Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39B5BE>()),&ret,1),"fixture returns immediately after the native maximum store");
             const auto initialized=FfxHooks::MinHookBatch::EnsureProcessInitialized();
             Expect(initialized==FfxHooks::MinHookBatch::InitializationResult::Ready,"shared SDK ready for native fixture");
             std::array<uintptr_t,5> addresses{};bool created=true;
@@ -450,23 +451,23 @@ int main(int argc,char** argv) {
             uint32_t hp=1000;std::memcpy(kimahri+0x5D0,&hp,4);std::memcpy(auron+0x5D0,&hp,4);
             kimahri[0x5BC]=100;auron[0x5BC]=100;
             uint8_t entry[148]={};entry[0x3A]=100;
-            InvokeMaximum(0,3,kimahri,entry,reinterpret_cast<void*>(base+0x39B5B7));
+            InvokeMaximum(0,3,kimahri,entry,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39B5B7>()));
             Expect(kimahri[0x5BD]==200&&kimahri[0x5BC]==100,"actual native gateway raises only capacity, not current charge");
-            MaximumCall call{kimahri,entry,reinterpret_cast<void*>(base+0x39B5B7)};
+            MaximumCall call{kimahri,entry,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39B5B7>())};
             HANDLE initializer=CreateThread(nullptr,0,&NativeInitializationThread,&call,0,nullptr);
             Expect(initializer!=nullptr,"separate native initialization owner fixture started");
             if(initializer){WaitForSingleObject(initializer,5000);CloseHandle(initializer);}
             Expect(kimahri[0x5BD]==200&&kimahri[0x5BC]==100,
                    "each admitted native initialization owns its thread; an earlier bootstrap thread cannot lock it out");
-            InvokeMaximum(0,3,kimahri,entry,reinterpret_cast<void*>(base+0x39B5B7));
-            InvokeMaximum(0,2,auron,entry,reinterpret_cast<void*>(base+0x39B5B7));
+            InvokeMaximum(0,3,kimahri,entry,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39B5B7>()));
+            InvokeMaximum(0,2,auron,entry,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39B5B7>()));
             Expect(auron[0x5BD]==100&&auron[0x5BC]==100,"Auron2 remains entirely native");
             TestNativeCommandList(base,kimahri,auron);
-            std::memcpy(kimahri+0x670,reinterpret_cast<void*>(base+0xD307FC),32);
-            Expect(Write(reinterpret_cast<void*>(base+0x39BC83),&ret,1)&&
-                   Write(reinterpret_cast<void*>(base+0x39BF17),&ret,1),"fixture returns after each exact native presence caller");
+            std::memcpy(kimahri+0x670,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),32);
+            Expect(Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39BC83>()),&ret,1)&&
+                   Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39BF17>()),&ret,1),"fixture returns after each exact native presence caller");
             const auto has=[&](uint8_t slot,int16_t command) {
-                return InvokeAvailability(slot,command,reinterpret_cast<void*>(base+(command==282?0x39BF0B:0x39BC79)));
+                return InvokeAvailability(slot,command,reinterpret_cast<void*>(base+(command==282?::FfxHooks::ExecutableProfile::Rva<0x39BF0B>(): ::FfxHooks::ExecutableProfile::Rva<0x39BC79>())));
             };
             for(unsigned command:{104u,105u,113u,115u,282u}) {
                 uint16_t mask=0;std::memcpy(&mask,kimahri+0x690+(command/16)*2,2);
@@ -480,19 +481,19 @@ int main(int argc,char** argv) {
             // Exercise the earlier native input branch and its menu-word producer,
             // not only the child/header query reached after entering Overdrive.
             uint8_t ringJump[5]={0xE9};relative=static_cast<uint32_t>(
-                reinterpret_cast<uintptr_t>(&RingBuilderBoundary)-(base+0x3ACEC0+5));
+                reinterpret_cast<uintptr_t>(&RingBuilderBoundary)-(base+::FfxHooks::ExecutableProfile::Rva<0x3ACEC0>()+5));
             std::memcpy(ringJump+1,&relative,4);
-            Expect(Write(reinterpret_cast<void*>(base+0x3ACEC0),ringJump,5)&&
-                   Write(reinterpret_cast<void*>(base+0x392BF0),&ret,1)&&
-                   Write(reinterpret_cast<void*>(base+0x39B6C5),&ret,1),
+            Expect(Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x3ACEC0>()),ringJump,5)&&
+                   Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x392BF0>()),&ret,1)&&
+                   Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39B6C5>()),&ret,1),
                    "entry fixture stops at the renderer boundary after real native decisions");
             const auto enter=[&](int slot) {
                 ringBuilds=0;ringKind=-1;
-                InvokeOverdriveEntry(slot,reinterpret_cast<void*>(base+0x392BCD));
+                InvokeOverdriveEntry(slot,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x392BCD>()));
                 return ringBuilds==1&&ringKind==12;
             };
             const auto refresh=[&](int slot,uint8_t* actor) {
-                InvokeOverdriveRefresh(slot,actor,reinterpret_cast<void*>(base+0x39B6A9));
+                InvokeOverdriveRefresh(slot,actor,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39B6A9>()));
                 uint16_t word=0;std::memcpy(&word,actor+0x6C8,2);return word;
             };
             kimahri[0x590]=0;kimahri[0x5BC]=20;
@@ -505,7 +506,7 @@ int main(int argc,char** argv) {
             auron[0x590]=0;
             TestLeftKeyRoute(base,kimahri,auron);
             Expect(!enter(2)&&refresh(2,auron)==0x3021,"other actors keep native full-gauge admission");
-            const auto nativeReady=reinterpret_cast<int(__cdecl*)(int)>(base+0x39AF70);
+            const auto nativeReady=reinterpret_cast<int(__cdecl*)(int)>(base+::FfxHooks::ExecutableProfile::Rva<0x39AF70>());
             kimahri[0x5BC]=100;
             Expect(nativeReady(3)==0,"non-UI callers retain the real full-gauge readiness bit");
             for(uint8_t balance:{uint8_t(20),uint8_t(80),uint8_t(100),uint8_t(180),uint8_t(199),uint8_t(200)}) {
@@ -516,11 +517,11 @@ int main(int argc,char** argv) {
                        "menu admission is read-only over the complete actor record");
             }
             kimahri[0x5BC]=20;
-            uint16_t learnedBank=0;std::memcpy(&learnedBank,reinterpret_cast<void*>(base+0xD307FC),2);
+            uint16_t learnedBank=0;std::memcpy(&learnedBank,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),2);
             const uint16_t withoutJump=learnedBank&~uint16_t(0x100);
-            Write(reinterpret_cast<void*>(base+0xD307FC),&withoutJump,2);
+            Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),&withoutJump,2);
             Expect(!enter(3),"an unlearned cheap Jump cannot unlock the entry for unaffordable learned skills");
-            Write(reinterpret_cast<void*>(base+0xD307FC),&learnedBank,2);
+            Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD307FC>()),&learnedBank,2);
             kimahri[0xDCC]=1;Expect(!enter(3),"native actor input block prevents partial entry");kimahri[0xDCC]=0;
             kimahri[0xDCE]=1;Expect(!enter(3),"native actor secondary block prevents partial entry");kimahri[0xDCE]=0;
             uint16_t curse=0x400;std::memcpy(kimahri+0x616,&curse,2);
@@ -529,11 +530,11 @@ int main(int argc,char** argv) {
             uint32_t dead=0;std::memcpy(kimahri+0x5D0,&dead,4);
             Expect(!enter(3),"a dead actor does not gain partial entry");std::memcpy(kimahri+0x5D0,&hp,4);
             kimahri[0x5BD]=100;Expect(!enter(3),"unowned native capacity does not borrow pool admission");kimahri[0x5BD]=200;
-            uint8_t noCost=1;Write(reinterpret_cast<void*>(base+0xD2A90C),&noCost,1);
+            uint8_t noCost=1;Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A90C>()),&noCost,1);
             Expect(!enter(3),"native no-cost mode forwards its real readiness instead of adding a new override");
-            noCost=0;Write(reinterpret_cast<void*>(base+0xD2A90C),&noCost,1);
+            noCost=0;Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A90C>()),&noCost,1);
             ringBuilds=0;ringKind=-1;
-            HANDLE foreignMenu=CreateThread(nullptr,0,&ForeignMenuThread,reinterpret_cast<void*>(base+0x392BCD),0,nullptr);
+            HANDLE foreignMenu=CreateThread(nullptr,0,&ForeignMenuThread,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x392BCD>()),0,nullptr);
             Expect(foreignMenu!=nullptr,"foreign-thread menu fixture started");
             if(foreignMenu){WaitForSingleObject(foreignMenu,5000);CloseHandle(foreignMenu);}
             Expect(ringBuilds==0,"a foreign thread cannot use the native initialization owner's partial entry");
@@ -542,9 +543,9 @@ int main(int argc,char** argv) {
             kimahri[0x5BC]=199;Expect((has(3,115)&1)!=0,"Nova199 remains present for grey classification");
             kimahri[0x5BC]=200;Expect((has(3,115)&1)!=0,"Nova200 presence does not depend on a new learned flag");
             Expect((has(3,113)&1)==0,"Bad Breath absent from the actual save is never granted");
-            uint8_t eventJump[5]={0xE9};relative=static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&FullEvent)-(base+0x385AC0+5));
-            std::memcpy(eventJump+1,&relative,4);Write(reinterpret_cast<void*>(base+0x385AC0),eventJump,5);
-            const auto gain=reinterpret_cast<int(__cdecl*)(int,void*,int)>(base+0x3B15A0);
+            uint8_t eventJump[5]={0xE9};relative=static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&FullEvent)-(base+::FfxHooks::ExecutableProfile::Rva<0x385AC0>()+5));
+            std::memcpy(eventJump+1,&relative,4);Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x385AC0>()),eventJump,5);
+            const auto gain=reinterpret_cast<int(__cdecl*)(int,void*,int)>(base+::FfxHooks::ExecutableProfile::Rva<0x3B15A0>());
             kimahri[0x5BC]=80;gain(3,kimahri,20);
             Expect(kimahri[0x5BC]==100&&kimahri[0x5BD]==200,"native gain continues past an affordable partial gauge");
             kimahri[0x5BC]=190;gain(3,kimahri,50);
@@ -558,25 +559,25 @@ int main(int argc,char** argv) {
             Expect(kimahri[0x5BC]==100&&(has(3,104)&1)!=0,"native Curse blocks gain without erasing learned presence");
             cursed=0;std::memcpy(kimahri+0x616,&cursed,2);
             auron[0x5BC]=80;gain(2,auron,50);Expect(auron[0x5BC]==100&&auron[0x5BD]==100,"another character still gains only to native100");
-            Write(reinterpret_cast<void*>(base+0x38F20E),&ret,1);
+            Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38F20E>()),&ret,1);
             auron[0x5BC]=50;kimahri[0x5BC]=150;
-            InvokeTransfer(auron,kimahri,reinterpret_cast<void*>(base+0x38F1DB));
+            InvokeTransfer(auron,kimahri,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38F1DB>()));
             Expect(auron[0x5BC]==0&&kimahri[0x5BC]==200,"native Entrust fills Kimahri without a max=current pin");
             auron[0x5BC]=80;kimahri[0x5BC]=180;
-            InvokeTransfer(auron,kimahri,reinterpret_cast<void*>(base+0x38F1DB));
+            InvokeTransfer(auron,kimahri,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38F1DB>()));
             Expect(auron[0x5BC]==0&&kimahri[0x5BC]==200,"Entrust overflow keeps native donor and clamp semantics");
             kimahri[0x5BC]=80;auron[0x5BC]=50;
-            InvokeTransfer(kimahri,auron,reinterpret_cast<void*>(base+0x38F1DB));
+            InvokeTransfer(kimahri,auron,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38F1DB>()));
             Expect(kimahri[0x5BC]==0&&auron[0x5BC]==100,"Entrust in the reverse direction preserves the other maximum");
             kimahri[0x5BC]=20;
             RequestStop();Expect((has(3,115)&1)!=0,"stop preserves the unmodified native presence mask");
             Expect(!enter(3)&&refresh(3,kimahri)==0x3021,"stop closes partial menu entry without actor restoration writes");
             const uint8_t nativeTest=0xA8,nativeAnd=0x83;
-            Write(reinterpret_cast<void*>(base+0x39BC83),&nativeTest,1);
-            Write(reinterpret_cast<void*>(base+0x39BF17),&nativeAnd,1);
+            Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39BC83>()),&nativeTest,1);
+            Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39BF17>()),&nativeAnd,1);
             TestNativeCommandList(base,kimahri,auron,false);
-            Write(reinterpret_cast<void*>(base+0x39BC83),&ret,1);
-            Write(reinterpret_cast<void*>(base+0x39BF17),&ret,1);
+            Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39BC83>()),&ret,1);
+            Write(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x39BF17>()),&ret,1);
             TestLeftKeyRoute(base,kimahri,auron,false);
             ActivateRuntime();Expect(!enter(3),"late publication cannot reopen stopped pool");
             const auto neutral=FfxHooks::MinHookBatch::NeutralizeBatch(&FfxHooks::MinHookBatch::ProcessCoordinator(),

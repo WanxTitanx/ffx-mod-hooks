@@ -31,7 +31,7 @@ class Policy(Packed):
                                                "fusionDivisor", "fusionGilPerAbility", "modRecipeQuantity", "devFreeMaterials", "devFreeGil", "devIgnoreProgression")]
     def __init__(self, **values):
         super().__init__()
-        defaults = dict(mode=2, baseItem=70, baseAmount=1, refinementDivisor=10,
+        defaults = dict(mode=2, baseItem=70, baseAmount=1, refinementDivisor=60,
                         fusionDivisor=3, fusionGilPerAbility=10000, modRecipeQuantity=30, devFreeMaterials=0, devFreeGil=0, devIgnoreProgression=0)
         if values.keys() - defaults.keys():
             raise ValueError("Unknown Workshop policy field")

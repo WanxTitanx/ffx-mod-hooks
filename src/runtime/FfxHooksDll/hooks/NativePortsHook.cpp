@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK. UnX input behavior reference: Kaldaien/UnX, faae4359, input.cpp
 // and window.cpp (GPL-3.0-or-later file headers; MIT repository license).
 // Independent adapters use the existing Hooks window boundary, not a proxy.
@@ -30,7 +31,7 @@ bool g_cameraProfile=false;
 SRWLOCK g_cameraLock=SRWLOCK_INIT;
 F8Runtime::OwnedByte g_cameraOwner{},g_freezeOwner{};
 constexpr uint32_t kFreeCameraRva=RVA_FFX_DEBUG_FLAGS+4u;
-constexpr uint32_t kFreezeSceneRva=0x00EFBB63u;
+constexpr uint32_t kFreezeSceneRva=(::FfxHooks::ExecutableProfile::Rva<0x00EFBB63u>());
 SRWLOCK g_bindingLock=SRWLOCK_INIT;
 NativeBindings::Table g_bindings=NativeBindings::Defaults();
 std::atomic<int> g_captureAction{-1},g_captureValue{-1};
@@ -208,8 +209,8 @@ bool Supported(std::uintptr_t base) {
 }
 bool CameraProfile(uintptr_t base) {
     __try {
-        const auto* camera=reinterpret_cast<const unsigned char*>(base+0x00390C78u);
-        const auto* freeze=reinterpret_cast<const unsigned char*>(base+0x0042114Eu);
+        const auto* camera=reinterpret_cast<const unsigned char*>(base + (::FfxHooks::ExecutableProfile::Rva<0x00390C78u>()));
+        const auto* freeze=reinterpret_cast<const unsigned char*>(base + (::FfxHooks::ExecutableProfile::Rva<0x0042114Eu>()));
         return camera[0]==0x0F && camera[1]==0xBE && camera[2]==0x05 &&
             *reinterpret_cast<const uint32_t*>(camera+3)==base+kFreeCameraRva &&
             freeze[0]==0x80 && freeze[1]==0x3D && freeze[6]==0 &&

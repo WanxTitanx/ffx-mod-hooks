@@ -1,8 +1,9 @@
+#include "../shared/ExecutableProfile.h"
 // Independent native frame, content and description paths for full Scan data.
 // The native instructions use VA 0133F668/0133F66A in a PE based at 00400000.
 // These globals belong to F3xxxx, not the D3xxxx actor/save region.
-constexpr std::uintptr_t FullScanStateRva=0x0133F668u-0x00400000u;
-constexpr std::uintptr_t FullScanTargetRva=0x0133F66Au-0x00400000u;
+constexpr std::uintptr_t FullScanStateRva=(::FfxHooks::ExecutableProfile::Va<0x0133F668u>())-0x00400000u;
+constexpr std::uintptr_t FullScanTargetRva=(::FfxHooks::ExecutableProfile::Va<0x0133F66Au>())-0x00400000u;
 using FullFrameFn=int(__cdecl*)();
 using FullDataFn=int(__cdecl*)(int,int);
 using FullDescriptionFn=int(__cdecl*)(int);
@@ -30,7 +31,7 @@ bool PrepareFull(ScanScope& current,ScanSection section){
     if(!current.expanded&&!current.extras&&!current.numeric)return false;
     // Failed target reads during scene teardown preserve the native path.
     if(current.expanded)__try{
-        const auto* actor=reinterpret_cast<const unsigned char*(__cdecl*)(unsigned)>(module+0x394030)(static_cast<unsigned>(target));
+        const auto* actor=reinterpret_cast<const unsigned char*(__cdecl*)(unsigned)>(module + (::FfxHooks::ExecutableProfile::Rva<0x394030>()))(static_cast<unsigned>(target));
         if(!actor||!NativeUiSupport::Copy(current.stats,actor+0x5A8,8)||
            !NativeUiSupport::Copy(&current.mp,actor+0x5D4,4)||!NativeUiSupport::Copy(&current.maxMp,actor+0x598,4))return false;
     }__except(EXCEPTION_EXECUTE_HANDLER){return false;}
@@ -40,7 +41,7 @@ void StatText(const char* text,float x,float y){
     static constexpr char alphabet[]="0123456789 !\"#$%&'()*+,-./:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz";
     unsigned char encoded[96]{};unsigned n=0;
     for(const char* p=text;*p&&n+1<sizeof(encoded);++p){const char* found=std::strchr(alphabet,*p);encoded[n++]=static_cast<unsigned char>(found?0x30+found-alphabet:0x3A);}
-    reinterpret_cast<TextFn>(originals[Text])(0,encoded,x,y,0,.60f,.84f);
+    NativeText::DrawPlain(reinterpret_cast<TextFn>(originals[Text]),0,encoded,x,y,0,.60f,.84f);
 }
 void FullStats(int offset){
     if(!FullScope()||!scope->expanded||scope->section!=ScanSection::Data)return;
@@ -65,7 +66,7 @@ void FullStats(int offset){
     }
     if(band.present){
         using HighlightFn=void(__cdecl*)(float,float,float,float,unsigned,unsigned);
-        const auto highlight=reinterpret_cast<HighlightFn>(module+0x4F4B20);
+        const auto highlight=reinterpret_cast<HighlightFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x4F4B20>()));
         const unsigned top=(ElementScan::NativeColor(0x354A68u)&0xFFFFFFu)|0x48000000u;
         const unsigned bottom=(ElementScan::NativeColor(0x1E293Fu)&0xFFFFFFu)|0x28000000u;
         for(unsigned row=0;row<4;++row)highlight(band.x,Y(y0-2.f+35.f*row),band.w,Y(33.f),top,bottom);
@@ -93,44 +94,46 @@ int __cdecl FullDescriptionShim(int x){
     __try{result=reinterpret_cast<FullDescriptionFn>(originals[FullDescription])(x);}__finally{scope=previous;}return result;
 }
 int __cdecl FullRowShim(int actor,int category,int x,int y){
-
+    if(FullScope()&&scope->section==ScanSection::Data&&scope->numeric&&
+       (actor&255)==(scope->actor&255)&&category>=0&&category<4)return 0;
     if(FullScope()&&scope->section==ScanSection::Data)x-=static_cast<int>(X(ExtraWidth()*.5f));
     const int result=reinterpret_cast<RowFn>(originals[FullRow])(actor,category,x,y);
     Extras(actor,category,static_cast<float>(x),static_cast<float>(y));return result;
 }
 int __cdecl TintShim(unsigned atlas,float x,float y,float w,float h,float u0,float v0,float u1,float v1,unsigned c0,unsigned c1){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
-    if(FullScope()&&scope->section==ScanSection::Frame&&(caller==0x49BD7F||caller==0x49BE11)){x-=X(ExtraWidth()*.5f);y-=Y(ExtraHeight());}
+    if(FullScope()&&scope->section==ScanSection::Frame&&(caller==(::FfxHooks::ExecutableProfile::Rva<0x49BD7F>())||caller==(::FfxHooks::ExecutableProfile::Rva<0x49BE11>()))){x-=X(ExtraWidth()*.5f);y-=Y(ExtraHeight());}
     return reinterpret_cast<TintFn>(originals[Tinted])(atlas,x,y,w,h,u0,v0,u1,v1,c0,c1);
 }
 int __cdecl RotateShim(unsigned atlas,float x,float y,float w,float h,float u0,float v0,float u1,float v1,unsigned c0,unsigned c1,float angle){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
     // Rotated sprites use design coordinates, not pre-scaled coordinates.
-    if(FullScope()&&scope->section==ScanSection::Frame&&(caller==0x49BC87||caller==0x49BCF7)){x-=ExtraWidth()*.5f;y-=ExtraHeight();}
+    if(FullScope()&&scope->section==ScanSection::Frame&&(caller==(::FfxHooks::ExecutableProfile::Rva<0x49BC87>())||caller==(::FfxHooks::ExecutableProfile::Rva<0x49BCF7>()))){x-=ExtraWidth()*.5f;y-=ExtraHeight();}
     return reinterpret_cast<RotatedFn>(originals[Rotated])(atlas,x,y,w,h,u0,v0,u1,v1,c0,c1,angle);
 }
 int __cdecl TextShim(unsigned font,const unsigned char* text,float x,float y,unsigned style,float sx,float sy){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
     if(FullScope()){
-        if(scope->section==ScanSection::Description&&caller==0x49C7BF){x+=X(ExtraWidth()*.5f);y-=Y(ExtraHeight());}
-        else if(scope->section==ScanSection::Data&&caller>=0x49BEE0&&caller<0x49C740){x-=X(ExtraWidth()*.5f);if(caller==0x49BF98)y-=Y(ExtraHeight());}
+        if(scope->section==ScanSection::Description&&caller==(::FfxHooks::ExecutableProfile::Rva<0x49C7BF>())){x+=X(ExtraWidth()*.5f);y-=Y(ExtraHeight());}
+        else if(scope->section==ScanSection::Data&&caller>=(::FfxHooks::ExecutableProfile::Rva<0x49BEE0>())&&caller<(::FfxHooks::ExecutableProfile::Rva<0x49C740>())){x-=X(ExtraWidth()*.5f);if(caller==(::FfxHooks::ExecutableProfile::Rva<0x49BF98>()))y-=Y(ExtraHeight());}
+        if(scope->numeric&&scope->section==ScanSection::Data&&caller==::FfxHooks::ExecutableProfile::Rva<0x49C728>()){x+=X(780.f);y-=Y(150.f);}
     }
     return reinterpret_cast<TextFn>(originals[Text])(font,text,x,y,style,sx,sy);
 }
 int NumberAt(unsigned target,std::uintptr_t caller,int value,float x,float y,unsigned style,float sx,float sy){
     if(FullScope()&&scope->section==ScanSection::Data){
-        if(scope->expanded&&(caller==0x49C447||caller==0x49C4A2))return 0;
-        if(caller==0x49C447||caller==0x49C4A2)x-=X(ExtraWidth()*.5f);
-        if(scope->numeric&&(caller==0x49C447||caller==0x49C4A2))y-=Y(NumericalExtraHeight());
-        if(caller==0x49C198||caller==0x49C232){x-=X(ExtraWidth()*.5f);y-=Y(ExtraHeight());}
-        if(scope->expanded&&(caller==0x49C198||caller==0x49C232))scope->hpNumbers[caller==0x49C232?1:0]={x,y,style,sx,sy,true};
+        if(scope->expanded&&(caller==(::FfxHooks::ExecutableProfile::Rva<0x49C447>())||caller==(::FfxHooks::ExecutableProfile::Rva<0x49C4A2>())))return 0;
+        if(caller==(::FfxHooks::ExecutableProfile::Rva<0x49C447>())||caller==(::FfxHooks::ExecutableProfile::Rva<0x49C4A2>()))x-=X(ExtraWidth()*.5f);
+        if(scope->numeric&&(caller==(::FfxHooks::ExecutableProfile::Rva<0x49C447>())||caller==(::FfxHooks::ExecutableProfile::Rva<0x49C4A2>())))y-=Y(NumericalExtraHeight());
+        if(caller==(::FfxHooks::ExecutableProfile::Rva<0x49C198>())||caller==(::FfxHooks::ExecutableProfile::Rva<0x49C232>())){x-=X(ExtraWidth()*.5f);y-=Y(ExtraHeight());}
+        if(scope->expanded&&(caller==(::FfxHooks::ExecutableProfile::Rva<0x49C198>())||caller==(::FfxHooks::ExecutableProfile::Rva<0x49C232>())))scope->hpNumbers[caller==(::FfxHooks::ExecutableProfile::Rva<0x49C232>())?1:0]={x,y,style,sx,sy,true};
     }
     return reinterpret_cast<NumberFn>(originals[target])(value,x,y,style,sx,sy);
 }
 int __cdecl NumberRightShim(int value,float x,float y,unsigned style,float sx,float sy){return NumberAt(NumberRight,reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module,value,x,y,style,sx,sy);}
 int __cdecl NumberLeftShim(int value,float x,float y,unsigned style,float sx,float sy){return NumberAt(NumberLeft,reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module,value,x,y,style,sx,sy);}
 int __cdecl GlyphShim(const void* text,int x,int y){
-    if(FullScope()&&scope->section==ScanSection::Data&&reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module==0x49C1D7){
+    if(FullScope()&&scope->section==ScanSection::Data&&reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module==::FfxHooks::ExecutableProfile::Rva<0x49C1D7>()){
         x-=static_cast<int>(X(ExtraWidth()*.5f));y-=static_cast<int>(Y(ExtraHeight()));
         if(scope->expanded){scope->hpSlash=text;scope->slashX=x;scope->slashY=y;}
     }

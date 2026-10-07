@@ -39,6 +39,7 @@
 // ============================================================================
 #pragma once
 #include "MenuFeedback.h"
+#include "../FfxHooksDll/shared/ExecutableProfile.h"
 #include <stdio.h>  // _snprintf_s keeps this header self-contained (2026-08-02 fix).
 #if defined(_WIN64) || defined(__x86_64__)
 #  error "NativeMenuShell targets 32-bit FFX.exe (x86) ONLY — cdecl float-on-stack ABI + 4-byte pointers."
@@ -64,7 +65,7 @@ static inline uintptr_t FfxBase() {
 #endif
 }
 // Cast an IDA VA to a function pointer of type T in the live process.
-#define FFX_FN(va, T) ((T)(NativeMenu::FfxBase() + (uintptr_t)(va) - NativeMenu::kImageBase))
+#define FFX_FN(va, T) ((T)(NativeMenu::FfxBase() + (uintptr_t)(::FfxHooks::ExecutableProfile::Va<(va)>()) - NativeMenu::kImageBase))
 
 // ---------------------------------------------------------------------------
 // 1) Confirmed native ABIs (all __cdecl) — IDA VAs (FFX.exe at 0x400000)
@@ -255,7 +256,7 @@ enum PromptCell {
 // and IsActive reads dword ctx+0xA8 (0xCCB218). Reading the field directly keeps
 // our footer hints in lockstep with the icons the game itself would show.
 static inline bool PadInputActive() {
-    return *(volatile unsigned int*)(FfxBase() + (uintptr_t)0xCCB218 - kImageBase) != 0;
+    return *(volatile unsigned int*)(FfxBase() + (::FfxHooks::ExecutableProfile::Va<0xCCB218>() - kImageBase)) != 0;
 }
 
 static inline void DrawPromptGlyph(const char* sheet, int cell,
@@ -625,7 +626,7 @@ static int     g_frozenN = 0;
 static inline void FreezeOthersExcept(int ourObj) {
     g_frozenN = 0;
     for (int i = 0; i < POOL_MAX; ++i) {
-        int obj = (int)(FfxBase() + (POOL_VA - kImageBase) + (uintptr_t)(POOL_STRIDE * i));
+        int obj = (int)(FfxBase() + (::FfxHooks::ExecutableProfile::Va<POOL_VA>() - kImageBase) + (uintptr_t)(POOL_STRIDE * i));
         if (*(uint8_t*)((uintptr_t)obj + O_ACTIVE) == 0) continue;   // Skip inactive slots.
         if (obj == ourObj) continue;                                  // Never freeze this object or it deadlocks itself.
         uint8_t* g = (uint8_t*)((uintptr_t)obj + O_GROUP63);
@@ -669,7 +670,7 @@ static const uintptr_t VA_PadGlobals = 0x25D09D2;   // Pad state block: held/edg
 // menu reads it, making later readers such as the pause-menu FSM observe no input. It must only run
 // while the menu is open. The active custom callback does not call it because live use soft-locked input.
 static inline void SwallowPad() {
-    volatile uint8_t* p = (volatile uint8_t*)(FfxBase() + (VA_PadGlobals - kImageBase));
+    volatile uint8_t* p = (volatile uint8_t*)(FfxBase() + (::FfxHooks::ExecutableProfile::Va<VA_PadGlobals>() - kImageBase));
     for (int i = 0; i < 24; ++i) p[i] = 0;          // 0x25D09D2..0x25D09EA: primary values plus fallbacks.
 }
 
@@ -729,11 +730,11 @@ static int __cdecl OurListInputCb(int obj) {
     return obj;   // Input swallowing was reverted because clearing the pad soft-locked all game input.
 }
 
-static inline void ClaimModal(int obj) { *(volatile int32_t*)(FfxBase() + (VA_CurrentPopup - kImageBase)) = obj; }
-static inline void ReleaseModal()       { *(volatile int32_t*)(FfxBase() + (VA_CurrentPopup - kImageBase)) = 0; }
+static inline void ClaimModal(int obj) { *(volatile int32_t*)(FfxBase() + (::FfxHooks::ExecutableProfile::Va<VA_CurrentPopup>() - kImageBase)) = obj; }
+static inline void ReleaseModal()       { *(volatile int32_t*)(FfxBase() + (::FfxHooks::ExecutableProfile::Va<VA_CurrentPopup>() - kImageBase)) = 0; }
 static inline void ReleaseModalIfOwned(int obj) {
     volatile int32_t* currentPopup =
-        reinterpret_cast<volatile int32_t*>(FfxBase() + (VA_CurrentPopup - kImageBase));
+        reinterpret_cast<volatile int32_t*>(FfxBase() + (::FfxHooks::ExecutableProfile::Va<VA_CurrentPopup>() - kImageBase));
     // Another native menu may have taken ownership before deferred cleanup reaches this object.
     if (*currentPopup == obj) *currentPopup = 0;
 }

@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "../hooks/EquipmentWorkshopRuntime.h"
 #include "../hooks/NativeSaveEvents.h"
@@ -56,7 +57,7 @@ int main(int argc,char** argv){
         Check(StartForTests(base,false,root.c_str(),nullptr)&&CombatProducerReady(),"standalone combat installs without enabling Workshop");
         Check(!Requested()&&!Status().enabled&&Status().code==RuntimeCode::Disabled,"shared infrastructure does not advertise Workshop as enabled");
         Check(!FfxHooks::NativeSaveEvents::Requested()&&GetFileAttributesW(root.c_str())==INVALID_FILE_ATTRIBUTES,"standalone combat creates no inventory store or save I/O");
-        Check(*reinterpret_cast<unsigned char*>(base+0x386787)==4&&*reinterpret_cast<unsigned char*>(base+0x39C8A4)==4,"standalone combat leaves equipment loop widths untouched");
+        Check(*reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0x386787>())==4&&*reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0x39C8A4>())==4,"standalone combat leaves equipment loop widths untouched");
         CombatProducerFixture::Run(base);
         std::printf("STANDALONE_COMBAT_PRODUCER_RT1 %u/%u passed\n",checks-failures,checks);return failures?1:0;
     }
@@ -91,7 +92,7 @@ int main(int argc,char** argv){
         std::printf("AEON_WORKSHOP_RUNTIME_RT1 %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     // Battle phase is a BYTE; adjacent native state survives battle teardown.
     // A DWORD read falsely treats that adjacent state as an ongoing battle.
-    auto* phase=reinterpret_cast<unsigned char*>(base+0xD2A8E0);
+    auto* phase=reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>());
     unsigned char phaseBefore[4]{};std::memcpy(phaseBefore,phase,4);
     const auto beforeBattle=state;
     phase[0]=1;phase[1]=1;phase[2]=0xA5;phase[3]=0x5A;
@@ -101,9 +102,9 @@ int main(int argc,char** argv){
     Check(std::memcmp(&state,&beforeBattle,sizeof(state))==0,
           "battle admission changes preserve all inventory identities and extension metadata");
     std::memcpy(phase,phaseBefore,4);
-    std::uint16_t story=0x447;std::memcpy(reinterpret_cast<void*>(base+0xD2D67C),&story,2);
+    std::uint16_t story=0x447;std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2D67C>()),&story,2);
     Check(Access()==workshop::Error::Locked,"runtime reads the native Customize admission boundary");
-    story=0x448;std::memcpy(reinterpret_cast<void*>(base+0xD2D67C),&story,2);
+    story=0x448;std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2D67C>()),&story,2);
     Check(Access()==workshop::Error::Ok,"native Customize admission opens Workshop without runtime story writes");
     unsigned slot=200;for(unsigned i=0;i<200;++i)if(state.pieces[i].id && state.pieces[i].native[6]==255 && !(state.pieces[i].native[3]&12) && state.pieces[i].native[4]<7 && state.pieces[i].native[5]<2){slot=i;break;}
     if(slot==200)return 2;
@@ -126,8 +127,8 @@ int main(int argc,char** argv){
     Check(!Commit(r,plan),"repeated confirmation cannot commit twice");
     Check(Capture(state)&&state.pieces[slot].mode==1,"runtime retains the committed piece extension");
     Check(WriteForTests(savePath.c_str(),image),"successful native save publishes its bound sidecar");
-    auto create=reinterpret_cast<unsigned(__cdecl*)(const void*)>(base+0x3AB930);
-    auto remove=reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x3ABCC0);
+    auto create=reinterpret_cast<unsigned(__cdecl*)(const void*)>(base+::FfxHooks::ExecutableProfile::Rva<0x3AB930>());
+    auto remove=reinterpret_cast<int(__cdecl*)(unsigned)>(base+::FfxHooks::ExecutableProfile::Rva<0x3ABCC0>());
     unsigned char gear[22]{};gear[2]=1;gear[6]=255;gear[11]=4;
     const std::uint16_t weaponWords[]={0x8000,0x8062,0x8063,0x8064};std::memcpy(gear+14,weaponWords,8);
     unsigned char armorGear[22]{};std::memcpy(armorGear,gear,22);armorGear[5]=1;
@@ -183,7 +184,7 @@ int main(int argc,char** argv){
         Check(Preview(fusion,fused)==workshop::Error::Ok&&Capture(state)&&std::memcmp(&state,&before,sizeof(state))==0,"native fusion preview does not consume or modify inventory");
         Check(Commit(fusion,fused)&&Capture(state),"production commit accepts reviewed one/two-ability fusion");
         Check(!state.pieces[consumedSlot].id&&!state.pieces[consumedSlot].native[2]&&
-              *reinterpret_cast<unsigned char*>(base+0xD30F2C+22*consumedSlot+2)==0,"fusion consumes the donor in actual native RAM, not just the Workshop list");
+              *reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD30F2C>()+22*consumedSlot+2)==0,"fusion consumes the donor in actual native RAM, not just the Workshop list");
         Check(std::memcmp(&state.pieces[twinSlot],&before.pieces[twinSlot],sizeof(workshop::Piece))==0,"native fusion preserves an identical unselected control piece");
         Check(state.pieces[index].abilities[0]==before.pieces[consumedSlot].abilities[0]&&workshop::AbilityRank(state.pieces[index],0)==1&&state.pieces[index].fifth==0x8055,"fusion preserves target identity, working refinement and fifth ability");
         const auto committed=state;
@@ -191,10 +192,10 @@ int main(int argc,char** argv){
         fusion.revision=state.revision;
         Check(Preview(fusion,fused)==workshop::Error::Stale,"consumed native donor cannot be reused even with the current revision");
     }
-    const auto hasAbility=reinterpret_cast<int(__cdecl*)(const void*,unsigned)>(base+0x3A0C40);
-    const auto* nativePiece=reinterpret_cast<const unsigned char*>(base+0xD30F2C+22*index);
+    const auto hasAbility=reinterpret_cast<int(__cdecl*)(const void*,unsigned)>(base+::FfxHooks::ExecutableProfile::Rva<0x3A0C40>());
+    const auto* nativePiece=reinterpret_cast<const unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD30F2C>()+22*index);
     Check(nativePiece[11]==4&&hasAbility(nativePiece,0x8055)==1,"real native direct-ID queries see the fifth while the record stays22 bytes");
-    SaveImage saved=image;std::memcpy(saved.data()+64,reinterpret_cast<const void*>(base+0xD2CA90),0x68C0);
+    SaveImage saved=image;std::memcpy(saved.data()+64,reinterpret_cast<const void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2CA90>()),0x68C0);
     FfxHooks::RonsoPool::SealSave(saved);
     Check(WriteForTests(savePath.c_str(),saved),"native save event persists the edited live inventory and extension together");
     const auto savedIdentity=state.pieces[index].id,oldRevision=state.revision;
@@ -211,16 +212,16 @@ int main(int argc,char** argv){
     if(kernel.size()<20+131*108)return 2;
     const auto originalKernel=kernel;
     const auto kernelAddress=reinterpret_cast<std::uintptr_t>(kernel.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&kernelAddress,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&kernelAddress,4);
     unsigned char actor[0xF90]{};
     const auto actorAddress=reinterpret_cast<std::uintptr_t>(actor);
-    std::memcpy(reinterpret_cast<void*>(base+0xD334CC),&actorAddress,4);
-    auto* player=reinterpret_cast<unsigned char*>(base+0xD3205C);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&actorAddress,4);
+    auto* player=reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD3205C>());
     player[0x2D]=player[0x2E]=255;
-    const auto equip=reinterpret_cast<int(__cdecl*)(unsigned,unsigned,unsigned)>(base+0x3AB990);
+    const auto equip=reinterpret_cast<int(__cdecl*)(unsigned,unsigned,unsigned)>(base+::FfxHooks::ExecutableProfile::Rva<0x3AB990>());
     equip(0,1,created);
     Check(Capture(state)&&state.pieces[index].native[6]==0,"real native equip preserves the modified piece identity");
-    const auto aggregate=reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x39C610);
+    const auto aggregate=reinterpret_cast<int(__cdecl*)(unsigned)>(base+::FfxHooks::ExecutableProfile::Rva<0x39C610>());
     aggregate(0);
     Check((actor[0x632]&0x10)!=0,"production five-entry native aggregator applies fifth Auto-Protect");
     aggregate(0);

@@ -1,6 +1,6 @@
 static void VanguardTurnCases(unsigned char* actors,unsigned char* gear){
     using Edge=void(__cdecl*)(unsigned,unsigned char*);
-    const auto edge=reinterpret_cast<Edge>(base+0x3B13D0);
+    const auto edge=reinterpret_cast<Edge>(base+(::FfxHooks::ExecutableProfile::Rva<0x3B13D0>()));
     auto* actor=actors+8*0xF90;auto* armor=gear+22*3;
     const auto oldActor=std::vector<unsigned char>(actor,actor+0xF90),oldGear=std::vector<unsigned char>(armor,armor+22);
     std::memset(armor,0,22);armor[2]=1;armor[4]=armor[6]=8;armor[5]=1;armor[11]=4;

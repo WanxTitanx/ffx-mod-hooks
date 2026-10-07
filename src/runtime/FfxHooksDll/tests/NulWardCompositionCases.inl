@@ -33,19 +33,19 @@ static void NulCompositionCases(std::uintptr_t base,std::vector<unsigned char>& 
         W32(actor+0x594,100000);W32(actor+0x5D0,100000);actor[0xDE5]=255;}
     std::array<unsigned char,14> scene{};unsigned char variant=0;
     const auto scenePointer=reinterpret_cast<std::uintptr_t>(scene.data()),variantPointer=reinterpret_cast<std::uintptr_t>(&variant);
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A9C8),&scenePointer,4);
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A9FC),&variantPointer,4);
-    W16(reinterpret_cast<unsigned char*>(base+0xD2C256),0);
-    Check(TacticsPatch(base+0x38F0C0,reinterpret_cast<void*>(&TacticsResultSuffix)),"isolate only the graphical result suffix");
-    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+0x38E680);
-    const auto result=reinterpret_cast<FfxHooks::SharedAction::ResultFunction>(base+0x38F0B0);
-    const auto finish=reinterpret_cast<FfxHooks::SharedAction::FinishFunction>(base+0x3B0870);
-    auto* queue=reinterpret_cast<unsigned char*>(base+0xD2AC70);auto* target=actors.data()+0xF90;
+    std::memcpy(reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A9C8>())),&scenePointer,4);
+    std::memcpy(reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A9FC>())),&variantPointer,4);
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2C256>())),0);
+    Check(TacticsPatch(base+(::FfxHooks::ExecutableProfile::Rva<0x38F0C0>()),reinterpret_cast<void*>(&TacticsResultSuffix)),"isolate only the graphical result suffix");
+    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
+    const auto result=reinterpret_cast<FfxHooks::SharedAction::ResultFunction>(base+(::FfxHooks::ExecutableProfile::Rva<0x38F0B0>()));
+    const auto finish=reinterpret_cast<FfxHooks::SharedAction::FinishFunction>(base+(::FfxHooks::ExecutableProfile::Rva<0x3B0870>()));
+    auto* queue=reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2AC70>()));auto* target=actors.data()+0xF90;
     auto* group=target+0x774;auto* info=group+24;
     const auto begin=[&](unsigned id,unsigned count=1){
         std::memset(queue,0,72);queue[3]=static_cast<unsigned char>(count);
         for(unsigned i=0;i<count;++i){W16(queue+8+16*i,0x3000+id);W16(queue+10+16*i,255);W32(queue+16+16*i,2);}
-        *reinterpret_cast<unsigned char*>(base+0xD2BDE1)=1;actors[0xDE5]=0;actors[0xDE7]=1;
+        *reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>()))=1;actors[0xDE5]=0;actors[0xDE7]=1;
         std::memset(group,0,68);group[1]=1;
     };
     const auto calculate=[&](unsigned id){return static_cast<int>(producer(0,actors.data(),1,target,
@@ -83,8 +83,8 @@ static void NulCompositionCases(std::uintptr_t base,std::vector<unsigned char>& 
     Check(hit(84)==150&&hit(88)==100,"mixed settlement consumes each participating charge once");
     grant(320);begin(84);calculate(84);consume();consume();end();
     Check(hit(84)==150,"replaying result consumption cannot revive or double-debit a charge");
-    grant(320);Check(TacticsPatch(base+0x39B528,reinterpret_cast<void*>(&TacticsActorSuffix)),"keep actual actor lookup and native clearing prefix");
-    const auto initialize=reinterpret_cast<int(__cdecl*)(unsigned,unsigned)>(base+0x39B500);
+    grant(320);Check(TacticsPatch(base+(::FfxHooks::ExecutableProfile::Rva<0x39B528>()),reinterpret_cast<void*>(&TacticsActorSuffix)),"keep actual actor lookup and native clearing prefix");
+    const auto initialize=reinterpret_cast<int(__cdecl*)(unsigned,unsigned)>(base+(::FfxHooks::ExecutableProfile::Rva<0x39B500>()));
     Check(initialize(0,1)==0x507&&nativeActorWasCleared,"native actor reset executes once");E::TickMainThread();
     Check(hit(84)==150,"same-address actor reincarnation cannot inherit a ward");
     grant(320);B::Reset(B::ResetReason::NativeLoad);E::TickMainThread();Check(hit(84)==150,"save-load reset retires ward ownership");

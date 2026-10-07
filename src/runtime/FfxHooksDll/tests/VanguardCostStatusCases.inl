@@ -3,9 +3,9 @@ static void VanguardCostStatusCases(unsigned char* s,unsigned char* t,unsigned c
  using Cost=int(__cdecl*)(unsigned,const unsigned char*);
  using Quarter=int(__cdecl*)(unsigned char*,unsigned*,int);
  using Status=int(__cdecl*)(unsigned,unsigned char*,unsigned,unsigned char*,const unsigned char*,unsigned*,unsigned*,unsigned char*,int,int*,int*);
- const auto cost=reinterpret_cast<Cost>(base+0x38D030),unusedCost=cost;(void)unusedCost;
- const auto quarter=reinterpret_cast<Quarter>(base+0x38C5F0);
- const auto status=reinterpret_cast<Status>(base+0x38AEC0);
+ const auto cost=reinterpret_cast<Cost>(base+(::FfxHooks::ExecutableProfile::Rva<0x38D030>())),unusedCost=cost;(void)unusedCost;
+ const auto quarter=reinterpret_cast<Quarter>(base+(::FfxHooks::ExecutableProfile::Rva<0x38C5F0>()));
+ const auto status=reinterpret_cast<Status>(base+(::FfxHooks::ExecutableProfile::Rva<0x38AEC0>()));
  const auto savedS=std::vector<unsigned char>(s,s+0xF90),savedT=std::vector<unsigned char>(t,t+0xF90),savedGear=std::vector<unsigned char>(gear,gear+22);
  std::array<unsigned char,96> row{};row[0x25]=100;row[0x17]=1;s[0x592]=0;gear[2]=1;gear[4]=gear[5]=gear[6]=0;gear[11]=4;
  for(unsigned i=0;i<4;++i)W16(gear+14+2*i,255);
@@ -17,7 +17,7 @@ static void VanguardCostStatusCases(unsigned char* s,unsigned char* t,unsigned c
  W16(t+0x616,0x40);t[0x6DA]=0;unsigned bits=0;Check(quarter(t,&bits,-1000)==-1000&&bits==0&&t[0x6DA]==0,"Shield never mitigates healing or consumes protection");Check(quarter(t,&bits,1000)==250&&(bits&0x8000)&&t[0x6DA]==1,"Shield still mitigates damage");
  row.fill(0);row[0x2E+12]=254;row[0x47]=4;std::array<unsigned char,44> info{};unsigned hits[8]{},effects[8]{};int amounts[3]{},counter=0;
  using Protection=int(__cdecl*)(const void*,unsigned*,int*,const void*,int);
- const auto shell=reinterpret_cast<Protection>(base+0x38AE80),protect=reinterpret_cast<Protection>(base+0x38AE00);
+ const auto shell=reinterpret_cast<Protection>(base+(::FfxHooks::ExecutableProfile::Rva<0x38AE80>())),protect=reinterpret_cast<Protection>(base+(::FfxHooks::ExecutableProfile::Rva<0x38AE00>()));
  for(unsigned kind=1;kind<=2;++kind){
      const auto producer=kind==1?protect:shell;row[0x20]=static_cast<unsigned char>(kind);
      info[0xA]=info[0xB]=1;unsigned flags=0x21;int divisor=7;const auto beforeInfo=info;

@@ -1,10 +1,13 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "../hooks/EquipmentWorkshopRuntime.h"
 #include "../hooks/EquipmentWorkshopNativeUi.h"
 #include "../hooks/ArcanaNativeUi.h"
 #include "../hooks/ElementHook.h"
+#include "../hooks/NativePlainText.h"
+#include "../hooks/NativeUiHookSupport.h"
 #include "../hooks/ElementScanSettings.h"
 #include "../hooks/NativePresentationEvidence.h"
 #include "PrivatePeFixture.h"
@@ -23,12 +26,25 @@ namespace E=FfxHooks::ElementScan;
 static unsigned checks=0,failures=0;
 static std::uintptr_t imageBase=0;
 static LONG WINAPI Diagnostic(EXCEPTION_POINTERS* exception){
+    static LONG reporting=0;
+    if(InterlockedExchange(&reporting,1))return EXCEPTION_CONTINUE_SEARCH;
     const auto* record=exception->ExceptionRecord;const auto* context=exception->ContextRecord;
     if(record->ExceptionCode==EXCEPTION_ACCESS_VIOLATION){
         std::printf("PRIVATE_EXCEPTION code=%08lX eip=%08lX imageRva=%08lX eax=%08lX esi=%08lX edi=%08lX address=%08lX\n",
             record->ExceptionCode,context->Eip,static_cast<unsigned long>(context->Eip-imageBase),context->Eax,context->Esi,context->Edi,
             record->NumberParameters>1?static_cast<unsigned long>(record->ExceptionInformation[1]):0ul);
+        std::printf("PRIVATE_EXCEPTION executableRva=%08lX\n",context->Eip-static_cast<unsigned long>(reinterpret_cast<std::uintptr_t>(GetModuleHandleW(nullptr))));
+        auto frame=context->Ebp;
+        for(unsigned depth=0;depth<5&&frame;++depth){
+            __try {
+                const auto* words=reinterpret_cast<const unsigned long*>(frame);
+                std::printf("PRIVATE_STACK depth=%u returnRva=%08lX args=%08lX,%08lX,%08lX\n",depth,
+                    words[1]-static_cast<unsigned long>(imageBase),words[2],words[3],words[4]);
+                const auto next=words[0];if(next<=frame||next-frame>1024*1024)break;frame=next;
+            } __except(EXCEPTION_EXECUTE_HANDLER) {break;}
+        }
     }
+    InterlockedExchange(&reporting,0);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 static void Check(bool ok,const char* text){++checks;if(!ok){++failures;std::printf("FAIL %s\n",text);} }
@@ -58,11 +74,12 @@ static std::vector<std::string> labels;
 static std::vector<unsigned> colors;
 static std::vector<float> bandWidths;
 struct BandDraw {float x,y,width,height;};
-struct TextDraw {std::string text;float x,y;};
+struct TextDraw {std::string text;float x,y;bool plain=false;};
 struct TextureDraw {unsigned atlas;float x,y,w,h,u0,v0,u1,v1;};
 struct NumberDraw {bool left;int value;float x,y;unsigned style;float sx,sy;};
 struct GlyphDraw {const void* text;int x,y;};
 static std::vector<BandDraw> bands;
+static std::vector<BandDraw> panelDraws;
 static std::vector<TextDraw> textDraws;
 static std::vector<BandDraw> highlights;
 static std::vector<TextureDraw> textureDraws;
@@ -80,12 +97,12 @@ static int __cdecl Submit(SpriteCorner* corners,unsigned texture,int,int,int){
 }
 static int __cdecl Frame(){++frames;return 51;}
 static int __cdecl NoDevice(){return 0;}
-static int __cdecl Panel(float,float,float width,float,int){lastWidth=width;return 81;}
+static int __cdecl Panel(float x,float y,float width,float height,int){lastWidth=width;panelDraws.push_back({x,y,width,height});return 81;}
 static int __cdecl Rect(float x,float y,float width,float height,unsigned first,unsigned){++rectangles;highlights.push_back({x,y,width,height});colors.push_back(first);return 91;}
 static int __cdecl Texture(unsigned atlas,float x,float y,float width,float height,float u0,float v0,float u1,float v1){
     ++textures;textureDraws.push_back({atlas,x,y,width,height,u0,v0,u1,v1});if(atlas==0xEA)++mpLabels;if(atlas==~0u){bandWidths.push_back(width);bands.push_back({x,y,width,height});}return 71;}
 static int __cdecl Text(const unsigned char* text,float x,float y,unsigned,float,float){
-    std::string value;for(unsigned i=0;text&&i<190&&text[i];++i)value.push_back(static_cast<char>(text[i]));labels.push_back(value);textDraws.push_back({value,x,y});return 41;
+    std::string value;for(unsigned i=0;text&&i<190&&text[i];++i)value.push_back(static_cast<char>(text[i]));labels.push_back(value);textDraws.push_back({value,x,y,FfxHooks::NativeText::PlainTextActive()});return 41;
 }
 static int __cdecl Measure(const unsigned char*,float* width,unsigned,float,float){if(width)*width=80;return 0;}
 static const unsigned char* __cdecl EmptyText(){static const unsigned char empty[]={0x5E,0};return empty;}
@@ -94,7 +111,7 @@ static bool HasRank(unsigned rank){
     for(const auto& label:labels)if(label.size()>=suffix.size()&&label.compare(label.size()-suffix.size(),suffix.size(),suffix)==0)return true;
     return false;
 }
-static void ResetDraw(){labels.clear();colors.clear();sprites.clear();bandWidths.clear();bands.clear();textDraws.clear();highlights.clear();textureDraws.clear();numberDraws.clear();glyphDraws.clear();frames=rectangles=textures=mpLabels=0;lastWidth=0;}
+static void ResetDraw(){labels.clear();colors.clear();sprites.clear();bandWidths.clear();bands.clear();panelDraws.clear();textDraws.clear();highlights.clear();textureDraws.clear();numberDraws.clear();glyphDraws.clear();frames=rectangles=textures=mpLabels=0;lastWidth=0;}
 static bool HasColor(unsigned rgb){for(auto color:colors)if(color==E::NativeColor(rgb))return true;return false;}
 static unsigned affinity[4]={0x10,0x80,0x20,0xB0},maskCalls[4]{};
 static unsigned char __cdecl Mask(int,int category){if(category<0||category>3)return 0;++maskCalls[category];return static_cast<unsigned char>(affinity[category]);}
@@ -113,14 +130,19 @@ static void* panelSite=nullptr;static void* resistanceSite=nullptr;
 static void* sensorBandSite=nullptr;
 static bool showScan=true;
 static int __cdecl ScanBody(int actor,int,int){
+    static unsigned entries=0;const bool trace=entries++==0;
+    if(trace)std::puts("PRIVATE_SCAN body entered");
     if(!showScan)return 17;
+    if(trace)std::puts("PRIVATE_SCAN panel");
     reinterpret_cast<int(__cdecl*)(float,float,float,float,int)>(panelSite)(10,20,ScaleX(385),120,0);
+    if(trace)std::puts("PRIVATE_SCAN sensor band");
     if(sensorBandSite)reinterpret_cast<int(__cdecl*)(unsigned,float,float,float,float,float,float,float,float)>(sensorBandSite)(~0u,10,20,ScaleX(365),ScaleY(40),0,0,1,1);
-    for(int category=0;category<3;++category)reinterpret_cast<int(__cdecl*)(int,int,int,int)>(imageBase+0x494AB0)(actor,category,10,20+category*20);
+    for(int category=0;category<3;++category){if(trace)std::printf("PRIVATE_SCAN row=%d\n",category);reinterpret_cast<int(__cdecl*)(int,int,int,int)>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x494AB0>()))(actor,category,10,20+category*20);}
+    if(trace)std::puts("PRIVATE_SCAN resistance");
     reinterpret_cast<int(__cdecl*)(unsigned,float,float,float,float,float,float,float,float)>(resistanceSite)(0x1B2,10+ScaleX(25),80+ScaleY(6),20,10,0,0,1,1);
     return 23;
 }
-static DWORD WINAPI ForeignScan(void*){reinterpret_cast<int(__cdecl*)(int,int,int)>(imageBase+0x4939A0)(0x1000,0,0);return 0;}
+static DWORD WINAPI ForeignScan(void*){reinterpret_cast<int(__cdecl*)(int,int,int)>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4939A0>()))(0x1000,0,0);return 0;}
 #include "WorkshopCustomizeNativeCases.inl"
 #include "WorkshopExtendedUiCases.inl"
 #include "FullScanCoverageCases.inl"
@@ -135,10 +157,16 @@ int main(int argc,char** argv){
     const bool scanElements=(scanMode&1)!=0,scanExpanded=(scanMode&2)!=0;
     const auto image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES);if(!image)return 2;
     imageBase=reinterpret_cast<std::uintptr_t>(image);Check(PrivatePeFixture::NormalizeRelocations(image),"private PE relocations match runtime semantics");if(failures)return 2;
+    Check(FfxHooks::NativeUiSupport::Profile(imageBase,FfxHooks::NativePresentationEvidence::textOutline),
+          "the native outline guard matches the actual relocated executable");
+    const unsigned char savedOutline=*reinterpret_cast<const unsigned char*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4FAE40>())),invalidOutline=0xCC;
+    Check(Write(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4FAE40>()),&invalidOutline,1)&&
+          !FfxHooks::NativeUiSupport::Profile(imageBase,FfxHooks::NativePresentationEvidence::textOutline)&&
+          Write(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4FAE40>()),&savedOutline,1),"a changed outline emitter fails admission before installing a detour");
     if(!scanMode){
-        unsigned char before[32]{};std::memcpy(before,reinterpret_cast<const void*>(imageBase+0x49BEE0),sizeof(before));
+        unsigned char before[32]{};std::memcpy(before,reinterpret_cast<const void*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x49BEE0>())),sizeof(before));
         Check(!FfxHooks::StartElementHook(imageBase,false,false,false,Log)&&!FfxHooks::IsElementHookInstalled()&&!FfxHooks::IsScanExpandedInstalled(),"both Scan features OFF install no presentation hooks");
-        Check(!std::memcmp(before,reinterpret_cast<const void*>(imageBase+0x49BEE0),sizeof(before)),"both Scan features OFF leave the native data function untouched");
+        Check(!std::memcmp(before,reinterpret_cast<const void*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x49BEE0>())),sizeof(before)),"both Scan features OFF leave the native data function untouched");
         std::printf("NATIVE_PRESENTATION_RT1 %u/%u passed (Scan mode 0)\n",checks-failures,checks);return failures?1:0;
     }
     const std::wstring directory(argv[3],argv[3]+std::strlen(argv[3])),savePath=directory+L"\\ffx_090";
@@ -153,7 +181,7 @@ int main(int argc,char** argv){
     Check(W::StartForTests(imageBase,true,directory.c_str(),Log)&&W::LoadForTests(savePath.c_str(),native,native)&&W::CommitLoadForTests(native),"real runtime admits loaded identity");
     Check(!W::NativeUi::Start(imageBase,false,false,Log)&&!FfxHooks::StartElementHook(imageBase,false,false,false,Log),"new drawing hooks default OFF");
     Check(!W::NativeUi::Start(imageBase,true,true,Log)&&!FfxHooks::StartElementHook(imageBase,scanElements,scanExpanded,true,Log),"validation-only suppresses both hook installations");
-    auto* signature=reinterpret_cast<unsigned char*>(imageBase+0x4D02B0);const unsigned char original=*signature,bad=0xCC;
+    auto* signature=reinterpret_cast<unsigned char*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4D02B0>()));const unsigned char original=*signature,bad=0xCC;
     Check(Write(reinterpret_cast<std::uintptr_t>(signature),&bad,1)&&!W::NativeUi::Start(imageBase,true,false,Log),"unmatched drawing profile installs nothing");
     Check(Write(reinterpret_cast<std::uintptr_t>(signature),&original,1),"private signature restored after negative control");
     Check(W::NativeUi::Start(imageBase,true,false,Log)&&W::NativeUi::Active(),"native detail hooks install on the supported image");
@@ -161,8 +189,8 @@ int main(int argc,char** argv){
     else if(scanNumeric)NumericScanTest::Configure(0);
     Check(FfxHooks::StartElementHook(imageBase,scanElements,scanExpanded,false,Log)&&
           FfxHooks::IsElementHookInstalled()==scanElements&&FfxHooks::IsScanExpandedInstalled()==scanExpanded,"Scan startup exposes the two independently selected features");
-    const auto nativeX=reinterpret_cast<float(__cdecl*)(float)>(imageBase+0x244990);
-    const auto nativeY=reinterpret_cast<float(__cdecl*)(float)>(imageBase+0x2449D0);
+    const auto nativeX=reinterpret_cast<float(__cdecl*)(float)>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x244990>()));
+    const auto nativeY=reinterpret_cast<float(__cdecl*)(float)>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x2449D0>()));
     const float beforeX=nativeX(740.f),beforeY=nativeY(552.f);
     const FfxHooks::Arcana::NativeUi::Callbacks arcana{NoArcanaSave,NoArcanaEquip,NoArcanaMode,NoArcanaImages};
     Check(FfxHooks::Arcana::NativeUi::Start(imageBase,true,false,arcana,Log),"Arcana installs after Scan has admitted its unmodified shared scale dependencies");
@@ -171,29 +199,29 @@ int main(int argc,char** argv){
           FfxHooks::IsElementHookInstalled()==scanElements&&FfxHooks::IsScanExpandedInstalled()==scanExpanded,"later startup reuses the admitted Scan hooks after Arcana owns shared scales");
     if(failures)return 1;
     std::ifstream kernelFile(argv[4],std::ios::binary);std::vector<unsigned char> kernel((std::istreambuf_iterator<char>(kernelFile)),{});if(kernel.size()<14000)return 2;
-    const auto kernelAddress=reinterpret_cast<std::uintptr_t>(kernel.data());std::memcpy(reinterpret_cast<void*>(imageBase+0xD2A944),&kernelAddress,4);
+    const auto kernelAddress=reinterpret_cast<std::uintptr_t>(kernel.data());std::memcpy(reinterpret_cast<void*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0xD2A944>())),&kernelAddress,4);
     const auto kernelBefore=kernel;
     // UI getters also request a name from an unrelated unloaded kernel table.
     // The detail code does not use that equipment-name pointer.
-    Redirect(0x3ABE10,reinterpret_cast<const void*>(&EmptyText));
-    Redirect(0x244990,reinterpret_cast<const void*>(&ScaleX));Redirect(0x2449D0,reinterpret_cast<const void*>(&ScaleY));
-    W::NativeUi::FrameEnvironmentForTests(reinterpret_cast<void*>(&Frame));Redirect(0x505AB0,reinterpret_cast<const void*>(&Text));Redirect(0x505290,reinterpret_cast<const void*>(&Measure));
-    Redirect(0x4E6AF0,reinterpret_cast<const void*>(&NoDevice));Redirect(0x4F9230,reinterpret_cast<const void*>(&NoDevice));Redirect(0x38FD40,reinterpret_cast<const void*>(&EmptyText));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x3ABE10>()),reinterpret_cast<const void*>(&EmptyText));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x244990>()),reinterpret_cast<const void*>(&ScaleX));Redirect((::FfxHooks::ExecutableProfile::Rva<0x2449D0>()),reinterpret_cast<const void*>(&ScaleY));
+    W::NativeUi::FrameEnvironmentForTests(reinterpret_cast<void*>(&Frame));Redirect((::FfxHooks::ExecutableProfile::Rva<0x505AB0>()),reinterpret_cast<const void*>(&Text));Redirect((::FfxHooks::ExecutableProfile::Rva<0x505290>()),reinterpret_cast<const void*>(&Measure));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x4E6AF0>()),reinterpret_cast<const void*>(&NoDevice));Redirect((::FfxHooks::ExecutableProfile::Rva<0x4F9230>()),reinterpret_cast<const void*>(&NoDevice));Redirect((::FfxHooks::ExecutableProfile::Rva<0x38FD40>()),reinterpret_cast<const void*>(&EmptyText));
     // Panel and Texture are already hooked: replace their original body AFTER
     // the relocated prologue with a bridge only in the Scan test below.
-    *reinterpret_cast<unsigned*>(imageBase+0x146A5F0)=0;
-    std::uint16_t selectedGear[]={0};const auto choices=reinterpret_cast<std::uintptr_t>(selectedGear);std::memcpy(reinterpret_cast<void*>(imageBase+0x146A9F8),&choices,4);
-    const auto field=reinterpret_cast<int(__cdecl*)()>(imageBase+0x4D02B0);
-    const auto custom=reinterpret_cast<int(__cdecl*)(unsigned)>(imageBase+0x4D63C0);
+    *reinterpret_cast<unsigned*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x146A5F0>()))=0;
+    std::uint16_t selectedGear[]={0};const auto choices=reinterpret_cast<std::uintptr_t>(selectedGear);std::memcpy(reinterpret_cast<void*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x146A9F8>())),&choices,4);
+    const auto field=reinterpret_cast<int(__cdecl*)()>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4D02B0>()));
+    const auto custom=reinterpret_cast<int(__cdecl*)(unsigned)>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4D63C0>()));
     std::puts("CASE native Equipment");ResetDraw();field();Check(frames==5&&labels.size()==4&&HasRank(1)&&HasRank(2)&&HasRank(3)&&HasRank(4),"Equipment uses five native backgrounds and distinct duplicate-ability ranks");
     std::puts("CASE native Customize");ResetDraw();custom(0);Check(frames==5&&labels.size()==4&&HasRank(4),"Customize displays the fifth through the actual drawing consumer");
     // Battle panel needs an inert device bridge before invoking its full loop.
-    Redirect(0x4F41B0,reinterpret_cast<const void*>(&Panel));
-    *reinterpret_cast<unsigned*>(imageBase+0xD2A8E0)=1;
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x4F41B0>()),reinterpret_cast<const void*>(&Panel));
+    *reinterpret_cast<unsigned*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>()))=1;
     Check(!W::Capture(state),"battle still denies mutation snapshots");
-    std::puts("CASE native battle equipment");ResetDraw();reinterpret_cast<int(__cdecl*)(unsigned,float,float)>(imageBase+0x4F34C0)(0,10,20);
+    std::puts("CASE native battle equipment");ResetDraw();reinterpret_cast<int(__cdecl*)(unsigned,float,float)>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4F34C0>()))(0,10,20);
     Check(labels.size()==5&&HasRank(1)&&HasRank(2)&&HasRank(3)&&HasRank(4),"battle window measures and renders all five slots without opening mutation admission");
-    Check(kernel==kernelBefore&&std::memcmp(reinterpret_cast<void*>(imageBase+0xD30F2C),gear,22)==0,"draws preserve the kernel and the 22-byte native record");
+    Check(kernel==kernelBefore&&std::memcmp(reinterpret_cast<void*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0xD30F2C>())),gear,22)==0,"draws preserve the kernel and the 22-byte native record");
     workshop::Piece shown{};Check(!W::ReadPresentation(gear,shown),"identical bytes at a foreign pointer cannot borrow the equipped identity");
     ExtendedEquipmentCases(store,savePath,native,state);
     auto empty=state;empty.pieces[0].fifth=255;empty.pieces[0].abilities[4]=0;empty.pieces[0].ranks[4]=0;
@@ -207,26 +235,26 @@ int main(int argc,char** argv){
     ResetDraw();custom(0);Check(frames==4&&labels.size()==3&&HasRank(1)&&HasRank(3),"four-slot equipment gets rank labels without an extra row");
     W::NativeUi::Stop();ResetDraw();field();Check(frames==4&&labels.size()==3&&!HasRank(1),"stopping native details immediately restores vanilla four-slot presentation");
     // Restore the panel entry trampoline before exercising the Scan caller gate.
-    auto panelAt=std::find_if(patches.begin(),patches.end(),[](const Patch& p){return p.at==imageBase+0x4F41B0;});
+    auto panelAt=std::find_if(patches.begin(),patches.end(),[](const Patch& p){return p.at==imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4F41B0>());});
     Check(panelAt!=patches.end()&&Write(panelAt->at,panelAt->before,5),"Scan panel hook restored after battle device substitution");
     if(panelAt!=patches.end())patches.erase(panelAt);
     FfxHooks::ElementScanEnvironmentForTests(reinterpret_cast<void*>(&ScanBody),reinterpret_cast<void*>(&Panel),reinterpret_cast<void*>(&Texture));
-    Redirect(0x4F4B20,reinterpret_cast<const void*>(&Rect));Redirect(0x4975C0,reinterpret_cast<const void*>(&Mask));
-    Redirect(0x4F4DF0,reinterpret_cast<const void*>(&NoDevice));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x4F4B20>()),reinterpret_cast<const void*>(&Rect));Redirect((::FfxHooks::ExecutableProfile::Rva<0x4975C0>()),reinterpret_cast<const void*>(&Mask));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x4F4DF0>()),reinterpret_cast<const void*>(&NoDevice));
     // Exercise the actual eleven-argument sprite wrapper, not a test renderer.
-    Redirect(0x4E5A20,reinterpret_cast<const void*>(&Clip));
-    Redirect(0x4AC870,reinterpret_cast<const void*>(&Atlas));
-    Redirect(0x4AC3B0,reinterpret_cast<const void*>(&TextureSize));
-    Redirect(0x23F090,reinterpret_cast<const void*>(&Submit));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x4E5A20>()),reinterpret_cast<const void*>(&Clip));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x4AC870>()),reinterpret_cast<const void*>(&Atlas));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x4AC3B0>()),reinterpret_cast<const void*>(&TextureSize));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x23F090>()),reinterpret_cast<const void*>(&Submit));
     using ColoredTexture=int(__cdecl*)(unsigned,float,float,float,float,float,float,float,float,unsigned,unsigned);
-    const auto colored=reinterpret_cast<ColoredTexture>(imageBase+0x503EE0);
+    const auto colored=reinterpret_cast<ColoredTexture>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x503EE0>()));
     ResetDraw();colored(0x1AF,10,20,30,40,.42f,.95f,.46f,.98f,0x80402010u,0x80706050u);
     Check(sprites.size()==1&&sprites[0].texture==0x12345678u&&sprites[0].corners[0].r==16&&sprites[0].corners[1].b==112&&
           sprites[0].corners[1].x==40&&sprites[0].corners[1].y==60,
           "native colored sprite ABI preserves atlas, coordinates and both packed colors");
-    panelSite=Callsite(0x493B88,5);resistanceSite=Callsite(0x49414B,9);
-    sensorBandSite=Callsite(0x493E59,9);
-    const auto scan=reinterpret_cast<int(__cdecl*)(int,int,int)>(imageBase+0x4939A0);
+    panelSite=Callsite((::FfxHooks::ExecutableProfile::Rva<0x493B88>()),5);resistanceSite=Callsite((::FfxHooks::ExecutableProfile::Rva<0x49414B>()),9);
+    sensorBandSite=Callsite((::FfxHooks::ExecutableProfile::Rva<0x493E59>()),9);
+    const auto scan=reinterpret_cast<int(__cdecl*)(int,int,int)>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4939A0>()));
     if(scanNumeric){NumericScanTest::Run(scan,scanElements);FfxHooks::RemoveElementHook();
         std::printf("ELEMENTAL_NUMERICAL_SCAN_RT1 %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     const E::Settings palette{};
@@ -280,7 +308,7 @@ int main(int argc,char** argv){
     // Execute the real affinity arithmetic on the actor bytes owned by Difficulty.
     unsigned char target[0xF90]{};
     using AffinityDamage=int(__cdecl*)(const void*,unsigned,unsigned,int);
-    const auto affinityDamage=reinterpret_cast<AffinityDamage>(imageBase+0x38A420);
+    const auto affinityDamage=reinterpret_cast<AffinityDamage>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x38A420>()));
     const unsigned fields[]={0x5DD,0x5DC,0x5DA,0x5DB};const int damages[]={1500,500,-1000,0};
     for(unsigned bit:{0x10u,0x80u,0x20u,0x40u})for(unsigned category=0;category<4;++category){
         std::memset(target,0,sizeof(target));target[fields[category]]=static_cast<unsigned char>(bit);

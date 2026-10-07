@@ -1,3 +1,4 @@
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 # Jarvis-HOOK: shared affinity and actual Vanguard composition, private PE only.
 $ErrorActionPreference='Stop'
 $here=$PSScriptRoot
@@ -12,7 +13,7 @@ $mh=Join-Path $here 'third_party\minhook'
 $c=@('hook.c','buffer.c','trampoline.c','hde\hde32.c') | ForEach-Object {'"'+(Join-Path "$mh\src" $_)+'"'}
 $compileC='call "{0}" x86 >nul && cl /nologo /TC /O2 /MT /W3 /I"{1}\include" /c {2}' -f $vcvars,$mh,($c -join ' ')
 $fixture=Join-Path $repo 'native-fixtures\FFX.exe'
-if((Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Wrong private PE fixture'}
+if((Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash -ne (Get-FfxTestExecutableHash)){throw 'Wrong private PE fixture'}
 $common=@('hooks\VanguardRuntime.cpp','hooks\SharedBattleRuntime.cpp','hooks\F8FlagCatalog.cpp','hooks\EquipmentWorkshopRuntime.cpp','shared\Config.cpp','hooks\EquipmentWorkshopStore.cpp','hooks\RonsoPoolStore.cpp','hooks\RonsoPoolSave.cpp','hooks\F8RuntimeCore.cpp','hooks\MinHookBatchCoordinator.cpp')
 Push-Location $obj
 try {

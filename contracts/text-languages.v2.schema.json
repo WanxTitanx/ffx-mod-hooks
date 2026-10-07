@@ -15,7 +15,7 @@
     "base_locale": {"const": 1},
     "fallback": {"const": "native"},
     "activation": {"const": "restart"},
-    "executable_sha256": {"const": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced"},
+    "executable_sha256": {"enum": ["78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced", "0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d"]},
     "coverage": {
       "type": "object", "additionalProperties": false,
       "required": ["menu", "battle", "events", "subtitles", "texture_text"],

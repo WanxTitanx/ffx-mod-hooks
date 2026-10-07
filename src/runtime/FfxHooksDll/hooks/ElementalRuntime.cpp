@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -9,6 +10,7 @@
 #include "ElementMonsterProof.h"
 #include "ElementBattleState.h"
 #include "ElementalScanView.h"
+#include "ElementScanSnapshotCache.h"
 #include "ElementMenuCatalog.h"
 #include "ElementScanSettings.h"
 #include "F7ElementAffinities.h"
@@ -52,13 +54,13 @@ bool nulInstalled=false;
 
 struct BankLocation {BankKind kind;unsigned global,getter;};
 constexpr BankLocation locations[]={
-    {BankKind::Command,0xD2A92C,0x390AE0},
-    {BankKind::Item,0xD2A940,0x390A40},
-    {BankKind::MonsterMagic1,0xD2A930,0x390AA0},
-    {BankKind::MonsterMagic2,0xD2A934,0x390AC0},
+    {BankKind::Command,::FfxHooks::ExecutableProfile::Rva<0xD2A92C>(),::FfxHooks::ExecutableProfile::Rva<0x390AE0>()},
+    {BankKind::Item,::FfxHooks::ExecutableProfile::Rva<0xD2A940>(),::FfxHooks::ExecutableProfile::Rva<0x390A40>()},
+    {BankKind::MonsterMagic1,::FfxHooks::ExecutableProfile::Rva<0xD2A930>(),::FfxHooks::ExecutableProfile::Rva<0x390AA0>()},
+    {BankKind::MonsterMagic2,::FfxHooks::ExecutableProfile::Rva<0xD2A934>(),::FfxHooks::ExecutableProfile::Rva<0x390AC0>()},
     // Same bounded kernel producer and length used by Workshop and Vanguard.
     // No command-getter ABI is assumed for this native autoability bank.
-    {BankKind::AutoAbility,0xD2A944,0}
+    {BankKind::AutoAbility,::FfxHooks::ExecutableProfile::Rva<0xD2A944>(),0}
 };
 struct InputStamp {
     std::array<std::uint32_t,5> banks{};
@@ -92,9 +94,13 @@ bool Profile(std::uintptr_t base,const Pack& candidate) noexcept {
     if(!base||!Copy(header,reinterpret_cast<const void*>(base),sizeof(header))||
        F8Runtime::ParseExecutableIdentity(header,sizeof(header),&identity)!=F8Runtime::ProfileResult::Supported||
        !F8Runtime::IsSupportedExecutable(identity))return false;
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+    constexpr Byte localeStart[]={0xE8,0xDB,0x4D,0xD9,0xFF,0x83,0xF8,0x12,0x77,0x3E};
+#else
     constexpr Byte localeStart[]={0xE8,0xDB,0x4F,0xD9,0xFF,0x83,0xF8,0x12,0x77,0x3E};
+#endif
     Byte actualLocale[sizeof(localeStart)]{};
-    if(!Copy(actualLocale,reinterpret_cast<const void*>(base+0x4AC2B0),sizeof(actualLocale))||
+    if(!Copy(actualLocale,reinterpret_cast<const void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x4AC2B0>())),sizeof(actualLocale))||
        std::memcmp(actualLocale,localeStart,sizeof(localeStart)))return false;
     for(const auto& bank:candidate.banks){
         const auto* location=Location(bank.kind);if(!location)return false;
@@ -102,7 +108,7 @@ bool Profile(std::uintptr_t base,const Pack& candidate) noexcept {
         Byte expected[31]={0x55,0x8B,0xEC,0xFF,0x75,0x0C,0x8B,0x45,0x08,0xFF,0x35,
             0,0,0,0,0x25,0xFF,0x0F,0,0,0x50,0xE8,0,0,0,0,0x83,0xC4,0x0C,0x5D,0xC3};
         const auto global=static_cast<std::uint32_t>(base+location->global);
-        const auto relative=static_cast<std::uint32_t>(0x3AB890-(location->getter+26));
+        const auto relative=static_cast<std::uint32_t>(::FfxHooks::ExecutableProfile::Rva<0x3AB890>()-(location->getter+26));
         std::memcpy(expected+11,&global,4);std::memcpy(expected+22,&relative,4);
         Byte actual[sizeof(expected)]{};
         if(!Copy(actual,reinterpret_cast<const void*>(base+location->getter),sizeof(actual))||
@@ -112,8 +118,8 @@ bool Profile(std::uintptr_t base,const Pack& candidate) noexcept {
 }
 bool CaptureStamp(InputStamp& result) noexcept {
     result={};Byte battle=0;
-    if(!module||!Read(module+0xD2A8E0,battle)||!battle||
-       !Read(module+0x8DED48,result.languageManager)||result.languageManager<0x10000||
+    if(!module||!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>()),battle)||!battle||
+       !Read(module + (::FfxHooks::ExecutableProfile::Rva<0x8DED48>()),result.languageManager)||result.languageManager<0x10000||
        result.languageManager>UINT32_MAX-28u||!Read(result.languageManager+4u,result.language)||
        result.language>18u)return false;
     for(unsigned i=0;i<pack.banks.size();++i){
@@ -121,13 +127,13 @@ bool CaptureStamp(InputStamp& result) noexcept {
         if(!location||!Read(module+location->global,result.banks[i])||
            result.banks[i]<0x10000||result.banks[i]>UINT32_MAX-pack.banks[i].bytes)return false;
         if(pack.banks[i].kind==BankKind::AutoAbility&&
-           (!Read(module+0xD2A970,result.abilityBytes)||result.abilityBytes!=pack.banks[i].bytes))return false;
+           (!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),result.abilityBytes)||result.abilityBytes!=pack.banks[i].bytes))return false;
     }
     return true;
 }
 bool Locale(char (&out)[8]) noexcept {
     __try {
-        const auto* text=reinterpret_cast<const char*(__cdecl*)()>(module+0x4AC2B0)();
+        const auto* text=reinterpret_cast<const char*(__cdecl*)()>(module + (::FfxHooks::ExecutableProfile::Rva<0x4AC2B0>()))();
         if(!text)return false;
         for(unsigned i=0;i<sizeof(out);++i){
             const char ch=text[i];out[i]=ch;if(!ch)return i>0;
@@ -143,7 +149,7 @@ bool CurrentData() noexcept {
 bool Actor(unsigned index,const void* pointer) noexcept {
     if(index>=31||!pointer||SharedActor::Busy(index))return false;
     std::uint32_t actors=0;std::uint16_t stored=0;
-    if(!Read(module+0xD334CC,actors)||actors<0x10000||actors>UINT32_MAX-31u*0xF90u)return false;
+    if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),actors)||actors<0x10000||actors>UINT32_MAX-31u*0xF90u)return false;
     const auto address=std::uintptr_t(actors)+index*0xF90u;
     return pointer==reinterpret_cast<const void*>(address)&&Read(address+0xC,stored)&&stored==index;
 }
@@ -400,7 +406,10 @@ bool ReadMenuCatalog(ElementMenu::Catalog& output) noexcept {
 }
 const ElementMenu::Provider menuProvider{ReadMenuCatalog};
 
-bool ReadScanSnapshot(unsigned actor,unsigned page,ElementalScanView::Snapshot& output) noexcept {
+ElementalScanView::SnapshotCache scanCache;
+std::atomic<unsigned> scanActor{18};
+std::atomic<bool> scanRequested{true};
+bool BuildScanSnapshot(unsigned actor,unsigned page,ElementalScanView::Snapshot& output) noexcept {
     output={};if(!CurrentData()||(!options.core&&!options.tactics))return false;
     const auto epoch=generation.load();unsigned total=0;
     std::array<unsigned,ElementLimit> visibleElements{};std::array<std::uint32_t,ElementLimit> colors{};
@@ -427,6 +436,20 @@ bool ReadScanSnapshot(unsigned actor,unsigned page,ElementalScanView::Snapshot& 
     if(epoch!=generation.load()||!CurrentData())return false;
     output=snapshot;return true;
 }
+void PublishScanSnapshot() noexcept {
+    if(!CurrentData()||(!options.core&&!options.tactics))return;
+    if(!scanRequested.exchange(false,std::memory_order_acq_rel))return;
+    (void)scanCache.Publish(scanActor.load(std::memory_order_acquire),generation.load(),BuildScanSnapshot);
+}
+bool ReadScanSnapshot(unsigned actor,unsigned page,ElementalScanView::Snapshot& output) noexcept {
+    output={};if(actor>=ActorCount||page>=ElementalScanView::MaximumPages||!ready.load()||!armed.load())return false;
+    if(CurrentData())return BuildScanSnapshot(actor,page,output);
+    scanActor.store(actor,std::memory_order_release);scanRequested.store(true,std::memory_order_release);
+    const auto epoch=generation.load();
+    const bool copied=scanCache.Copy(actor,page,epoch,output);
+    if(!copied||epoch!=generation.load()||!ready.load()||!armed.load()){output={};return false;}
+    return true;
+}
 const ElementalScanView::Provider scanProvider{ReadScanSnapshot};
 
 bool ReadManifest(std::string& output,const std::string& selected){
@@ -449,8 +472,14 @@ bool PrepareText(std::uintptr_t image,RuntimeOptions selected,std::string_view m
     if(!selected.core&&!selected.tactics&&!selected.gravity&&!selected.magicBdl){code=RuntimeCode::Disabled;return false;}
     try {
         Pack candidate;PackProblem problem{};
-        if(!LoadPack(manifest,availableCapabilities,candidate,problem)||!EnsureHookSlots(candidate)){
-            code=RuntimeCode::PackInvalid;if(log)log("[ffx-hooks] Elemental pack rejected: schema/capability mismatch\n");return false;
+        const bool loaded=LoadPack(manifest,availableCapabilities,candidate,problem);
+        const bool slots=loaded&&EnsureHookSlots(candidate);
+        if(!loaded||!slots){
+            code=RuntimeCode::PackInvalid;
+            if(log){char message[256]{};std::snprintf(message,sizeof(message),
+                "[ffx-hooks] Elemental pack rejected: code=%u field=%.128s nativeSlots=%d\n",
+                static_cast<unsigned>(problem.code),problem.field.c_str(),slots?1:0);log(message);}
+            return false;
         }
         if(!Profile(image,candidate)){code=RuntimeCode::Unsupported;return false;}
         HMODULE pin=nullptr;
@@ -508,7 +537,7 @@ void TickMainThread() noexcept {
     if(!CaptureStamp(current)){ready=false;hasAttemptedStamp=false;code=RuntimeCode::WaitingForData;return;}
     const auto epoch=generation.load();
     if(hasAttemptedStamp&&attemptedGeneration==epoch&&current==attemptedStamp){
-        if(ready.load()){RefreshMonsterProfiles();if(options.tactics)SyncStatusActors();}return;
+        if(ready.load()){RefreshMonsterProfiles();if(options.tactics)SyncStatusActors();PublishScanSnapshot();}return;
     }
     ready=false;attemptedStamp=current;attemptedGeneration=epoch;hasAttemptedStamp=true;
     try {
@@ -535,6 +564,7 @@ void TickMainThread() noexcept {
         monsterProfiles={};RefreshMonsterProfiles();
         if(options.tactics&&!ResetStatusState()){RequestStop();return;}
         ready.store(true,std::memory_order_release);code=RuntimeCode::Ready;
+        scanRequested=true;PublishScanSnapshot();
         if(logger)logger("[ffx-hooks] Elemental pack admitted against loaded native banks\n");
     }catch(...){if(configured.load())code=RuntimeCode::DataMismatch;ready=false;}
 }
@@ -558,7 +588,7 @@ RuntimeStatus RuntimeState() noexcept {
 unsigned DescriptorCount() noexcept {return CurrentData()?pack.registry.Size():0;}
 bool ReadElement(unsigned slot,unsigned element,ElementalView& output) noexcept {
     output={};if(!CurrentData()||slot>=ActorCount||element>=pack.registry.Size())return false;
-    std::uint32_t base=0;if(!Read(module+0xD334CC,base)||base<0x10000||base>UINT32_MAX-ActorCount*0xF90u)return false;
+    std::uint32_t base=0;if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),base)||base<0x10000||base>UINT32_MAX-ActorCount*0xF90u)return false;
     const auto* actor=reinterpret_cast<const Byte*>(std::uintptr_t(base)+slot*0xF90u);
     if(options.tactics)SyncStatusActors();
     std::array<AffinityValue,ElementLimit> values{};

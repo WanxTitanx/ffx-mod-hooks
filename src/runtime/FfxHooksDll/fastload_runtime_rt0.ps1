@@ -1,3 +1,4 @@
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 # Fastload RT0 contracts and RT1 native title lifecycle (isolated x86 process).
 $ErrorActionPreference = 'Stop'
 
@@ -27,7 +28,7 @@ $sourceArguments = ($sources | ForEach-Object { '"{0}"' -f $_ }) -join ' '
 $exe = Join-Path $objDir 'FastloadRuntimeRt0.exe'
 $pdb = Join-Path $objDir 'FastloadRuntimeRt0.pdb'
 $fixture = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path 'native-fixtures\FFX.exe'
-if (-not (Test-Path -LiteralPath $fixture) -or (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED') { throw 'Exact supported FFX.exe fixture missing; do not launch the game' }
+if (-not (Test-Path -LiteralPath $fixture) -or (Get-FileHash -Algorithm SHA256 -LiteralPath $fixture).Hash -ne (Get-FfxTestExecutableHash)) { throw 'Exact supported FFX.exe fixture missing; do not launch the game' }
 
 $compile = 'call "{0}" x86 >nul && cl /nologo /EHsc /std:c++17 /W4 /WX /utf-8 /MT /DFFXHOOKS_TESTING {1} /Fd"{2}" /Fe"{3}"' -f `
     $vcvarsall, $sourceArguments, $pdb, $exe

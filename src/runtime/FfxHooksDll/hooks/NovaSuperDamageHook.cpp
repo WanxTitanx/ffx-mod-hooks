@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "NovaSuperDamageHook.h"
 #include "F8RuntimeCore.h"
 #include "MinHookBatchCoordinator.h"
@@ -29,7 +30,11 @@ constexpr uint8_t kClampGraph[]={
     0x3B,0xC7,0x7D,0x04,0x8B,0xC7,0xEB,0x06,
     0x3B,0xC3,0x7E,0x02,0x8B,0xC3,0x89,0x06
 };
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr uint8_t kFramePrefix[]={0x55,0x8B,0xEC,0x81,0xEC,0xB4};
+#else
 constexpr uint8_t kFramePrefix[]={0x55,0x8B,0xEC,0x81,0xEC,0xB4,0,0,0};
+#endif
 constexpr uint8_t kHpLoopSetup[]={0xC7,0x45,0x88,0x03,0,0,0,0x8B,0x04,0x10};
 static uint8_t* g_stub=nullptr;
 static size_t g_stubLen=0;
@@ -85,8 +90,8 @@ static bool ValidateProfile(uintptr_t base) {
        !F8Runtime::IsSupportedExecutable(identity)||base>UINT32_MAX-identity.sizeOfImage)return false;
     const struct {uint32_t rva;const uint8_t* bytes;size_t size;} proofs[]={
         {RVA_FFX_BATTLE_COMPUTE_HIT_DAMAGE,kFramePrefix,sizeof(kFramePrefix)},
-        {0x0038EDC1u,kHpLoopSetup,sizeof(kHpLoopSetup)},
-        {0x0038EDCBu,kClampGraph,sizeof(kClampGraph)}
+        {::FfxHooks::ExecutableProfile::Rva<0x0038EDC1u>(),kHpLoopSetup,sizeof(kHpLoopSetup)},
+        {::FfxHooks::ExecutableProfile::Rva<0x0038EDCBu>(),kClampGraph,sizeof(kClampGraph)}
     };
     for(const auto& p:proofs) {
         uint8_t actual[32]={};
@@ -168,9 +173,9 @@ static bool BuildStub(uintptr_t resumeVa,bool bypass,bool logHits,uint8_t** outS
     *outStub=stub;*outLen=bytes.size();return true;
 }
 static bool ResolveClampPatchSite(uintptr_t base,uintptr_t* patch,uintptr_t* resume,uint8_t saved[kPatchLen]) {
-    if(!base||!patch||!resume||!saved||base>UINT32_MAX-0x0038EDDBu)return false;
+    if(!base||!patch||!resume||!saved||base>UINT32_MAX-::FfxHooks::ExecutableProfile::Rva<0x0038EDDBu>())return false;
     uint8_t actual[sizeof(kClampGraph)]={};
-    if(!GuardedCopy(actual,reinterpret_cast<void*>(base+0x0038EDCBu),sizeof(actual))||
+    if(!GuardedCopy(actual,reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x0038EDCBu>())),sizeof(actual))||
        std::memcmp(actual,kClampGraph,sizeof(actual))!=0)return false;
     *patch=base+RVA_FFX_BATTLE_DAMAGE_CAP_CLAMP_CMP;
     *resume=base+RVA_FFX_BATTLE_DAMAGE_WRITEBACK;

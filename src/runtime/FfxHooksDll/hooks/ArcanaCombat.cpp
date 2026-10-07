@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "ArcanaCombat.h"
 #include "ArcanaCombatCore.h"
 #include "ArcanaCombatEvidence.generated.h"
@@ -14,9 +15,11 @@
 namespace FfxHooks::Arcana::Combat {
 namespace {
 enum Hook {PreCap,Mp,Ctb,Critical,Encounter,Hp,Consume,ActionResults,Ap,Rewards,Count};
-constexpr std::uint32_t rvas[Count]={0x38ED1A,0x38D030,0x38D290,0x389750,0x380DE0,0x38E2F0,0x38E5F0,0x38DA40,0x398A10,0x3990E0};
+constexpr std::uint32_t rvas[Count]={(::FfxHooks::ExecutableProfile::Rva<0x38ED1A>()),(::FfxHooks::ExecutableProfile::Rva<0x38D030>()),(::FfxHooks::ExecutableProfile::Rva<0x38D290>()),(::FfxHooks::ExecutableProfile::Rva<0x389750>()),(::FfxHooks::ExecutableProfile::Rva<0x380DE0>()),(::FfxHooks::ExecutableProfile::Rva<0x38E2F0>()),(::FfxHooks::ExecutableProfile::Rva<0x38E5F0>()),(::FfxHooks::ExecutableProfile::Rva<0x38DA40>()),(::FfxHooks::ExecutableProfile::Rva<0x398A10>()),(::FfxHooks::ExecutableProfile::Rva<0x3990E0>())};
 void* originals[Count]{};
 std::uintptr_t base=0;std::atomic<bool> active{false},attempted{false};
+std::atomic<bool> producersInstalled{false};
+SinProducer::Slot sinObservers;
 CombatCore::Ledger ledger;
 std::uint64_t nextAction=0;
 std::array<std::uint64_t,31> turns{},lastTurn{},lastCtb{},lastCost{};
@@ -32,19 +35,19 @@ bool Copy(void* out,const void* in,std::size_t size) noexcept {return NativeUiSu
 template<class T> T Read(std::uintptr_t pointer,unsigned offset){T value{};Copy(&value,reinterpret_cast<void*>(pointer+offset),sizeof(value));return value;}
 std::uintptr_t Actor(unsigned id){
     if(id>=31)return 0;
-    const auto table=Read<std::uint32_t>(base,0xD334CC);
+    const auto table=Read<std::uint32_t>(base,(::FfxHooks::ExecutableProfile::Rva<0xD334CC>()));
     if(table<0x10000||table>UINT32_MAX-31*0xF90u)return 0;
     const auto pointer=std::uintptr_t(table)+id*0xF90u;
     if(id<kActorCount&&Read<std::uint16_t>(pointer,0xE)!=id)return 0;
     return pointer;
 }
 unsigned ActorId(const void* pointer){
-    const auto address=reinterpret_cast<std::uintptr_t>(pointer),table=Read<std::uint32_t>(base,0xD334CC);
+    const auto address=reinterpret_cast<std::uintptr_t>(pointer),table=Read<std::uint32_t>(base,(::FfxHooks::ExecutableProfile::Rva<0xD334CC>()));
     if(!table||address<table||(address-table)%0xF90u)return 31;
     const auto id=(address-table)/0xF90u;return id<31&&Actor(static_cast<unsigned>(id))==address?static_cast<unsigned>(id):31;
 }
 bool Battle(){
-    if(!active.load()||!Runtime::ActorEffects(0)||!Runtime::BattleGeneration()||!Read<unsigned char>(base,0xD2A8E0))return false;
+    if(!active.load()||!Runtime::ActorEffects(0)||!Runtime::BattleGeneration()||!Read<unsigned char>(base,(::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())))return false;
     const auto epoch=Runtime::BattleGeneration();
     if(ledger.battle!=epoch){ledger.BeginBattle(epoch);actions={};turns={};lastTurn={};lastCtb={};lastCost={};timed={};nextAction=0;}
     return true;
@@ -57,7 +60,7 @@ ActionInfo* Current(unsigned owner){
     const auto actor=Actor(owner);if(!actor)return nullptr;
     unsigned commandId=0xFFFF;
     using Resolve=const unsigned char*(__cdecl*)(unsigned,unsigned,int,unsigned,unsigned*);
-    const auto* command=reinterpret_cast<Resolve>(base+0x38CF10)(owner,0,-1,0,&commandId);
+    const auto* command=reinterpret_cast<Resolve>(base + (::FfxHooks::ExecutableProfile::Rva<0x38CF10>()))(owner,0,-1,0,&commandId);
     unsigned char row[96]{};if(!command||!Copy(row,command,sizeof(row)))return nullptr;
     const unsigned ring=Read<unsigned char>(actor,0xDE4),serial=Read<unsigned char>(actor,0x6DF);
     auto& action=actions[owner];
@@ -154,11 +157,11 @@ void FinishTimed(unsigned owner){
 int __cdecl CtbShim(void* actor,int rank,int haste,int slow){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-base;
     const int native=reinterpret_cast<int(__cdecl*)(void*,int,int,int)>(originals[Ctb])(actor,rank,haste,slow);
-    if(!Battle()||native<=0||(caller!=0x3B21D5&&caller!=0x3B1B3B))return native;
+    if(!Battle()||native<=0||(caller!=(::FfxHooks::ExecutableProfile::Rva<0x3B21D5>())&&caller!=(::FfxHooks::ExecutableProfile::Rva<0x3B1B3B>())))return native;
     const unsigned owner=ActorId(actor);if(owner>=31)return native;
     const auto* effects=Runtime::ActorEffects(owner);
     const int result=effects?static_cast<int>(CtbDelay(static_cast<unsigned>(native),*effects,owner<kActorCount&&!ledger.firstAction[owner])):native;
-    if(caller==0x3B21D5){
+    if(caller==(::FfxHooks::ExecutableProfile::Rva<0x3B21D5>())){
         if(owner<kActorCount)ledger.firstAction[owner]=true;
         auto* action=Current(owner);
         if(action&&lastCtb[owner]!=action->token){lastCtb[owner]=action->token;FinishTimed(owner);}
@@ -177,16 +180,19 @@ int __cdecl CriticalShim(const unsigned char* attacker,const unsigned char* targ
     return reinterpret_cast<SharedCombat::CriticalFn>(originals[Critical])(attacker,target,effective,flags,damage);
 }
 int __cdecl EncounterShim(int field,int group,float distance){
+    const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress());
     if(active.load()&&Runtime::ActorEffects(0)&&std::isfinite(distance)&&distance>0){
         unsigned reduction=0;
         for(unsigned actor=0;actor<kActorCount;++actor){
             const auto* effects=Runtime::ActorEffects(actor);
-            if(effects&&(Read<unsigned char>(base+0xD3205C+actor*0x94,0x2C)&1))
+            if(effects&&(Read<unsigned char>(base + (::FfxHooks::ExecutableProfile::Rva<0xD3205C>())+actor*0x94,0x2C)&1))
                 reduction=(std::max)(reduction,static_cast<unsigned>(effects->Get(EffectKind::EncounterReduction)));
         }
         distance*=float(100-(std::min)(100u,reduction))/100.f;
     }
-    return reinterpret_cast<int(__cdecl*)(int,int,float)>(originals[Encounter])(field,group,distance);
+    const int result=reinterpret_cast<int(__cdecl*)(int,int,float)>(originals[Encounter])(field,group,distance);
+    sinObservers.Natural(field,group,distance,result,caller);
+    return result;
 }
 int __cdecl HpShim(unsigned target,unsigned char* pointer,int damage,int a4,int resultCode,int flags,int n129){
     const auto actor=reinterpret_cast<std::uintptr_t>(pointer);
@@ -195,7 +201,7 @@ int __cdecl HpShim(unsigned target,unsigned char* pointer,int damage,int a4,int 
     const auto* recipient=admitted?Runtime::ActorEffects(target):nullptr;
     bool judgement=false;int applied=damage;
     if(recipient&&recipient->Get(EffectKind::SurviveOnce)&&!ledger.judgement[target]&&damage>0&&before>0&&damage>=before&&
-       !(Read<std::uint16_t>(actor,0x606)&5)&&reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x38D460)(target)){
+       !(Read<std::uint16_t>(actor,0x606)&5)&&reinterpret_cast<int(__cdecl*)(unsigned)>(base + (::FfxHooks::ExecutableProfile::Rva<0x38D460>()))(target)){
         applied=before-1;judgement=true;
     }
     const int result=reinterpret_cast<SharedCombat::HpFn>(originals[Hp])(target,pointer,applied,a4,resultCode,flags,n129);
@@ -253,27 +259,28 @@ int __cdecl ActionShim(unsigned char owner,unsigned targetType,void* rows){
     return result;
 }
 int __cdecl ApShim(unsigned owner,void* actor,int amount,int gilRate){
-    const unsigned before=owner<kActorCount?Read<unsigned>(base,0x1F10F20+owner*4):0;
+    const unsigned before=owner<kActorCount?Read<unsigned>(base,(::FfxHooks::ExecutableProfile::Rva<0x1F10F20>())+owner*4):0;
     const int result=reinterpret_cast<int(__cdecl*)(unsigned,void*,int,int)>(originals[Ap])(owner,actor,amount,gilRate);
     if(rewardDepth)nativeGilRate=(std::max)(nativeGilRate,static_cast<unsigned>((std::max)(1,result)*100));
     const auto* effects=Runtime::ActorEffects(owner);
     if(Battle()&&effects&&Actor(owner)==reinterpret_cast<std::uintptr_t>(actor)){
-        const unsigned after=Read<unsigned>(base,0x1F10F20+owner*4);
+        const unsigned after=Read<unsigned>(base,(::FfxHooks::ExecutableProfile::Rva<0x1F10F20>())+owner*4);
         if(after>=before){const auto adjusted=static_cast<unsigned>((std::min)(std::uint64_t(999999999),
             std::uint64_t(after)+std::uint64_t(after-before)*effects->Get(EffectKind::ApBonus)/100));
-            Copy(reinterpret_cast<void*>(base+0x1F10F20+owner*4),&adjusted,4);}
+            Copy(reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x1F10F20>())+owner*4),&adjusted,4);}
     }
     return result;
 }
-void __cdecl RewardsShim(int id,void* actor,unsigned short* rewards,int a4,int a5){
-    const unsigned before=Read<unsigned>(base,0x1F10F6C),previousRate=nativeGilRate;
+void __cdecl RewardsShim(int id,void* actor,const void* rewards,int a4,int a5){
+    const unsigned before=Read<unsigned>(base,(::FfxHooks::ExecutableProfile::Rva<0x1F10F6C>())),previousRate=nativeGilRate;
     ++rewardDepth;nativeGilRate=100;
-    __try{reinterpret_cast<void(__cdecl*)(int,void*,unsigned short*,int,int)>(originals[Rewards])(id,actor,rewards,a4,a5);}
+    __try{SinProducer::ForwardRewards(sinObservers,
+        reinterpret_cast<void(__cdecl*)(int,void*,const void*,int,int)>(originals[Rewards]),id,actor,rewards,a4,a5);}
     __finally{--rewardDepth;}
     if(Battle()){
-        const unsigned desired=100+PartyRate(EffectKind::GilBonus),after=Read<unsigned>(base,0x1F10F6C);
+        const unsigned desired=100+PartyRate(EffectKind::GilBonus),after=Read<unsigned>(base,(::FfxHooks::ExecutableProfile::Rva<0x1F10F6C>()));
         if(desired>nativeGilRate&&after>=before){const auto changed=static_cast<unsigned>((std::min)(std::uint64_t(999999999),
-            std::uint64_t(before)+std::uint64_t(after-before)*desired/nativeGilRate));Copy(reinterpret_cast<void*>(base+0x1F10F6C),&changed,4);}
+            std::uint64_t(before)+std::uint64_t(after-before)*desired/nativeGilRate));Copy(reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x1F10F6C>())),&changed,4);}
     }
     nativeGilRate=previousRate;
 }
@@ -359,10 +366,26 @@ bool Start(std::uintptr_t module,bool requested,bool validateOnly,void(*log)(con
 #else
     return false;
 #endif
-    active=true;if(log)log("[ffx-hooks] Arcana combat consumers installed; live validation remains separate\n");return true;
+    producersInstalled=true;active=true;if(log)log("[ffx-hooks] Arcana combat consumers installed; live validation remains separate\n");return true;
 }
 void Stop() noexcept {active=false;SharedCombat::Unregister(SharedCombat::arcana,&operations);NativeGameplayEvents::Unsubscribe(&observer);}
 bool Active() noexcept {return active.load();}
+namespace {
+bool OwnsProducer(std::uintptr_t module,Hook hook,const void* replacement) noexcept {
+    if (!producersInstalled.load() || module!=base || !originals[hook]) return false;
+    unsigned char bytes[5]{};
+    return NativeUiSupport::Copy(bytes,reinterpret_cast<const void*>(base+rvas[hook]),sizeof(bytes)) &&
+        SinProducer::OwnsJump(bytes,base+rvas[hook],reinterpret_cast<std::uintptr_t>(replacement));
+}
+}
+bool OwnsNaturalProducer(std::uintptr_t module) noexcept {return OwnsProducer(module,Encounter,reinterpret_cast<const void*>(&EncounterShim));}
+bool OwnsRewardProducer(std::uintptr_t module) noexcept {return OwnsProducer(module,Rewards,reinterpret_cast<const void*>(&RewardsShim));}
+bool AttachSinObservers(std::uintptr_t module,const SinProducer::Observers* observers) noexcept {
+    if (!observers || (observers->natural && !OwnsNaturalProducer(module)) ||
+        (observers->reward && !OwnsRewardProducer(module))) return false;
+    return sinObservers.Attach(observers);
+}
+void DetachSinObservers(const SinProducer::Observers* observers) noexcept {sinObservers.Detach(observers);}
 unsigned PartyDropMultiplier() noexcept {
     if(!active.load()||!Runtime::BattleGeneration()||!Runtime::ActorEffects(0))return 1;
     unsigned best=1;

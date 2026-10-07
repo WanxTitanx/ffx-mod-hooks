@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "RonsoPoolRuntime.h"
 #include "RonsoPoolCore.h"
 #include "RonsoPoolSave.h"
@@ -20,9 +21,9 @@
 
 namespace FfxHooks::RonsoPool {
 namespace {
-constexpr uint32_t kReadImport=0x0070C3F4u,kWriteImport=0x0070C428u;
-constexpr uint32_t kCloseImport=0x0070C3F0u;
-constexpr uint32_t kActorTable=0x00D334CCu,kLearnedBank=0x00D307FCu;
+constexpr uint32_t kReadImport=::FfxHooks::ExecutableProfile::Rva<0x0070C3F4u>(),kWriteImport=::FfxHooks::ExecutableProfile::Rva<0x0070C428u>();
+constexpr uint32_t kCloseImport=::FfxHooks::ExecutableProfile::Rva<0x0070C3F0u>();
+constexpr uint32_t kActorTable=::FfxHooks::ExecutableProfile::Rva<0x00D334CCu>(),kLearnedBank=::FfxHooks::ExecutableProfile::Rva<0x00D307FCu>();
 using ReadFn=size_t(__cdecl*)(void*,size_t,size_t,void*);
 using WriteFn=size_t(__cdecl*)(const void*,size_t,size_t,void*);
 using FileNoFn=int(__cdecl*)(void*);
@@ -121,7 +122,7 @@ bool Learned(uint16_t command) noexcept {
         (bits&(1u<<(index%16)))!=0;
 }
 const uint8_t* Command(uint16_t id) noexcept {
-    __try {return reinterpret_cast<CommandFn>(moduleBase+0x390AE0)(id,0);}
+    __try {return reinterpret_cast<CommandFn>(moduleBase + (::FfxHooks::ExecutableProfile::Rva<0x390AE0>()))(id,0);}
     __except(EXCEPTION_EXECUTE_HANDLER){return nullptr;}
 }
 bool Cost(uint16_t id,bool header,uint8_t* cost) noexcept {
@@ -235,12 +236,12 @@ int __cdecl CloseShim(void* stream) {
 }
 uint16_t CurrentScene() noexcept {
     uint16_t scene=UINT16_MAX;
-    Copy(&scene,reinterpret_cast<void*>(moduleBase+0xD2CA90),2);return scene;
+    Copy(&scene,reinterpret_cast<void*>(moduleBase + (::FfxHooks::ExecutableProfile::Rva<0xD2CA90>())),2);return scene;
 }
 bool IoCaller(uintptr_t address,bool write) noexcept {
     if(address<moduleBase)return false;
     const uintptr_t rva=address-moduleBase;
-    return write?(rva==0x2F06C5u||rva==0x2F0A45u):rva==0x2F0228u;
+    return write?(rva==::FfxHooks::ExecutableProfile::Rva<0x2F06C5u>()||rva==::FfxHooks::ExecutableProfile::Rva<0x2F0A45u>()):rva==::FfxHooks::ExecutableProfile::Rva<0x2F0228u>();
 }
 struct IoWork {
     SaveImage input{},output{},selected{},projected{};
@@ -464,7 +465,7 @@ Availability DecideAvailability(uint8_t slot,int16_t command,int vanilla) {
     if(!Copy(&charge,actor+0x5BC,1)||!Copy(&maximum,actor+0x5BD,1)||maximum!=200||
         !Copy(&status,actor+0x616,2)||!Copy(&hp,actor+0x5D0,4)||
         !Copy(&blockedA,actor+0xDCC,1)||!Copy(&blockedB,actor+0xDCE,1)||
-        !Copy(&noCost,reinterpret_cast<void*>(moduleBase+0xD2A90C),1)||noCost)return Availability::Native;
+        !Copy(&noCost,reinterpret_cast<void*>(moduleBase + (::FfxHooks::ExecutableProfile::Rva<0xD2A90C>())),1)||noCost)return Availability::Native;
     const bool nativeAllowed=hp>0&&(status&0x400u)==0&&blockedA==0&&blockedB==0;
     uint8_t cost=0;if(!Cost(id,id==282,&cost))return Availability::Native;
     Facts facts{true,false,true,id==282?(vanilla&3)!=0:Learned(id),nativeAllowed,3,id,charge,cost};
@@ -484,7 +485,7 @@ bool ExtendedHeaderReady(int slot) noexcept {
     if(slot<0||slot>=18||!CommandCosts::nativeReady.load())return false;
     uintptr_t ring=0;std::array<uint16_t,8> headers{};
     const uintptr_t offset=static_cast<unsigned>(slot)*0x478u+0x28u;
-    if(!Copy(&ring,reinterpret_cast<void*>(moduleBase+0x1F10CD8u),4)||ring>UINT32_MAX-offset-sizeof(headers)||
+    if(!Copy(&ring,reinterpret_cast<void*>(moduleBase + (::FfxHooks::ExecutableProfile::Rva<0x1F10CD8u>())),4)||ring>UINT32_MAX-offset-sizeof(headers)||
        !DataRange(ring+offset,sizeof(headers))||!Copy(headers.data(),reinterpret_cast<void*>(ring+offset),sizeof(headers)))return false;
     for(unsigned word:headers){
         if(word<0x3000||word>0x3FFF)continue;
@@ -498,16 +499,16 @@ int __cdecl MenuReadyShim(int slot) {
     const uintptr_t caller=reinterpret_cast<uintptr_t>(_ReturnAddress());
     const int vanilla=original?original(slot):0;
     if(readiness.load()==1&&!storageFault.load()&&caller>=moduleBase&&
-       (caller-moduleBase==0x392BD3u||caller-moduleBase==0x39B6AEu)&&ExtendedHeaderReady(slot))return 1;
+       (caller-moduleBase==::FfxHooks::ExecutableProfile::Rva<0x392BD3u>()||caller-moduleBase==::FfxHooks::ExecutableProfile::Rva<0x39B6AEu>())&&ExtendedHeaderReady(slot))return 1;
     // These two callers construct the input ring and the menu's blocked word.
     // Other readiness consumers include charge-clearing/gameplay paths; they
     // must retain the real full-gauge bit. No gauge or actor flag is spoofed.
     if(readiness.load()!=1||!requestedGameplay||storageFault.load()||slot!=kCharacter||
        actorThread.load()!=GetCurrentThreadId()||caller<moduleBase||
-       (caller-moduleBase!=0x392BD3u&&caller-moduleBase!=0x39B6AEu))return vanilla;
+       (caller-moduleBase!=::FfxHooks::ExecutableProfile::Rva<0x392BD3u>()&&caller-moduleBase!=::FfxHooks::ExecutableProfile::Rva<0x39B6AEu>()))return vanilla;
     // The validated native presence reader stays unhooked: list membership
     // follows learned commands, while CostGateShim handles current usability.
-    const auto availability=reinterpret_cast<AvailabilityFn>(moduleBase+0x39AD40u);
+    const auto availability=reinterpret_cast<AvailabilityFn>(moduleBase + (::FfxHooks::ExecutableProfile::Rva<0x39AD40u>()));
     const auto decision=DecideAvailability(static_cast<uint8_t>(slot),282,
                                            availability(static_cast<uint8_t>(slot),282));
     if(decision==Availability::Allow)return 1;
@@ -540,7 +541,7 @@ int __cdecl LeftEntryShim(int slot) {
         else {
             uintptr_t ring=0;std::array<uint16_t,8> headers{};
             constexpr uintptr_t rowOffset=3u*0x478u+0x28u;
-            const bool row=Copy(&ring,reinterpret_cast<void*>(moduleBase+0x1F10CD8u),4)&&
+            const bool row=Copy(&ring,reinterpret_cast<void*>(moduleBase + (::FfxHooks::ExecutableProfile::Rva<0x1F10CD8u>())),4)&&
                 ring<=UINT32_MAX-rowOffset-sizeof(headers)&&
                 DataRange(ring+rowOffset,sizeof(headers))&&
                 Copy(headers.data(),reinterpret_cast<void*>(ring+rowOffset),sizeof(headers));
@@ -568,7 +569,7 @@ int __cdecl LeftEntryShim(int slot) {
     if(readiness.load()!=1)result=vanilla;
     // Only real LEFT presses are logged, never each renderer poll. +690 is a
     // disabled mask; actual learning comes from the saved command bank.
-    if(logger&&(callerRva==0x49C9CBu||callerRva==0x49CEA8u)&&readiness.load()==1&&leftInputNotices.fetch_add(1)<12) {
+    if(logger&&(callerRva==(::FfxHooks::ExecutableProfile::Rva<0x49C9CBu>())||callerRva==(::FfxHooks::ExecutableProfile::Rva<0x49CEA8u>()))&&readiness.load()==1&&leftInputNotices.fetch_add(1)<12) {
         char line[320]={};
         std::snprintf(line,sizeof(line),"[ffx-hooks] RonsoPool left-input caller=0x%08X sampled=%u charge=%u max=%u native=%d result=%d thread=%u owner=%u reason=%s\n",
             callerRva,sampled?1u:0u,static_cast<unsigned>(charge),static_cast<unsigned>(maximum),vanilla,result,
@@ -626,7 +627,7 @@ int __cdecl CostGateShim(int slot,const uint8_t* command,int extraMp) {
     SetLastError(callerError);
     const int result=original(slot,bypass?view.data():command,extraMp);
     const DWORD nativeError=GetLastError();
-    auto& budget=rva==0x38AC65u?costCommitNotices:costUiNotices;
+    auto& budget=rva==::FfxHooks::ExecutableProfile::Rva<0x38AC65u>()?costCommitNotices:costUiNotices;
     if(bypass&&logger&&readiness.load()==1&&budget.fetch_add(1)<8) {
         char line[224]={};
         std::snprintf(line,sizeof(line),"[ffx-hooks] RonsoPool cost-gate caller=0x%08X command=0x%04X charge=%u realCost=%u mpResult=%d\n",
@@ -682,7 +683,7 @@ bool BuildMaximumStub() {
     if(!maxStub)return false;
     const uint32_t relativeCall=static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&AfterNativeMaximum)-
         (reinterpret_cast<uintptr_t>(maxStub)+call+4));
-    const uint32_t relativeJump=static_cast<uint32_t>((moduleBase+0x39B5BE)-
+    const uint32_t relativeJump=static_cast<uint32_t>((moduleBase + (::FfxHooks::ExecutableProfile::Rva<0x39B5BE>()))-
         (reinterpret_cast<uintptr_t>(maxStub)+jump+4));
     std::memcpy(code.data()+call,&relativeCall,4);std::memcpy(code.data()+jump,&relativeJump,4);
     std::memcpy(maxStub,code.data(),code.size());DWORD prior=0;
@@ -773,14 +774,14 @@ bool PrepareRuntime(uintptr_t base,bool gameplay,LogFn log,PreparedRuntime* resu
     }
     if(gameplay) {
         if(!BuildMaximumStub())return false;
-        result->hooks[result->count++]={base+0x39B5B7,maxStub,&maxOriginal};
+        result->hooks[result->count++]={base + (::FfxHooks::ExecutableProfile::Rva<0x39B5B7>()),maxStub,&maxOriginal};
     }
     if(gameplay||commandRequested){
-        result->hooks[result->count++]={base+0x39AF70,reinterpret_cast<void*>(&MenuReadyShim),&menuReadyOriginal};
-        result->hooks[result->count++]={base+0x38F750,reinterpret_cast<void*>(&LeftEntryShim),&leftEntryOriginal};
-        result->hooks[result->count++]={base+0x38C750,reinterpret_cast<void*>(&CostGateShim),&costGateOriginal};
+        result->hooks[result->count++]={base + (::FfxHooks::ExecutableProfile::Rva<0x39AF70>()),reinterpret_cast<void*>(&MenuReadyShim),&menuReadyOriginal};
+        result->hooks[result->count++]={base + (::FfxHooks::ExecutableProfile::Rva<0x38F750>()),reinterpret_cast<void*>(&LeftEntryShim),&leftEntryOriginal};
+        result->hooks[result->count++]={base + (::FfxHooks::ExecutableProfile::Rva<0x38C750>()),reinterpret_cast<void*>(&CostGateShim),&costGateOriginal};
     }
-    result->hooks[result->count++]={base+0x386BC0,reinterpret_cast<void*>(&ResetShim),&resetOriginal};
+    result->hooks[result->count++]={base + (::FfxHooks::ExecutableProfile::Rva<0x386BC0>()),reinterpret_cast<void*>(&ResetShim),&resetOriginal};
     if(!managed&&verifiedSaveRequested&&!verifiedSaveRuntime.Configure({VerifiedSaveReady,VerifiedSaveEpoch,
         VerifiedSaveThread,VerifiedStreamIdentity,VerifiedSaveReadback,VerifiedSaveError,
         RestoreVerifiedSaveError,VerifiedSaveErrorNumber}))return false;

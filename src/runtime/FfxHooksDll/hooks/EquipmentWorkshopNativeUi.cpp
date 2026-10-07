@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "EquipmentWorkshopNativeUi.h"
 #include "EquipmentWorkshopRuntime.h"
 #include "EquipmentWorkshopPresentationCore.h"
@@ -13,7 +14,7 @@ static std::atomic<StatusObserver> statusObserver{nullptr};
 void SetStatusObserver(StatusObserver observer) noexcept {statusObserver.store(observer);}
 namespace {
 enum Hook {Equipment,Customize,Battle,AbilityRow,AbilityDefinition,Shared,Inventory,StatusPage,StatusList,Frame,Count};
-constexpr std::uint32_t rvas[Count]={0x4D02B0,0x4D63C0,0x4F34C0,0x4F4F10,0x3909C0,0x4D8A70,0x4BCFE0,0x4D2760,0x4D2DE0,0x4F5F70};
+constexpr std::uint32_t rvas[Count]={(::FfxHooks::ExecutableProfile::Rva<0x4D02B0>()),(::FfxHooks::ExecutableProfile::Rva<0x4D63C0>()),(::FfxHooks::ExecutableProfile::Rva<0x4F34C0>()),(::FfxHooks::ExecutableProfile::Rva<0x4F4F10>()),(::FfxHooks::ExecutableProfile::Rva<0x3909C0>()),(::FfxHooks::ExecutableProfile::Rva<0x4D8A70>()),(::FfxHooks::ExecutableProfile::Rva<0x4BCFE0>()),(::FfxHooks::ExecutableProfile::Rva<0x4D2760>()),(::FfxHooks::ExecutableProfile::Rva<0x4D2DE0>()),(::FfxHooks::ExecutableProfile::Rva<0x4F5F70>())};
 void* originals[Count]{};
 std::uintptr_t module=0;
 std::atomic<bool> active{false},attempted{false};
@@ -39,12 +40,12 @@ using CharacterGearFn=unsigned(__cdecl*)(int);
 using GetGearFn=const unsigned char*(__cdecl*)(unsigned,const unsigned char**);
 using DefinitionFn=const unsigned char*(__cdecl*)(unsigned,const unsigned char**);
 using ScaleFn=float(__cdecl*)(float);
-float X(float value){return reinterpret_cast<ScaleFn>(module+0x244990)(value);}
-float Y(float value){if(scope&&scope->kind==Equipment){if(auto layout=equipmentLayout.load())value=layout(value);}return reinterpret_cast<ScaleFn>(module+0x2449D0)(value);}
+float X(float value){return reinterpret_cast<ScaleFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x244990>()))(value);}
+float Y(float value){if(scope&&scope->kind==Equipment){if(auto layout=equipmentLayout.load())value=layout(value);}return reinterpret_cast<ScaleFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x2449D0>()))(value);}
 bool Enabled(){return active.load(std::memory_order_acquire)&&scope&&scope->depth<4;}
 const unsigned char* GearAdapter(std::uintptr_t caller,const unsigned char* native){
     if(!Enabled()||!native)return native;
-    const auto expected=scope->kind==Equipment?0x4D02D2u:scope->kind==Customize?0x4D63DDu:scope->kind==Battle?0x4F34D3u:scope->kind==Inventory?0x4BD130u:0u;
+    const auto expected=scope->kind==Equipment?(::FfxHooks::ExecutableProfile::Rva<0x4D02D2u>()):scope->kind==Customize?(::FfxHooks::ExecutableProfile::Rva<0x4D63DDu>()):scope->kind==Battle?(::FfxHooks::ExecutableProfile::Rva<0x4F34D3u>()):scope->kind==Inventory?(::FfxHooks::ExecutableProfile::Rva<0x4BD130u>()):0u;
     if(caller!=expected||scope->admitted)return native;
     if(!ReadPresentation(native,scope->piece)||!Presentation::BuildGearView(scope->piece,scope->gear))return native;
     scope->admitted=true;return scope->gear.bytes;
@@ -69,16 +70,16 @@ const unsigned char* __cdecl DefinitionShim(unsigned word,const unsigned char** 
     if(!Enabled()||!scope->admitted)return native;
     const auto saved=scope->nameSlot;
     if(scope->kind==Battle){
-        if(caller==0x4F3526)scope->nameSlot=Presentation::NextSlot(scope->piece,static_cast<std::uint16_t>(word),scope->measureCursor);
-        else if(caller==0x4F370B)scope->nameSlot=Presentation::NextSlot(scope->piece,static_cast<std::uint16_t>(word),scope->drawCursor);
+        if(caller==(::FfxHooks::ExecutableProfile::Rva<0x4F3526>()))scope->nameSlot=Presentation::NextSlot(scope->piece,static_cast<std::uint16_t>(word),scope->measureCursor);
+        else if(caller==(::FfxHooks::ExecutableProfile::Rva<0x4F370B>()))scope->nameSlot=Presentation::NextSlot(scope->piece,static_cast<std::uint16_t>(word),scope->drawCursor);
         else return native;
-    }else if(caller!=0x4F4F23)return native;
+    }else if(caller!=(::FfxHooks::ExecutableProfile::Rva<0x4F4F23>()))return native;
     const auto* result=NameView(word,native,base);scope->nameSlot=saved;return result;
 }
 int __cdecl RowShim(unsigned word,float x,float y,unsigned style){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
-    if(!Enabled()||!scope->admitted||!((scope->kind==Equipment&&caller==0x4D03C4)||(scope->kind==Customize&&caller==0x4D64F5)||
-       (scope->kind==Shared&&caller==0x4D8B46)||(scope->kind==Inventory&&caller==0x4BD1C5)||(scope->kind==StatusPage&&caller==0x4D2AA2)))
+    if(!Enabled()||!scope->admitted||!((scope->kind==Equipment&&caller==(::FfxHooks::ExecutableProfile::Rva<0x4D03C4>()))||(scope->kind==Customize&&caller==(::FfxHooks::ExecutableProfile::Rva<0x4D64F5>()))||
+       (scope->kind==Shared&&caller==(::FfxHooks::ExecutableProfile::Rva<0x4D8B46>()))||(scope->kind==Inventory&&caller==(::FfxHooks::ExecutableProfile::Rva<0x4BD1C5>()))||(scope->kind==StatusPage&&caller==(::FfxHooks::ExecutableProfile::Rva<0x4D2AA2>()))))
         return reinterpret_cast<RowFn>(originals[AbilityRow])(word,x,y,style);
     const auto saved=scope->nameSlot;int result=0;
     if(scope->kind==StatusPage){

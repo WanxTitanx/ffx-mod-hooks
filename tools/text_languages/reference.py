@@ -9,7 +9,8 @@ import tempfile
 
 from asset_io import AssetError, VbfArchive, digest
 from inspect_assets import METRICS, ATLAS_ROOT, ATLAS_NAMES
-from pack import EVENT, MASTER, KERNEL, MENU, BATTLE, EXE_SHA, MAX_WORKING_SET, load_recipe, publish_directory
+from pack import MASTER, SUPPORTED_EXECUTABLES, MAX_MANIFEST, MAX_WORKING_SET, load_recipe, publish_directory
+from text_layouts import describe_resource
 
 
 def safe_path(path):
@@ -36,17 +37,17 @@ def archive_name(resource, schema):
     family = resource.get('family')
     if request.startswith('ffx_data/ffx_ps2/'):
         name = request[len('ffx_data/'):]
-        relative = name.removeprefix(KERNEL)
-        if family == 'menu' and name.startswith(KERNEL) and relative in MENU:
-            return name
-        if family == 'battle' and name.startswith(KERNEL) and relative in BATTLE:
-            return name
-        if family == 'events' and schema == 2 and name.startswith(MASTER) and EVENT.fullmatch(name[len(MASTER):]):
-            return name
         if family == 'font_metrics' and name == METRICS:
             return name
+        if name.startswith(MASTER):
+            layout = describe_resource(name[len(MASTER):])
+            if layout.family == family and schema >= layout.minimum_api:
+                return layout.member
     if family == 'font_atlas' and request.startswith(ATLAS_ROOT) and request[len(ATLAS_ROOT):] in ATLAS_NAMES:
         return request
+    if family=='ui_texture' and schema>=4:
+        profiles=json.loads(Path(__file__).with_name('graphics_profiles.json').read_text())['entries']
+        if any(p['request']=='/'+request for p in profiles):return request
     raise AssetError('Resource is outside the supported source families')
 
 
@@ -57,8 +58,8 @@ def prepare(vbf: Path, package: Path, output: Path):
     install = vbf.parent.parent if vbf.parent.name.lower() == 'data' and (vbf.parent.parent/'FFX.exe').is_file() else vbf.parent
     if output.exists() or output == install or install in output.parents or output == package or package in output.parents:
         raise AssetError('Use a new output outside the installation and package')
-    manifest = load_recipe(package/'manifest.json')
-    if not isinstance(manifest, dict) or type(manifest.get('schema_version')) is not int or type(manifest.get('hook_api')) is not int or (manifest.get('schema_version'), manifest.get('hook_api')) not in ((1, 1), (2, 2)) or manifest.get('executable_sha256') != EXE_SHA:
+    manifest = load_recipe(package/'manifest.json',MAX_MANIFEST)
+    if not isinstance(manifest, dict) or type(manifest.get('schema_version')) is not int or type(manifest.get('hook_api')) is not int or (manifest.get('schema_version'), manifest.get('hook_api')) not in ((1, 1), (2, 2), (3, 3), (4, 4)) or manifest.get('executable_sha256') not in SUPPORTED_EXECUTABLES:
         raise AssetError('Unsupported package version or executable profile')
     resources = manifest.get('resources')
     if not isinstance(resources, list) or not 1 <= len(resources) <= 4096:

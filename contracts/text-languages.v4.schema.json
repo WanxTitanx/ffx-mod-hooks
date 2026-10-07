@@ -1,0 +1,342 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MOD-006 admitted PT-BR package v4",
+  "description": "Closed API 4 catalogue with bounded container-backed text growth, preserved control identities, source/output-bound UI textures and paired optional ordinal glyphs. The native validator enforces hashes, immutable gameplay fields and size limits. Layout expansion still requires live visual acceptance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capability",
+    "hook_api",
+    "locale",
+    "display_name",
+    "pack_version",
+    "base_locale",
+    "fallback",
+    "activation",
+    "executable_sha256",
+    "coverage",
+    "resources",
+    "fonts"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 4
+    },
+    "capability": {
+      "const": "ffx.text-locale"
+    },
+    "hook_api": {
+      "const": 4
+    },
+    "locale": {
+      "const": "pt-BR"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "pack_version": {
+      "type": "string",
+      "pattern": "^[0-9]{1,9}\\.[0-9]{1,9}\\.[0-9]{1,9}$"
+    },
+    "base_locale": {
+      "const": 1
+    },
+    "fallback": {
+      "const": "native"
+    },
+    "activation": {
+      "const": "restart"
+    },
+    "executable_sha256": {
+      "enum": [
+        "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+        "0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d"
+      ]
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "menu",
+        "battle",
+        "events",
+        "subtitles",
+        "texture_text"
+      ],
+      "properties": {
+        "menu": {
+          "enum": [
+            "partial",
+            "unavailable"
+          ]
+        },
+        "battle": {
+          "enum": [
+            "partial",
+            "unavailable"
+          ]
+        },
+        "events": {
+          "enum": [
+            "partial",
+            "unavailable"
+          ]
+        },
+        "subtitles": {
+          "enum": [
+            "partial",
+            "unavailable"
+          ]
+        },
+        "texture_text": {
+          "enum": [
+            "partial",
+            "unavailable"
+          ]
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "family",
+          "request",
+          "path",
+          "source_size",
+          "size",
+          "source_sha256",
+          "sha256"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/id"
+          },
+          "family": {
+            "enum": [
+              "menu",
+              "battle",
+              "events",
+              "font_metrics",
+              "font_atlas",
+              "ui_texture"
+            ]
+          },
+          "request": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240,
+            "pattern": "^[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*$"
+          },
+          "source_size": {
+            "$ref": "#/$defs/size"
+          },
+          "size": {
+            "$ref": "#/$defs/size"
+          },
+          "source_sha256": {
+            "$ref": "#/$defs/hash"
+          },
+          "sha256": {
+            "$ref": "#/$defs/hash"
+          },
+          "font": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "family": {
+                  "enum": [
+                    "menu",
+                    "battle",
+                    "events"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "font"
+              ]
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "font"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "fonts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "encoding",
+          "preserve_native",
+          "metrics",
+          "atlases",
+          "glyphs"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/id"
+          },
+          "encoding": {
+            "enum": [
+              "ffx-western-v1",
+              "ffx-western-v2"
+            ]
+          },
+          "preserve_native": {
+            "const": true
+          },
+          "metrics": {
+            "$ref": "#/$defs/id"
+          },
+          "atlases": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/id"
+            }
+          },
+          "glyphs": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 6,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                {
+                  "unicode": 227,
+                  "code": 242,
+                  "width": 31
+                },
+                {
+                  "unicode": 245,
+                  "code": 243,
+                  "width": 33
+                },
+                {
+                  "unicode": 195,
+                  "code": 244,
+                  "width": 42
+                },
+                {
+                  "unicode": 213,
+                  "code": 245,
+                  "width": 42
+                },
+                {
+                  "unicode": 186,
+                  "code": 246,
+                  "width": 21
+                },
+                {
+                  "unicode": 170,
+                  "code": 247,
+                  "width": 20
+                }
+              ]
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "encoding": {
+                  "const": "ffx-western-v2"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "glyphs": {
+                  "minItems": 6,
+                  "maxItems": 6
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "glyphs": {
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "enum": [
+                      {
+                        "unicode": 227,
+                        "code": 242,
+                        "width": 31
+                      },
+                      {
+                        "unicode": 245,
+                        "code": 243,
+                        "width": 33
+                      },
+                      {
+                        "unicode": 195,
+                        "code": 244,
+                        "width": 42
+                      },
+                      {
+                        "unicode": 213,
+                        "code": 245,
+                        "width": 42
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$"
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 67108864
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "not": {
+        "const": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    }
+  }
+}

@@ -2,8 +2,8 @@
 // Inventory additions, random selection, currency and AP are separate owners.
 static void SpiraRewardCases(){
     using Accumulate=int(__cdecl*)(unsigned,int,void*);
-    const auto accumulate=reinterpret_cast<Accumulate>(base+0x398AD0);
-    auto* rewards=reinterpret_cast<unsigned char*>(base+0x1F10EA0);
+    const auto accumulate=reinterpret_cast<Accumulate>(base+(::FfxHooks::ExecutableProfile::Rva<0x398AD0>()));
+    auto* rewards=reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x1F10EA0>()));
     const auto reset=[&](){std::memset(rewards,0,0x1B0);};
     for(unsigned owner=0;owner<18;++owner){Equip(owner,1,{});Actor(owner)[0xDC8]=0;}
     Actor(0)[0xDC8]=Actor(1)[0xDC8]=1;

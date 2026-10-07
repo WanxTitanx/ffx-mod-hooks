@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "TextLanguageHook.h"
 #include "FahrenheitCoexistenceCore.h"
 #include "FahrenheitServices.h"
@@ -22,8 +23,8 @@
 namespace FfxHooks::TextLanguage::Native {
 namespace {
 static_assert(sizeof(void*)==4,"The profiled text adapter is x86 only");
-constexpr std::uintptr_t OpenRva=0x208100,FontRva=0x4AC0E0;
-constexpr std::uintptr_t LocalePointerRva=0x8DED48,WesternWidthsRva=0x1441DA4;
+constexpr std::uintptr_t OpenRva=(::FfxHooks::ExecutableProfile::Rva<0x208100>()),FontRva=(::FfxHooks::ExecutableProfile::Rva<0x4AC0E0>());
+constexpr std::uintptr_t LocalePointerRva=(::FfxHooks::ExecutableProfile::Rva<0x8DED48>()),WesternWidthsRva=(::FfxHooks::ExecutableProfile::Rva<0x1441DA4>());
 struct Stream {HANDLE file=INVALID_HANDLE_VALUE;void* archive=nullptr;};
 static_assert(sizeof(Stream)==8,"Native stream extent");
 using OpenFn=int(__thiscall*)(Stream*,const char*,int,int,int,int);
@@ -86,15 +87,15 @@ bool NativeSource(Context& context,const Resource& resource,Bytes& bytes){
   // Use the provider-owned constructor chain. The existing g_sourceRead fence
   // prevents our resource callback from redirecting this source-verification read.
   using Constructor=Stream*(__thiscall*)(Stream*,const char*,int,unsigned,unsigned,int);
-  const auto create=reinterpret_cast<Constructor>(context.base+0x207D80);
+  const auto create=reinterpret_cast<Constructor>(context.base + (::FfxHooks::ExecutableProfile::Rva<0x207D80>()));
   if(create(&stream,path.c_str(),1,0,0,1)!=&stream||
      (stream.file==INVALID_HANDLE_VALUE&&!stream.archive))return false;
  }else if(context.originalOpen(&stream,path.c_str(),1,0,0,1)!=0)return false;
- struct Closing {Stream* stream;CloseFn close;~Closing(){close(stream);}} closing{&stream,reinterpret_cast<CloseFn>(context.base+0x207F40)};
- const auto size=reinterpret_cast<SizeFn>(context.base+0x207F80)(&stream);
+ struct Closing {Stream* stream;CloseFn close;~Closing(){close(stream);}} closing{&stream,reinterpret_cast<CloseFn>(context.base + (::FfxHooks::ExecutableProfile::Rva<0x207F40>()))};
+ const auto size=reinterpret_cast<SizeFn>(context.base + (::FfxHooks::ExecutableProfile::Rva<0x207F80>()))(&stream);
  if(size!=resource.sourceSize||size>MaxResourceBytes)return false;
  Bytes result(size);
- if(reinterpret_cast<ReadFn>(context.base+0x208250)(&stream,result.data(),size)!=size)return false;
+ if(reinterpret_cast<ReadFn>(context.base + (::FfxHooks::ExecutableProfile::Rva<0x208250>()))(&stream,result.data(),size)!=size)return false;
  bytes=std::move(result);return true;
 }
 bool ReadResource(void* host,const Resource& resource,bool source,Bytes& bytes){

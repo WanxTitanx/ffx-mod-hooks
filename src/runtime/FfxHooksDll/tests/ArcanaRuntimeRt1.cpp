@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "PrivatePeFixture.h"
 #include "ArcanaFieldFixture.h"
@@ -14,6 +15,24 @@
 #include <cstdio>
 #include <fstream>
 #include <cstring>
+static std::uintptr_t diagnosticBase=0;
+static LONG WINAPI NativeDiagnostic(EXCEPTION_POINTERS* exception){
+    static LONG reporting=0;
+    if(exception->ExceptionRecord->ExceptionCode!=EXCEPTION_ACCESS_VIOLATION||
+       InterlockedExchange(&reporting,1))return EXCEPTION_CONTINUE_SEARCH;
+    const auto* c=exception->ContextRecord;
+    std::printf("ARCANA_PRIVATE_EXCEPTION rva=%08lX eax=%08lX ecx=%08lX edx=%08lX\n",
+        static_cast<unsigned long>(c->Eip-diagnosticBase),c->Eax,c->Ecx,c->Edx);
+    auto frame=c->Ebp;
+    for(unsigned i=0;i<4&&frame;++i){
+        __try {const auto* p=reinterpret_cast<const DWORD*>(frame);
+            std::printf("ARCANA_PRIVATE_STACK depth=%u returnRva=%08lX args=%08lX,%08lX,%08lX\n",i,
+                static_cast<unsigned long>(p[1]-diagnosticBase),p[2],p[3],p[4]);
+            const auto next=p[0];if(next<=frame||next-frame>1024*1024)break;frame=next;
+        } __except(EXCEPTION_EXECUTE_HANDLER){break;}
+    }
+    InterlockedExchange(&reporting,0);return EXCEPTION_CONTINUE_SEARCH;
+}
 #ifdef FFXHOOKS_SPIRA_COMPOSITION
 #include "SpiraKernelFixture.h"
 #include "../hooks/SpiraRuntime.h"
@@ -55,6 +74,7 @@ int main(int argc,char** argv){
     HMODULE image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES);
     if(!image||!PrivatePeFixture::NormalizeRelocations(image))return 2;
     const auto base=reinterpret_cast<std::uintptr_t>(image);
+    diagnosticBase=base;AddVectoredExceptionHandler(1,NativeDiagnostic);
     FfxHooks::RonsoPool::SaveImage save{};std::ifstream input(argv[2],std::ios::binary);
     if(!input.read(reinterpret_cast<char*>(save.data()),save.size()))return 2;
     const std::wstring root(argv[3],argv[3]+std::strlen(argv[3]));const auto path=root+L"\\ffx_008";
@@ -79,10 +99,10 @@ int main(int argc,char** argv){
     std::vector<unsigned char> source((std::istreambuf_iterator<char>(kernelInput)),{});
     auto kernel=SpiraKernelFixture::Build(source);
     const auto kernelAddress=reinterpret_cast<std::uintptr_t>(kernel.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&kernelAddress,4);
-    const auto kernelSize=static_cast<unsigned short>(kernel.size());std::memcpy(reinterpret_cast<void*>(base+0xD2A970),&kernelSize,2);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&kernelAddress,4);
+    const auto kernelSize=static_cast<unsigned short>(kernel.size());std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),&kernelSize,2);
     std::array<unsigned,8> language{};language[1]=1;const auto languageAddress=reinterpret_cast<std::uintptr_t>(language.data());
-    std::memcpy(reinterpret_cast<void*>(base+0x8DED48),&languageAddress,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x8DED48>()),&languageAddress,4);
     const bool spiraFirst=std::strcmp(argv[4],"spira-first")==0;
     const bool sharedOnly=std::strcmp(argv[4],"shared-only")==0;
     if(spiraFirst)Check(FfxHooks::SpiraAbilities::Prepare(base,{true,true},false,Log),"Spira admits its producers before Arcana");
@@ -127,15 +147,16 @@ int main(int argc,char** argv){
     Check(!Runtime::Capture(state,generation),"runtime waits for an observed native load");
     // Only memcpy and the unrelated localized-name tail are substituted. The
     // real LoadDataFromBuffer body and installed producer boundary execute.
-    const auto* copyCall=reinterpret_cast<const unsigned char*>(base+0x4B5462);
+    const auto* copyCall=reinterpret_cast<const unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0x4B5462>());
     std::int32_t copyDisplacement=0;std::memcpy(&copyDisplacement,copyCall+1,4);
-    const unsigned copyTarget=static_cast<unsigned>(0x4B5467+static_cast<std::int64_t>(copyDisplacement));
-    Check(copyCall[0]==0xE8&&copyTarget==0x54925C&&Patch(base,copyTarget,reinterpret_cast<void*>(Copy)),"private native memcpy dependency supplied at the actual call target");
-    const auto* branch=reinterpret_cast<const unsigned char*>(base+0x4B546B);
+    const unsigned copyTarget=static_cast<unsigned>(::FfxHooks::ExecutableProfile::Rva<0x4B5467>()+static_cast<std::int64_t>(copyDisplacement));
+    const unsigned expectedCopy=::FfxHooks::ExecutableProfile::Steam20261001?0x549256u:0x54925Cu;
+    Check(copyCall[0]==0xE8&&copyTarget==expectedCopy&&Patch(base,copyTarget,reinterpret_cast<void*>(Copy)),"private native memcpy dependency supplied at the actual call target");
+    const auto* branch=reinterpret_cast<const unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0x4B546B>());
     std::int32_t jump=0;std::memcpy(&jump,branch+1,4);
-    const unsigned tail=static_cast<unsigned>(0x4B5470+static_cast<std::int64_t>(jump));
+    const unsigned tail=static_cast<unsigned>(::FfxHooks::ExecutableProfile::Rva<0x4B5470>()+static_cast<std::int64_t>(jump));
     Check(branch[0]==0xE9&&Patch(base,tail,reinterpret_cast<void*>(Nothing)),"unrelated post-load name synchronization isolated");
-    *reinterpret_cast<unsigned char*>(base+0xD2A8E0)=0;
+    *reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())=0;
     if(legacy){
         Record previous;previous.packHash={0x53,0xb3,0xc6,0x92,0xd7,0x8b,0x84,0x6e,0x0d,0x25,0x56,0xd2,0x27,0x17,0xc0,0x03,0x9f,0x01,0xf4,0xd5,0x51,0xfb,0xcb,0x3a,0x56,0x41,0x27,0x24,0xda,0x4e,0x16,0x3e};
         if(priorBalance)previous.packHash={0xb3,0x1a,0xd5,0x8a,0x8c,0x3e,0xe8,0xe8,0x98,0x9c,0x3d,0xea,0x34,0x87,0xb4,0x18,0xf1,0x1b,0x3a,0x30,0x06,0x97,0x4b,0xb9,0x02,0xa8,0xe3,0x13,0x4c,0x48,0x9e,0x75};
@@ -150,7 +171,7 @@ int main(int argc,char** argv){
         Check(FfxHooks::EquipmentWorkshop::Fingerprint(save.data(),save.size(),previous.nativeHash)&&previousStore.Prepare(path,previous)&&previousStore.Commit(path,previous.nativeHash),"fixture creates a save extension from the previously deployed balance pack");
     }
     FfxHooks::NativeSaveEvents::ReadCompleted(path.c_str(),save.data(),save.data(),save.size());
-    reinterpret_cast<int(__cdecl*)(void*,const void*)>(base+0x4B5450)(reinterpret_cast<void*>(base+0xD2CA90),save.data());
+    reinterpret_cast<int(__cdecl*)(void*,const void*)>(base+::FfxHooks::ExecutableProfile::Rva<0x4B5450>())(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2CA90>()),save.data());
 #ifdef FFXHOOKS_SPIRA_COMPOSITION
     if(!sharedOnly){FfxHooks::SpiraAbilities::TickMainThread();Check(FfxHooks::SpiraAbilities::Ready(),"Spira kernel is admitted after the same native load");}
 #endif
@@ -172,16 +193,16 @@ int main(int argc,char** argv){
         ArcanaFieldFixture::FinalStores field;
         Check(field.Open(base,0,12345,200),"private fixture supplies bounded native field inputs");
         Check(Runtime::EquipCard(generation,state.revision,0,0,21,false)==Error::None,"World equips through the real field/clamp producer");
-        unsigned maximum=0;std::memcpy(&maximum,reinterpret_cast<void*>(base+0xD3205C+0x24),4);
+        unsigned maximum=0;std::memcpy(&maximum,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD3205C>()+0x24),4);
         Check(maximum==18517,"World enables BHP and its HP bonus before the original native maximum-HP clamp");
         Check(Runtime::Capture(state,generation),"field refresh preserves the owning session");
         Check(Runtime::EquipCard(generation,state.revision,0,1,3,false)==Error::None,"Empress joins the same native field calculation");
-        std::memcpy(&maximum,reinterpret_cast<void*>(base+0xD3205C+0x24),4);
+        std::memcpy(&maximum,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD3205C>()+0x24),4);
         Check(maximum==23455,"HP percentages apply exactly once on the native pre-cap value");
-        reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x3861B0)(0);
-        std::memcpy(&maximum,reinterpret_cast<void*>(base+0xD3205C+0x24),4);
+        reinterpret_cast<int(__cdecl*)(unsigned)>(base+::FfxHooks::ExecutableProfile::Rva<0x3861B0>())(0);
+        std::memcpy(&maximum,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD3205C>()+0x24),4);
         Check(maximum==23455,"repeated native recalculation does not compound card bonuses");
-        std::memcpy(save.data()+64,reinterpret_cast<void*>(base+0xD2CA90),0x68C0);FfxHooks::RonsoPool::SealSave(save);
+        std::memcpy(save.data()+64,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2CA90>()),0x68C0);FfxHooks::RonsoPool::SealSave(save);
     }
     FfxHooks::NativeSaveEvents::WriteTransaction transaction;auto projected=save;
     Check(FfxHooks::NativeSaveEvents::ProjectWrite(path.c_str(),save.data(),projected.data(),save.size(),transaction),"bound Arcana session participates in copied-image serialization");
@@ -202,9 +223,9 @@ int main(int argc,char** argv){
     auto rejectedImage=save;const auto output=reinterpret_cast<std::uintptr_t>(rejectedImage.data());
     const auto count=static_cast<std::uint32_t>(rejectedImage.size());
     const unsigned char returnAfterRead[]={0x83,0xC4,0x10,0xC3};
-    Check(WorkshopFieldFixture::Write(base+0x8E72F4,&count,4)&&WorkshopFieldFixture::Write(base+0x8E72F8,&output,4)&&
-          WorkshopFieldFixture::Write(base+0x2F0228,returnAfterRead,sizeof(returnAfterRead)),"private fixture retains the real native fread caller and importer");
-    Check(stream&&RejectedNativeRead(stream,reinterpret_cast<void*>(base+0x2F0213))==0,
+    Check(WorkshopFieldFixture::Write(base+::FfxHooks::ExecutableProfile::Rva<0x8E72F4>(),&count,4)&&WorkshopFieldFixture::Write(base+::FfxHooks::ExecutableProfile::Rva<0x8E72F8>(),&output,4)&&
+          WorkshopFieldFixture::Write(base+::FfxHooks::ExecutableProfile::Rva<0x2F0228>(),returnAfterRead,sizeof(returnAfterRead)),"private fixture retains the real native fread caller and importer");
+    Check(stream&&RejectedNativeRead(stream,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x2F0213>()))==0,
           "unknown save identity is rejected by the actual native I/O adapter");
     if(stream)close(stream);
     Check(!Runtime::Capture(state,generation),"a rejected native read cannot mint a fresh admitted Arcana session");

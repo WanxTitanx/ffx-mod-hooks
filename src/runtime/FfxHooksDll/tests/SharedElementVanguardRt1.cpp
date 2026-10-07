@@ -1,6 +1,7 @@
 // Jarvis-HOOK: both real owners in an isolated mapped executable; no game.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "PrivatePeFixture.h"
 #include "../hooks/SharedElementRuntime.h"
@@ -27,7 +28,7 @@ int main(int argc,char** argv){
     const auto base=reinterpret_cast<std::uintptr_t>(image);
     std::array<unsigned char,31*0xF90> actors{};
     const auto address=reinterpret_cast<std::uintptr_t>(actors.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD334CC),&address,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&address,4);
     for(unsigned i=0;i<31;++i){actors[i*0xF90+0xC]=static_cast<unsigned char>(i);actors[i*0xF90+0xDC8]=1;}
     auto* target=actors.data()+18*0xF90;target[0x5DD]=2;
     std::array<unsigned char,96> command{};

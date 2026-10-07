@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include <bcrypt.h>
 #include <array>
@@ -40,7 +41,7 @@ template<class T> static void Put(std::uintptr_t at, T value) { std::memcpy(rein
 template<class T> static T Get(std::uintptr_t at) { T value{}; std::memcpy(&value, reinterpret_cast<void*>(at), sizeof(value)); return value; }
 template<class T> static std::uintptr_t Ptr(T& value) { return reinterpret_cast<std::uintptr_t>(value.data()); }
 static std::uint32_t Arena() { return static_cast<std::uint32_t>(Ptr(heap) + heap.size()); }
-static std::uintptr_t Slot(unsigned i) { return image + 0xEA40C0 + i * 32; }
+static std::uintptr_t Slot(unsigned i) { return image + ::FfxHooks::ExecutableProfile::Rva<0xEA40C0>() + i * 32; }
 static void Initialize() {
     active.fill(-1); draw.fill(-1); records.fill(0); pool.fill(0); actors.fill(0);
     std::fill(heap.begin(), heap.end(), 0);
@@ -55,9 +56,9 @@ static void Initialize() {
     for (unsigned i = 0; i < 512; ++i) {
         std::memset(reinterpret_cast<void*>(Slot(i)), 0, 32); Put<std::uint32_t>(Slot(i), UINT32_MAX);
     }
-    Put(image + 0xEA4080, static_cast<std::uint32_t>(Ptr(pool)));
-    Put(image + 0xD2A95C, static_cast<std::uint32_t>(Ptr(resource)));
-    Put(image + 0xD334CC, static_cast<std::uint32_t>(Ptr(actors)));
+    Put(image + ::FfxHooks::ExecutableProfile::Rva<0xEA4080>(), static_cast<std::uint32_t>(Ptr(pool)));
+    Put(image + ::FfxHooks::ExecutableProfile::Rva<0xD2A95C>(), static_cast<std::uint32_t>(Ptr(resource)));
+    Put(image + ::FfxHooks::ExecutableProfile::Rva<0xD334CC>(), static_cast<std::uint32_t>(Ptr(actors)));
     Put(Ptr(resource) + 0x60, static_cast<std::uint32_t>(Ptr(resource) + 0x140));
     Put(Ptr(resource) + 0x74, static_cast<std::uint32_t>(Ptr(resource) + 0x1D40));
     Put(Ptr(resource) + 0x80, static_cast<std::uint32_t>(Ptr(resource) + 0x2B70));
@@ -88,11 +89,11 @@ static void __cdecl Cleanup() {
     for (unsigned i = 1; i <= registrations; ++i) {
         const auto record = Ptr(records) + i * 256;
         const auto buffer = Get<std::uint32_t>(record + 0xBC);
-        if (buffer) reinterpret_cast<void(__cdecl*)(std::uint32_t, std::uint32_t)>(image + 0x3FF0F0)(Arena(), buffer);
+        if (buffer) reinterpret_cast<void(__cdecl*)(std::uint32_t, std::uint32_t)>(image + ::FfxHooks::ExecutableProfile::Rva<0x3FF0F0>())(Arena(), buffer);
         Put<std::uint32_t>(record, 0); Put<std::uint32_t>(record + 0xBC, 0);
         Put<std::uint32_t>(Slot(i), UINT32_MAX);
     }
-    Put<std::uint32_t>(image + 0xD2A95C, 0);
+    Put<std::uint32_t>(image + ::FfxHooks::ExecutableProfile::Rva<0xD2A95C>(), 0);
 }
 static void Redirect(std::uintptr_t address, const void* function) {
     unsigned char bytes[5] = {0xE9};
@@ -107,7 +108,7 @@ static CallProducer Caller(std::uint32_t callRva, unsigned actor) {
     auto* code = reinterpret_cast<unsigned char*>(entry);
     code[0] = 0x68; Put<std::uint32_t>(entry + 1, static_cast<std::uint32_t>(Ptr(actors) + actor * 0xF90));
     code[5] = 0x68; Put<std::uint32_t>(entry + 6, actor);
-    code[10] = 0xE8; Put<std::int32_t>(entry + 11, static_cast<std::int32_t>(0x39ED60 - callRva - 5));
+    code[10] = 0xE8; Put<std::int32_t>(entry + 11, static_cast<std::int32_t>(::FfxHooks::ExecutableProfile::Rva<0x39ED60>() - callRva - 5));
     code[15] = 0x83; code[16] = 0xC4; code[17] = 8; code[18] = 0xC3;
     FlushInstructionCache(GetCurrentProcess(), code, 19);
     return reinterpret_cast<CallProducer>(entry);
@@ -126,11 +127,11 @@ int main(int argc, char** argv) {
     assert(resource.size() == 330720);
     Initialize();
     if (!std::strcmp(mode, "off") || !std::strcmp(mode, "validate")) {
-        std::array<unsigned char, 32> before{}; std::memcpy(before.data(), reinterpret_cast<void*>(image + 0x39ED60), 32);
+        std::array<unsigned char, 32> before{}; std::memcpy(before.data(), reinterpret_cast<void*>(image + ::FfxHooks::ExecutableProfile::Rva<0x39ED60>()), 32);
         assert(!V::Start(image, std::strcmp(mode, "off") != 0, !std::strcmp(mode, "validate"), nullptr));
-        assert(!std::memcmp(before.data(), reinterpret_cast<void*>(image + 0x39ED60), 32) && !V::Installed());
+        assert(!std::memcmp(before.data(), reinterpret_cast<void*>(image + ::FfxHooks::ExecutableProfile::Rva<0x39ED60>()), 32) && !V::Installed());
     } else if (!std::strcmp(mode, "signature")) {
-        *reinterpret_cast<unsigned char*>(image + 0x410D40) ^= 1;
+        *reinterpret_cast<unsigned char*>(image + ::FfxHooks::ExecutableProfile::Rva<0x410D40>()) ^= 1;
         assert(!V::Start(image, true, false, nullptr) && !V::Installed());
     } else {
         // The real producer, detours, native allocator, draw-list insertion and
@@ -138,30 +139,30 @@ int main(int argc, char** argv) {
         // fixture boundaries; no game process is launched.
         std::array<unsigned char, V::kActors * 0xF90> vanillaExpected{};
         if (!std::strcmp(mode, "vanilla")) {
-            Redirect(image + 0x3FC200, reinterpret_cast<void*>(&VanillaQueue));
+            Redirect(image + ::FfxHooks::ExecutableProfile::Rva<0x3FC200>(), reinterpret_cast<void*>(&VanillaQueue));
             Put<std::uint8_t>(Ptr(actors) + 0x5D9, 0x0F);
             std::memset(reinterpret_cast<void*>(Ptr(actors) + 0xE90), 0, 16);
-            const auto native = reinterpret_cast<int(__cdecl*)(unsigned, void*)>(image + 0x39ED60);
+            const auto native = reinterpret_cast<int(__cdecl*)(unsigned, void*)>(image + ::FfxHooks::ExecutableProfile::Rva<0x39ED60>());
             assert(native(0, actors.data()) == 4);
             assert((vanillaPrograms == std::vector<int>{60,61,62,63}));
             vanillaExpected = actors;
             Initialize(); vanillaPrograms.clear();
         }
         assert(V::Start(image, true, false, nullptr));
-        Redirect(image + 0x3FD710, reinterpret_cast<void*>(&Register));
+        Redirect(image + ::FfxHooks::ExecutableProfile::Rva<0x3FD710>(), reinterpret_cast<void*>(&Register));
         // Keep the cleanup detour's original trampoline; its relocated initial
         // call reaches a private callback at the native FreeAllWeaponEffects site.
         // Replace the original body's tail with return after the first call.
-        Redirect(image + 0x3FCA10, reinterpret_cast<void*>(&Cleanup));
-        *reinterpret_cast<unsigned char*>(image + 0x3FB096) = 0x5E; // pop esi
-        *reinterpret_cast<unsigned char*>(image + 0x3FB097) = 0xC3; // ret
+        Redirect(image + ::FfxHooks::ExecutableProfile::Rva<0x3FCA10>(), reinterpret_cast<void*>(&Cleanup));
+        *reinterpret_cast<unsigned char*>(image + ::FfxHooks::ExecutableProfile::Rva<0x3FB096>()) = 0x5E; // pop esi
+        *reinterpret_cast<unsigned char*>(image + ::FfxHooks::ExecutableProfile::Rva<0x3FB097>()) = 0xC3; // ret
         FlushInstructionCache(GetCurrentProcess(), module, 0x237D000);
         const auto actor = Ptr(actors);
         Put<std::uint8_t>(actor + 0x5D9, 0x90);
         if (!std::strcmp(mode, "vanilla")) {
             Put<std::uint8_t>(actor + 0x5D9, 0x0F);
             std::memset(reinterpret_cast<void*>(actor + 0xE90), 0, 16);
-            assert(Caller(0x393B93, 0)() == 4 && actors == vanillaExpected && registrations == 0);
+            assert(Caller((::FfxHooks::ExecutableProfile::Rva<0x393B93>()), 0)() == 4 && actors == vanillaExpected && registrations == 0);
             assert((vanillaPrograms == std::vector<int>{60,61,62,63}));
             Put<std::uint8_t>(actor + 0x5D9, 0);
             Put<std::uint8_t>(actor + 0x5EC, 100); // Blindness Darkstrike does not request elemental Shadow.
@@ -178,9 +179,9 @@ int main(int argc, char** argv) {
             DWORD ignored = 0; assert(VirtualProtect(reinterpret_cast<void*>(Slot(0)), 0x4000, PAGE_READONLY, &ignored));
         }
         auto before = actors;
-        const auto producer = reinterpret_cast<int(__cdecl*)(unsigned, void*)>(image + 0x39ED60);
+        const auto producer = reinterpret_cast<int(__cdecl*)(unsigned, void*)>(image + ::FfxHooks::ExecutableProfile::Rva<0x39ED60>());
         if (!std::strcmp(mode, "caller")) assert(producer(0, reinterpret_cast<void*>(actor)) == 0);
-        else assert(Caller(0x393B93, 0)() == 0);
+        else assert(Caller((::FfxHooks::ExecutableProfile::Rva<0x393B93>()), 0)() == 0);
         const bool rejected = !std::strcmp(mode, "foreign") || !std::strcmp(mode, "oom") || !std::strcmp(mode, "readonly") || !std::strcmp(mode, "caller");
         if (rejected) {
             assert(registrations == 0 && actors == before && Get<std::uint16_t>(Arena() - 2) == 0);
@@ -197,15 +198,15 @@ int main(int argc, char** argv) {
             }
             V::TickMainThread(); assert(registrations == 2);
             if (!std::strcmp(mode, "epoch")) {
-                reinterpret_cast<void(__cdecl*)()>(image + 0x3FB090)();
+                reinterpret_cast<void(__cdecl*)()>(image + ::FfxHooks::ExecutableProfile::Rva<0x3FB090>())();
                 assert(cleanups == 1 && Get<std::uint16_t>(Arena() - 2) == 0);
                 Initialize(); Put<std::uint8_t>(Ptr(actors) + 0x5D9, 0x90);
-                assert(Caller(0x393B93, 0)() == 0 && registrations == 2);
+                assert(Caller((::FfxHooks::ExecutableProfile::Rva<0x393B93>()), 0)() == 0 && registrations == 2);
                 assert(Get<std::uint16_t>(Arena() - 2) == 2); // Same root/pool addresses, new battle generation.
             }
             if (!std::strcmp(mode, "thread")) {
                 Put<std::uint8_t>(Ptr(actors) + 0xF90 + 0x5D9, 0x90);
-                const auto workerCall = Caller(0x3A7265, 1);
+                const auto workerCall = Caller((::FfxHooks::ExecutableProfile::Rva<0x3A7265>()), 1);
                 auto thread = CreateThread(nullptr, 0, &WrongThread, reinterpret_cast<void*>(workerCall), 0, nullptr);
                 assert(thread && WaitForSingleObject(thread, 5000) == WAIT_OBJECT_0); CloseHandle(thread);
                 assert(registrations == 2 && Get<std::uint16_t>(Ptr(actors) + 0xF90 + 0xE28) == 0);
@@ -216,7 +217,7 @@ int main(int argc, char** argv) {
             assert(Get<std::uint16_t>(Ptr(records) + 512 + 0xB0) & 0x4000);
             V::RequestStop(); V::TickMainThread();
             assert(Get<std::uint16_t>(Ptr(records) + 256 + 0xB0) & 0x4000);
-            reinterpret_cast<void(__cdecl*)()>(image + 0x3FB090)();
+            reinterpret_cast<void(__cdecl*)()>(image + ::FfxHooks::ExecutableProfile::Rva<0x3FB090>())();
             assert(cleanups == (!std::strcmp(mode, "epoch") ? 2u : 1u) && Get<std::uint16_t>(Arena() - 2) == 0);
         }
     }

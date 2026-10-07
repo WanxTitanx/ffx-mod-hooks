@@ -1,5 +1,6 @@
 // Jarvis-HOOK: isolated x86 execution of the production Nova stub and native clamp graph.
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include "../hooks/NovaSuperDamageHook.cpp"
 #include "../hooks/CombatExtensionBus.h"
 #include "../hooks/MinHookBatchCoordinator.h"
@@ -72,7 +73,7 @@ void TestGraph(bool bypass,bool trace) {
     Expect(image!=nullptr,"fixture image allocated");
     if(!image)return;
     const uintptr_t base=reinterpret_cast<uintptr_t>(image);
-    std::memcpy(image+0x38EDCB,original,sizeof(original));
+    std::memcpy(image+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>(),original,sizeof(original));
     uintptr_t patch=0,resume=0;
     uint8_t saved[kPatchLen]={};
     Expect(ResolveClampPatchSite(base,&patch,&resume,saved),"production resolver accepts exact native clamp graph");
@@ -82,7 +83,7 @@ void TestGraph(bool bypass,bool trace) {
     Expect(BuildStub(resume,bypass,trace,&stub,&length),"production native stub builds");
     if(!stub){VirtualFree(image,0,MEM_RELEASE);return;}
     DWORD prior=0;
-    Expect(VirtualProtect(image+0x38E000,0x1000,PAGE_EXECUTE_READ,&prior)!=FALSE,"fixture code sealed");
+    Expect(VirtualProtect(image+::FfxHooks::ExecutableProfile::Rva<0x38E000>(),0x1000,PAGE_EXECUTE_READ,&prior)!=FALSE,"fixture code sealed");
     void* trampoline=nullptr;
     Expect(MH_CreateHook(reinterpret_cast<void*>(patch),stub,&trampoline)==MH_OK,"real MinHook creates fixture detour");
     const auto report=MinHookBatch::EnableBatch(&MinHookBatch::ProcessCoordinator(),
@@ -105,7 +106,7 @@ void TestGraph(bool bypass,bool trace) {
     };
     for(const auto& c:cases) {
         Result result{};
-        const bool ran=GuardedInvoke(c.actor,c.damage,c.cap,&result,image+0x38EDCB,c.command,c.remaining);
+        const bool ran=GuardedInvoke(c.actor,c.damage,c.cap,&result,image+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>(),c.command,c.remaining);
         Expect(ran&&result.damage==c.want,"only Kimahri Nova HP bypasses upper cap; lower-floor and other paths remain vanilla");
         if(ran)Expect(result.ecx==0x13572468u&&result.edx==0x24681357u&&result.fpu==1.0f&&
             std::memcmp(result.xmm,xmmSeed,sizeof(xmmSeed))==0,"stub and logging preserve native register/FPU/SIMD context");
@@ -114,9 +115,9 @@ void TestGraph(bool bypass,bool trace) {
     const auto off=MinHookBatch::NeutralizeBatch(&MinHookBatch::ProcessCoordinator(),
         MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::NovaSuperDamage,&patch,1);
     Expect(off.neutralized,"fixture detour disabled");
-    Expect(std::memcmp(image+0x38EDCB,original,sizeof(original))==0,"OFF restores the exact native graph");
+    Expect(std::memcmp(image+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>(),original,sizeof(original))==0,"OFF restores the exact native graph");
     Result vanilla{};
-    Expect(GuardedInvoke(3,150000,99999,&vanilla,image+0x38EDCB,0x3073,3)&&vanilla.damage==99999,
+    Expect(GuardedInvoke(3,150000,99999,&vanilla,image+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>(),0x3073,3)&&vanilla.damage==99999,
            "disabled fixture returns to native damage cap");
     // Fixture calls have joined. Production retains published code for process lifetime.
     Expect(MH_RemoveHook(reinterpret_cast<void*>(patch))==MH_OK,"private fixture removed after quiescence");
@@ -140,7 +141,7 @@ void TestExtensionGraph(bool nova) {
     Expect(image!=nullptr,"extension fixture image allocated");
     if(!image){B::Unsubscribe(B::Slot::Elemental,&extensionObserver);return;}
     const uintptr_t base=reinterpret_cast<uintptr_t>(image);
-    std::memcpy(image+0x38EDCB,original,sizeof(original));
+    std::memcpy(image+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>(),original,sizeof(original));
     uintptr_t patch=0,resume=0;uint8_t saved[kPatchLen]={};
     Expect(ResolveClampPatchSite(base,&patch,&resume,saved),"extension uses the existing clamp owner");
     uint8_t* stub=nullptr;size_t length=0;
@@ -148,7 +149,7 @@ void TestExtensionGraph(bool nova) {
     Expect(BuildStub(resume,nova,false,&stub,&length),"finite policies can request the native clamp independently of Nova");
     if(!stub){VirtualFree(image,0,MEM_RELEASE);B::Unsubscribe(B::Slot::Elemental,&extensionObserver);return;}
     DWORD prior=0;
-    Expect(VirtualProtect(image+0x38E000,0x1000,PAGE_EXECUTE_READ,&prior)!=FALSE,"extension fixture is sealed");
+    Expect(VirtualProtect(image+::FfxHooks::ExecutableProfile::Rva<0x38E000>(),0x1000,PAGE_EXECUTE_READ,&prior)!=FALSE,"extension fixture is sealed");
     void* trampoline=nullptr;
     Expect(MH_CreateHook(reinterpret_cast<void*>(patch),stub,&trampoline)==MH_OK,"one real detour owns the upper clamp");
     const auto enabled=MinHookBatch::EnableBatch(&MinHookBatch::ProcessCoordinator(),
@@ -182,7 +183,7 @@ void TestExtensionGraph(bool nova) {
         B::DamageCall call{};call.user=static_cast<unsigned>(c.actor);call.commandId=c.command;
         B::DamageScope scope{};if(c.context)Expect(B::EnterDamage(scope,call),"private producer context entered");
         Result out{};
-        const bool ran=GuardedInvoke(c.actor,c.damage,c.cap,&out,image+0x38EDCB,c.command,c.pass);
+        const bool ran=GuardedInvoke(c.actor,c.damage,c.cap,&out,image+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>(),c.command,c.pass);
         Expect(ran&&out.damage==c.want,"real native clamp composes finite limits, lower floor and nonlethal requests");
         if(ran)Expect(out.ecx==0x13572468u&&out.edx==0x24681357u&&out.fpu==1.0f&&
             std::memcmp(out.xmm,xmmSeed,sizeof(xmmSeed))==0,"extension callbacks preserve registers and x87/SIMD state");
@@ -191,12 +192,12 @@ void TestExtensionGraph(bool nova) {
     Expect(extensionCalls>0,"production stub reaches the shared policy consumer");
     InterlockedExchange(&g_admission,2);
     Result stopped{};
-    Expect(GuardedInvoke(3,1200000,99999,&stopped,image+0x38EDCB,0x3073,3)&&stopped.damage==99999,
+    Expect(GuardedInvoke(3,1200000,99999,&stopped,image+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>(),0x3073,3)&&stopped.damage==99999,
            "stop closes both finite and legacy policies");
     Expect(B::Unsubscribe(B::Slot::Elemental,&extensionObserver),"extension descriptor retires");
     const auto disabled=MinHookBatch::NeutralizeBatch(&MinHookBatch::ProcessCoordinator(),
         MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::NovaSuperDamage,&patch,1);
-    Expect(disabled.neutralized&&std::memcmp(image+0x38EDCB,original,sizeof(original))==0,
+    Expect(disabled.neutralized&&std::memcmp(image+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>(),original,sizeof(original))==0,
            "extension OFF restores the exact lower and upper graph");
     Expect(MH_RemoveHook(reinterpret_cast<void*>(patch))==MH_OK,"quiescent extension fixture detour removed");
     VirtualFree(stub,0,MEM_RELEASE);VirtualFree(image,0,MEM_RELEASE);
@@ -230,12 +231,12 @@ void TestProductionLifecycle(const char* fixture,int mode) {
     if(!crt){FreeLibrary(module);return;}
     const auto nativeRead=GetProcAddress(crt,"fread"),nativeWrite=GetProcAddress(crt,"fwrite");
     DWORD importPrior=0,ignored=0;
-    VirtualProtect(reinterpret_cast<void*>(base+0x70C3F4),0x38,PAGE_READWRITE,&importPrior);
-    std::memcpy(reinterpret_cast<void*>(base+0x70C3F4),&nativeRead,4);
-    std::memcpy(reinterpret_cast<void*>(base+0x70C428),&nativeWrite,4);
-    VirtualProtect(reinterpret_cast<void*>(base+0x70C3F4),0x38,importPrior,&ignored);
+    VirtualProtect(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>()),0x38,PAGE_READWRITE,&importPrior);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>()),&nativeRead,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C428>()),&nativeWrite,4);
+    VirtualProtect(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>()),0x38,importPrior,&ignored);
     Expect(ValidateProfile(base),"production profile accepts the exact supported image");
-    const uintptr_t poolTargets[]={base+0x39AD40,base+0x39B5B7,base+0x39AF70,base+0x38F750,base+0x38C750,base+0x386BC0};
+    const uintptr_t poolTargets[]={base+::FfxHooks::ExecutableProfile::Rva<0x39AD40>(),base+::FfxHooks::ExecutableProfile::Rva<0x39B5B7>(),base+::FfxHooks::ExecutableProfile::Rva<0x39AF70>(),base+::FfxHooks::ExecutableProfile::Rva<0x38F750>(),base+::FfxHooks::ExecutableProfile::Rva<0x38C750>(),base+::FfxHooks::ExecutableProfile::Rva<0x386BC0>()};
     std::array<std::array<uint8_t,16>,6> poolBefore{};
     for(size_t i=0;i<poolBefore.size();++i)std::memcpy(poolBefore[i].data(),reinterpret_cast<void*>(poolTargets[i]),16);
     uint8_t* continuation=reinterpret_cast<uint8_t*>(base+RVA_FFX_BATTLE_DAMAGE_POST_WRITEBACK);
@@ -253,29 +254,29 @@ void TestProductionLifecycle(const char* fixture,int mode) {
         const bool changed=std::memcmp(poolBefore[i].data(),reinterpret_cast<void*>(poolTargets[i]),16)!=0;
         Expect(changed==(i==0?false:(i==5?io:ronso)),"native presence remains unpatched; Ronso owns capacity/entry/left/cost and compatibility only reset");
     }
-    Expect((*reinterpret_cast<FARPROC*>(base+0x70C3F4)!=nativeRead)==io&&
-           (*reinterpret_cast<FARPROC*>(base+0x70C428)!=nativeWrite)==io,
+    Expect((*reinterpret_cast<FARPROC*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>())!=nativeRead)==io&&
+           (*reinterpret_cast<FARPROC*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C428>())!=nativeWrite)==io,
            "save imports depend on Ronso or owned metadata, never Nova alone");
     Result out{};
-    Expect(GuardedInvoke(3,150000,99999,&out,reinterpret_cast<void*>(base+0x38EDCB),0x3073,3)&&
+    Expect(GuardedInvoke(3,150000,99999,&out,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>()),0x3073,3)&&
            out.damage==(bypass?150000:99999),"damage bypass depends only on Nova, independently of pool and logging");
     if(installed.ok) {
         RequestNovaSuperDamageStop();
         out={};
         Expect(!IsNovaSuperDamageHookInstalled()&&
-               GuardedInvoke(3,150000,99999,&out,reinterpret_cast<void*>(base+0x38EDCB),0x3073,3)&&out.damage==99999,
+               GuardedInvoke(3,150000,99999,&out,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>()),0x3073,3)&&out.damage==99999,
                "stop immediately closes future bypass admission while forwarding vanilla");
         Expect(!InstallNovaSuperDamageHook(base,bypass,trace,ronso,ClobberingLogger).ok,
                "a late install cannot reopen stopped admission");
         Expect(RemoveNovaSuperDamageHook(ClobberingLogger),"production retirement disables only its own target");
-        Expect(*reinterpret_cast<FARPROC*>(base+0x70C3F4)==nativeRead&&
-               *reinterpret_cast<FARPROC*>(base+0x70C428)==nativeWrite,
+        Expect(*reinterpret_cast<FARPROC*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>())==nativeRead&&
+               *reinterpret_cast<FARPROC*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C428>())==nativeWrite,
                "combined retirement restores both native save imports");
         MEMORY_BASIC_INFORMATION info{};
         if(damage)Expect(VirtualQuery(g_stub,&info,sizeof(info))!=0&&info.State==MEM_COMMIT,
                "published native stub remains allocated after retirement");
         Expect(RemoveNovaSuperDamageHook(ClobberingLogger),"retirement is idempotent");
-        Expect(std::memcmp(reinterpret_cast<void*>(base+0x38EDCB),kClampGraph,sizeof(kClampGraph))==0,
+        Expect(std::memcmp(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38EDCB>()),kClampGraph,sizeof(kClampGraph))==0,
                "production retirement restores the exact lower/upper clamp graph");
         for(size_t i=0;i<poolBefore.size();++i)Expect(std::memcmp(poolBefore[i].data(),reinterpret_cast<void*>(poolTargets[i]),16)==0,
                "retirement restores exact native capacity, availability, entry, left input, cost and reset bytes");

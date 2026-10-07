@@ -40,7 +40,7 @@ bool Invoke() {
     __except(GetExceptionCode()==0xE0420707?EXCEPTION_EXECUTE_HANDLER:EXCEPTION_CONTINUE_SEARCH){return false;}
 }
 void Run(std::uintptr_t base){
-    entry=reinterpret_cast<Producer>(base+0x38E680);
+    entry=reinterpret_cast<Producer>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
     Check(B::Subscribe(B::Slot::Elemental,&observer),"producer fixture registers its observer");
     DamageProducerForTests(reinterpret_cast<void*>(&Endpoint));nested=true;
     Check(Invoke()&&calls==2&&enters==2&&leaves==2,"outer and nested calls dispatch exactly once");

@@ -1,4 +1,5 @@
 #include "TextLanguageCore.h"
+#include "TextLanguageGraphicsCatalog.h"
 #include <algorithm>
 #include <array>
 #include <limits>
@@ -131,16 +132,11 @@ bool Version(std::string_view value){unsigned dots=0,part=0;for(char c:value){if
 std::string Digest(const Node& n,const char* key){auto s=Text(n,key,64);if(s.size()!=64)Reject("Invalid SHA-256 length");for(char c:s)if(!Digit(c)&&!(c>='a'&&c<='f'))Reject("SHA-256 must be lowercase hexadecimal");if(s==std::string(64,'0'))Reject("Zero SHA-256 is not a fingerprint");return s;}
 const Resource* ById(const Manifest& m,std::string_view id){for(const auto& r:m.resources)if(r.id==id)return &r;return nullptr;}
 bool IsText(Family f){return f==Family::Menu||f==Family::Battle||f==Family::Event;}
-bool Allowed(Family family,std::string_view request){
-    if(family==Family::Event)return IsEventRequest(request);
-    constexpr std::string_view kernel="/ffx_data/ffx_ps2/ffx/master/new_uspc/battle/kernel/";
+bool Allowed(Family family,std::string_view request,std::uint32_t api){
+    if(family==Family::Graphic)return api>=4&&FindGraphicProfile(request)!=nullptr;
     if(IsText(family)){
-        if(!Starts(request,kernel))return false;
-        const auto name=request.substr(kernel.size());
-        constexpr std::array<std::string_view,4> menu={"menu_txt.bin","mmain_txt.bin","config_txt.bin","save_txt.bin"};
-        constexpr std::array<std::string_view,8> battle={"arms_txt.bin","btl_txt.bin","btlend_txt.bin","build_txt.bin","item_txt.bin","name_txt.bin","status_txt.bin","summon_txt.bin"};
-        if(family==Family::Menu)return std::find(menu.begin(),menu.end(),name)!=menu.end();
-        return std::find(battle.begin(),battle.end(),name)!=battle.end();
+        TextLayout layout;
+        return DescribeTextRequest(request,layout)&&layout.family==family&&api>=layout.minimumApi;
     }
     if(family==Family::Metrics)return Starts(request,"/ffx_data/ffx_ps2/ffx/master/")&&request.find("/menu/")!=std::string_view::npos&&Ends(request,"/base.ftc");
     constexpr std::string_view atlas="/ffx_data/gamedata/ps3data/menu_us/base_ftc/d3d11/";
@@ -197,6 +193,53 @@ bool IsEventRequest(std::string_view request){
     if(!Identifier(name)||name.size()>32)return false;
     return file.size()==name.size()+4&&Starts(file,name)&&Ends(file,".bin");
 }
+bool DescribeTextRequest(std::string_view request,TextLayout& output){
+    constexpr std::string_view master="/ffx_data/ffx_ps2/ffx/master/new_uspc/";
+    constexpr std::string_view kernel="/ffx_data/ffx_ps2/ffx/master/new_uspc/battle/kernel/";
+    struct IndexedProfile { std::string_view name; Family family; std::uint16_t stride; std::uint8_t slots; std::uint32_t api; };
+    static constexpr IndexedProfile indexed[]={
+        {"menu_txt.bin",Family::Menu,16,4,1},{"mmain_txt.bin",Family::Menu,16,4,1},
+        {"config_txt.bin",Family::Menu,16,4,1},{"save_txt.bin",Family::Menu,16,2,1},
+        {"arms_txt.bin",Family::Battle,16,4,1},{"btl_txt.bin",Family::Battle,8,2,1},
+        {"btlend_txt.bin",Family::Battle,16,2,1},{"build_txt.bin",Family::Battle,16,2,1},
+        {"item_txt.bin",Family::Battle,16,4,1},{"name_txt.bin",Family::Battle,16,2,1},
+        {"status_txt.bin",Family::Battle,16,4,1},{"summon_txt.bin",Family::Battle,16,4,1},
+        {"a_ability.bin",Family::Battle,108,4,3},{"command.bin",Family::Battle,96,4,3},
+        {"important.bin",Family::Battle,20,4,3},{"item.bin",Family::Battle,96,4,3},
+        {"monmagic1.bin",Family::Battle,92,4,3},{"monmagic2.bin",Family::Battle,92,4,3},
+        {"monster1.bin",Family::Battle,128,4,3},{"monster2.bin",Family::Battle,128,4,3},
+        {"monster3.bin",Family::Battle,128,4,3},{"panel.bin",Family::Battle,24,4,3},
+        {"sphere.bin",Family::Battle,16,2,3},{"w_name.bin",Family::Battle,72,14,3}
+    };
+    if(Starts(request,kernel))for(const auto& profile:indexed){
+        if(request.substr(kernel.size())==profile.name){
+            // Indexed text references are offset/metadata pairs, including
+            // the two pairs in the compact battle-message record.
+            output={TextContainer::Indexed,profile.family,profile.api,profile.stride,profile.slots,4};
+            return true;
+        }
+    }
+    if(IsEventRequest(request)){output={TextContainer::Field,Family::Event,2,8,2,4};return true;}
+    if(Starts(request,master)){
+        const auto relative=request.substr(master.size());
+        if(relative=="menu/menumain.bin"){output={TextContainer::Field,Family::Menu,3,8,2,4};return true;}
+        if(relative=="menu/macrodic.dcp"){output={TextContainer::Macro,Family::Menu,3,0,2,2};return true;}
+        constexpr std::string_view banks="battle/btl/";
+        if(Starts(relative,banks)){
+            const auto tail=relative.substr(banks.size());
+            const auto slash=tail.find('/');
+            if(slash!=std::string_view::npos){
+                const auto name=tail.substr(0,slash),leaf=tail.substr(slash+1);
+                if(name.size()<=32&&Identifier(name)&&leaf.size()==name.size()+4&&Starts(leaf,name)&&Ends(leaf,".bin")){
+                    output={TextContainer::Field,Family::Battle,3,8,2,4};return true;
+                }
+            }
+        }
+    }
+    // Lockit interleaves Western game bytes with Flash ASCII/UTF-8 rows. A
+    // line-only parser does not prove which native consumer owns each row.
+    return false;
+}
 bool CanonicalRequest(std::string_view path,std::string& output){
     if(path.empty()||path.size()>255)return false;
     std::string value(path);std::replace(value.begin(),value.end(),'\\','/');
@@ -211,7 +254,7 @@ bool ParseManifest(std::string_view json,Manifest& output,std::string& error){
     try{
         const Node root=Reader(json).Read();
         Keys(root,{"schema_version","capability","hook_api","locale","display_name","pack_version","base_locale","fallback","activation","executable_sha256","coverage","resources","fonts"});
-        const auto schema=Number(root,"schema_version",1,2);
+        const auto schema=Number(root,"schema_version",1,HookApi);
         const auto api=Number(root,"hook_api",1,HookApi);
         if(schema!=api)Reject("Schema and hook API versions must match");
         if(Text(root,"capability")!="ffx.text-locale"||Text(root,"fallback")!="native"||Text(root,"activation")!="restart")Reject("Unsupported text-locale capability/fallback/activation");
@@ -220,18 +263,23 @@ bool ParseManifest(std::string_view json,Manifest& output,std::string& error){
         if(!Locale(candidate.locale)||candidate.locale!="pt-BR"||!Version(candidate.packVersion))Reject("Unsupported locale or invalid package version");
         // v1 never coerces the global language manager. Only the demonstrated Western base is admitted.
         candidate.baseLocale=Number(root,"base_locale",1,1);
-        std::set<std::string> ids,requests,paths;std::uint64_t total=0;std::size_t menuCount=0,battleCount=0,eventCount=0;
+        std::set<std::string> ids,requests,paths;std::uint64_t total=0;std::size_t menuCount=0,battleCount=0,eventCount=0,graphicCount=0;
         for(const auto& node:Array(root,"resources",1,4096)){
             Keys(node,{"id","family","request","path","source_size","size","source_sha256","sha256"},{"font"});
             Resource r;r.id=Text(node,"id",64);r.path=Text(node,"path");
             if(!Identifier(r.id)||!ids.insert(r.id).second||!SafeRelativePath(r.path)||!paths.insert(Lower(r.path)).second)Reject("Invalid/duplicate resource ID or physical path");
             const auto request=Text(node,"request");if(!CanonicalRequest(request,r.request)||!requests.insert(r.request).second)Reject("Invalid/duplicate virtual request");
             const auto family=Text(node,"family",32);
-            if(family=="menu"){r.family=Family::Menu;++menuCount;}else if(family=="battle"){r.family=Family::Battle;++battleCount;}else if(family=="events"&&schema>=2){r.family=Family::Event;++eventCount;}else if(family=="font_metrics")r.family=Family::Metrics;else if(family=="font_atlas")r.family=Family::Atlas;else Reject("Unsupported resource family");
-            if(!Allowed(r.family,r.request))Reject("Resource path is outside the demonstrated text/font families");
+            if(family=="menu"){r.family=Family::Menu;++menuCount;}else if(family=="battle"){r.family=Family::Battle;++battleCount;}else if(family=="events"&&schema>=2){r.family=Family::Event;++eventCount;}else if(family=="ui_texture"&&schema>=4){r.family=Family::Graphic;++graphicCount;}else if(family=="font_metrics")r.family=Family::Metrics;else if(family=="font_atlas")r.family=Family::Atlas;else Reject("Unsupported resource family");
+            if(!Allowed(r.family,r.request,api))Reject("Resource path or API is outside the demonstrated text/font families");
             r.sourceSize=Number(node,"source_size",1,MaxResourceBytes);r.size=Number(node,"size",1,MaxResourceBytes);
             total+=r.size;if(total>MaxPackBytes)Reject("Pack exceeds total resource size bound");
             r.sourceSha256=Digest(node,"source_sha256");r.sha256=Digest(node,"sha256");
+            if(r.family==Family::Graphic){
+                const auto* profile=FindGraphicProfile(r.request);
+                if(!profile||r.sourceSha256!=profile->source||r.sha256!=profile->output||r.sourceSize!=profile->bytes||r.size!=profile->bytes)
+                    Reject("UI texture differs from its examined native compilation");
+            }
             if(IsText(r.family)){r.font=Text(node,"font",64);if(!Identifier(r.font))Reject("Invalid font binding");}
             else if(node.object.count("font"))Reject("Font resources cannot recursively bind a font");
             candidate.resources.push_back(std::move(r));
@@ -243,12 +291,15 @@ bool ParseManifest(std::string_view json,Manifest& output,std::string& error){
         if(Text(coverage,"menu")!=(menuCount?"partial":"unavailable")||
            Text(coverage,"battle")!=(battleCount?"partial":"unavailable")||
            Text(coverage,"events")!=(eventCount?"partial":"unavailable")||
-           (schema==2&&Text(coverage,"subtitles")!=(eventCount?"partial":"unavailable"))||
-           Text(coverage,"texture_text")!="unavailable")Reject("Coverage does not match supported resources");
+           (schema>=2&&Text(coverage,"subtitles")!=(eventCount?"partial":"unavailable"))||
+           Text(coverage,"texture_text")!=(graphicCount?"partial":"unavailable"))Reject("Coverage does not match supported resources");
         std::set<std::string> fontIds,usedFontResources;
         for(const auto& node:Array(root,"fonts",1,16)){
             Keys(node,{"id","encoding","preserve_native","metrics","atlases","glyphs"});Font font;font.id=Text(node,"id",64);font.metrics=Text(node,"metrics",64);
-            if(!Identifier(font.id)||!fontIds.insert(font.id).second||Text(node,"encoding")!="ffx-western-v1")Reject("Invalid font identity or encoding");
+            const auto encoding=Text(node,"encoding");
+            if(encoding=="ffx-western-v2"&&api>=4)font.profile=2;
+            else if(encoding!="ffx-western-v1")Reject("Invalid font encoding or API");
+            if(!Identifier(font.id)||!fontIds.insert(font.id).second)Reject("Invalid font identity");
             const auto& preserve=Get(node,"preserve_native");if(preserve.kind!=Node::Kind::Boolean||!preserve.boolean)Reject("Original glyphs must be preserved");
             const auto* metrics=ById(candidate,font.metrics);if(!metrics||metrics->family!=Family::Metrics||!usedFontResources.insert(font.metrics).second)Reject("Missing, duplicated or mistyped font metrics");
             for(const auto& atlas:Array(node,"atlases",2,32)){const auto id=Text(atlas,64);const auto* resource=ById(candidate,id);if(!resource||resource->family!=Family::Atlas||!usedFontResources.insert(id).second)Reject("Missing, duplicated or mistyped font atlas");font.atlases.push_back(id);}
@@ -261,7 +312,7 @@ bool ParseManifest(std::string_view json,Manifest& output,std::string& error){
             candidate.fonts.push_back(std::move(font));
         }
         std::set<std::string> referencedFonts;
-        for(const auto& r:candidate.resources){if(IsText(r.family)){if(!fontIds.count(r.font))Reject("Text refers to a missing font");referencedFonts.insert(r.font);}else if(!usedFontResources.count(r.id))Reject("Unbound font resource");}
+        for(const auto& r:candidate.resources){if(IsText(r.family)){if(!fontIds.count(r.font))Reject("Text refers to a missing font");referencedFonts.insert(r.font);}else if(r.family!=Family::Graphic&&!usedFontResources.count(r.id))Reject("Unbound font resource");}
         if(referencedFonts!=fontIds)Reject("Unreferenced font binding");
         output=std::move(candidate);error.clear();return true;
     }catch(const std::exception& e){error=e.what();return false;}

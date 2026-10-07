@@ -8,7 +8,7 @@ static bool CoreDifficultySelection(unsigned,std::uintptr_t,FfxHooks::F7Elements
 static std::uintptr_t coreImage=0;
 static std::string CorePack(const std::vector<unsigned char>& bank){
     std::string json=R"({"schema":"ffx.mod007.elements.v1","package_id":"tests.tenfold","version":1,
-      "exe_sha256":"78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+      "exe_sha256":")" FFXHOOKS_FIXTURE_SHA256 R"(",
       "requires":["mod007.registry.v1","mod007.affinity.v1","mod007.context.v1"],
       "fallback":"native-unmodified","elements":[)";
     for(unsigned i=0;i<10;++i){if(i)json+=",";const auto key="tests.e"+std::to_string(i);
@@ -36,8 +36,8 @@ static unsigned __cdecl CoreEndpoint(unsigned,void*,unsigned target,void* actor,
     if(!(row[0x23]&1))return 0;
     using Affinity=int(__cdecl*)(const unsigned char*,const unsigned char*,unsigned,int);
     using Nullify=int(__cdecl*)(unsigned,unsigned,void*);
-    const auto value=reinterpret_cast<Affinity>(coreImage+0x38A420)(static_cast<const unsigned char*>(actor),row,row[0x2D],amount);
-    const int blocked=reinterpret_cast<Nullify>(coreImage+0x38C070)(target,row[0x2D],info);
+    const auto value=reinterpret_cast<Affinity>(coreImage+(::FfxHooks::ExecutableProfile::Rva<0x38A420>()))(static_cast<const unsigned char*>(actor),row,row[0x2D],amount);
+    const int blocked=reinterpret_cast<Nullify>(coreImage+(::FfxHooks::ExecutableProfile::Rva<0x38C070>()))(target,row[0x2D],info);
     if(blocked==-1)static_cast<unsigned char*>(info)[1]=2;
     return static_cast<unsigned>(blocked==-1?0:value);
 }
@@ -45,7 +45,7 @@ static void CoreCases(std::uintptr_t base,std::vector<unsigned char>& actors,std
     FfxHooks::Config::LoadTextForTests("[element_scan]\nother_enabled=1\n","C:\\private-core-visual.ini");
     coreImage=base;amount=1000;W::DamageProducerForTests(reinterpret_cast<void*>(&CoreEndpoint));
     std::array<unsigned char,44> info{};
-    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+0x38E680);
+    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
     const auto hit=[&](unsigned id,unsigned target){return static_cast<int>(producer(0,actors.data(),target,
         actors.data()+target*0xF90,bank.data()+20+96*id,0x3000+id,info.data(),0,0,0,0));};
     for(unsigned i=0;i<10;++i)Check(hit(80+i,1)==(i==1?-1000:1500),"all ten stable descriptor bindings reach native affinity resolution");

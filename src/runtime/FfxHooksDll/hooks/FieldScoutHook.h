@@ -48,5 +48,9 @@ namespace FfxHooks {
     // synchronously; this function never touches the process-global queue.
     bool ApplyFieldScoutQueuedHooks(FieldScoutLogFn log);
     bool IsFieldScoutHookInstalled();
+    using FieldScoutNaturalObserver = void (*)(int, int, float, int, uintptr_t);
+    bool FieldScoutOwnsNaturalProducer(uintptr_t moduleBase);
+    bool FieldScoutAttachNaturalObserver(uintptr_t moduleBase, FieldScoutNaturalObserver observer);
+    void FieldScoutDetachNaturalObserver(FieldScoutNaturalObserver observer);
 
 } // namespace FfxHooks

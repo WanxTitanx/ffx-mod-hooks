@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK: one immutable Energy view per admitted native queued action.
 // Capture runs at native selection before the existing scalar resource debit.
 // It never stages, subtracts, refunds or expands MP/Overdrive resources.
@@ -109,7 +110,7 @@ int CallEnergyFinishOriginal(unsigned owner,unsigned index,unsigned preserve){
     if(Enter()&&EnergyRequested()&&owner<31&&EnergyActionKey(owner,key,&active)&&active==index){
         const auto& action=energyActions[owner];
         if(SameEnergyKey(action.key,key)){
-            serial=action.serial;count=Read<std::int8_t>(reinterpret_cast<void*>(module+0xD2BDE1));
+            serial=action.serial;count=Read<std::int8_t>(reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>())));
         }
     }
     using NativeFinish=int(__cdecl*)(unsigned,unsigned,unsigned);
@@ -117,7 +118,7 @@ int CallEnergyFinishOriginal(unsigned owner,unsigned index,unsigned preserve){
     // This brackets the actual queue removal, before Follow Up can append new
     // work. Cancellation and completion both retire their old energy view.
     if(serial&&result==1&&count>0&&energyEpoch.load()==key.epoch&&
-       Read<std::int8_t>(reinterpret_cast<void*>(module+0xD2BDE1))==count-1&&
+       Read<std::int8_t>(reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>())))==count-1&&
        energyActions[owner].serial==serial)energyActions[owner]={};
     return result;
 }

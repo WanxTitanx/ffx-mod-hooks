@@ -26,12 +26,12 @@ static unsigned __cdecl GravityEndpoint(unsigned user,void* source,unsigned,void
     using Formula=int(__cdecl*)(const void*,const void*,const void*,int,int,unsigned,unsigned,int,int*,int*,int);
     using Immunity=int(__cdecl*)(const void*,unsigned,unsigned*,unsigned,unsigned*,int);
     int defense=0,magicDefense=0;
-    int value=reinterpret_cast<Formula>(coreImage+0x389CB0)(source,target,row,row[0x28],row[0x2A],0,
+    int value=reinterpret_cast<Formula>(coreImage+(::FfxHooks::ExecutableProfile::Rva<0x389CB0>()))(source,target,row,row[0x28],row[0x2A],0,
                                                            gravityChannel,0,&defense,&magicDefense,0);
     gravityFlags=gravityChannel;gravityBlocked=0;
-    value=reinterpret_cast<Immunity>(coreImage+0x38AE40)(target,row[0x28],&gravityFlags,gravityChannel,&gravityBlocked,value);
+    value=reinterpret_cast<Immunity>(coreImage+(::FfxHooks::ExecutableProfile::Rva<0x38AE40>()))(target,row[0x28],&gravityFlags,gravityChannel,&gravityBlocked,value);
     using Affinity=int(__cdecl*)(const unsigned char*,const unsigned char*,unsigned,int);
-    value=reinterpret_cast<Affinity>(coreImage+0x38A420)(static_cast<const unsigned char*>(target),row,row[0x2D],value);
+    value=reinterpret_cast<Affinity>(coreImage+(::FfxHooks::ExecutableProfile::Rva<0x38A420>()))(static_cast<const unsigned char*>(target),row,row[0x2D],value);
     value=E::BoundedDamage(std::int64_t(value)*gravityAmplifier).damage;
     const auto pass=gravityChannel==1?3u:gravityChannel==2?2u:1u;
     return static_cast<unsigned>(B::UpperDamage(value,gravityNativeCap,user,id,pass,false));
@@ -45,7 +45,7 @@ static void GravityCases(std::uintptr_t base,std::vector<unsigned char>& actors,
         W32(actor+0x598,2000);W32(actor+0x5D4,400);W32(actor+0x6E8,400);
     }
     std::array<unsigned char,44> info{};
-    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+0x38E680);
+    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
     const auto hit=[&](unsigned id,unsigned slot=18){return static_cast<int>(producer(0,actors.data(),slot,
         actors.data()+slot*0xF90,bank.data()+20+96*id,0x3000+id,info.data(),0,0,0,0));};
     Check(hit(110)==10000,"a bound boss uses the native maximum-HP formula with an exact one-sixteenth base");

@@ -23,10 +23,14 @@ param(
     [switch]$WithMSBuildNoPolyHook,
     [switch]$Release,
     [switch]$LabDeploy,
+    [switch]$Steam20261001,
+    [switch]$LegacyExecutable,
     [string]$GameRoot
 )
 
 $ErrorActionPreference = "Stop"
+if ($Steam20261001 -and $LegacyExecutable) { throw "Select either the Steam executable or the legacy executable." }
+$exeProfileDefine = if ($LegacyExecutable) { "" } else { " /DFFXHOOKS_TARGET_STEAM_20261001" }
 $here  = Split-Path -Parent $MyInvocation.MyCommand.Path
 $cfg   = if ($Release) { "Release" } else { "Debug" }
 $steam = "D:\SteamLibrary\steamapps\common\FINAL FANTASY FFX&FFX-2 HD Remaster"
@@ -151,6 +155,7 @@ if ($WithPolyHook) {
         "`"$here\hooks\NativeGamepadHook.cpp`"",
         "`"$here\hooks\NativeLanguageHook.cpp`"",
         "`"$here\hooks\TextLanguageCore.cpp`"",
+        "`"$here\hooks\UiNativeFont.cpp`"",
         "`"$here\hooks\TextLanguagePayload.cpp`"",
         "`"$here\hooks\TextLanguagePack.cpp`"",
         "`"$here\hooks\TextLanguageFiles.cpp`"",
@@ -173,6 +178,9 @@ if ($WithPolyHook) {
         "`"$here\..\..\..\research\equipment_workshop\src\workshop.cpp`"",
         "`"$here\..\..\..\research\equipment_workshop\src\lifecycle.cpp`"",
         "`"$here\hooks\FmvSpeedHook.cpp`"",
+        "`"$here\hooks\OriginalPs2RngCore.cpp`"",
+        "`"$here\hooks\OriginalPs2RngInputs.cpp`"",
+        "`"$here\hooks\OriginalPs2RngRuntime.cpp`"",
         "`"$here\shared\Config.cpp`"",
         "`"$here\hooks\F8FlagCatalog.cpp`"",
         "`"$here\hooks\F8RuntimeCore.cpp`"",
@@ -191,7 +199,7 @@ if ($WithPolyHook) {
 
     $clCmd = (
         "cl /nologo /LD /O2 /MT /W3 /EHsc /std:c++17 /utf-8" +
-        " /D_WINDOWS /D_USRDLL /DFFXHOOKS_EXPORTS /DFFXHOOKS_HAVE_POLYHOOK /DFFXHOOKS_COEXISTENCE" +
+        " /D_WINDOWS /D_USRDLL /DFFXHOOKS_EXPORTS /DFFXHOOKS_HAVE_POLYHOOK /DFFXHOOKS_COEXISTENCE" + $exeProfileDefine +
         " /I`"$here`" /I`"$here\third_party\minhook\include`" /I`"$vcpkgInclude`" /I`"$here\..\..\..\research\equipment_workshop\include`"" +
         " $sources" +
         " $resArg" +
@@ -240,7 +248,7 @@ if ($WithPolyHook) {
 
     $clCmd = (
         "cl /nologo /LD /O2 /GS- /W3 /std:c++17" +
-        " /D_WINDOWS /D_USRDLL /DFFXHOOKS_EXPORTS" +
+        " /D_WINDOWS /D_USRDLL /DFFXHOOKS_EXPORTS" + $exeProfileDefine +
         " /I`"$here`"" +
         " $sources" +
         " /Fe:`"$outDir\ffx-hooks.dll`"" +

@@ -1,3 +1,4 @@
+#include "../FfxHooksDll/shared/ExecutableProfile.h"
 #pragma once
 // Battle pose editing uses the existing Present/menu producers. This is not a
 // simulation pause or a replacement for the separate native free-camera option.
@@ -15,8 +16,8 @@
 namespace PhotoMode {
 namespace P=FfxHooks::Photo;
 namespace N=FfxHooks::RecoveryNative;
-constexpr std::uint32_t RVA_ACTIVE_CHR_COUNT=0x01FC44E0,RVA_ACTIVE_CHR_TABLE=0x01FC44E4;
-constexpr std::uint32_t ACTIVE_CHR_STRIDE=0x880,RVA_CAM_REF=0x00D378A0;
+constexpr std::uint32_t RVA_ACTIVE_CHR_COUNT=(::FfxHooks::ExecutableProfile::Rva<0x01FC44E0>()),RVA_ACTIVE_CHR_TABLE=(::FfxHooks::ExecutableProfile::Rva<0x01FC44E4>());
+constexpr std::uint32_t ACTIVE_CHR_STRIDE=0x880,RVA_CAM_REF=::FfxHooks::ExecutableProfile::Rva<0x00D37520>()+0x380;
 extern std::uintptr_t g_base;
 // Independent persisted capabilities are intentionally missing/OFF by default.
 struct Capabilities {

@@ -48,6 +48,7 @@ enum class Owner : uint8_t {
     SeymourGearPresentation,
     SeymourGearSort,
     SeymourMenuList,
+    OriginalPs2Rng,
 };
 
 enum class State : uint8_t {

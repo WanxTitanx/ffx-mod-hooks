@@ -324,7 +324,9 @@ bool CustomizeCost(std::uint16_t word,Policy policy,unsigned& item,unsigned& qua
 bool RefinementCost(std::uint16_t word,unsigned nextRank,Policy policy,unsigned& item,unsigned& quantity,const Catalog* catalog){
     bool native=false;unsigned customize=0;
     if(nextRank<1||nextRank>10||!CustomizeCost(word,policy,item,customize,native,catalog))return false;
-    quantity=nextRank*((customize+policy.refinementDivisor-1)/policy.refinementDivisor);return true;
+    // Round the complete rank price once. Rounding each unit first multiplies
+    // rare one-item recipes into ten-item fees and can exceed a native stack.
+    quantity=(customize*nextRank+policy.refinementDivisor-1)/policy.refinementDivisor;return true;
 }
 // Native main-menu option 7 admission, VA 8E1DF4; zero is its debug/all-menus case.
 bool NativeCustomizeUnlocked(unsigned story){return story<=65535 && (story==0 || story>=0x448);}

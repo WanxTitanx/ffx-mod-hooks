@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK. Curated AI arguments, owned name labels and per-enemy reward views.
 // Original asset bytes and the actor's resource pointers remain unchanged.
 #include "SinAiHook.h"
@@ -9,15 +10,18 @@
 #include <atomic>
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 #include "CompatibleDetour.h"
+#include "FieldScoutHook.h"
+#include "ArcanaCombat.h"
 #endif
 
 namespace FfxHooks::SinAi {
 namespace {
 using OriginalFn=int(__cdecl*)(int,const char*,const void*);
 using StepFn=int(__cdecl*)(int,int,float);
-using RewardFn=int(__cdecl*)(std::uint32_t,std::uint32_t,const void*,std::uint32_t);
+using RewardFn=void(__cdecl*)(int,void*,const void*,int,int);
 std::atomic<bool> g_accepting{false},g_ready{false};
 std::atomic<StatusCode> g_status{StatusCode::Off};
+std::atomic<const char*> g_admissionDetail{"Curse runtime is unsupported in this build"};
 std::atomic<unsigned> g_accepted{0},g_rejected{0};
 alignas(8) volatile LONG64 g_generation=0;
 std::uintptr_t g_base=0;
@@ -71,7 +75,7 @@ bool WriteName(std::uintptr_t at,const std::array<std::uint8_t,SinMetadata::kNam
 bool SameActor(const Metadata& metadata,unsigned slot){
     if(!metadata.actor || metadata.owner!=GetCurrentThreadId() || slot>=8)return false;
     std::uint8_t value[4]{};
-    if(!ReadMemory(nullptr,g_base+0xD34460u,value,4) || U32(value)+slot*0xF90u!=metadata.actor)return false;
+    if(!ReadMemory(nullptr,g_base + (::FfxHooks::ExecutableProfile::Rva<0xD34460u>()),value,4) || U32(value)+slot*0xF90u!=metadata.actor)return false;
     if(!ReadMemory(nullptr,metadata.actor+0x48u,value,4) || U32(value)!=metadata.whole)return false;
     return ReadMemory(nullptr,metadata.actor+0xEu,value,2) && U16(value)==metadata.monster;
 }
@@ -104,7 +108,7 @@ void RememberMetadata(unsigned slot,unsigned monster,unsigned curse,unsigned thr
     if(slot>=8 || !generation)return;
     for(const auto& old:g_metadata)if(old.generation && old.generation!=generation){RestoreNames(old.generation);break;}
     std::uint8_t value[4]{};
-    if(!ReadMemory(nullptr,g_base+0xD34460u,value,4))return;
+    if(!ReadMemory(nullptr,g_base + (::FfxHooks::ExecutableProfile::Rva<0xD34460u>()),value,4))return;
     const auto actor=static_cast<std::uintptr_t>(U32(value))+slot*0xF90u;
     if(!ReadMemory(nullptr,actor+0x48u,value,4))return;
     auto& metadata=g_metadata[slot];
@@ -139,10 +143,9 @@ bool Profile(std::uintptr_t base){
         if(pe->Signature!=IMAGE_NT_SIGNATURE || !F8Runtime::IsSupportedExecutable({pe->FileHeader.Machine,pe->OptionalHeader.Magic,pe->FileHeader.TimeDateStamp,pe->OptionalHeader.SizeOfImage}))return false;
         std::uint8_t code[0x4B]{};std::memcpy(code,reinterpret_cast<void*>(base+kRegisterRva),sizeof(code));
         constexpr unsigned offsets[]={0xE,0x23,0x29,0x33,0x3D};
-        constexpr std::uintptr_t targets[]={0xD34468,0xD3447C,0xD34468,0xD3449C,0xD34468};
+        constexpr std::uintptr_t targets[]={::FfxHooks::ExecutableProfile::Rva<0xD34468>(),::FfxHooks::ExecutableProfile::Rva<0xD3447C>(),::FfxHooks::ExecutableProfile::Rva<0xD34468>(),::FfxHooks::ExecutableProfile::Rva<0xD3449C>(),::FfxHooks::ExecutableProfile::Rva<0xD34468>()};
         for(unsigned i=0;i<5;++i){if(U32(code+offsets[i])!=base+targets[i])return false;std::memset(code+offsets[i],0,4);}
-        constexpr std::uint8_t caller[]={0xE8,0xD4,0x38,0x01,0};
-        return Hash(code,sizeof(code))==0x295F0925E21F0F41ULL && std::memcmp(reinterpret_cast<void*>(base+kRegisterCallerRva-5),caller,sizeof(caller))==0;
+        return Hash(code,sizeof(code))==0x295F0925E21F0F41ULL && std::memcmp(reinterpret_cast<void*>(base+kRegisterCallerRva-kRegisterCall.size()),kRegisterCall.data(),kRegisterCall.size())==0;
     } __except(EXCEPTION_EXECUTE_HANDLER){return false;}
 }
 bool Prepare(std::uintptr_t base,const std::uint8_t* bytes,std::size_t size,ContextReader reader,RegistrationReporter reporter){
@@ -168,7 +171,11 @@ int Dispatch(int channel,const char* name,const void* original,std::uint32_t cal
         Context context{};
         if(g_context && g_context(commands,&context) && context.enabled && context.generation){
             if(static_cast<std::uint64_t>(InterlockedCompareExchange64(&g_generation,0,0))!=context.generation){
-                InterlockedExchange64(&g_generation,static_cast<LONG64>(context.generation));g_accepted=0;g_rejected=0;
+                // The owner reaches registration even when the next natural
+                // field has no compatible profile. Retire old labels/status here
+                // rather than retaining "installed" until another curse applies.
+                RestoreNames(0);
+                InterlockedExchange64(&g_generation,static_cast<LONG64>(context.generation));g_accepted=0;g_rejected=0;g_status=StatusCode::Ready;
             }
             if(!commands){g_status=StatusCode::DependenciesMissing;}
             else {
@@ -177,7 +184,11 @@ int Dispatch(int channel,const char* name,const void* original,std::uint32_t cal
                     const auto assignment=SinSpread::BuildAssignment(context.field,context.seed,context.visit,context.distribution,true);
                     const auto* actor=assignment.Find(monster);
                     const View* view=actor&&actor->curse?g_pack.Find(monster,actor->curse):nullptr;
-                    if(view && RegistrationSlot({nullptr,ReadMemory},g_base,reinterpret_cast<std::uintptr_t>(original),monster,&actorSlot)){
+                    if(view && SinSpread::NaturalMonsterPair(context.field,monster) &&
+                       !CommandsReady({nullptr,ReadMemory},g_base,view->proof->commands)){
+                        ++g_rejected;g_status=StatusCode::DependenciesMissing;
+                    }else if(view && SinSpread::NaturalMonsterPair(context.field,monster) &&
+                       RegistrationSlot({nullptr,ReadMemory},g_base,reinterpret_cast<std::uintptr_t>(original),monster,&actorSlot)){
                         // Fixed bounded scratch is registration-only, never a frame allocation.
                         std::array<std::uint8_t,kMaxScript> source{};
                         if(ReadMemory(nullptr,reinterpret_cast<std::uintptr_t>(original),source.data(),view->proof->originalSize) && Hash(source.data(),view->proof->originalSize)==view->proof->originalHash){selected=view->bytes;replaced=true;generation=context.generation;
@@ -194,17 +205,14 @@ int Dispatch(int channel,const char* name,const void* original,std::uint32_t cal
     return result;
 }
 #ifdef FFXHOOKS_HAVE_POLYHOOK
-int __cdecl RewardShim(std::uint32_t first,std::uint32_t second,const void* loot,std::uint32_t overkill){
+void __cdecl RewardShim(int first,void* second,const void* loot,int overkill,int extra){
     const auto original=reinterpret_cast<RewardFn>(g_originalReward);
     // The original consumer selects normal/overkill AP and applies existing F8
     // multipliers. Its read-only input changes; native tables and actor pointers do not.
-    return original?original(first,second,RewardViewFor(loot),overkill):0;
+    if(original)original(first,second,RewardViewFor(loot),overkill,extra);
 }
-int __cdecl NaturalStepShim(int field,int group,float distance){
-    const auto address=reinterpret_cast<std::uintptr_t>(_ReturnAddress());
+void ObserveNatural(int field,int group,float,int result,std::uintptr_t address){
     const auto caller=address>=g_base?static_cast<std::uint32_t>(address-g_base):0u;
-    const auto original=reinterpret_cast<StepFn>(g_originalStep);
-    const int result=original?original(field,group,distance):0;
     if(g_accepting && g_naturalReporter && caller==SinNatural::kCallerRva && result==-1){
         std::uint8_t selected[4]{};
         if(ReadMemory(nullptr,g_base+SinNatural::kFieldRowRva,selected,sizeof(selected))){
@@ -212,6 +220,15 @@ int __cdecl NaturalStepShim(int field,int group,float distance){
             if(SinNatural::Admitted(evidence))g_naturalReporter(evidence);
         }
     }
+}
+const SinProducer::Observers g_arcanaBothObservers{&ObserveNatural,&RewardViewFor};
+const SinProducer::Observers g_arcanaNaturalObserver{&ObserveNatural,nullptr};
+const SinProducer::Observers g_arcanaRewardObserver{nullptr,&RewardViewFor};
+int __cdecl NaturalStepShim(int field,int group,float distance){
+    const auto address=reinterpret_cast<std::uintptr_t>(_ReturnAddress());
+    const auto original=reinterpret_cast<StepFn>(g_originalStep);
+    const int result=original?original(field,group,distance):0;
+    ObserveNatural(field,group,distance,result,address);
     return result;
 }
 int __cdecl RegisterShim(int channel,const char* name,const void* data){
@@ -229,11 +246,13 @@ bool Start(std::uintptr_t base,const wchar_t* path,ContextReader reader,Registra
     std::array<std::uint8_t,SinNatural::kPrefix.size()> step{};
     std::array<std::uint8_t,SinNatural::kCall.size()> caller{};
     std::array<std::uint8_t,SinMetadata::kRewardPrefix.size()> reward{};
-    if(!Profile(base) || !ReadMemory(nullptr,base+SinNatural::kStepRva,step.data(),step.size()) || step!=SinNatural::kPrefix ||
-        !ReadMemory(nullptr,base+SinNatural::kCallerRva-caller.size(),caller.data(),caller.size()) || caller!=SinNatural::kCall ||
-        !ReadMemory(nullptr,base+SinMetadata::kRewardRva,reward.data(),reward.size()) || reward!=SinMetadata::kRewardPrefix){
-        g_status=StatusCode::Unsupported;return false;
-    }
+    const bool fieldScoutNatural=FfxHooks::FieldScoutOwnsNaturalProducer(base);
+    const bool arcanaNatural=Arcana::Combat::OwnsNaturalProducer(base);
+    const bool arcanaReward=Arcana::Combat::OwnsRewardProducer(base);
+    if(!Profile(base)){g_admissionDetail="Curse AI registration signature did not match";g_status=StatusCode::Unsupported;return false;}
+    if(!fieldScoutNatural && !arcanaNatural && (!ReadMemory(nullptr,base+SinNatural::kStepRva,step.data(),step.size()) || step!=SinNatural::kPrefix)){g_admissionDetail="Curse natural encounter producer is already modified or unsupported";g_status=StatusCode::Unsupported;return false;}
+    if(!ReadMemory(nullptr,base+SinNatural::kCallerRva-caller.size(),caller.data(),caller.size()) || caller!=SinNatural::kCall){g_admissionDetail="Curse natural encounter caller did not match";g_status=StatusCode::Unsupported;return false;}
+    if(!arcanaReward && (!ReadMemory(nullptr,base+SinMetadata::kRewardRva,reward.data(),reward.size()) || reward!=SinMetadata::kRewardPrefix)){g_admissionDetail="Curse reward producer is already modified or unsupported";g_status=StatusCode::Unsupported;return false;}
     HANDLE file=CreateFileW(path,GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,nullptr);
     if(file==INVALID_HANDLE_VALUE){g_status=StatusCode::MissingPack;return false;}
     LARGE_INTEGER length{};
@@ -249,19 +268,36 @@ bool Start(std::uintptr_t base,const wchar_t* path,ContextReader reader,Registra
     try {
         g_hook=new FfxHooks::CompatibleDetour(base+kRegisterRva,reinterpret_cast<std::uintptr_t>(&RegisterShim),&g_original);
         if(!g_hook->hook()){g_status=StatusCode::Conflict;return false;}
-        g_stepHook=new FfxHooks::CompatibleDetour(base+SinNatural::kStepRva,reinterpret_cast<std::uintptr_t>(&NaturalStepShim),&g_originalStep);
-        if(!g_stepHook->hook()){g_status=StatusCode::Conflict;return false;}
-        g_rewardHook=new FfxHooks::CompatibleDetour(base+SinMetadata::kRewardRva,reinterpret_cast<std::uintptr_t>(&RewardShim),&g_originalReward);
-        if(!g_rewardHook->hook()){g_status=StatusCode::Conflict;return false;}
+        if(!fieldScoutNatural && !arcanaNatural){
+            g_stepHook=new FfxHooks::CompatibleDetour(base+SinNatural::kStepRva,reinterpret_cast<std::uintptr_t>(&NaturalStepShim),&g_originalStep);
+            if(!g_stepHook->hook()){g_status=StatusCode::Conflict;return false;}
+        }
+        if(!arcanaReward){
+            g_rewardHook=new FfxHooks::CompatibleDetour(base+SinMetadata::kRewardRva,reinterpret_cast<std::uintptr_t>(&RewardShim),&g_originalReward);
+            if(!g_rewardHook->hook()){g_status=StatusCode::Conflict;return false;}
+        }
     } catch(...){g_status=StatusCode::Conflict;return false;}
     // Channel contexts retain pointers into these buffers. Both the applied
     // gateway and the read-only arena remain resident until process exit.
+    if(fieldScoutNatural && !FfxHooks::FieldScoutAttachNaturalObserver(base,&ObserveNatural)){g_status=StatusCode::Conflict;return false;}
+    if(arcanaNatural || arcanaReward){
+        const auto* observers=arcanaNatural?(arcanaReward?&g_arcanaBothObservers:&g_arcanaNaturalObserver):&g_arcanaRewardObserver;
+        if(!Arcana::Combat::AttachSinObservers(base,observers)){g_status=StatusCode::Conflict;return false;}
+    }
     g_ready=true;g_accepting=true;g_status=StatusCode::Ready;return true;
 #else
     (void)base;g_status=StatusCode::Unsupported;return false;
 #endif
 }
-void RequestStop(){g_accepting=false;}
+void RequestStop(){
+    g_accepting=false;
+#ifdef FFXHOOKS_HAVE_POLYHOOK
+    FfxHooks::FieldScoutDetachNaturalObserver(&ObserveNatural);
+    Arcana::Combat::DetachSinObservers(&g_arcanaBothObservers);
+    Arcana::Combat::DetachSinObservers(&g_arcanaNaturalObserver);
+    Arcana::Combat::DetachSinObservers(&g_arcanaRewardObserver);
+#endif
+}
 void RefreshLabels(std::uint64_t generation){if(g_accepting)for(unsigned slot=0;slot<g_metadata.size();++slot)
     if(g_metadata[slot].generation==generation)MarkName(g_metadata[slot],slot);}
 void EndEncounter(std::uint64_t generation){RestoreNames(generation);}
@@ -273,7 +309,7 @@ case StatusCode::Ready:return "Curse scripts ready for natural encounters";
 case StatusCode::Installed:return "Curse scripts registered for this encounter";
 case StatusCode::MissingPack:return "Curse profile pack is missing";
 case StatusCode::InvalidPack:return "Curse profile pack could not be verified";
-case StatusCode::Unsupported:return "Curse runtime is unsupported in this build";
+case StatusCode::Unsupported:return g_admissionDetail.load();
 case StatusCode::Conflict:return "Curse registration hook is unavailable";
 case StatusCode::DependenciesMissing:return "Spira Reforge command profiles are not loaded";
 case StatusCode::SourceMismatch:return "An enemy AI differs from the verified profile";

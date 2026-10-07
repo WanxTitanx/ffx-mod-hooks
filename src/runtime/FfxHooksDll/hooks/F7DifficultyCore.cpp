@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "F7DifficultyCore.h"
 
 #include <cctype>
@@ -1771,15 +1772,15 @@ AdapterGateCode ValidateAdapterEvidence(const AdapterEvidence& evidence) {
     }
 
     constexpr std::array<HighlowOperand, 3> initSceneOperands = {{
-        {2u, 0x00D2A9A8u},
-        {13u, 0x00D2C9D9u},
-        {20u, 0x00D2A9ACu},
+        {2u, (::FfxHooks::ExecutableProfile::Rva<0x00D2A9A8u>())},
+        {13u, (::FfxHooks::ExecutableProfile::Rva<0x00D2C9D9u>())},
+        {20u, (::FfxHooks::ExecutableProfile::Rva<0x00D2A9ACu>())},
     }};
     constexpr std::array<HighlowOperand, 1> initializerOperands = {{
-        {10u, 0x00D36000u},
+        {10u, (::FfxHooks::ExecutableProfile::Rva<0x00D36000u>())},
     }};
     constexpr std::array<HighlowOperand, 1> accessorOperands = {{
-        {15u, 0x00D34460u},
+        {15u, (::FfxHooks::ExecutableProfile::Rva<0x00D34460u>())},
     }};
     std::array<uint8_t, kInitSystemScenePreferredPrefix.size()> expectedInitScene{};
     std::array<uint8_t, kActorInitializerPrefix.size()> expectedInitializer{};
@@ -1815,8 +1816,8 @@ AdapterGateCode ValidateAdapterEvidence(const AdapterEvidence& evidence) {
 
 bool ValidatePopulateEvidence(const uint8_t* bytes,size_t length,uintptr_t loadedBase) {
     if(!bytes || length!=kActorPopulatePreferredBody.size())return false;
-    constexpr std::array<HighlowOperand,4> operands = {{{4,0x00D2A929},{10,0x00D2A8E0},
-        {67,0x00D2A8E0},{80,0x00D2A929}}};
+    constexpr std::array<HighlowOperand,4> operands = {{{4,(::FfxHooks::ExecutableProfile::Rva<0x00D2A929>())},{10,(::FfxHooks::ExecutableProfile::Rva<0x00D2A8E0>())},
+        {67,(::FfxHooks::ExecutableProfile::Rva<0x00D2A8E0>())},{80,(::FfxHooks::ExecutableProfile::Rva<0x00D2A929>())}}};
     std::array<uint8_t,kActorPopulatePreferredBody.size()> expected{};
     return BuildLoadedHighlowPrefix(kActorPopulatePreferredBody,loadedBase,operands,&expected) &&
         std::memcmp(bytes,expected.data(),expected.size())==0;

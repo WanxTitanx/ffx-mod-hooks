@@ -2,6 +2,7 @@
 // All game globals, tables and storage belong to this isolated mapped fixture.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include <MinHook.h>
 #include "PrivatePeFixture.h"
@@ -49,7 +50,7 @@ int main(int argc,char** argv){
     if(!image||!crt)return 2;base=reinterpret_cast<std::uintptr_t>(image);
     Check(PrivatePeFixture::NormalizeRelocations(image),"OD private native image relocates");
     const auto reader=GetProcAddress(crt,"fread"),writer=GetProcAddress(crt,"fwrite");
-    Check(Put(reinterpret_cast<void*>(base+0x70C3F4),&reader,4)&&Put(reinterpret_cast<void*>(base+0x70C428),&writer,4),"only private native CRT imports are resolved");
+    Check(Put(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>()),&reader,4)&&Put(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C428>()),&writer,4),"only private native CRT imports are resolved");
     C::ResetForTests();Check(C::LoadTextForTests("[vanguard]\nefficiency=1\nequipment_partial_overdrive=1\n[f8_authority]\nvanguard_efficiency=1\nvanguard_equipment_partial_overdrive=1\n","C:\\private-vanguard-od.ini"),"independent cost options are explicit");
     if(equipment)Check(C::LoadTextForTests("[vanguard]\nefficiency=1\nequipment_partial_overdrive=1\nequipment_active_commands=1\n[f8_authority]\nvanguard_efficiency=1\nvanguard_equipment_partial_overdrive=1\nvanguard_equipment_active_commands=1\n[vanguard_commands]\nhero_bravery=864321\n","C:\\private-vanguard-equipment.ini"),"equipment command binding is configured explicitly");
     V::CaptureStartup();
@@ -71,24 +72,24 @@ int main(int argc,char** argv){
     std::array<unsigned char,31*0xF90> actors{};
     std::vector<unsigned char> commands(20+320*96+1);W16(commands.data(),1);W16(commands.data()+10,319);W16(commands.data()+12,96);W16(commands.data()+14,320*96);W32(commands.data()+16,20);
     auto abilities=AbilityTable();const auto ap=reinterpret_cast<std::uintptr_t>(actors.data()),cp=reinterpret_cast<std::uintptr_t>(commands.data()),kp=reinterpret_cast<std::uintptr_t>(abilities.data());
-    Put(reinterpret_cast<void*>(base+0xD334CC),&ap,4);Put(reinterpret_cast<void*>(base+0xD2A92C),&cp,4);Put(reinterpret_cast<void*>(base+0xD2A944),&kp,4);
-    const auto size=static_cast<unsigned short>(abilities.size());Put(reinterpret_cast<void*>(base+0xD2A970),&size,2);
-    *reinterpret_cast<unsigned char*>(base+0xD2A8E0)=1;
+    Put(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&ap,4);Put(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A92C>()),&cp,4);Put(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&kp,4);
+    const auto size=static_cast<unsigned short>(abilities.size());Put(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),&size,2);
+    *reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())=1;
     for(unsigned i=0;i<31;++i){auto* a=actors.data()+i*0xF90;a[0xC]=static_cast<unsigned char>(i);W16(a+0xE,i);a[0xDC8]=a[0xDC9]=1;a[0x592]=a[0x593]=255;a[0x5BD]=100;W32(a+0x5D0,1000);W32(a+0x5D4,1000);}
-    auto* gear=reinterpret_cast<unsigned char*>(base+0xD30F2C);std::memset(gear,0,4400);
+    auto* gear=reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD30F2C>());std::memset(gear,0,4400);
     auto* actor=actors.data();gear[2]=1;gear[11]=4;for(unsigned i=0;i<4;++i)W16(gear+14+2*i,255);W16(gear+14,0x808A);actor[0x592]=0;
     constexpr unsigned id=64;auto* command=commands.data()+20+96*id;command[0x19]=255;command[0x1A]=3;command[0x24]=3;command[0x25]=20;command[0x26]=40;
     W16(actor+0x664+(id/16)*2,1u<<(id%16));
     std::array<unsigned char,72> action{};action[3]=1;W16(action.data()+8,0x3000+id);W16(action.data()+10,255);
     const bool started=V::Start(base,false,StartupLog);
     Check(started,"Vanguard joins the same native cost owner");
-    if(!started){for(unsigned rva:{0x4953F0u,0x4F4B20u}){
+    if(!started){for(unsigned rva:{(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<0x4953F0u>())>())>())>()),(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<0x4F4B20u>())>())>())>())}){
         std::printf("GAUGE_PROFILE base=%08X rva=%08X bytes=",static_cast<unsigned>(base),rva);
         for(unsigned at=0;at<16;++at)std::printf("%02X",*reinterpret_cast<unsigned char*>(base+rva+at));std::puts("");
     }return 1;}
-    Check(Jump(0x3B06C0,reinterpret_cast<void*>(&Notice))&&Jump(0x3B0CE0,reinterpret_cast<void*>(&Notice)),"only post-debit notifications are isolated");
+    Check(Jump((::FfxHooks::ExecutableProfile::Rva<0x3B06C0>()),reinterpret_cast<void*>(&Notice))&&Jump((::FfxHooks::ExecutableProfile::Rva<0x3B0CE0>()),reinterpret_cast<void*>(&Notice)),"only post-debit notifications are isolated");
     using Commit=int(__cdecl*)(const unsigned char*,int);using Debit=void(__cdecl*)(unsigned);
-    const auto commit=reinterpret_cast<Commit>(base+0x38ABE0);const auto debit=reinterpret_cast<Debit>(base+0x38E5F0);
+    const auto commit=reinterpret_cast<Commit>(base+::FfxHooks::ExecutableProfile::Rva<0x38ABE0>());const auto debit=reinterpret_cast<Debit>(base+::FfxHooks::ExecutableProfile::Rva<0x38E5F0>());
     R::CommandCosts::Quote quote{};actor[0x5BC]=30;
     Check(R::CommandCosts::Read(0,command,quote)&&quote.allowed&&quote.cost==30&&quote.charge==30&&quote.maximum==100,
           "equipped Efficiency quotes 30 of the native 40 OD cost without changing maximum");
@@ -109,7 +110,7 @@ int main(int argc,char** argv){
     actor[0x5BC]=100;W32(actor+0x5D4,1000);
     Check(commit(action.data(),0)==-1,"full execution-chain cost fixture commits an affordable selection");
     using ResolveCost=void(__cdecl*)(unsigned,unsigned char*,const unsigned char*,unsigned);
-    reinterpret_cast<ResolveCost>(base+0x3B03F0)(0,actor,action.data(),0);
+    reinterpret_cast<ResolveCost>(base+::FfxHooks::ExecutableProfile::Rva<0x3B03F0>())(0,actor,action.data(),0);
     Check(actor[0x6CD]==30,"post-selection native cost resolution retains the approved Efficiency fee");
     debit(0);Check(actor[0x5BC]==70&&*reinterpret_cast<int*>(actor+0x5D4)==985,
                   "complete native selection-cost-debit chain pays the displayed discount, not the raw kernel fee");

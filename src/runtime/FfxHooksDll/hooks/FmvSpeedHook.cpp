@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK. The exact movie-frame consumer and its own FMOD channel share a
 // bounded rate. Scene/battle clocks and every other sound channel stay native.
 #include "FmvSpeedHook.h"
@@ -14,7 +15,7 @@
 #endif
 namespace FfxHooks::FmvSpeed {
 namespace {
-constexpr std::uintptr_t kFrameRva=0x006284A0u,kMovieRootRva=0x008DED2Cu;
+constexpr std::uintptr_t kFrameRva=(::FfxHooks::ExecutableProfile::Rva<0x006284A0u>()),kMovieRootRva=(::FfxHooks::ExecutableProfile::Rva<0x008DED2Cu>());
 using OriginalFn=bool(__thiscall*)(void*,void*,void*,void*);
 using GetFrequency=int(__stdcall*)(void*,float*);
 using SetFrequency=int(__stdcall*)(void*,float);
@@ -95,11 +96,11 @@ bool Profile(std::uintptr_t base){
         const auto* pe=reinterpret_cast<const IMAGE_NT_HEADERS32*>(base+dos->e_lfanew);
         if(pe->Signature!=IMAGE_NT_SIGNATURE || !F8Runtime::IsSupportedExecutable({pe->FileHeader.Machine,pe->OptionalHeader.Magic,pe->FileHeader.TimeDateStamp,pe->OptionalHeader.SizeOfImage}))return false;
         std::uint8_t code[0x51]{};std::memcpy(code,reinterpret_cast<void*>(base+kFrameRva),sizeof(code));
-        constexpr unsigned offsets[]={6,0x15};constexpr std::uintptr_t targets[]={0x6DEA98,0x8613D8};
+        constexpr unsigned offsets[]={6,0x15};constexpr std::uintptr_t targets[]={::FfxHooks::ExecutableProfile::Rva<0x6DEA98>(),::FfxHooks::ExecutableProfile::Rva<0x8613D8>()};
         for(unsigned i=0;i<2;++i){std::uint32_t value=0;std::memcpy(&value,code+offsets[i],4);if(value!=base+targets[i])return false;std::memset(code+offsets[i],0,4);}
         std::uint64_t hash=14695981039346656037ULL;for(const auto byte:code)hash=(hash^byte)*1099511628211ULL;
         const std::uint8_t worker[]={0xE8,0x36,0xD5,0x34,0},direct[]={0xE8,0xAB,0x0B,0x35,0};
-        return hash==0xC5248B6A135E2A6AULL && std::memcmp(reinterpret_cast<void*>(base+0x2DAF65),worker,5)==0 && std::memcmp(reinterpret_cast<void*>(base+0x2D78F0),direct,5)==0;
+        return hash==0xC5248B6A135E2A6AULL && std::memcmp(reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x2DAF65>())),worker,5)==0 && std::memcmp(reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x2D78F0>())),direct,5)==0;
     } __except(EXCEPTION_EXECUTE_HANDLER){return false;}
 }
 struct FrameCall {void* self;void* one;void* two;void* three;Movie movie;};
@@ -110,7 +111,7 @@ bool Admitted(void* raw){auto& f=*static_cast<FrameCall*>(raw);const auto now=Re
 bool Dispatch(void* self,void* a,void* b,void* c,std::uint32_t caller){
     const auto next=reinterpret_cast<OriginalFn>(g_original);if(!next)return false;
     const auto movie=ReadMovie();
-    if(!g_accepting || !movie.valid || movie.core!=self || (caller!=0x002DAF6Au&&caller!=0x002D78F5u))return next(self,a,b,c);
+    if(!g_accepting || !movie.valid || movie.core!=self || (caller!=(::FfxHooks::ExecutableProfile::Rva<0x002DAF6Au>())&&caller!=(::FfxHooks::ExecutableProfile::Rva<0x002D78F5u>())))return next(self,a,b,c);
     if(!TryAcquireSRWLockExclusive(&g_audioLock))return next(self,a,b,c);
     FrameCall call{self,a,b,c,movie};
     const unsigned wanted=g_wanted.load();

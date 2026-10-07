@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "SeymourPersistentRosterHook.h"
 #include "SeymourPersistentRosterCore.h"
 #include "SeymourBattleCore.h"
@@ -13,9 +14,13 @@ namespace FfxHooks::SeymourPersistentRoster {
 namespace {
 namespace N=RecoveryNative;
 constexpr char Key[]="seymour.permanent_roster";
-constexpr std::uintptr_t PartyRva=0xd32494,FrontRva=0xd307e8,ReserveRva=0xd307eb;
-constexpr std::uintptr_t BattleRva=0xd2a8e0,AssignRva=0x386a70;
+constexpr std::uintptr_t PartyRva=(::FfxHooks::ExecutableProfile::Rva<0xd32494>()),FrontRva=(::FfxHooks::ExecutableProfile::Rva<0xd307e8>()),ReserveRva=(::FfxHooks::ExecutableProfile::Rva<0xd307eb>());
+constexpr std::uintptr_t BattleRva=(::FfxHooks::ExecutableProfile::Rva<0xd2a8e0>()),AssignRva=(::FfxHooks::ExecutableProfile::Rva<0x386a70>());
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::uint8_t AssignPrefix[]={0x55,0x8B,0xEC,0x53,0x8B,0x5D,0x08,0x81,0xE3,0xFF};
+#else
 constexpr std::uint8_t AssignPrefix[]={0x55,0x8b,0xec,0x53,0x8b,0x5d,0x08,0x81,0xe3,0xff,0,0,0};
+#endif
 const RecoveryEvidence::Proof AssignProof{AssignRva,AssignPrefix,sizeof(AssignPrefix),nullptr,0};
 std::atomic<std::uintptr_t> base{0};
 std::atomic<bool> attempted{false},ready{false},stopping{false};

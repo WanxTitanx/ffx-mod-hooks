@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 #include "SinAiProfiles.generated.h"
 #include "SinSpreadCore.h"
@@ -7,8 +8,13 @@
 #include <cstring>
 
 namespace FfxHooks::SinAi {
-inline constexpr std::uint32_t kRegisterRva=0x00397A50u,kRegisterCallerRva=0x0038417Cu;
-inline constexpr std::uint32_t kMonster2RootRva=0x00D2A934u;
+inline constexpr std::uint32_t kRegisterRva=(::FfxHooks::ExecutableProfile::Rva<0x00397A50u>()),kRegisterCallerRva=(::FfxHooks::ExecutableProfile::Rva<0x0038417Cu>());
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+inline constexpr std::array<std::uint8_t,5> kRegisterCall={{0xE8,0x74,0x39,0x01,0}};
+#else
+inline constexpr std::array<std::uint8_t,5> kRegisterCall={{0xE8,0xD4,0x38,0x01,0}};
+#endif
+inline constexpr std::uint32_t kMonster2RootRva=(::FfxHooks::ExecutableProfile::Rva<0x00D2A934u>());
 inline constexpr std::size_t kMaxPack=4u*1024u*1024u,kMaxScript=65536u;
 inline std::uint16_t U16(const std::uint8_t* p){return static_cast<std::uint16_t>(p[0]|(p[1]<<8));}
 inline std::uint32_t U32(const std::uint8_t* p){return std::uint32_t(p[0])|(std::uint32_t(p[1])<<8)|(std::uint32_t(p[2])<<16)|(std::uint32_t(p[3])<<24);}
@@ -62,9 +68,9 @@ struct ReadIo {void* context=nullptr;bool(*read)(void*,std::uintptr_t,void*,std:
 inline bool RegistrationSlot(const ReadIo& io,std::uintptr_t base,std::uintptr_t source,unsigned monster,unsigned* slot){
     if(!io.read || !slot || !base)return false;
     std::uint8_t bytes[4]{};
-    if(!io.read(io.context,base+0x00D34460u,bytes,4))return false;
+    if(!io.read(io.context,base + (::FfxHooks::ExecutableProfile::Rva<0x00D34460u>()),bytes,4))return false;
     const auto actors=static_cast<std::uintptr_t>(U32(bytes));
-    if(actors<0x10000u || actors>0x7FFFF000u || !io.read(io.context,base+0x00D34468u+0x54u,bytes,4))return false;
+    if(actors<0x10000u || actors>0x7FFFF000u || !io.read(io.context,base + (::FfxHooks::ExecutableProfile::Rva<0x00D34468u>())+0x54u,bytes,4))return false;
     const auto ordinal=U32(bytes);if(ordinal>=8)return false;
     unsigned active=0;
     for(unsigned index=0;index<8;++index){
@@ -78,7 +84,7 @@ inline bool RegistrationSlot(const ReadIo& io,std::uintptr_t base,std::uintptr_t
     }
     return false;
 }
-inline bool CommandsReady(const ReadIo& io,std::uintptr_t base){
+inline bool CommandsReady(const ReadIo& io,std::uintptr_t base,std::uint64_t required=kLegacyCommandMask){
     if(!io.read || !base)return false;
     std::uint8_t rootBytes[4]{};
     if(!io.read(io.context,base+kMonster2RootRva,rootBytes,4))return false;
@@ -88,7 +94,9 @@ inline bool CommandsReady(const ReadIo& io,std::uintptr_t base){
     if(!io.read(io.context,root,header,sizeof(header)))return false;
     const auto segments=U16(header);if(!segments||segments>16)return false;
     std::array<std::uint8_t,92> record{};
-    for(const auto& command:kCommands){
+    for(std::size_t dependency=0;dependency<kCommands.size();++dependency){
+        if(!(required&(std::uint64_t(1)<<dependency)))continue;
+        const auto& command=kCommands[dependency];
         bool matched=false;
         for(unsigned i=0;i<segments;++i){
             std::uint8_t descriptor[12]{};

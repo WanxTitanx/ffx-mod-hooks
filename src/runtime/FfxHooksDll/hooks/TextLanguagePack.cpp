@@ -18,6 +18,13 @@ constexpr FontAsset FontAssets[]={
  {"shadow_0_1.dds.phyre","2f1e8667334d2f554c8dbab90e6f76d146c559a6dfca8f220c2cd786e0cdf47e","410d0d4f4c2790b2aab2d81feacdda34b3e30737adadff93dcaa6ff0568a2cb4"}
 };
 constexpr Glyph ExpectedGlyphs[]={{227,242,31},{245,243,33},{195,244,42},{213,245,42}};
+constexpr Glyph OrdinalGlyphs[]={{186,246,21},{170,247,20}};
+constexpr const char* FontV2Outputs[]={
+ "5a614a4e04b568ecbfa355a6cbc94d5c9dbb7852e00555e503f3e3978dc657cd",
+ "df5e4a807742e34613ebba3a81928ded33ac40c6f797a9b9c7a1010eb74fc51e",
+ "ef53ea96dc9a6c226bbcc3487d59bd8045603cedfd6217881162bb205553f7cb",
+ "f787cc1d033f648a22ff83c573b6474f72db823e1be6d9617324dabbd11a9c66",
+ "6e292a163e771a8de318c54adbce593adca63300ad1f8e59508bd0e9835c1a38"};
 std::size_t Index(const Manifest& m,std::string_view id){
  for(std::size_t n=0;n<m.resources.size();++n)if(m.resources[n].id==id)return n;
  throw std::runtime_error("Missing resource binding");
@@ -25,16 +32,19 @@ std::size_t Index(const Manifest& m,std::string_view id){
 void ValidateFont(const PreparedPack& p,const std::vector<Bytes>& sources,Advances& advances){
  Require(p.manifest.fonts.size()==1,"Version 1 requires one examined Western font");
  const auto& font=p.manifest.fonts[0];
- Require(font.atlases.size()==4&&font.glyphs.size()==4,"Font requires four atlas pages and all four PT-BR glyphs");
+ Require(font.atlases.size()==4&&font.glyphs.size()==(font.profile==2?6u:4u),"Font requires its exact examined atlas/glyph group");
  for(const auto& expected:ExpectedGlyphs)
   Require(std::any_of(font.glyphs.begin(),font.glyphs.end(),[&](const Glyph& g){return g.unicode==expected.unicode&&g.code==expected.code&&g.width==expected.width;}),"Glyph mapping or advance differs from the examined profile");
+ if(font.profile==2)for(const auto& expected:OrdinalGlyphs)
+  Require(std::any_of(font.glyphs.begin(),font.glyphs.end(),[&](const Glyph& g){return g.unicode==expected.unicode&&g.code==expected.code&&g.width==expected.width;}),"Ordinal mapping differs from the examined profile");
  std::set<std::string> names;
  for(const auto& r:p.manifest.resources){
   if(r.family!=Family::Metrics&&r.family!=Family::Atlas)continue;
   const auto name=r.request.substr(r.request.find_last_of('/')+1);
   const auto found=std::find_if(std::begin(FontAssets),std::end(FontAssets),[&](const FontAsset& f){return name==f.name;});
   Require(found!=std::end(FontAssets)&&names.insert(name).second,"Unexamined or duplicated font page");
-  Require(r.sourceSha256==found->source&&r.sha256==found->output,"Font asset is outside the examined profile");
+  const auto expectedOutput=font.profile==2?FontV2Outputs[found-std::begin(FontAssets)]:found->output;
+  Require(r.sourceSha256==found->source&&r.sha256==expectedOutput,"Font asset is outside the examined profile");
  }
  Require(names.size()==5,"Complete metric/font/shadow group is required");
  const auto index=Index(p.manifest,font.metrics);const auto& metrics=p.resources[index];
@@ -65,7 +75,7 @@ bool AdmitPack(std::string_view json,const PackIo& io,PreparedPack& output,std::
   for(std::size_t n=0;n<candidate.resources.size();++n){
    const auto& r=candidate.manifest.resources[n];
    if(r.family==Family::Menu||r.family==Family::Battle||r.family==Family::Event)
-    if(!ValidateTextReplacement(r.request,sources[n],candidate.resources[n],candidate.manifest.fonts[0],advances,error))return false;
+    if(!ValidateTextReplacement(r.request,sources[n],candidate.resources[n],candidate.manifest.fonts[0],advances,error,candidate.manifest.hookApi))return false;
   }
   output=std::move(candidate);error.clear();return true;
  }catch(const std::exception& e){error=e.what();return false;}

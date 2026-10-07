@@ -1,8 +1,9 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK: current quotes reuse RonsoPool. The native scalar debit pays once.
 namespace CostOwner=RonsoPool::CommandCosts;
 struct CommandTableView {unsigned last=0;std::uintptr_t rows=0;};
 bool ReadCommandTable(CommandTableView& out) noexcept {
-    out={};const auto table=Read<std::uint32_t>(reinterpret_cast<void*>(module+0xD2A92C));Byte h[20]{};
+    out={};const auto table=Read<std::uint32_t>(reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A92C>())));Byte h[20]{};
     if(table<0x10000||table>UINT32_MAX-20||!Copy(h,reinterpret_cast<void*>(table),20))return false;
     const auto last=Word(h+10),bytes=Word(h+14),offset=Read<std::uint32_t>(h+16);
     if(Word(h)!=1||Word(h+8)||last>4095||Word(h+12)!=96||bytes!=(last+1)*96||offset!=20||table>UINT32_MAX-offset-bytes)return false;
@@ -34,7 +35,7 @@ bool QuoteOverdrive(unsigned owner,const Byte* row,CostOwner::Quote& quote) noex
     quote.charge=Read<Byte>(actor+0x5BC);quote.maximum=Read<Byte>(actor+0x5BD);
     Effects effects{},unused{};ReadEffects(actor,nullptr,effects,unused);if(!running.load())return true;
     const bool efficiency=effects[3];if(!On(Feature::PartialOverdriveCosts)&&!efficiency)return false;
-    const bool free=Read<Byte>(reinterpret_cast<void*>(module+0xD2A90C))!=0;
+    const bool free=Read<Byte>(reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A90C>())))!=0;
     const unsigned raw=binding.granted&&binding.cost<256&&On(Feature::PartialOverdriveCosts)?binding.cost:command[0x26];
     quote.cost=free?0:DiscountOverdrive(raw,efficiency);
     if(!quote.maximum||quote.charge>quote.maximum||((Read<std::uint16_t>(actor+0x616)&0x400)&&!free)||
@@ -78,7 +79,7 @@ int BoundCommitCost(const Byte* source,int subAction){
     if(!actor||Read<Byte>(actor+0x6DE))return original(source,subAction);
     Byte ids[4]{};if(!Copy(ids,source+8+16*subAction,4))return 0;
     using Resolve=const Byte*(__cdecl*)(unsigned,unsigned,int,const Byte*,int*);
-    int resolved=0;const auto* row=reinterpret_cast<Resolve>(module+0x38CF10)(owner,0,0x305F,ids,&resolved);
+    int resolved=0;const auto* row=reinterpret_cast<Resolve>(module + (::FfxHooks::ExecutableProfile::Rva<0x38CF10>()))(owner,0,0x305F,ids,&resolved);
     if(On(Feature::EquipmentCommands)&&resolved>=0x3000&&resolved<=0x313F){
         BindingContext context{};LoadBindingContext(owner,context);const unsigned id=static_cast<unsigned>(resolved)&0xFFF;
         const auto binding=FindBinding(context,id);
@@ -123,5 +124,5 @@ void BoundSelectedCost(unsigned owner,Byte* actor,const Byte* source,unsigned su
 bool CommitCostProfile(std::uintptr_t base) noexcept {
     // Both original command branches must still reach Ronso's exact cost owner.
     const Byte first[]={0xE8,0x20,0x1B,0,0},second[]={0xE8,0xEB,0x1A,0,0};Byte actual[5]{};
-    return Copy(actual,reinterpret_cast<void*>(base+0x38AC2B),5)&&!std::memcmp(actual,first,5)&&Copy(actual,reinterpret_cast<void*>(base+0x38AC60),5)&&!std::memcmp(actual,second,5);
+    return Copy(actual,reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x38AC2B>())),5)&&!std::memcmp(actual,first,5)&&Copy(actual,reinterpret_cast<void*>(base + (::FfxHooks::ExecutableProfile::Rva<0x38AC60>())),5)&&!std::memcmp(actual,second,5);
 }

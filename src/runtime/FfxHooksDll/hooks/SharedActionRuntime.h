@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 #include "F8RuntimeCore.h"
 #include "MinHookBatchCoordinator.h"
@@ -22,7 +23,10 @@ struct Observer {
     void* (*beforeFinish)(const FinishCall&) noexcept=nullptr;
     void (*afterFinish)(void*,const FinishCall&,int,bool) noexcept=nullptr;
 };
-struct Legacy {ResultFunction result=nullptr;FinishFunction finish=nullptr;};
+struct Legacy {
+    ResultFunction result=nullptr;FinishFunction finish=nullptr;
+    void (*afterObserversFinish)(const FinishCall&,int,bool) noexcept=nullptr;
+};
 enum class Slot : unsigned {Elemental,Aeon,NulWard,Reserved,Count};
 inline constexpr unsigned SlotCount=static_cast<unsigned>(Slot::Count),MaximumDepth=16;
 inline std::array<std::atomic<const Observer*>,SlotCount> observers{};
@@ -32,7 +36,7 @@ inline std::mutex installationMutex;
 inline std::uintptr_t imageBase=0;
 inline void* originals[2]{};
 inline std::array<std::array<unsigned char,16>,2> owned{};
-inline constexpr unsigned rvas[2]={0x38F0B0,0x3B0870};
+inline constexpr unsigned rvas[2]={(::FfxHooks::ExecutableProfile::Rva<0x38F0B0>()),(::FfxHooks::ExecutableProfile::Rva<0x3B0870>())};
 inline thread_local unsigned resultDepth=0,finishDepth=0;
 inline bool Subscribe(Slot slot,const Observer* value) noexcept {
     const unsigned index=static_cast<unsigned>(slot);
@@ -75,6 +79,7 @@ inline int __cdecl ResultShim(unsigned source,unsigned sub,unsigned target,int* 
 }
 inline int __cdecl FinishShim(unsigned owner,unsigned index,unsigned preserve){
     const FinishCall call{owner,index,preserve};
+    const auto* legacyCallbacks=legacy.load();
     std::array<const Observer*,SlotCount> listeners{};std::array<void*,SlotCount> tokens{};
     const bool bounded=++finishDepth<=MaximumDepth;
     if(bounded)for(unsigned i=0;i<SlotCount;++i){
@@ -83,11 +88,15 @@ inline int __cdecl FinishShim(unsigned owner,unsigned index,unsigned preserve){
     }
     int result=0;bool completed=false;
     __try {
-        const auto* value=legacy.load();const auto original=value?value->finish:OriginalFinish();
+        const auto original=legacyCallbacks?legacyCallbacks->finish:OriginalFinish();
         result=original(owner,index,preserve);completed=true;
     }__finally {
         for(unsigned i=SlotCount;i>0;--i){const auto* value=listeners[i-1];
             if(value&&tokens[i-1]&&value->afterFinish)value->afterFinish(tokens[i-1],call,result,completed);}
+        // Consumers must witness native removal before a legacy adapter appends
+        // new work. Their queue-count and action-retirement proofs depend on it.
+        if(legacyCallbacks&&legacyCallbacks->afterObserversFinish)
+            legacyCallbacks->afterObserversFinish(call,result,completed);
         --finishDepth;
     }
     return result;
@@ -115,7 +124,7 @@ inline bool Start(std::uintptr_t base){
     unsigned char expected[2][16]={
         {0x55,0x8B,0xEC,0x83,0xEC,0x44,0x53,0x56,0x57,0xFF,0x75,0x08,0x33,0xC0,0x33,0xC9},
         {0x55,0x8B,0xEC,0x83,0xEC,0x14,0x0F,0xBE,0x05,0,0,0,0,0x89,0x45,0xF4}};
-    const auto queueCount=static_cast<std::uint32_t>(base+0xD2BDE1);std::memcpy(expected[1]+9,&queueCount,4);
+    const auto queueCount=static_cast<std::uint32_t>(base + (::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>()));std::memcpy(expected[1]+9,&queueCount,4);
     for(unsigned i=0;i<2;++i){unsigned char bytes[16]{};
         if(!Copy(bytes,reinterpret_cast<const void*>(base+rvas[i]),16)||std::memcmp(bytes,expected[i],16))return false;}
 #ifdef FFXHOOKS_HAVE_POLYHOOK

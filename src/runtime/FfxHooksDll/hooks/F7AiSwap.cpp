@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Monster AI observe-only runtime adapter (legacy file name retained for build compatibility).
 //
 // The old implementation inferred an action and target from unrelated actor bytes, then wrote
@@ -44,11 +45,11 @@ using MonsterAiObserver::Snapshot;
 using MonsterAiObserver::SnapshotPhase;
 using MonsterAiObserver::TeardownResult;
 
-constexpr uint32_t RVA_MONSTER_SCRIPT_REGISTRATION = 0x00384120u;
-constexpr uint32_t RVA_MONSTER_SCRIPT_CLEANUP = 0x00381660u;
-constexpr uint32_t RVA_MONSTER_SCRIPT_REGISTRATION_CALLER = 0x003839C4u;
+constexpr uint32_t RVA_MONSTER_SCRIPT_REGISTRATION = (::FfxHooks::ExecutableProfile::Rva<0x00384120u>());
+constexpr uint32_t RVA_MONSTER_SCRIPT_CLEANUP = (::FfxHooks::ExecutableProfile::Rva<0x00381660u>());
+constexpr uint32_t RVA_MONSTER_SCRIPT_REGISTRATION_CALLER = (::FfxHooks::ExecutableProfile::Rva<0x003839C4u>());
 constexpr uint32_t RVA_MONSTER_AI_DISPATCH = MonsterAiShadow::kDispatcherRva;
-constexpr uint32_t RVA_MONSTER_ACTOR_LIST_POINTER = 0x00D34460u;
+constexpr uint32_t RVA_MONSTER_ACTOR_LIST_POINTER = (::FfxHooks::ExecutableProfile::Rva<0x00D34460u>());
 constexpr uint32_t kSupportedImageSize = 0x0237D000u;
 constexpr uint32_t kPreferredImageBase = 0x00400000u;
 
@@ -71,40 +72,63 @@ constexpr uint32_t kPreferredImageBase = 0x00400000u;
 
 // These base-relocation entries cover only the absolute memory operands inside the two prefixes.
 // The trailing E8 displacements are relative to the next instruction and therefore stay exact.
-constexpr uint32_t RVA_MONSTER_SCRIPT_REGISTRATION_RELOCATION = 0x00384127u;
+constexpr uint32_t RVA_MONSTER_SCRIPT_REGISTRATION_RELOCATION = (::FfxHooks::ExecutableProfile::Rva<0x00384127u>());
 constexpr size_t kRegistrationInstructionOffset = 6u;
 constexpr size_t kRegistrationOperandOffset = 1u;
-constexpr uint32_t RVA_MONSTER_SCRIPT_REGISTRATION_TARGET = 0x008613D8u;
-constexpr uint32_t RVA_MONSTER_SCRIPT_CLEANUP_RELOCATION = 0x00381662u;
+constexpr uint32_t RVA_MONSTER_SCRIPT_REGISTRATION_TARGET = (::FfxHooks::ExecutableProfile::Rva<0x008613D8u>());
+constexpr uint32_t RVA_MONSTER_SCRIPT_CLEANUP_RELOCATION = (::FfxHooks::ExecutableProfile::Rva<0x00381662u>());
 constexpr size_t kCleanupInstructionOffset = 0u;
 constexpr size_t kCleanupOperandOffset = 2u;
-constexpr uint32_t RVA_MONSTER_SCRIPT_CLEANUP_TARGET = 0x00D2A8E0u;
+constexpr uint32_t RVA_MONSTER_SCRIPT_CLEANUP_TARGET = (::FfxHooks::ExecutableProfile::Rva<0x00D2A8E0u>());
 
 // FFX_Battle_DispatchActionCommand has four absolute global operands in its exact 66-byte
 // supported-executable prefix. The PE base-relocation table marks all four as HIGHLOW; every
 // other byte in the prefix is invariant under ASLR.
-constexpr uint32_t RVA_MONSTER_AI_DISPATCH_RELOCATION_0 = 0x003AC9E8u;
-constexpr uint32_t RVA_MONSTER_AI_DISPATCH_RELOCATION_1 = 0x003AC9F6u;
-constexpr uint32_t RVA_MONSTER_AI_DISPATCH_RELOCATION_2 = 0x003ACA06u;
-constexpr uint32_t RVA_MONSTER_AI_DISPATCH_RELOCATION_3 = 0x003ACA1Eu;
-constexpr uint32_t RVA_MONSTER_AI_DISPATCH_TARGET_0 = 0x00D36A58u;
-constexpr uint32_t RVA_MONSTER_AI_DISPATCH_TARGET_1 = 0x00D36A68u;
-constexpr uint32_t RVA_MONSTER_AI_DISPATCH_TARGET_2 = 0x00D36A6Bu;
-constexpr uint32_t RVA_MONSTER_AI_DISPATCH_TARGET_3 = 0x00D36A70u;
+constexpr uint32_t RVA_MONSTER_AI_DISPATCH_RELOCATION_0 = (::FfxHooks::ExecutableProfile::Rva<0x003AC9E8u>());
+constexpr uint32_t RVA_MONSTER_AI_DISPATCH_RELOCATION_1 = (::FfxHooks::ExecutableProfile::Rva<0x003AC9F6u>());
+constexpr uint32_t RVA_MONSTER_AI_DISPATCH_RELOCATION_2 = (::FfxHooks::ExecutableProfile::Rva<0x003ACA06u>());
+constexpr uint32_t RVA_MONSTER_AI_DISPATCH_RELOCATION_3 = (::FfxHooks::ExecutableProfile::Rva<0x003ACA1Eu>());
+constexpr uint32_t RVA_MONSTER_AI_DISPATCH_TARGET_0 = (::FfxHooks::ExecutableProfile::Rva<0x00D36A58u>());
+constexpr uint32_t RVA_MONSTER_AI_DISPATCH_TARGET_1 = (::FfxHooks::ExecutableProfile::Rva<0x00D36A68u>());
+constexpr uint32_t RVA_MONSTER_AI_DISPATCH_TARGET_2 = (::FfxHooks::ExecutableProfile::Rva<0x00D36A6Bu>());
+constexpr uint32_t RVA_MONSTER_AI_DISPATCH_TARGET_3 = (::FfxHooks::ExecutableProfile::Rva<0x00D36A70u>());
 
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::array<uint8_t, 24> kRegistrationSignature = {
+    0x55u,0x8Bu,0xECu,0x83u,0xECu,0x0Cu,0xA1u,0xD8u,0x13u,0xC6u,0x00u,0x33u,0xC5u,0x89u,0x45u,0xFCu,0x53u,0x56u,0x57u,0xE8u,0x88u,0x8Au,0x01u,0x00u
+};
+#else
 constexpr std::array<uint8_t, 24> kRegistrationSignature = {
     0x55u, 0x8Bu, 0xECu, 0x83u, 0xECu, 0x0Cu, 0xA1u, 0xD8u,
     0x13u, 0xC6u, 0x00u, 0x33u, 0xC5u, 0x89u, 0x45u, 0xFCu,
     0x53u, 0x56u, 0x57u, 0xE8u, 0xF8u, 0x89u, 0x01u, 0x00u,
 };
+#endif
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::array<uint8_t, 18> kCleanupSignature = {
+    0x80u,0x3Du,0xE0u,0xA8u,0x12u,0x01u,0x00u,0x0Fu,0x84u,0x91u,0x00u,0x00u,0x00u,0xE8u,0x2Eu,0xBBu,0xFEu,0xFFu
+};
+#else
 constexpr std::array<uint8_t, 18> kCleanupSignature = {
     0x80u, 0x3Du, 0xE0u, 0xA8u, 0x12u, 0x01u, 0x00u, 0x0Fu,
     0x84u, 0x91u, 0x00u, 0x00u, 0x00u, 0xE8u, 0x6Eu, 0xBBu,
     0xFEu, 0xFFu,
 };
+#endif
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::array<uint8_t, 5> kRegistrationCallerSignature = {
+    0xE8u,0x57u,0x07u,0x00u,0x00u
+};
+#else
 constexpr std::array<uint8_t, 5> kRegistrationCallerSignature = {
     0xE8u, 0x57u, 0x07u, 0x00u, 0x00u,
 };
+#endif
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::array<uint8_t, 66> kDispatchSignature = {
+    0x55u,0x8Bu,0xECu,0x83u,0xECu,0x10u,0x83u,0x3Du,0x68u,0x6Au,0x13u,0x01u,0xFFu,0x0Fu,0x84u,0x20u,0x01u,0x00u,0x00u,0x0Fu,0xB6u,0x05u,0x78u,0x6Au,0x13u,0x01u,0x8Bu,0x55u,0x08u,0x3Bu,0xD0u,0x0Fu,0x85u,0x0Eu,0x01u,0x00u,0x00u,0xA0u,0x7Bu,0x6Au,0x13u,0x01u,0x3Cu,0x04u,0x0Fu,0x83u,0x01u,0x01u,0x00u,0x00u,0x0Fu,0xB6u,0xC8u,0x66u,0x8Bu,0x45u,0x0Cu,0xC1u,0xE1u,0x04u,0x81u,0xC1u,0x80u,0x6Au,0x13u,0x01u
+};
+#else
 constexpr std::array<uint8_t, 66> kDispatchSignature = {
     0x55u, 0x8Bu, 0xECu, 0x83u, 0xECu, 0x10u, 0x83u, 0x3Du,
     0x58u, 0x6Au, 0x13u, 0x01u, 0xFFu, 0x0Fu, 0x84u, 0x20u,
@@ -116,6 +140,7 @@ constexpr std::array<uint8_t, 66> kDispatchSignature = {
     0x0Cu, 0xC1u, 0xE1u, 0x04u, 0x81u, 0xC1u, 0x70u, 0x6Au,
     0x13u, 0x01u,
 };
+#endif
 constexpr std::array<uint32_t, 3> kDispatchCallerReturnRvas = {
     MonsterAiShadow::kNormalPerformReturnPreferredVa - kPreferredImageBase,
     MonsterAiShadow::kForceDispatchReturnPreferredVa - kPreferredImageBase,
@@ -139,10 +164,16 @@ static_assert(RVA_MONSTER_AI_DISPATCH_RELOCATION_0 == RVA_MONSTER_AI_DISPATCH + 
                   RVA_MONSTER_AI_DISPATCH_RELOCATION_2 == RVA_MONSTER_AI_DISPATCH + 0x26u &&
                   RVA_MONSTER_AI_DISPATCH_RELOCATION_3 == RVA_MONSTER_AI_DISPATCH + 0x3Eu,
               "dispatcher HIGHLOW operands must retain their exact 66-byte signature offsets");
-static_assert(kPreferredImageBase + RVA_MONSTER_AI_DISPATCH_TARGET_0 == 0x01136A58u &&
-                  kPreferredImageBase + RVA_MONSTER_AI_DISPATCH_TARGET_1 == 0x01136A68u &&
-                  kPreferredImageBase + RVA_MONSTER_AI_DISPATCH_TARGET_2 == 0x01136A6Bu &&
-                  kPreferredImageBase + RVA_MONSTER_AI_DISPATCH_TARGET_3 == 0x01136A70u,
+constexpr std::uint32_t DispatchPreferredOperand(std::size_t offset) noexcept {
+    return std::uint32_t(kDispatchSignature[offset]) |
+        (std::uint32_t(kDispatchSignature[offset + 1]) << 8) |
+        (std::uint32_t(kDispatchSignature[offset + 2]) << 16) |
+        (std::uint32_t(kDispatchSignature[offset + 3]) << 24);
+}
+static_assert(kPreferredImageBase + RVA_MONSTER_AI_DISPATCH_TARGET_0 == DispatchPreferredOperand(0x08) &&
+                  kPreferredImageBase + RVA_MONSTER_AI_DISPATCH_TARGET_1 == DispatchPreferredOperand(0x16) &&
+                  kPreferredImageBase + RVA_MONSTER_AI_DISPATCH_TARGET_2 == DispatchPreferredOperand(0x26) &&
+                  kPreferredImageBase + RVA_MONSTER_AI_DISPATCH_TARGET_3 == DispatchPreferredOperand(0x3E),
               "dispatcher preferred-base operands must match the supported on-disk prefix");
 
 struct RelocatedOperandSpec {

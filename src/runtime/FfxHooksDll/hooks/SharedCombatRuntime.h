@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 // Jarvis-HOOK: Arcana adjusts the command/HP request around Vanguard's existing
 // policy, which in turn calls the native operation once. Startup order never
@@ -17,7 +18,7 @@ inline std::atomic<const Callbacks*> vanguard{nullptr},arcana{nullptr};
 inline std::atomic<bool> installed{false};
 inline std::mutex installation;
 inline std::uintptr_t module=0;
-inline constexpr std::uint32_t rvas[]={0x38D030,0x389750,0x38E2F0};
+inline constexpr std::uint32_t rvas[]={(::FfxHooks::ExecutableProfile::Rva<0x38D030>()),(::FfxHooks::ExecutableProfile::Rva<0x389750>()),(::FfxHooks::ExecutableProfile::Rva<0x38E2F0>())};
 inline void* originals[3]{};
 inline std::array<std::array<Byte,32>,3> owned{};
 inline bool Register(std::atomic<const Callbacks*>& slot,const Callbacks* value) noexcept {

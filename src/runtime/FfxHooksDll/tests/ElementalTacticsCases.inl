@@ -34,7 +34,7 @@ static int __cdecl TacticsResult(unsigned source,unsigned sub,unsigned target,in
     if(!info[1]){
         int damage=0;std::memcpy(&damage,info+32,4);
         using Hp=int(__cdecl*)(unsigned,unsigned char*,int,int,int,int,int);
-        reinterpret_cast<Hp>(coreImage+0x38E2F0)(target,actor,damage,0,0,0,0);
+        reinterpret_cast<Hp>(coreImage+(::FfxHooks::ExecutableProfile::Rva<0x38E2F0>()))(target,actor,damage,0,0,0,0);
     }
     ++group[0];return 2;
 }
@@ -73,18 +73,18 @@ static void TacticsCases(std::uintptr_t base,std::vector<unsigned char>& actors,
         W32(actor+0x594,100000);W32(actor+0x5D0,100000);actor[0xDE5]=255;}
     std::array<unsigned char,14> scene{};unsigned char variant=0;
     const auto scenePointer=reinterpret_cast<std::uintptr_t>(scene.data()),variantPointer=reinterpret_cast<std::uintptr_t>(&variant);
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A9C8),&scenePointer,4);
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A9FC),&variantPointer,4);
-    W16(reinterpret_cast<unsigned char*>(base+0xD2C256),0);
-    Check(TacticsPatch(base+0x38F0C0,reinterpret_cast<void*>(&TacticsResultSuffix)),"the graphical result suffix is isolated after native profile admission");
-    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+0x38E680);
-    const auto result=reinterpret_cast<FfxHooks::SharedAction::ResultFunction>(base+0x38F0B0);
-    const auto finish=reinterpret_cast<FfxHooks::SharedAction::FinishFunction>(base+0x3B0870);
-    auto* queue=reinterpret_cast<unsigned char*>(base+0xD2AC70);
+    std::memcpy(reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A9C8>())),&scenePointer,4);
+    std::memcpy(reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A9FC>())),&variantPointer,4);
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2C256>())),0);
+    Check(TacticsPatch(base+(::FfxHooks::ExecutableProfile::Rva<0x38F0C0>()),reinterpret_cast<void*>(&TacticsResultSuffix)),"the graphical result suffix is isolated after native profile admission");
+    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
+    const auto result=reinterpret_cast<FfxHooks::SharedAction::ResultFunction>(base+(::FfxHooks::ExecutableProfile::Rva<0x38F0B0>()));
+    const auto finish=reinterpret_cast<FfxHooks::SharedAction::FinishFunction>(base+(::FfxHooks::ExecutableProfile::Rva<0x3B0870>()));
+    auto* queue=reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2AC70>()));
     const auto begin=[&](unsigned owner,unsigned id,unsigned count,bool counter=false){
         std::memset(queue,0,72);queue[0]=static_cast<unsigned char>(owner);queue[1]=counter?1:0;queue[3]=static_cast<unsigned char>(count);
         for(unsigned i=0;i<count;++i){W16(queue+8+16*i,0x3000+id);W16(queue+10+16*i,255);W32(queue+16+16*i,2);}
-        *reinterpret_cast<unsigned char*>(base+0xD2BDE1)=1;
+        *reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>()))=1;
         auto* actor=actors.data()+owner*0xF90;actor[0xDE5]=0;actor[0xDE7]=1;
     };
     const auto hit=[&](unsigned owner,unsigned id,unsigned sub,unsigned target,bool missed=false){
@@ -164,9 +164,9 @@ static void TacticsCases(std::uintptr_t base,std::vector<unsigned char>& actors,
     Check(!view(1).imperil,"petrification/removal retires transient status ownership");
     begin(0,95,1);hit(0,95,0,1);complete(0,1);
     Check(view(1).imperil==1,"the native incarnation fixture starts with a live external effect");
-    Check(TacticsPatch(base+0x39B528,reinterpret_cast<void*>(&TacticsActorSuffix)),
+    Check(TacticsPatch(base+(::FfxHooks::ExecutableProfile::Rva<0x39B528>()),reinterpret_cast<void*>(&TacticsActorSuffix)),
           "actor initialization retains its native lookup and complete status-memory clearing prefix");
-    const auto initialize=reinterpret_cast<int(__cdecl*)(unsigned,unsigned)>(base+0x39B500);
+    const auto initialize=reinterpret_cast<int(__cdecl*)(unsigned,unsigned)>(base+(::FfxHooks::ExecutableProfile::Rva<0x39B500>()));
     Check(initialize(0,1)==0x507&&nativeActorInitializations==1&&nativeActorWasCleared,
           "the actual native actor initialization prefix executes exactly once");
     E::TickMainThread();

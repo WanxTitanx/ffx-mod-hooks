@@ -153,7 +153,7 @@ static void Run(){
     }
     Reset();workshop::Request refine{};refine.op=workshop::Op::Refine;refine.pieceId=state.pieces[0].id;
     *reinterpret_cast<unsigned char*>(module+kSaveRam+0x40CC+57)=0;workshop::State captured{};Capture(captured);refine.revision=captured.revision;before=Bytes();
-    Check(Preview(refine,p)==workshop::Error::Materials&&p.requirements[57]==7&&Bytes()==before,"native quote requires every potential ingredient before random selection");
+    Check(Preview(refine,p)==workshop::Error::Materials&&p.requirements[57]==2&&Bytes()==before,"native quote requires every potential reduced ingredient before random selection");
     Reset();refine.pieceId=state.pieces[0].id;refine.revision=state.revision;
     Check(Preview(refine,p)==workshop::Error::Ok&&Commit(refine,p)&&Gil()==999000&&state.rolls==1,"default B debits the first progressive native Gil fee");
     static const NativeSaveEvents::Observer projection{

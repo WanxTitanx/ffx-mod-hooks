@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 // Jarvis-HOOK: a single owner for the native CTB edge used by Phase Rotation and
 // Vanguard. Subscribers are process-lifetime descriptors; teardown only disarms.
@@ -37,7 +38,7 @@ inline bool Copy(void* out,const void* in,std::size_t size) noexcept {
 inline void __cdecl Shim(unsigned slot,void* actor){
     reinterpret_cast<void(__cdecl*)(unsigned,void*)>(original)(slot,actor);
     unsigned char battle=0;
-    if(dispatching||!Copy(&battle,reinterpret_cast<void*>(imageBase+0xD2A8E0),1)||!battle)return;
+    if(dispatching||!Copy(&battle,reinterpret_cast<void*>(imageBase+::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>()),1)||!battle)return;
     auto prior=sequence.load();
     // Saturating, bounded publication. A competing foreign caller loses this
     // notification instead of wrapping or spinning inside the game callback.
@@ -51,7 +52,7 @@ inline void __cdecl Shim(unsigned slot,void* actor){
 }
 inline bool Start(std::uintptr_t base){
     std::lock_guard<std::mutex> lock(installMutex);
-    unsigned char bytes[16]{};constexpr unsigned rva=0x3B13D0;
+    unsigned char bytes[16]{};constexpr unsigned rva=(::FfxHooks::ExecutableProfile::Rva<0x3B13D0>());
     if(installed.load())return imageBase==base&&Copy(bytes,reinterpret_cast<void*>(base+rva),16)&&!std::memcmp(bytes,admitted,16);
     unsigned char header[0x1000]{};F8Runtime::ExecutableIdentity identity{};
     constexpr unsigned char expected[]={0x55,0x8B,0xEC,0x51,0x53,0x8B,0x5D,0x08,0x83,0xFB,0x06,0x0F,0x87,0x5C,0x01,0x00};

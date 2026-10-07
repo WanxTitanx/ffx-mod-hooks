@@ -22,8 +22,20 @@ Run from the Editor repository root so its existing recipe resources resolve:
 dotnet /absolute/hooks/tools/sin_profiles/bin/Release/net10.0/SinProfiles.dll \
   --editor /absolute/path/FFXProjectEditor.dll \
   --source '/absolute/Editor/mods/Spira Reforge/sin-clean-bins' \
-  --output /absolute/private/sin-profiles
+  --output /absolute/private/sin-profiles \
+  --catalog /absolute/hooks/tools/sin_profiles/catalog.json
 ```
+
+`catalog.json` is the explicit area/monster/UNI compatibility matrix. It includes
+exclusive signatures, actual natural field membership and written per-monster
+reasoning. `generate_catalog.py --check` checks the public generated metadata.
+The regional pool is not assigned wholesale to every creature.
+
+The local GPL-compatible post-action compiler preserves native actions and tail
+state. It checks the acting creature before extra commands, validates resolved
+living targets, keeps same-target pairs, and rejects duplicate baking. Run its
+bounded semantic checks with `--editor /absolute/path/FFXProjectEditor.dll
+--self-test`; these checks are RT0 and do not establish gameplay acceptance.
 
 The manifest records the Editor assembly identity, pack identity and each AI
 profile. Reproduce the admission header into a temporary file for comparison:

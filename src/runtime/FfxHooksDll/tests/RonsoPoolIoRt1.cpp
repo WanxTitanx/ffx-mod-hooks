@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "../hooks/RonsoPoolRuntime.h"
 #include "../hooks/RonsoPoolSave.h"
@@ -122,12 +123,12 @@ std::wstring Canonical(const std::wstring& path) {
 bool GameRead(const std::wstring& path,SaveImage* bytes) {
     void* file=openFile(path.c_str(),L"rb");if(!file)return false;
     uint32_t count=static_cast<uint32_t>(bytes->size());void* data=bytes->data();
-    Patch(base+0x8E72F4,&count,4);Patch(base+0x8E72F8,&data,4);
-    const size_t got=NativeRead(file,reinterpret_cast<void*>(base+0x2F0213));closeFile(file);return got==count;
+    Patch(base+::FfxHooks::ExecutableProfile::Rva<0x8E72F4>(),&count,4);Patch(base+::FfxHooks::ExecutableProfile::Rva<0x8E72F8>(),&data,4);
+    const size_t got=NativeRead(file,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x2F0213>()));closeFile(file);return got==count;
 }
 bool GameWrite(const std::wstring& path,SaveImage* bytes) {
     void* file=openFile(path.c_str(),L"wb");if(!file)return false;
-    const size_t got=NativeWrite(bytes->size(),bytes->data(),file,reinterpret_cast<void*>(base+0x2F06B8));
+    const size_t got=NativeWrite(bytes->size(),bytes->data(),file,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x2F06B8>()));
     closeFile(file);return got==bytes->size();
 }
 }
@@ -142,7 +143,7 @@ int main(int argc,char** argv) {
     const auto read=GetProcAddress(crt,"fread"),write=GetProcAddress(crt,"fwrite");
     openFile=reinterpret_cast<OpenFn>(GetProcAddress(crt,"_wfopen"));closeFile=reinterpret_cast<CloseFn>(GetProcAddress(crt,"fclose"));
     if(!read||!write||!openFile||!closeFile)return 2;
-    Patch(base+0x70C3F4,&read,4);Patch(base+0x70C428,&write,4);
+    Patch(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>(),&read,4);Patch(base+::FfxHooks::ExecutableProfile::Rva<0x70C428>(),&write,4);
     const std::wstring root(argv[3],argv[3]+std::strlen(argv[3]));
     const std::wstring file=root+L"\\ffx_000",foreign=root+L"\\ffx_001",resetSave=root+L"\\ffx_002";
     PreparedRuntime prepared{};
@@ -163,8 +164,8 @@ int main(int argc,char** argv) {
     Expect(preparedOk,"production save adapter prepared in private image");
     Expect(InstallIoImports(),"only the two FFX import cells are intercepted");
     const uint8_t returnAfterCall[]={0x83,0xC4,0x10,0xC3};
-    Patch(base+0x2F0228,returnAfterCall,sizeof(returnAfterCall));Patch(base+0x2F06C5,returnAfterCall,sizeof(returnAfterCall));
-    uint16_t scene=23;Patch(base+0xD2CA90,&scene,2);
+    Patch(base+::FfxHooks::ExecutableProfile::Rva<0x2F0228>(),returnAfterCall,sizeof(returnAfterCall));Patch(base+::FfxHooks::ExecutableProfile::Rva<0x2F06C5>(),returnAfterCall,sizeof(returnAfterCall));
+    uint16_t scene=23;Patch(base+::FfxHooks::ExecutableProfile::Rva<0xD2CA90>(),&scene,2);
     ActivateRuntime();
     SaveImage original{};std::ifstream input(argv[2],std::ios::binary);
     if(!input.read(reinterpret_cast<char*>(original.data()),original.size()))return 2;
@@ -203,7 +204,7 @@ int main(int argc,char** argv) {
                "switching to another valid vanilla slot does not inherit old surplus");
     } else {
         void* raw=openFile(file.c_str(),L"rb");
-        auto intercepted=*reinterpret_cast<ReadFn*>(base+0x70C3F4);
+        auto intercepted=*reinterpret_cast<ReadFn*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>());
         Expect(raw&&intercepted(image.data(),1,image.size(),raw)==image.size()&&image[kSaveMaximum]==200,
                "foreign caller is forwarded unchanged even with the same save leaf");
         Expect(observedReads==0,"foreign caller never publishes a native save event");

@@ -7,6 +7,11 @@ namespace FfxHooks::UiCaption {
 inline constexpr unsigned MaxLines=64;
 inline constexpr std::size_t MaxText=2048;
 inline constexpr std::uint32_t MaxAgeMs=250;
+// GDI text has RGB but no alpha. Native font sprites already carry coverage;
+// promoting their antialiased edge pixels to opaque would produce jagged text.
+inline std::uint32_t ResolveOverlayAlpha(std::uint32_t pixel) noexcept {
+    return (pixel&0x00FFFFFFu)&&!(pixel&0xFF000000u)?pixel|0xFF000000u:pixel;
+}
 inline bool Fresh(std::uint32_t stamp,std::uint32_t now) noexcept {return now-stamp<=MaxAgeMs;}
 struct Line {
     std::array<char,MaxText> text{};

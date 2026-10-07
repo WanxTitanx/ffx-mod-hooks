@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "RonsoManaHook.h"
 #include "../shared/ffx_addresses.h"
 
@@ -55,7 +56,7 @@ constexpr uint8_t  kDefaultRonsoPoolMax    = 255u;
 constexpr uint8_t  kDefaultRonsoGateMin    = 20u;
 constexpr uint8_t  kOverdriveMenuCategory  = 4u;
 constexpr size_t   kDrainPatchLen          = 7u;
-constexpr uintptr_t kDrainResumeRva        = 0x0038F1ECu;
+constexpr uintptr_t kDrainResumeRva        = (::FfxHooks::ExecutableProfile::Rva<0x0038F1ECu>());
 
 /* command.bin Ronso 104–115 suggested costs (row order in submenu builder) */
 static const uint8_t kRonsoSkillCosts[] = {

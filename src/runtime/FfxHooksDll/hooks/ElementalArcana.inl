@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK: card-only external weapon elements share the existing affinity
 // owner. Kernel rows are read and revalidated; no command or item is rewritten.
 void AddHitElement(HitFrame& frame,const std::array<AffinityValue,ElementLimit>& values,
@@ -16,7 +17,7 @@ bool WeaponRow(const Bus::DamageCall& call,const Byte* row) noexcept {
 bool ReadCardWeaponRow(const Bus::DamageCall& call,std::array<Byte,96>& row) noexcept {
     if(call.commandId!=0&&(call.commandId&0xFFFFF000u)!=0x3000u)return false;
     std::uint32_t bank=0;
-    if(!Read(module+0xD2A92C,bank)||bank<0x10000||bank>UINT32_MAX-8u*1024u*1024u)return false;
+    if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A92C>()),bank)||bank<0x10000||bank>UINT32_MAX-8u*1024u*1024u)return false;
     Byte header[8]{};if(!Copy(header,reinterpret_cast<const void*>(bank),sizeof(header)))return false;
     const auto word=[](const Byte* bytes){return unsigned(bytes[0])|(unsigned(bytes[1])<<8);};
     const unsigned sections=word(header),index=call.commandId&0xFFFu;

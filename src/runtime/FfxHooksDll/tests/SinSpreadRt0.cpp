@@ -6,12 +6,19 @@ static void Check(bool ok,const char* label){++checks;if(!ok){++failures;std::pr
 int main(){
     Check(!BuildAssignment(310,1,0,Distribution::Random,false).active,"OFF admits no curse assignments");
     Check(!BuildAssignment(0x236,1,0,Distribution::Most,true).supported,"masked field aliases remain unsupported");
+    for(unsigned field:{310u,311u,312u,330u,333u,340u})for(unsigned seed=0;seed<128;++seed){
+        const auto all=BuildAssignment(static_cast<unsigned short>(field),seed,7,static_cast<Distribution>(100),true);
+        Check(all.supported && all.active && all.count>0 && all.cursed==all.count,"100 percent selects every supported natural monster for every seed");
+        for(unsigned i=0;i<all.count;++i)Check(all.monsters[i].curse!=0 && all.monsters[i].threat>0,"100 percent leaves no supported monster uncursed");
+        const auto off=BuildAssignment(static_cast<unsigned short>(field),seed,7,static_cast<Distribution>(100),false);
+        Check(!off.active && off.cursed==0,"100 percent remains inactive when SIN is OFF");
+    }
     bool sawZero=false,sawVariation=false;
     for(unsigned field:{310u,340u})for(unsigned seed=0;seed<128;++seed){
         for(auto mode:{Distribution::Random,Distribution::Few,Distribution::Half,Distribution::Most}){
             const auto a=BuildAssignment(static_cast<unsigned short>(field),seed,7,mode,true);
             const auto b=BuildAssignment(static_cast<unsigned short>(field),seed,7,mode,true);
-            Check(a.supported && a.count==(field==310?6u:4u),"area uses its exact reviewed natural roster");
+            Check(a.supported && a.count==6u,"area uses its complete reviewed natural roster including the installed snow formation additions");
             Check(a.cursed<=a.count*80u/100u,"no distribution infects every monster species");
             if(mode!=Distribution::Random)Check(a.cursed==Quota(a.count,mode),"fixed distribution has its exact bounded quota");
             if(!a.cursed)sawZero=true;

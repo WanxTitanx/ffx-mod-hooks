@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "SeymourMenuListHook.h"
 #include "SeymourMenuListService.h"
 #include "SeymourOverdriveControl.h"
@@ -12,12 +13,16 @@ namespace FfxHooks::SeymourMenuList {
 namespace {
 namespace N=RecoveryNative;
 constexpr char Key[]="seymour.menu_list";
-constexpr std::uintptr_t ConstructorRva=0x4a8ef0,MenuRva=0x1441bd4;
-constexpr std::uintptr_t FrontRva=0xd307e8,ReserveRva=0xd307eb;
-constexpr std::uintptr_t PlayerRva=0xd3205c,BattleRva=0xd2a8e0;
+constexpr std::uintptr_t ConstructorRva=(::FfxHooks::ExecutableProfile::Rva<0x4a8ef0>()),MenuRva=(::FfxHooks::ExecutableProfile::Rva<0x1441bd4>());
+constexpr std::uintptr_t FrontRva=(::FfxHooks::ExecutableProfile::Rva<0xd307e8>()),ReserveRva=(::FfxHooks::ExecutableProfile::Rva<0xd307eb>());
+constexpr std::uintptr_t PlayerRva=(::FfxHooks::ExecutableProfile::Rva<0xd3205c>()),BattleRva=(::FfxHooks::ExecutableProfile::Rva<0xd2a8e0>());
 // Exact 78ce3439... entry through 0x008A8F08; no absolute relocation in this span.
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::uint8_t Prefix[]={0x55,0x8B,0xEC,0x83,0xEC,0x0C,0x53,0x8B,0x5D,0x08,0x56,0x8D,0x45,0xFC,0x57,0x81,0xE3,0x00,0x00,0xFF,0xFF,0x50,0x89,0x5D,0x08};
+#else
 constexpr std::uint8_t Prefix[]={0x55,0x8b,0xec,0x83,0xec,0x0c,0x53,0x8b,0x5d,0x08,
     0x56,0x8d,0x45,0xfc,0x57,0x81,0xe3,0x00,0x00,0xff,0xff,0x50,0x89,0x5d,0x08};
+#endif
 const RecoveryEvidence::Proof Proof{ConstructorRva,Prefix,sizeof(Prefix),nullptr,0};
 enum class Phase:unsigned {Off,Unavailable,Installed,StopPending,Stopped};
 std::atomic<Phase> g_phase{Phase::Off};

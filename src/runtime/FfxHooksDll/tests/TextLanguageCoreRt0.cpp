@@ -1,4 +1,6 @@
+#include "ExecutableFixtureIdentity.h"
 #include "../hooks/TextLanguageCore.h"
+#include "../hooks/TextLanguageGraphicsCatalog.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -15,7 +17,7 @@ static const char* Valid = R"json({
  "schema_version":1,"capability":"ffx.text-locale","hook_api":1,
  "locale":"pt-BR","display_name":"Português (Brasil)","pack_version":"1.0.0",
  "base_locale":1,"fallback":"native","activation":"restart",
- "executable_sha256":"78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+ "executable_sha256":")json" FFXHOOKS_FIXTURE_SHA256 R"json(",
  "coverage":{"menu":"partial","battle":"unavailable","events":"unavailable","texture_text":"unavailable"},
  "resources":[
   {"id":"menu","family":"menu","request":"/FFX_Data/ffx_ps2/ffx/master/new_uspc/battle/kernel/menu_txt.bin","path":"text/menu.bin","font":"western","source_size":12,"size":12,"source_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
@@ -27,6 +29,22 @@ static const char* Valid = R"json({
 })json";
 int main(int argc,char** argv){
     Manifest m;std::string error;
+    {
+        const auto& graphic=GraphicProfiles[0];
+        auto value=Replace(Replace(Valid,"\"schema_version\":1","\"schema_version\":4"),"\"hook_api\":1","\"hook_api\":4");
+        value=Replace(value,"\"texture_text\":\"unavailable\"","\"subtitles\":\"unavailable\",\"texture_text\":\"partial\"");
+        const std::string resource="{\"id\":\"ui-proof\",\"family\":\"ui_texture\",\"request\":\""+std::string(graphic.request)+"\",\"path\":\"graphics/proof.phyre\",\"source_size\":"+std::to_string(graphic.bytes)+",\"size\":"+std::to_string(graphic.bytes)+",\"source_sha256\":\""+std::string(graphic.source)+"\",\"sha256\":\""+std::string(graphic.output)+"\"},";
+        value=Replace(value,"\"resources\":[","\"resources\":["+resource);
+        Manifest examined;
+        Check(ParseManifest(value,examined,error),"API 4 admits only the examined graphic binding");
+        Check(!ParseManifest(Replace(value,graphic.output,std::string(64,'c')),examined,error),"self-declared graphic pixels are rejected");
+        Check(!ParseManifest(Replace(Replace(value,"\"schema_version\":4","\"schema_version\":3"),"\"hook_api\":4","\"hook_api\":3"),examined,error),"API 3 cannot admit graphical replacements");
+    }
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+    Check(std::string(ExecutableSha256)=="0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d","Steam target uses its exact executable identity");
+#else
+    Check(std::string(ExecutableSha256)=="78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced","legacy target keeps its exact executable identity");
+#endif
     std::vector<std::uint8_t> cedilla;
     Check(EncodeLiteral(Font{},u8"Çç",2,cedilla,error)&&cedilla==std::vector<std::uint8_t>({167,190}),"verified native uppercase and lowercase cedilla");
     Check(ParseManifest(Valid,m,error),"valid PT-BR manifest is admitted");
@@ -110,6 +128,36 @@ int main(int argc,char** argv){
     Check(!ParseManifest(Replace(event,"ssbt0000.bin","different.bin"),version2,error),"event identity and filename must agree");
     Check(!ParseManifest(Replace(event,"\"hook_api\":2","\"hook_api\":3"),version2,error),"future hook API rejects before activation");
     Check(!ParseManifest(Replace(event,"\"subtitles\":\"partial\"","\"subtitles\":\"complete\""),version2,error),"package cannot claim full subtitle coverage");
+    auto v3=Replace(Replace(v2,"\"schema_version\":2","\"schema_version\":3"),"\"hook_api\":2","\"hook_api\":3");
+    const std::string nativePrefix="/FFX_Data/ffx_ps2/ffx/master/new_uspc/";
+    const std::string originalRequest=nativePrefix+"battle/kernel/menu_txt.bin";
+    for(const char* file:{"a_ability.bin","command.bin","important.bin","item.bin","monmagic1.bin","monmagic2.bin",
+                         "monster1.bin","monster2.bin","monster3.bin","panel.bin","sphere.bin","w_name.bin"}){
+        auto extended=Replace(v3,originalRequest,nativePrefix+"battle/kernel/"+file);
+        extended=Replace(extended,"\"family\":\"menu\"","\"family\":\"battle\"");
+        extended=Replace(extended,"\"menu\":\"partial\"","\"menu\":\"unavailable\"");
+        extended=Replace(extended,"\"battle\":\"unavailable\"","\"battle\":\"partial\"");
+        Check(ParseManifest(extended,version2,error),"API 3 admits exact indexed text-prefix catalogue");
+        auto old=Replace(Replace(extended,"\"schema_version\":3","\"schema_version\":2"),"\"hook_api\":3","\"hook_api\":2");
+        Check(!ParseManifest(old,version2,error),"API 2 cannot opt into a new indexed layout");
+    }
+    for(const char* leaf:{"menu/menumain.bin","menu/macrodic.dcp"}){
+        auto extended=Replace(v3,originalRequest,nativePrefix+leaf);
+        Check(ParseManifest(extended,version2,error),"API 3 admits the exact additional menu containers");
+    }
+    Check(!ParseManifest(Replace(v3,originalRequest,"/FFX_Data/GameData/PS3Data/lockit/ffx_loc_kit_ps3_us.bin"),version2,error),
+          "mixed-encoding lockit stays outside runtime admission");
+    auto bank=Replace(v3,originalRequest,nativePrefix+"battle/btl/besa01_00/besa01_00.bin");
+    bank=Replace(bank,"\"family\":\"menu\"","\"family\":\"battle\"");
+    bank=Replace(bank,"\"menu\":\"partial\"","\"menu\":\"unavailable\"");
+    bank=Replace(bank,"\"battle\":\"unavailable\"","\"battle\":\"partial\"");
+    Check(ParseManifest(bank,version2,error),"API 3 admits bounded battle text-bank names");
+    Check(!ParseManifest(Replace(bank,"besa01_00.bin","different.bin"),version2,error),"battle bank directory and leaf must agree");
+    for(const char* leaf:{"battle/kernel/ply_save.bin","battle/kernel/ply_rom.bin","menu/albheddic.bin","menu/unknown.bin",
+                         "battle/btl/besa01_00/voice.fsb","event/obj_ps3/ss/ssbt0000/ssbt0000.eb"})
+        Check(!ParseManifest(Replace(v3,originalRequest,nativePrefix+leaf),version2,error),"API 3 keeps adjacent nontext data outside admission");
+    Check(!ParseManifest(Replace(v3,"\"subtitles\":\"unavailable\"","\"subtitles\":\"complete\""),version2,error),
+          "API 3 validates subtitle coverage as strictly as API 2");
     if(argc==2){std::ifstream f(argv[1],std::ios::binary);std::string data((std::istreambuf_iterator<char>(f)),{});Manifest external;Check(ParseManifest(data,external,error),"Python-generated manifest interoperability");if(!error.empty())std::cerr<<error<<'\n';}
     std::cout<<"TextLanguageCore RT0: "<<checks<<" checks, "<<failures<<" failures\n";
     return failures?1:0;

@@ -1,4 +1,5 @@
 #include "SeymourBattleHook.h"
+#include "SeymourExitEvidence.h"
 
 #include "F7InLive.h"
 #include "F8FlagCatalog.h"
@@ -36,23 +37,39 @@ using namespace SeymourBattle;
 using F7Difficulty::kSupportedSizeOfImage;
 
 constexpr char kSeymourKey[] = "boosters.playable_seymour";
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::array<uint8_t, 5> kEntryCall = {0xE8,0xB4,0x0C,0x00,0x00};
+#else
 constexpr std::array<uint8_t, 5> kEntryCall = {
     0xE8u, 0xB4u, 0x0Cu, 0x00u, 0x00u,
 };
+#endif
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::array<uint8_t, 5> kExitCall = {0xE8,0x09,0x51,0xFF,0xFF};
+#else
 constexpr std::array<uint8_t, 5> kExitCall = {
     0xE8u, 0x79u, 0x51u, 0xFFu, 0xFFu,
 };
+#endif
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::array<uint8_t, 23> kAssignPrefix = {0x55,0x8B,0xEC,0x53,0x8B,0x5D,0x08,0x81,0xE3,0xFF,0x00,0x00,0x00,0x83,0x7D,0x0C,0x00,0x0F,0x84,0x88,0x00,0x00,0x00};
+#else
 constexpr std::array<uint8_t, 23> kAssignPrefix = {
     0x55u, 0x8Bu, 0xECu, 0x53u, 0x8Bu, 0x5Du, 0x08u, 0x81u,
     0xE3u, 0xFFu, 0x00u, 0x00u, 0x00u, 0x83u, 0x7Du, 0x0Cu,
     0x00u, 0x0Fu, 0x84u, 0x88u, 0x00u, 0x00u, 0x00u,
 };
+#endif
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+constexpr std::array<uint8_t, 20> kExitTargetFixedPrefix = {0x53,0x56,0x57,0xE8,0xF8,0x8E,0x02,0x00,0xE8,0x63,0x09,0x00,0x00,0xE8,0xDE,0x00,0x00,0x00,0x33,0xDB};
+#else
 constexpr std::array<uint8_t, 20> kExitTargetFixedPrefix = {
     0x53u, 0x56u, 0x57u, 0xE8u, 0x48u, 0x8Eu, 0x02u, 0x00u,
     0xE8u, 0x63u, 0x09u, 0x00u, 0x00u, 0xE8u, 0xDEu, 0x00u,
     0x00u, 0x00u, 0x33u, 0xDBu,
 };
-constexpr uint32_t kExitTargetActorTableRva = 0x00F32078u;
+#endif
+constexpr uint32_t kExitTargetActorTableRva = SeymourBattle::ExitEvidence::ActorTableRva;
 
 enum class AdapterPublication : uint32_t {
     Unpublished = 0,
@@ -307,7 +324,7 @@ bool ValidateExitTarget(uintptr_t moduleBase, uintptr_t address) {
     uintptr_t actorTable = 0u;
     return AddressFromRva(moduleBase, kExitTargetActorTableRva, 1u, &actorTable) &&
            actorTable <= (std::numeric_limits<uint32_t>::max)() &&
-           ReadU32(bytes.data() + 21u) == static_cast<uint32_t>(actorTable);
+           SeymourBattle::ExitEvidence::ActorTableOperandMatches(bytes.data(), bytes.size(), moduleBase);
 }
 
 bool ValidateAdapter(uintptr_t moduleBase, ValidatedAdapter* output,

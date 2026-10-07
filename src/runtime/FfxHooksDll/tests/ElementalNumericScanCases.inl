@@ -32,39 +32,53 @@ static void CheckRows(unsigned count){
     if(count>2)Check(FullScanTest::Has("Imperil resist 50%"),"status resistance has an independent numerical label");
     for(const auto& draw:textDraws){
         if(draw.text.rfind(FullScanTest::Encoded("Element"),0)==0||draw.text.rfind(FullScanTest::Encoded("Gear "),0)==0||
-           draw.text.rfind(FullScanTest::Encoded("Imperil "),0)==0||draw.text.rfind(FullScanTest::Encoded("LOCK"),0)==0)
+           draw.text.rfind(FullScanTest::Encoded("Imperil "),0)==0||draw.text.rfind(FullScanTest::Encoded("LOCK"),0)==0){
             Check(draw.x>=0&&draw.y>=0&&draw.x<viewportWidth&&draw.y<viewportHeight,
                   "numerical drawing positions remain inside the actual viewport");
+            Check(draw.plain,"numerical Sensor/full-Scan labels omit the eight-pass outline batch");
+        }
     }
+    Check(!FfxHooks::NativeText::PlainTextActive(),"Scan producer restores vanilla text style after drawing");
 }
 static bool NumberValue(int value){for(const auto& drawn:numberDraws)if(drawn.value==value)return true;return false;}
 static void Run(int(__cdecl* sensor)(int,int,int),bool legacyElements=false){
     FullScanTest::Run(legacyElements,false);
     static const S::Provider source{Source};
     Check(S::Register(&source),"the renderer receives a separately owned numerical provider");
-    const auto frame=reinterpret_cast<int(__cdecl*)()>(imageBase+0x49BBF0);
-    const auto data=reinterpret_cast<int(__cdecl*)(int,int)>(imageBase+0x49BEE0);
+    const auto frame=reinterpret_cast<int(__cdecl*)()>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x49BBF0>()));
+    const auto data=reinterpret_cast<int(__cdecl*)(int,int)>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x49BEE0>()));
     const auto root=reinterpret_cast<std::uintptr_t>(FullScanTest::actors);
-    std::memcpy(reinterpret_cast<void*>(imageBase+0xD334CC),&root,4);
-    *reinterpret_cast<short*>(imageBase+0xF3F6C2)=0;
+    std::memcpy(reinterpret_cast<void*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0xD334CC>())),&root,4);
+    *reinterpret_cast<short*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0xF3F6C2>()))=0;
     const float sizes[][2]={{512,416},{1280,720},{1920,1080},{2560,1440}};
     for(const auto& size:sizes){
         viewportWidth=size[0];viewportHeight=size[1];FullScanTest::SeedActor(0,21,80);
         const unsigned currentHp=123456,maximumHp=999999;
         std::memcpy(FullScanTest::actors[0]+0x5D0,&currentHp,4);
         std::memcpy(FullScanTest::actors[0]+0x594,&maximumHp,4);
-        *reinterpret_cast<short*>(imageBase+0xF3F668)=3;
-        *reinterpret_cast<short*>(imageBase+0xF3F66A)=0x1000;
+        *reinterpret_cast<short*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0xF3F668>()))=3;
+        *reinterpret_cast<short*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0xF3F66A>()))=0x1000;
         for(unsigned descriptors:{8u,10u,32u}){
             total=descriptors;const unsigned pages=(total+S::PageSize-1)/S::PageSize;
             for(unsigned page=0;page<pages;++page){Configure(page);ResetDraw();
                 frame();data(0,0);CheckRows(S::VisibleCount(total,page));
+                Check(panelDraws.size()==1,"full Scan keeps one native outer frame without a floating duplicate panel");
+                Check(std::none_of(bands.begin(),bands.end(),[](const BandDraw& b){return b.y>=ScaleY(690.f);}),
+                      "numeric Scan replaces the old affinity backgrounds instead of drawing over them");
+                for(const auto& quad:textureDraws)if(quad.atlas==0x1FA)
+                    Check(quad.x>ScaleX(1000.f)&&quad.y<ScaleY(850.f),
+                          "native immunity information moves into the description column outside the elemental table");
                 Check(NumberValue(123456)&&NumberValue(999999),
                       "six-digit HP values still reach the original native resource-number consumers");
             }
         }
         total=10;Configure(0);ResetDraw();showScan=true;
-        Check(sensor(0x1000,0,0)==23,"numerical Sensor preserves the native producer return value");CheckRows(10);
+        const unsigned sensorReads=readCalls;
+        Check(sensor(0x1000,0,0)==23,"compact Sensor preserves the native producer return value");
+        Check(readCalls==sensorReads&&!FullScanTest::Has("Elemental Dominion"),
+              "battle Info neither queries nor displays the full elemental table");
+        Check(panelDraws.size()==1&&panelDraws.front().height==120,
+              "battle Info keeps its compact original height while native affinities remain available");
         const unsigned before=readCalls;ResetDraw();showScan=false;
         Check(sensor(0x1000,0,0)==17&&readCalls==before&&textDraws.empty(),
               "a hidden Sensor never requests or draws numerical actor data");showScan=true;

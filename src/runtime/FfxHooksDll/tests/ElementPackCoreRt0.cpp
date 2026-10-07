@@ -1,4 +1,5 @@
 // Jarvis-HOOK: transactional manifest admission and stable native bindings.
+#include "ExecutableFixtureIdentity.h"
 #include <cstdio>
 #include <string>
 #include <utility>
@@ -14,7 +15,7 @@ std::string Replace(std::string text,const std::string& from,const std::string& 
 }
 std::string Fixture(){
     std::string text=R"({"schema":"ffx.mod007.elements.v1","package_id":"tests.tenfold","version":1,
-      "exe_sha256":"78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+      "exe_sha256":")" FFXHOOKS_FIXTURE_SHA256 R"(",
       "requires":["mod007.registry.v1","mod007.affinity.v1","mod007.context.v1","mod007.spell-cap.v1","mod007.tactics.v1","mod007.gravity.v1","mod007.equipment.v1"],
       "fallback":"native-unmodified","elements":[)";
     const char* keys[]={"ffx.fire","ffx.ice","ffx.thunder","ffx.water","ffx.holy","spira.earth","spira.wind","spira.dark","spira.poison","spira.gravity"};
@@ -47,7 +48,7 @@ int main(){
     const std::pair<const char*,const char*> invalid[]={
       {"ffx.mod007.elements.v1","ffx.mod007.elements.v2"},
       {"tests.tenfold","not_namespaced"},{"\"version\":1","\"version\":0"},
-      {"78ce3439","00000000"},{"native-unmodified","requires-installed-replacement"},
+      {ExecutableFixtureIdentity::ShaPrefix,"00000000"},{"native-unmodified","requires-installed-replacement"},
       {"mod007.tactics.v1","mod007.unknown.v9"},
       {"\"native_bit\":2}","\"native_bit\":1}"},
       {"\"native_bit\":128}","\"native_bit\":0}"},

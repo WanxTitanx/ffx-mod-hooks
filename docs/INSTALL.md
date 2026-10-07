@@ -1,6 +1,6 @@
-# Install FFX Hooks v0.6.0-beta.3
+# Install FFX Hooks v0.6.0-beta.4
 
-For Fahrenheit users, also read [the optional V2 add-on guide](FAHRENHEIT_V2.md). The paired provider/bridge is required for the expanded services; stock V1 remains restricted.
+No new Fahrenheit add-on is included. The [beta.3 guide](FAHRENHEIT_V2.md) is historical; its provider/bridge is not certified for the updated executable.
 
 The package targets the supported Steam **FFX.exe (Windows x86)**. FFX-2 support
 is not implied. A legal game installation and a working FFX DINPUT8 module loader
@@ -9,16 +9,13 @@ same Windows DLL and the same paths relative to the game directory.
 
 ## Download and verify
 
-Download `ffx-hooks-release-v0.6.0-beta.3.zip` and `ffx-hooks-v0.6.0-beta.3.sha256`
-from the [release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.3).
-The matching `ffx-hooks-source-v0.6.0-beta.3.tar.gz` contains the public tagged source.
+Download `ffx-hooks-release-v0.6.0-beta.4.zip` and `ffx-hooks-v0.6.0-beta.4.sha256`
+from the [release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.4).
+The matching `ffx-hooks-source-v0.6.0-beta.4.tar.gz` contains the public tagged source.
 Verify the downloaded file hashes against the checksum file. The ZIP also has
 `CHECKSUMS.sha256`, `SOURCE.md` and `release-manifest.json` for its contents.
 
-The supplied DLL is 4,683,264 bytes, SHA-256
-`4e7dfe943e9496729b69c9c3af24dfef465ec4efddfb93dba5b6fdcd77af8a6e`.
-Its PE resource says 0.2.0.0; the public package/tag is v0.6.0-beta.3. A separately
-rebuilt DLL can have another hash and is not this tested binary.
+The exact DLL size and hash are recorded in [release inputs](releases/v0.6.0-beta.4-inputs.json). Its PE resource remains 0.2.0.0. The supported FFX.exe is 10,687,744 bytes with SHA-256 `0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d`. Earlier executables need their corresponding Hooks build.
 
 ## Install with the game closed
 

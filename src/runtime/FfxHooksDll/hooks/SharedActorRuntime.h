@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 #include "F8RuntimeCore.h"
 #include "MinHookBatchCoordinator.h"
@@ -18,7 +19,7 @@ struct Observer {
     void (*afterInitialize)(unsigned mode,unsigned actor,int result,bool completed) noexcept=nullptr;
 };
 enum class Slot : unsigned { Elemental,Vanguard,Aeon,NulWard,Count };
-inline constexpr unsigned ActorCount=31,MaximumDepth=16,Rva=0x39B500;
+inline constexpr unsigned ActorCount=31,MaximumDepth=16,Rva=(::FfxHooks::ExecutableProfile::Rva<0x39B500>());
 inline std::array<std::atomic<const Observer*>,static_cast<unsigned>(Slot::Count)> observers{};
 inline std::array<std::atomic<unsigned>,ActorCount> initializing{};
 inline thread_local unsigned depth=0;

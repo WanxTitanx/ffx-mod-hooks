@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 // Jarvis-HOOK: one owner for the native integer clamp. Caller identity is captured
 // before callback dispatch, so independent field/battle policies retain their ABI.
@@ -15,7 +16,7 @@ inline std::mutex installation;
 inline std::uintptr_t module=0;
 inline void* original[1]{};
 inline std::array<unsigned char,32> owned{};
-inline constexpr std::uint32_t Rva=0x39A0D0;
+inline constexpr std::uint32_t Rva=(::FfxHooks::ExecutableProfile::Rva<0x39A0D0>());
 inline bool Register(Slot slot,Adjust callback) noexcept {
     const auto index=static_cast<unsigned>(slot);if(index>=callbacks.size()||!callback)return false;
     Adjust empty=nullptr;return callbacks[index].compare_exchange_strong(empty,callback)||empty==callback;

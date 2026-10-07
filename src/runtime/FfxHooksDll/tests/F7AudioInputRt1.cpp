@@ -9,6 +9,7 @@
 #include "../../NativeMenuShell/MenuFeedback.h"
 #include "../hooks/F7ConfigEditor.h"
 #include "../hooks/F7UiCore.h"
+#include "../hooks/SinSpreadCore.h"
 #include "../hooks/F8FlagsUiState.h"
 #include "../hooks/F8FlagCatalog.h"
 #include "../hooks/NativePortsHook.h"

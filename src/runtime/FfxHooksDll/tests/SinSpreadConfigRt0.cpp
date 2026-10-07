@@ -14,7 +14,10 @@ int main(){
     Check(encoded.code==SinRamConfig::Code::Ok && !std::strstr(output,"threatLevel") && std::strstr(output,"4294967295"),"modern canonical config removes manual threat setting");
     Check(Parse("{\"sinRam\":{\"enabled\":true,\"threatLevel\":2}}",config).code==SinRamConfig::Code::Ok && !config.seeded && config.threatLevel==2,
         "old files still import through the legacy codec");
-    Check(Parse("{\"sinRam\":{\"enabled\":true,\"distribution\":100,\"seed\":1}}",config).code==SinRamConfig::Code::OutOfRange && !config.enabled,"100 percent is rejected by design");
+    Check(Parse("{\"sinRam\":{\"enabled\":true,\"distribution\":100,\"seed\":1}}",config).code==SinRamConfig::Code::Ok && config.seeded && config.enabled && config.distribution==100,"100 percent is an explicit supported distribution");
+    encoded=SinRamConfig::SerializeValue(config,output,sizeof(output));
+    Check(encoded.code==SinRamConfig::Code::Ok && std::strstr(output,"\"distribution\":100"),"100 percent survives canonical serialization");
+    Check(Parse("{\"sinRam\":{\"distribution\":101,\"seed\":1}}",config).code==SinRamConfig::Code::OutOfRange,"out-of-range distribution remains rejected");
     Check(Parse("{\"sinRam\":{\"seed\":-1}}",config).code==SinRamConfig::Code::OutOfRange,"negative seed rejected");
     Check(Parse("{\"sinRam\":{\"seed\":4294967296}}",config).code==SinRamConfig::Code::OutOfRange,"overflow seed rejected");
     Check(Parse("{\"sinRam\":{\"seed\":1,\"Seed\":2}}",config).code==SinRamConfig::Code::DuplicateKey,"case-folded duplicate seed rejected");

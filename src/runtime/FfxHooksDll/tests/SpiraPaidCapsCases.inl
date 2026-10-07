@@ -19,14 +19,14 @@ static void PaidCases(const std::wstring& root,const char* path){
     FfxHooks::RonsoPool::SealSave(original);
     FieldLimits field;Check(field.armed,"paid case executes native max/current clamps");if(failures)return;
     W::DamageProducerForTests(reinterpret_cast<void*>(&DamageEndpoint));
-    const auto aggregate=reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x39C610);
-    const auto maximum=reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x3861B0);
-    const auto doubling=reinterpret_cast<int(__cdecl*)(unsigned,void*,int)>(base+0x38D330);
+    const auto aggregate=reinterpret_cast<int(__cdecl*)(unsigned)>(base+(::FfxHooks::ExecutableProfile::Rva<0x39C610>()));
+    const auto maximum=reinterpret_cast<int(__cdecl*)(unsigned)>(base+(::FfxHooks::ExecutableProfile::Rva<0x3861B0>()));
+    const auto doubling=reinterpret_cast<int(__cdecl*)(unsigned,void*,int)>(base+(::FfxHooks::ExecutableProfile::Rva<0x38D330>()));
     using Hit=unsigned(__cdecl*)(unsigned,void*,unsigned,void*,const void*,unsigned,void*,unsigned,unsigned,unsigned,unsigned);
-    const auto damage=reinterpret_cast<Hit>(base+0x38E680);
+    const auto damage=reinterpret_cast<Hit>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
     Check(FfxHooks::NativeSaveEvents::RegisterCheckpointSerializer(&Serialize),"fixture provides native checkpoint serialization");
     for(unsigned owner=8;owner<18;++owner){const auto save=root+L"\\ffx_"+std::to_wstring(100+owner);
-        *reinterpret_cast<unsigned char*>(base+0xD2A8E0)=0;
+        *reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>()))=0;
         Check(W::LoadForTests(save.c_str(),original,original)&&W::CommitLoadForTests(original),"each canonical owner starts with its observed native save");
         S::TickMainThread();workshop::State state{};Check(S::Ready()&&W::Capture(state),"load admits mapping and inventory before purchase");if(failures)return;
         for(unsigned id=0;id<18;++id){Actor(id)[0x592]=Ply(id)[0x2D];Actor(id)[0x593]=Ply(id)[0x2E];}
@@ -57,7 +57,7 @@ static void PaidCases(const std::wstring& root,const char* path){
         component=1;Check(hit(owner,1)==99999,"paid HP cap never affects CTB");component=3;row[0x23]=1;row[0x20]=0x81;
         Check(hit(1,owner)==99999,"attacker cannot borrow the target's permission");
         amount=-150000;Check(static_cast<int>(hit(owner,1))==-99999,"absorption preserves the separate native floor");amount=450000;
-        W::SaveImage saved=original;std::memcpy(saved.data()+64,reinterpret_cast<const void*>(base+0xD2CA90),0x68C0);FfxHooks::RonsoPool::SealSave(saved);
+        W::SaveImage saved=original;std::memcpy(saved.data()+64,reinterpret_cast<const void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2CA90>())),0x68C0);FfxHooks::RonsoPool::SealSave(saved);
         Check(W::WriteForTests(save.c_str(),saved)&&W::LoadForTests(save.c_str(),saved,saved)&&W::CommitLoadForTests(saved),"high maxima and identities survive native save/load");
         S::TickMainThread();Check(W::Capture(state)&&W::AscensionEffect(owner,0)&&W::AscensionEffect(owner,1),"reloaded receipts remain bound to both pieces");
         const auto gil=WorkshopEconomyFixture::Gil(base);offense.revision=state.revision;offense.remove=true;

@@ -1,6 +1,7 @@
 // Jarvis-HOOK: both real production consumers on one isolated mapped PE.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "PrivatePeFixture.h"
 #include "../hooks/VanguardRuntime.h"
@@ -35,8 +36,8 @@ int main(int argc,char** argv){
           "only healing is requested; no other combat option is coupled");
     std::array<unsigned char,31*0xF90> actors{};
     const auto table=reinterpret_cast<std::uintptr_t>(actors.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD334CC),&table,4);
-    *reinterpret_cast<unsigned char*>(base+0xD2A8E0)=1;
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&table,4);
+    *reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())=1;
     if(workshopFirst){
         Check(W::StartForTests(base,true,directory.c_str(),Log),"Workshop installs first");
         Check(V::Start(base,false,Log),"Vanguard joins the existing shared entries");
@@ -51,7 +52,7 @@ int main(int argc,char** argv){
     Check(!S::RegisterCombat(&foreign),"a different consumer cannot replace an already owned policy");
     std::array<unsigned char,96> command{};std::array<unsigned char,44> info{};
     for(unsigned kind=1;kind<=2;++kind){
-        const auto call=reinterpret_cast<S::ProtectionFn>(base+(kind==1?0x38AE00:0x38AE80));
+        const auto call=reinterpret_cast<S::ProtectionFn>(base+(kind==1?::FfxHooks::ExecutableProfile::Rva<0x38AE00>(): ::FfxHooks::ExecutableProfile::Rva<0x38AE80>()));
         command[0x20]=static_cast<unsigned char>(kind);info[0xA]=info[0xB]=1;
         unsigned flags=0x21;int divisor=7;const auto prior=info;
         Check(call(command.data(),&flags,&divisor,info.data(),-1000)==-1000&&flags==0x21&&divisor==7&&info==prior,
@@ -60,11 +61,11 @@ int main(int argc,char** argv){
               "composed native damage keeps ordinary protection");
     }
     W::DamageProducerForTests(reinterpret_cast<void*>(&Endpoint));
-    const auto damage=reinterpret_cast<S::DamageFn>(base+0x38E680);
+    const auto damage=reinterpret_cast<S::DamageFn>(base+::FfxHooks::ExecutableProfile::Rva<0x38E680>());
     Check(damage(0,actors.data(),1,actors.data()+0xF90,command.data(),0x3000,info.data(),0,0,0,0)==713&&originalCalls==1,
           "shared damage enters the Workshop frame and original endpoint exactly once");
     V::RequestStop();command[0x20]=2;unsigned flags=0;int divisor=0;
-    const auto shell=reinterpret_cast<S::ProtectionFn>(base+0x38AE80);
+    const auto shell=reinterpret_cast<S::ProtectionFn>(base+::FfxHooks::ExecutableProfile::Rva<0x38AE80>());
     Check(shell(command.data(),&flags,&divisor,info.data(),-1000)==-500&&W::Requested(),
           "Vanguard stop restores native healing without stopping Workshop");
     W::RequestStop();flags=0;divisor=0;

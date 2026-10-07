@@ -1,0 +1,2800 @@
+{
+  "entries": [
+    {
+      "request": "/ffx_data/gamedata/ps3data/event/us/obj/bl/bltz0000/tex/d3d11/4660640_256_8.dds.phyre",
+      "source_sha256": "5b4cac3251e9c9d17e3bf50054fe2cea503d88d0cc6b211df31ee30790d68b71",
+      "sha256": "b7cb6d70186504b8189246267f37eae3090017cea9fe4668924824e9311309f1",
+      "size": 526972
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/event/us/obj/bl/bltz0005/tex/d3d11/524672_256_8.dds.phyre",
+      "source_sha256": "b0df9d4077dd7cf9c836e48b15f49e64f612091884ab4fbaff2800482fbedabf",
+      "sha256": "a5fc4d8df6f14c0b9df23c9bd8478c13cdc449e2819797d4e199cdd81a900197",
+      "size": 526972
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/event/us/obj/bl/bltz0006/tex/d3d11/639136_256_8.dds.phyre",
+      "source_sha256": "f3a24d2cfacf17c143dfd5cd800db943a62fed4f6e574b815b144b735aae7038",
+      "sha256": "8046bc19ef039a1bc3ebff621a3fe4e3b0d9db9b52f26bb525f990516abf588b",
+      "size": 526972
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/event/us/obj/lc/lchb0800/tex/d3d11/28480_256_128.dds.phyre",
+      "source_sha256": "ed47d8d1531223fa8d3aa689afb133f22b621c65709c2e3203160897fad9f63c",
+      "sha256": "02372f722bf403239eae5c35b1a44f1c840b9a805a7e30f3ebb159b1d4b20d69",
+      "size": 526972
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/help_us/mon_boku/d3d11/0.dds.phyre",
+      "source_sha256": "18eeaaede7920d51c5c2635f315d2a82fd83372646c181b75a5a46d562262f95",
+      "sha256": "e70cebc7160baf5c78b5de213ebd4d0707ac790d90a11a6d305ae1d91e6053f5",
+      "size": 2099812
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/help_us/mon_boku/d3d11/1.dds.phyre",
+      "source_sha256": "3812e8d1f25a613d98443143d22e581ded6e22a668bb96b965b51eddc28a5b57",
+      "sha256": "8bcde3021d37b08c5eddbc7a41665fe54f86a29c5189999a64db3a1499e7126e",
+      "size": 2099812
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/help_us/mon_boku/d3d11/2.dds.phyre",
+      "source_sha256": "6c6026665ca22021ad458b68bc6828a474e9b56962dcfe7647870c73799a96e0",
+      "sha256": "b45989878bc85604b41bfe520df2fbdae3c3031c8be43a5993324b275e498f6b",
+      "size": 1051236
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/help_us/mon_boku/d3d11/3.dds.phyre",
+      "source_sha256": "ec0bf322643244b37c4e1102d4ce28f624ea8364222eabb1a692f0eceb16f66b",
+      "sha256": "cdb337efe44bbfaeef40ef2d639a7c42e21fa7c05461db9ce126cf1d0614cc3c",
+      "size": 264804
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/help_us/now_help/d3d11/0.dds.phyre",
+      "source_sha256": "308076a8c3a31b0d80abe432483dc10a09ba7553bbb26f3f128a11aa29fe855e",
+      "sha256": "1ecb238c12ec896b4fcc5b14a68027cb67bae65a109fbd95343b005f81b4ba3d",
+      "size": 4196964
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/help_us/s_monitor/d3d11/0.dds.phyre",
+      "source_sha256": "99d7f3b9b2d48b1cc605741216e52ee52c1eb17e5877cbbf95267a44583924dc",
+      "sha256": "fc74373bc12699f6606ed0d5ec881dd9e45cca5c82fb666f010e906625e35a8d",
+      "size": 4196964
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_0_512_448_0.dds.phyre",
+      "source_sha256": "7a78e2c4eaae6eccd9d4fbd78647f5374bbc4a084b76bcbec6b79700c1832377",
+      "sha256": "92a9bc902cd635e5fe016de16d0d13c1d5c2af621fa2aedee6383d38d70c4dd9",
+      "size": 4196984
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_1.dds.phyre",
+      "source_sha256": "15649d072981745f7933517f2ce7ef8bec15c81078a89d047f6b3d29c0589934",
+      "sha256": "01504e2dbc667274afb8c02c0cc3976a44ce5965e01add0d3ffa50ef6d51ea16",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_10.dds.phyre",
+      "source_sha256": "0b584cdbd854569b70b767cdd9b0ee7b6ebed126858d3f14240484da6093906c",
+      "sha256": "df310dbdd9079e20d3059d0986a807a370a38eda489a3c8974e8bb37d6872638",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_11.dds.phyre",
+      "source_sha256": "aa08e4760c10521b6b9f715be118c3fc193cd71613b87ce43ba1f9d54212dbb9",
+      "sha256": "a6d216e4d3cdcb871d9bbe7f7b273b16aa124755879abb7f1999726824496232",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_12.dds.phyre",
+      "source_sha256": "d1ee8361124828fa3b7df6d7dc28453107ef66c23043d32dc16e582da6b7e914",
+      "sha256": "47a0e0a4f3c12b1a1958104918d68dead49ab36a6f5fabeb500f9f162c84508e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_13.dds.phyre",
+      "source_sha256": "de924de149eb9b47ac2d09b0d4295910daff512acbe850394860b7a284e5ade7",
+      "sha256": "27f046f359ade4e70d1301d68ff17fa932e69e98602b963c4ab819006ca0ef52",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_14.dds.phyre",
+      "source_sha256": "68dda29d5fcddb2ede878b981a1a096755916456624d6f5a324ee45b5aacab5d",
+      "sha256": "0139383b20015afe871fc55eeea6b30603a1dcfb87818eff7af22cf2b865b1fa",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_15.dds.phyre",
+      "source_sha256": "c89c98349115f433bd8f1c464b54dd11ba5074d084054be885cae97a13de605e",
+      "sha256": "1439e5d353f9d5c874cf86ca320b83974f9c94384fdfd601bc310bd693fe201b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_16.dds.phyre",
+      "source_sha256": "5dd7ba6a7ea7457c5a11b28a084365fdc68ab46cb59e94621048f8a08e2027e5",
+      "sha256": "5dd7ba6a7ea7457c5a11b28a084365fdc68ab46cb59e94621048f8a08e2027e5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_17.dds.phyre",
+      "source_sha256": "79356c4d0250bba0bf533ecc7b38a1060b9737e4971a5a700acdbf3e33b64123",
+      "sha256": "cede6a50819353880e45d1957f10139cf8c9915e3690e5d7a2bbad58074ef36a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_18.dds.phyre",
+      "source_sha256": "ba975fb66bf3138879025ccebd02eb8bc05244ce271e5fd9f9d7e52bc14bc737",
+      "sha256": "cabad0ed7245ce5ee750b7848b8a88fad996cb29780fd0caa90621ecbb9c86af",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_19.dds.phyre",
+      "source_sha256": "b4d7d6ad25b5897fb4c29193ae0dd9dcf5bdc1d9773b04452e74d90ae3d2a605",
+      "sha256": "60087237e1d027d25b99a9f7caeb8515981c6defe4a405716d13334ede950c99",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_2.dds.phyre",
+      "source_sha256": "3283baf4ec9eb283f29da62cbc677515c451984288d98e4e89bf6b0935b82889",
+      "sha256": "9538664e4eefea88c4c3a662e0552e3745510a3a196ebcfd6a7d05d1937223c1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_20.dds.phyre",
+      "source_sha256": "8328d1e6dafde55a5914fe8f130b168740b7796e71f85f6d17db83139a42c8ae",
+      "sha256": "019f8fb505a637cda78c6fce11e9aaff75e40db4806cc96a9857d381512e1807",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_21.dds.phyre",
+      "source_sha256": "9afe8012a9123f2208f28830edc729e055dec35d59242c6e26ce7b39b6b446a7",
+      "sha256": "9afe8012a9123f2208f28830edc729e055dec35d59242c6e26ce7b39b6b446a7",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_22.dds.phyre",
+      "source_sha256": "c4fb3fcaa74763edae797750b579ae3b64007563b5d43598a094e1868d0e4d0c",
+      "sha256": "226db3c3bfb1f160bbe5d972d2dead4eb6cdee3af2fd2d04d04ba8a4da35fc7e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_23.dds.phyre",
+      "source_sha256": "da7c4160f0e7a8c31eea133f56e12ff0686d2ab5a11595614df8b4d7b306b49c",
+      "sha256": "c0eb9700c3e45dbed33fb926175aa6b9e9fd8073cac32db546175bcab49ef68f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_24.dds.phyre",
+      "source_sha256": "e10837162a749425f0be047ad8cc04b4aea4cda41654a5ed1c1d2a488fc9eb0c",
+      "sha256": "6c898563f9a54228f5c2076a4058990855289d3b0e0bae89d657ce9b9d2232b6",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_25.dds.phyre",
+      "source_sha256": "22d738cac0b972d0d6952b0c22c3dbecebeb4976be52b6328441de60f87fded3",
+      "sha256": "a535fb6c68ab64786e044c1b25e79630ffd18879c8d28defc04a9cab3af49095",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_26.dds.phyre",
+      "source_sha256": "9da52123f705e0360c97d13232cd92c1a314380e46919ed456979b3ef9cc2bbd",
+      "sha256": "9da52123f705e0360c97d13232cd92c1a314380e46919ed456979b3ef9cc2bbd",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_3.dds.phyre",
+      "source_sha256": "6a9bc681f862dc32f34e58f9c3782823c2b8c9527b0f168c59d54ab5d26ee93f",
+      "sha256": "93e84a967732b0e3f7cb909c34bba1fdd0c4b352528ac26378bda412fc5ee9d3",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_4.dds.phyre",
+      "source_sha256": "0425f42cce51a328005c7800506568521de3fbfc3cdf88a4b86d8783d633fec5",
+      "sha256": "0425f42cce51a328005c7800506568521de3fbfc3cdf88a4b86d8783d633fec5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_5.dds.phyre",
+      "source_sha256": "4f36d4ad3a4ffcbbbf3aef31e36e37a4a5958ae9fce3e3e775aac5919e4d79e7",
+      "sha256": "2172a521ca6af0969d142328ff80cbbeb24a3d067ed3094586c45c2612568e59",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_6.dds.phyre",
+      "source_sha256": "bf67291b70b7977b83e5db2f26c7f5e231faab80d58fe6ecdaf7baa3346baeb2",
+      "sha256": "f2ed21c61335c1befbc41c9351a2eb40e7362923b5f9ee9cca4330f1d10d5b07",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_7.dds.phyre",
+      "source_sha256": "2f3e76aad2b4bd6bbbacee8e519a6557855cd69f8fdd7915cc691d35c109839c",
+      "sha256": "2f3e76aad2b4bd6bbbacee8e519a6557855cd69f8fdd7915cc691d35c109839c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_8.dds.phyre",
+      "source_sha256": "db5cbb7db2adc92f9b90a0bcc401f8dbbfad91858f451d598f6207c0ae78f959",
+      "sha256": "db5cbb7db2adc92f9b90a0bcc401f8dbbfad91858f451d598f6207c0ae78f959",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_11_132_16_9.dds.phyre",
+      "source_sha256": "3e49b84df337145828871f9df881953b078549ac6be65fd22327dfd4a2b8d490",
+      "sha256": "8ecb5a7a9ab545497a437b44950cd1f195ff1cfc9c55767f1e0f296603365a85",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_1.dds.phyre",
+      "source_sha256": "2b9d3d761427240412c89d0446af29197b7b425bf1f17354013a2ccca23da9bc",
+      "sha256": "ba5ca02b0a2577d9cd11f7d36ef5459f21e813dd2b369d4609975dd2691473ce",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_10.dds.phyre",
+      "source_sha256": "d25188a78d62f19d4802bdede0179e833b45b50c7652519528f55c0582206182",
+      "sha256": "8c8e6297c38f3d7e1d8f247e2e20866e12c7fa8f1ad48b562c0c92756ec2339d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_11.dds.phyre",
+      "source_sha256": "c3342c2fa53da18dd5db46f4c20e97b13a653f3cc11805e4116191a7cb8d5906",
+      "sha256": "20b8d263ddf82f1e1c522c02126d2605a80a6a03c1cb360312e4e6ff37a478e5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_12.dds.phyre",
+      "source_sha256": "7ed46a620e5320eb89a44f31ae9814eeb3c1a69af97ac4b53aec0319ee9eed53",
+      "sha256": "4d90c7c701492fbee5d6a296cde46eb2da9f4ab19751c53327b9260f0640ea03",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_13.dds.phyre",
+      "source_sha256": "f263a0440b3e25c02bfd51392b6c626c804abed96b5b261eea1bb96dc38afc49",
+      "sha256": "26d566f484bd958f86d737b422e0a6b217802b9b1eb66415bb2d01ba9fa68eec",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_14.dds.phyre",
+      "source_sha256": "c22a73ffa10c7a335cad45e3730170bee06909b1049a33d5ee8c3b11fe5d59eb",
+      "sha256": "bee38222e8a1f81a15a7d038c9895d130358ac8b0f47a5bb60293295b64011d7",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_15.dds.phyre",
+      "source_sha256": "5ccb88ebe18a6a14cfd53eed44b165c8f5bab165119fb530fe6ab257f564e142",
+      "sha256": "6853b6086d4c3199b5eda242352084c06934f8ff28cb19bb06d8610d129f0415",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_16.dds.phyre",
+      "source_sha256": "7f31aa29cb5c6e3ea47d94c2bc5db53a422536de0cff6f2b1b28dc3e476a3efe",
+      "sha256": "7f31aa29cb5c6e3ea47d94c2bc5db53a422536de0cff6f2b1b28dc3e476a3efe",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_17.dds.phyre",
+      "source_sha256": "0804056a2e30ec83b3e219d920ad40fcbcc44f019659d7a3830396d7950baedd",
+      "sha256": "e41770d60e69f5511628007b9080dc5a70e82aebed30217859abef4e3f1cb177",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_18.dds.phyre",
+      "source_sha256": "d77c89a8e3182693134fc1f12616af8ddc15264fe9c9e1047aaa707b06fb5625",
+      "sha256": "2c74b801e0107d8bb013bb7084de61d188d00cf73d04e5e6d223231b8130cfbc",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_19.dds.phyre",
+      "source_sha256": "f0e6be6278306c06b36e6d845bcbe3b6a4ebf971e2e961b35772bf1be8231f66",
+      "sha256": "9c6b65e7da77bba3a1166deff73934e591d60de5a43c5ff879d2f3aa5c55f2ae",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_2.dds.phyre",
+      "source_sha256": "ab0831e4bf217a09bc2504de08cdfff766c5fdd54f204a221b44b756ed626eab",
+      "sha256": "ad07a2fba89603479f70e56fa2b00e95f78998a129ce19c2ce1a3caa83e8794a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_20.dds.phyre",
+      "source_sha256": "0e099bfb48f14687ed1d4f3effa55744c580790862a9e6e57d6f7584fcbb6666",
+      "sha256": "30e80562909faebb21c83c2f070e16bc09ae320e12334d3cac8b5466716e1210",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_21.dds.phyre",
+      "source_sha256": "fd1065e5da1bd1495b528bb4fc3b70157254e6491e9aeb685c8cdeae51e3c7b4",
+      "sha256": "fd1065e5da1bd1495b528bb4fc3b70157254e6491e9aeb685c8cdeae51e3c7b4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_22.dds.phyre",
+      "source_sha256": "0567cb7c1a4af12b81108fa6352dc2858e790fb28608f30031cb177957992ff1",
+      "sha256": "3a65d2644a0b17ce578a850232294b7c1032ff5af748470c8d0d5d9cb7f76d98",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_23.dds.phyre",
+      "source_sha256": "d11f857a70d7b286d8930195946382b4c1913af3127c1e84b9958970e0ac1dd0",
+      "sha256": "a5aca2d1a321103604d8983cffd9fedea028a3edeee68f03d39c2db72d5176c7",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_24.dds.phyre",
+      "source_sha256": "a758f7807530ad7cf0e0dc57537f3f4239f61e07259c6734f99d601c06f39efd",
+      "sha256": "a72f4308b940a09fc627a17d08fbeedf6d6ebaa6f9a26a28558c8cbfbbb7a762",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_25.dds.phyre",
+      "source_sha256": "0c4e4351cc1b4185357fbf71554304e1609f7742abebee2975c291fa0f4bdfad",
+      "sha256": "571e8ea976c23a1ccfb652d06c7b4c23351a60e31f2b682610074aad770f8454",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_26.dds.phyre",
+      "source_sha256": "c1698dcfab7d0f6a0572d17f0d2fb86258203e691fb4d79830514cb75772b5de",
+      "sha256": "c1698dcfab7d0f6a0572d17f0d2fb86258203e691fb4d79830514cb75772b5de",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_3.dds.phyre",
+      "source_sha256": "f74f543a2b8a3c9a8fc42db1224035143b2ab36806a61835aaf11b36e27a8a81",
+      "sha256": "36ce8c5160539a73c7a558b9a1ea054ebd22d65388eb68353c63f064f6aee513",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_4.dds.phyre",
+      "source_sha256": "8d34fd1435273885ed5d23992f26c4eddf8c4da4157444396771711edbc0a13d",
+      "sha256": "8d34fd1435273885ed5d23992f26c4eddf8c4da4157444396771711edbc0a13d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_5.dds.phyre",
+      "source_sha256": "736ce6af5848f1f4523670ec9df55407d51c3c1723660c0557626f482dac8bcc",
+      "sha256": "abadf25989ca4257d9efe06e445610b0e104d9381a86b7e795736c656cb46525",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_6.dds.phyre",
+      "source_sha256": "9e0c44f56ecedb03c9c979173e4a7d1ec5a254eb557a5e33776e542d6f5aa599",
+      "sha256": "8f224af5adc268dcb38f4b0432d62db7529a8565ad768da77ced238a1aba3910",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_7.dds.phyre",
+      "source_sha256": "c37c35f8bd38baf55f249d5f4da566defa98f0c83ca224c3a37836a7048ed48b",
+      "sha256": "c37c35f8bd38baf55f249d5f4da566defa98f0c83ca224c3a37836a7048ed48b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_8.dds.phyre",
+      "source_sha256": "5c65598e7bd970cdf9a08dc9d572fb6d6cab08f7cb6949930a93bcb1e752e707",
+      "sha256": "5c65598e7bd970cdf9a08dc9d572fb6d6cab08f7cb6949930a93bcb1e752e707",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_12_132_16_9.dds.phyre",
+      "source_sha256": "e338a028970baa1122f0ebb65316cb8b4b15208b7ae831754a36d77cb9f7012e",
+      "sha256": "d794ed67a416dcf148696c2e68b7811e34c785fbe61e80db685838892d56a956",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_1.dds.phyre",
+      "source_sha256": "a9f60a500c608b3dc40b0985858470f82bb33b3821be2d07c3f3f51c67546921",
+      "sha256": "a667b279bad9de1b966b14e3c9d26a7be66c6910c6e871133e34f30ac46ec069",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_10.dds.phyre",
+      "source_sha256": "c8773ea0210cd5ca0dbf511a6e0504ef68c1666bab94ae87a5e5b7f126d58759",
+      "sha256": "c3ab677fa77deec53fe29ca2f94a4d7fb0609a35efe1e850910e1b39b5ee8b5f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_11.dds.phyre",
+      "source_sha256": "a50fb8a448decd0de363a070b4434526be1d98ed4c966458182bc06d4aa470ff",
+      "sha256": "f319e0f568580ef583fb54442916dab5f325ce6a1bd6d172685cf07c1d33b2b8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_12.dds.phyre",
+      "source_sha256": "d915bb7ce51af4eea93d506c7a52e75bfc3af1a5a2ef6ed9f51361725dc2fd17",
+      "sha256": "f8e51eabe6cc8e015798fc815a2a766a98ce7c691f868165017a930f0326e7ee",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_13.dds.phyre",
+      "source_sha256": "684c01162dfe3fb70e4376639f97a07cc5d9f492b3181ca96a6e5da05f99aa34",
+      "sha256": "9ea8bdac9e8eae49591bb042b89712feed493f7f24046c824d4b8f9ce4435e93",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_14.dds.phyre",
+      "source_sha256": "682d76ceb106ac678161110894cb61e362e4e7d9a7fdf03497968d996adb69de",
+      "sha256": "fddb889f078cafd1c344f0209852f6d37755984434d0c19c8563cc85f836b7d4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_15.dds.phyre",
+      "source_sha256": "5d93a6212ef0fdf5783b1f1260a869343b5abab290432126b5f3cae4bf00c81e",
+      "sha256": "21acf712e32d1f866dbfc8e7dcd28209d36a2bc79c2c84dbefff90b32135831c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_16.dds.phyre",
+      "source_sha256": "20f99d1720b2abdcc5606d46971835273dc83bc651fdf5a07053adc4e211a2f9",
+      "sha256": "20f99d1720b2abdcc5606d46971835273dc83bc651fdf5a07053adc4e211a2f9",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_17.dds.phyre",
+      "source_sha256": "e0ba117f934d5193fede03bd694e2db8dff93a6d4d4a245b4174d807f6434081",
+      "sha256": "518acb7161c189b6159833561f6be4b60b94c3f33bf62861f616b18b519ef90a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_18.dds.phyre",
+      "source_sha256": "fcbe6f4111aee17159c3447a08a63750ca97e04802bc45dae226338f06a3514a",
+      "sha256": "71990708f32743bef5a52bb37ead50c0cdf9b2f43521d322e33bcd69b52605c7",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_19.dds.phyre",
+      "source_sha256": "a9cfafd17c937c1b5cc7df2641326622a20407e37b86f820e834aebef710f995",
+      "sha256": "6698f87445ed919414daa9cecf6f45f875edbd7b27435d5c64bb1869b49c1f6e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_2.dds.phyre",
+      "source_sha256": "8e5cb43171ffa4494d8f4a59656c04ba6b64f98a969a9eec5c06c509903dc1b2",
+      "sha256": "ddf630e16930a26b5becba28ae4904186ad68d4cc751bb5f7eb566c8c0a36be4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_20.dds.phyre",
+      "source_sha256": "134e9bf6d7a97f80098931323cf47b04d33b5230f7c5a0973780a55a51f068ac",
+      "sha256": "e9b747ef43dc023389a6259b09b55ddd239e50b881a510237e6beca17124cf07",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_21.dds.phyre",
+      "source_sha256": "b16bd3b7fc207b38b50c78825ff1a93319621c3ae6c5e3bde0a743e0f479fe3a",
+      "sha256": "b16bd3b7fc207b38b50c78825ff1a93319621c3ae6c5e3bde0a743e0f479fe3a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_22.dds.phyre",
+      "source_sha256": "6fdadcb5e0f64722b38e5905c442e1df421b38cb43826a0126c89ff121d5ba36",
+      "sha256": "501871d779969d8fec3d78b8419020ddbbd962870b3b7ae7e92b85e5404f706d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_23.dds.phyre",
+      "source_sha256": "e40c99834bb0e39794ed26f501c8e1acedae8999e4eee74642aca4126c88c5d8",
+      "sha256": "7837cff96995653e4ea8f6260bb9094eab5dfe0609ad4eca4528830f05288bb6",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_24.dds.phyre",
+      "source_sha256": "ef16a407450c2ccdff718bcd39a34487b442af6b6fd6efbd3519d2bf01af0593",
+      "sha256": "0a8ca94c96597761e632bcb4fc1e88783b73e46b99d6496d72bafd602cd8726b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_25.dds.phyre",
+      "source_sha256": "59c899cf66dd25e1f5d9186ca5556d02f22192c751b91b08b89f74a3fe9f0aa6",
+      "sha256": "13288bb8731cfbe9514be7485d526db435c6d3ce7ae47c8ddd6d29d70b4f0ee1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_26.dds.phyre",
+      "source_sha256": "e5c566216e28826f9fc545607393c522807c4baee690a539a067a99349770315",
+      "sha256": "e5c566216e28826f9fc545607393c522807c4baee690a539a067a99349770315",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_3.dds.phyre",
+      "source_sha256": "c4a97a27181552fa867027a969f23da34593630d2d523eca3686f3e93c88ce20",
+      "sha256": "da5da566929f761b07049dd02bec43d4412fd97f630a3449d495c447b9b4b586",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_4.dds.phyre",
+      "source_sha256": "e4bf0bcab8ac2d7f1f27873515809cf4cfe5deef0fee1d9c74ccea9ae500cf2a",
+      "sha256": "e4bf0bcab8ac2d7f1f27873515809cf4cfe5deef0fee1d9c74ccea9ae500cf2a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_5.dds.phyre",
+      "source_sha256": "927574223f0c6c5a80def463d61df0a89dd4c6c7732cc71da41386a6e98a7fea",
+      "sha256": "f8e06ec9d9f92471ef46f81da56a7fabe2457dbb64b570f26b7f282c52dd0c55",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_6.dds.phyre",
+      "source_sha256": "e1f5ec24d2fdebadcde7fc1cf64c8eaeb67097e4409028685578a549565e5fae",
+      "sha256": "194fb7e194821b9cc6a956eec7b20b803bb128d43adeb5f1538e1b46ba63082d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_7.dds.phyre",
+      "source_sha256": "9113147f7e4b0a9e08f983c5f6223763dd20fa907247c937621fc88d34e18581",
+      "sha256": "9113147f7e4b0a9e08f983c5f6223763dd20fa907247c937621fc88d34e18581",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_8.dds.phyre",
+      "source_sha256": "c95f777302cda149b0e06a54c10bdedf68e2b6386264e0d2250063c1ef73beb7",
+      "sha256": "c95f777302cda149b0e06a54c10bdedf68e2b6386264e0d2250063c1ef73beb7",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_13_132_16_9.dds.phyre",
+      "source_sha256": "c2243cc674d54d075f82d84a39876ca07cf0ee00d172bb6746dd5ff64b31063c",
+      "sha256": "4fe133aa0a92b0f34c7277dfbb75ea62c566033ccc86119b4348cba89abbf767",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_1.dds.phyre",
+      "source_sha256": "6fc553769d8c410cf48b5e50409d2eef557d39a82c06b10d45c45db840191732",
+      "sha256": "5704f1f38a6367f2cf50053149fdd6ddde17e59c6cf42548f44e28c8a5e94466",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_10.dds.phyre",
+      "source_sha256": "68e0823f4477e7f1f48e3a0fe07a5f0193483af01be947f6e87674cf49eb78fa",
+      "sha256": "b98264b5cd9e6c6f2e8700f0b33a338066a67f74c905ca56d158f27241a2c7e8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_11.dds.phyre",
+      "source_sha256": "56ec273134c1933e06b30c0db1cd44c8ca7fb624080d3ebba52ab3b6cecde15f",
+      "sha256": "08d1ccef066d73f043df27bfc3e761f84d039f5eb718f5ea4c6dd6a1bcff8638",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_12.dds.phyre",
+      "source_sha256": "48d84b7063175584eafd651ad3c418960c42b055c2e00686c5a14fb812fcb7ec",
+      "sha256": "93befc1d46b9c92ffb52c4cc6cec5acac5926503e81f1d447fcc9e781ec6bbea",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_13.dds.phyre",
+      "source_sha256": "0cc92091f1003756411dd6548a7a0f425a8c11c322cd1fa74ef73e8aca81ff0d",
+      "sha256": "c7102096dc6165c98fb51532e51e6b70f01d02ed3cbc2cf6529eaf311cb955d4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_14.dds.phyre",
+      "source_sha256": "256f0c75c0257d3f26c50b8a8b5e6e004653595d5df3f38d7a5ccadd3af4a609",
+      "sha256": "375e09e15620c6145b9b1597fa651bfc16b8fda2c845d9cfd89706333ea1d8fd",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_15.dds.phyre",
+      "source_sha256": "0d6635a39e377f9354ff92226a33f6beb5dafa2ca424f5898b8d478d0969a697",
+      "sha256": "e83339404b5f54e6d20f32fcfa6aa7b72b830f6838f8ca6526cf104a5e7c0520",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_16.dds.phyre",
+      "source_sha256": "1c25096269996e7ca175724240ca21343c42a89662615b60115980429bda32d4",
+      "sha256": "1c25096269996e7ca175724240ca21343c42a89662615b60115980429bda32d4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_17.dds.phyre",
+      "source_sha256": "62fafda957eed0ca09f991174c78848caa84027bd56d69afe7d0c6244c177024",
+      "sha256": "6fe195b68e163219b40a4c1b69d6354b19e05464754ee9299e259ace8a25f621",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_18.dds.phyre",
+      "source_sha256": "21d1cdc56682eb819e854e3d3964af13aa66513bb78207786434d16ec3e5c2a1",
+      "sha256": "953e92d33d4795d21a97af9393d2cf785e12cf2524ab688fe5bd199f2cb665fe",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_19.dds.phyre",
+      "source_sha256": "cd7024552bd6a10d7561111d5a523aecfeba68bfa46fd49da27657b2a7cc7467",
+      "sha256": "d1afd63f558a18bd93ddf0d005978b183bb307d0c9bacaebc60e6e1019a3ef4d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_2.dds.phyre",
+      "source_sha256": "6fb3b99f3f52f6754bdfb8c9321844d097c956c329b5c228ded43e6baaef9d6f",
+      "sha256": "28582192a2135a45ceb92d58e4937423269acd4e02a9ee5ee31a9d61ae437c4e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_20.dds.phyre",
+      "source_sha256": "b9355b6cdf8d2dee2ffbca689544c956e8d95dcc54d381a107ab3376610bb0af",
+      "sha256": "30c3807a5399ddc95a494cfd53ccfa922763af712606514b236143c24fc5f0e0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_21.dds.phyre",
+      "source_sha256": "4dc2b60b4845c559078396a156f1acaae2a7b073defb82db51f71af1faa68ec2",
+      "sha256": "4dc2b60b4845c559078396a156f1acaae2a7b073defb82db51f71af1faa68ec2",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_22.dds.phyre",
+      "source_sha256": "f7daa56956f5b5ff5c6837d110cb671b50f272e8a5d2d9bf409b65b5fa2ae03f",
+      "sha256": "2f125b5f4860a8708a087bbb89d59961eaa669c64caabd1fa4621312d6ad1e7d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_23.dds.phyre",
+      "source_sha256": "da1d09d71fdc1e808d014b0ae9454ff5ada4477c783c171841eb530d4cb872e4",
+      "sha256": "bb8e3640dcc21e4c71e0776089248d044b376950a7227060262d171bdb32abcc",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_24.dds.phyre",
+      "source_sha256": "c91252f9bcd56f9f6a90512500bded91dc98598e4ddf9659b7dedf2f42544109",
+      "sha256": "94381cbf647beef1df7c41c3bb6858994b537e4a3731bddba9ac528992b8d3e3",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_25.dds.phyre",
+      "source_sha256": "32ac1ad5ac59759db325ed0613d3ddead5b66c2ae31f4f4806eaedd045d25993",
+      "sha256": "defdd3f01370e264637f8c0841fbe295b857cf776a385f5d096309986be9d335",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_26.dds.phyre",
+      "source_sha256": "a069f41cef3d1a9740c68cf6e38f89cf04ad977b7fda1ee27299bc5fca16f2ab",
+      "sha256": "a069f41cef3d1a9740c68cf6e38f89cf04ad977b7fda1ee27299bc5fca16f2ab",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_3.dds.phyre",
+      "source_sha256": "766224259a507369b96524a45e2c58352e51de3cc7d893ad7383953f4e3c6cc8",
+      "sha256": "7ed206b248c265704780271c3986f5a039be53f0ad27ffd2c78fe1878f73218a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_4.dds.phyre",
+      "source_sha256": "1826a2f900c8432772fdec3da838dc906a35a6b91e0027730dedd75e16e2fc0b",
+      "sha256": "1826a2f900c8432772fdec3da838dc906a35a6b91e0027730dedd75e16e2fc0b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_5.dds.phyre",
+      "source_sha256": "639d04a399e2c14fd1dc2befca331bff4ec4fd5a4cace7082a1e84562ed78464",
+      "sha256": "c11cfb4951750200e0a11eb506a3fb43882f040c5eb3fda7b3bdcdab37c26b71",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_6.dds.phyre",
+      "source_sha256": "5e69d9f3ed608330f3b2c6e5bad64ca41ffe996ceba6a08379da22a637896c5b",
+      "sha256": "c8d93e42396171388f5c8b7775d2266e0b829962fbc2d02ca28b48dfc95e81d3",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_7.dds.phyre",
+      "source_sha256": "ace19701ae8ff6c0b0c55bc95d915836f013f46d337355460eb6db4055554b64",
+      "sha256": "ace19701ae8ff6c0b0c55bc95d915836f013f46d337355460eb6db4055554b64",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_8.dds.phyre",
+      "source_sha256": "64c473066cea4de3a3d90fc7353f3f87bff97376b27d1f16e901a10f01d41ad8",
+      "sha256": "64c473066cea4de3a3d90fc7353f3f87bff97376b27d1f16e901a10f01d41ad8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_14_132_16_9.dds.phyre",
+      "source_sha256": "e26ea78e24a9ea7229503640f228e4e2b984d1462d28fcb1e6c2527024a14500",
+      "sha256": "bb53d109c494aa27ae4c05cbfabb554121f838c93aa1098184dd30b6452cea8b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_1.dds.phyre",
+      "source_sha256": "66ccf13d2a2cedfa862be134585e6c6228d2cad4989846fcdc9a7c3f5b8d104b",
+      "sha256": "173b0bbad3fa5e143e1e9d128a0274e23a0b3d88919644939c61458127c0a38f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_10.dds.phyre",
+      "source_sha256": "41c956f21f4ae46f680eaa8c8f663e7bef6f21a2efd7e88abe84a92ccc0b3d6b",
+      "sha256": "73029f0bf5222d7f6d1376698cc09678f73e7de45476a1f971a6746c09e8e0b9",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_11.dds.phyre",
+      "source_sha256": "18ed22e8fffb98338fe5e65e4b2ddca843dcb288a5e32f63cd3fbce35ac05cca",
+      "sha256": "eb8a25de6e8832a9966391bef7d9c50e7dbcb95ee913cfa7da748275744f8e4c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_12.dds.phyre",
+      "source_sha256": "e94bc16d50f1472aff3ab956f063b1a95520cc00b1f20529d43bb7c6f551a3f4",
+      "sha256": "aaa244eedfc9d08089beba9723c1d252e71758288da4781ed5556a5ddb0abeec",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_13.dds.phyre",
+      "source_sha256": "06e18d3b2adcc79c9d8f9bcb310702e2e0f80f63c3cd7e3329022f2b80da99a2",
+      "sha256": "e01d7b63dfbe880f8c2d78565ed9fef043def98c9a124ddf665a615f215aa300",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_14.dds.phyre",
+      "source_sha256": "be7360a3b080c57fdf70ef7d24f0b81dc571798ba312671ee3d202b6d030efb3",
+      "sha256": "1cd0eca9d5cc8af76b7eb13765f7515dc751ee6c69ad265ff3c2373d1d5a5d86",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_15.dds.phyre",
+      "source_sha256": "8709e31dc930b12f1477666475a8fd6cff3047086ce2c27c2da5b23f4542577e",
+      "sha256": "dcec0f39d093d29d00ba2681e997deadaea3de990f13c48b09de9c171031ab36",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_16.dds.phyre",
+      "source_sha256": "614567999f337e21088717f1d128edabed4e9f49083178ce866fc61b03b40319",
+      "sha256": "614567999f337e21088717f1d128edabed4e9f49083178ce866fc61b03b40319",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_17.dds.phyre",
+      "source_sha256": "6e2a5c0105d586afa9f812780d70d8fe0a72489e661b61c290f207a04d0c731f",
+      "sha256": "cf311811870955050832fb52749459240c2a499d3cda5bdb74f936640a1796e3",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_18.dds.phyre",
+      "source_sha256": "80c74f7ec31955c094ef8063bdb61a18635096f13a99e5df6339f52d13f039f0",
+      "sha256": "7f9ac1395da700761a6739737c09d4e9fa5890d030c4d2b5e125e78fb945bf28",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_19.dds.phyre",
+      "source_sha256": "7cfae0a5de9cd9827cd6ddbb4d73442e0e77bbfe0257ebd9399dcd73869153f3",
+      "sha256": "a78b000ff7250fd3f18fb2ccb5240d62b5d43ceb660ec9a6fd67d4a61a44bb81",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_2.dds.phyre",
+      "source_sha256": "4ad65aee51db1e939fb79fe4a1f684d7ead053f152eba27f392514561fe97002",
+      "sha256": "4c7658b30b3167bafc687f6449140007c4d2c832b05392e325c6a4b136287108",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_20.dds.phyre",
+      "source_sha256": "67b6d8d27b33dfc626438c0d999c9d36bcbbf874fe5a8911045a0b62b6f6e7f6",
+      "sha256": "c0ddb4415e6db246733c4d8db1c2a4b631c18aeff655ebcdb4a8cfa52674a632",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_21.dds.phyre",
+      "source_sha256": "46bc98041cb3bc258a7265e9f7e9f5e28af1efdb5beb1a257ece2535bccb2b8a",
+      "sha256": "46bc98041cb3bc258a7265e9f7e9f5e28af1efdb5beb1a257ece2535bccb2b8a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_22.dds.phyre",
+      "source_sha256": "437c49cb9a129e82c9900b202842ecfb73f29c606c452baa48ce474412ce9ae9",
+      "sha256": "31001d20bcc80c0c7dfc0942ae5db11a025323ad6bfbb926c5c674050674e593",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_23.dds.phyre",
+      "source_sha256": "e8957079f66772f16cf86c16ebebfaac5c23fc6b5a751e7ff0ff8dff4d13d737",
+      "sha256": "e9f2afc2c8783a37c5454ab5ab74bbc410f4d21a50617c1eca1f517996c20205",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_24.dds.phyre",
+      "source_sha256": "783c21cb320b015c05bb5fcbfe60cd3a5241db0069cc6d267e8d69511ad8d029",
+      "sha256": "e7055e4df903e8d970bb16dbf5bc4b1178af99f1557ec8fcfbc1e61d85bb4fd1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_25.dds.phyre",
+      "source_sha256": "47ef6e362cd7ed45def37aa7987682961daf34eee0c3809df89250e96a124b1b",
+      "sha256": "af7fe34a74cf81ca2901fb2ecd705e7dc11ed6bb42e0b53332942acf51bdde86",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_26.dds.phyre",
+      "source_sha256": "0b8b59a5c3ae77f7237c618927b0dc4a7f06faba2b8eceb1b741cd45aa6e924d",
+      "sha256": "0b8b59a5c3ae77f7237c618927b0dc4a7f06faba2b8eceb1b741cd45aa6e924d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_3.dds.phyre",
+      "source_sha256": "ce8c3b0b704e7b69c931afef943070360dc08421be7d417ee2e7e537f517a5d9",
+      "sha256": "90a801cf50e110cc9e75baf8d044559586577b4b573ed459edc4cda8a0265be6",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_4.dds.phyre",
+      "source_sha256": "daf4a42f4304098f360f698b072d66469e7e3c5b472017f59b17956f06676a6d",
+      "sha256": "daf4a42f4304098f360f698b072d66469e7e3c5b472017f59b17956f06676a6d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_5.dds.phyre",
+      "source_sha256": "d4e0745e61f8d23aec1a7501c52210209f3de575f0fdde9c1499d692cfde1774",
+      "sha256": "9f7bae5753f6b14ad9894afdf3b73636876ef374d60ef8e53de911ef894316ad",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_6.dds.phyre",
+      "source_sha256": "3687f536938488c2c7aee16f3c495128ba394d3258d16fe78f290af50b27c2e1",
+      "sha256": "cb66daaa35f1b52717a5170eaa9cb899e5964e96674c80e2f27024c94d437732",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_7.dds.phyre",
+      "source_sha256": "db67faa7d6c674684bef3d05e3d06b66fd592a5a5c03513e8f8f107af2b6a29b",
+      "sha256": "db67faa7d6c674684bef3d05e3d06b66fd592a5a5c03513e8f8f107af2b6a29b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_8.dds.phyre",
+      "source_sha256": "4dab78f8aeffb4bfc0a80028d46701c5953448202bfbbf27bcc271aaa51ad548",
+      "sha256": "4dab78f8aeffb4bfc0a80028d46701c5953448202bfbbf27bcc271aaa51ad548",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_15_132_16_9.dds.phyre",
+      "source_sha256": "7eb7828d937d18f1210483fda34bfcbd2668e64af3b19539118e26a6d6e77812",
+      "sha256": "bb58b12d0320ed0093bacb2f5bc61004374421df0c92d7c9966deec292d2c513",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_1.dds.phyre",
+      "source_sha256": "fd53df9f5c38bba17f18ae3a6fe862c8170589feae3082b41df5335c171f9daa",
+      "sha256": "4600c1a861469eb3d2a6cde253e2d5adad33ff8411644f2487a3b910663fb663",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_10.dds.phyre",
+      "source_sha256": "8923a5f277e8d9a8fb830ce9e588f44d7516241a8b0e0f749856e34358e826b5",
+      "sha256": "e4bfaa694a6700a4f20c66a753341747e913962be4a8b9e25ab1afd506833729",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_11.dds.phyre",
+      "source_sha256": "54fa3705101d5e5358209eaf6db74b69f3182f4331dd85fa05283f4320455f8f",
+      "sha256": "916058b77f0c8c3842c3f111055daf15c500ce5cdb87e96f76e5c94ace500c60",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_12.dds.phyre",
+      "source_sha256": "134a9028596aa059b6590c421e2309c64f4564ef52ca21a49f31904e7a4e1837",
+      "sha256": "9161dc29f79fe5fba58c9909752d0254f91508dc70db9c08b07e7775edec7996",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_13.dds.phyre",
+      "source_sha256": "27fc0deba8a0c5ac9d8553b4c41c8a6acc95d0387e584105705f243e0a5680b6",
+      "sha256": "b96933a5db053ce3ddd8c4d2493b0a3514d44cb82e05b8ac882711cee23c3f0b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_14.dds.phyre",
+      "source_sha256": "5002c8d94d717ac7d44b0be14dc99cfe6a04a4edd8000079ff6f66608e54dee4",
+      "sha256": "a3377523d3f8e055c35ba2883d55317a9115e14e768229624762776d4d945195",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_15.dds.phyre",
+      "source_sha256": "282e1c57c0895065e6d23cd9bd4a48d7c238c3cc2f6ae9014772859bbdea8d27",
+      "sha256": "82755a23ff8c3e45a8400542ff2260d42e9b63591c5bea2cfc26d209dcb47876",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_16.dds.phyre",
+      "source_sha256": "9f016c5456703e26c39fb266b4052d2527cbfc2b778c2d309f818e0bbddc4077",
+      "sha256": "9f016c5456703e26c39fb266b4052d2527cbfc2b778c2d309f818e0bbddc4077",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_17.dds.phyre",
+      "source_sha256": "b75a253df58fcf8e341ec6ddc1b36f3cd2ca5c9871103289457d0b6b2386c5f3",
+      "sha256": "85090d770f8cac47720afbb6983b350ca683070491ed9aa13dfdcbba28915fd8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_18.dds.phyre",
+      "source_sha256": "07ef86d8c3b558133ae2c6817a63d9b4575898ad744939d3b3a7af65914e6835",
+      "sha256": "00276ad0d3a09b5f929b8ab41fdc7c49018cd813217d84767226b4c2a5865377",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_19.dds.phyre",
+      "source_sha256": "0a170da2570d0083932be123eb801d8d620f07658ca034b95990d08abeb56cee",
+      "sha256": "38e9ad3913587b144a1a0fd223b1c3048c71d38145d3ae7d7091ec69bb027c5b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_2.dds.phyre",
+      "source_sha256": "ddb0f6b2d404a7ab1a5aeb5c562ce42dfbfbe9be526fbf6925212106533f6032",
+      "sha256": "c32488397a7ace48ff7e8c0e7be4ace3ee73e0737190ccc0d4e9a8154f8eac94",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_20.dds.phyre",
+      "source_sha256": "bf7687ffffd8dd4b7dead9e48e3e3de1fcca188736e11d930d8a59943b692729",
+      "sha256": "269c6dea446fbfcabeb672ea02c195cbd3b2853302499dea076b3ef8257c1113",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_21.dds.phyre",
+      "source_sha256": "863e547a0d96b3603f39c514a220e88fdbadbfa9ee467323a87430a7432c8598",
+      "sha256": "863e547a0d96b3603f39c514a220e88fdbadbfa9ee467323a87430a7432c8598",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_22.dds.phyre",
+      "source_sha256": "41066ea208eafd5634d2089bae736919ed0363323221c1bef1106d0015325318",
+      "sha256": "5a7f176544bcde97a0ace1624432a725468adaf081a51bc79e3605c1e45811e7",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_23.dds.phyre",
+      "source_sha256": "bae40e48f4319fb15e507214c053c692436a057801920b186e093354309cd0b0",
+      "sha256": "779817b8cabd85d65ea7ae1ff441dcbfffc81151271b4eff72d78ea37f69be29",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_24.dds.phyre",
+      "source_sha256": "a361088212acbf3a088736690cc5eb901e788af0a95f658c70d855be59bd1f67",
+      "sha256": "18dc96628d77e477ec2e672d345def88607256cec12400c333be63e74f818375",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_25.dds.phyre",
+      "source_sha256": "e3cdce742648ff36c0ff572c3ced36ce2337d0c4308b0e05e01fc19803f53d8c",
+      "sha256": "de74522f3c452200c6d0206bd7f224579c8cb14452fd3c9aa0456a4f1dd4062b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_26.dds.phyre",
+      "source_sha256": "4cbbd2e084c29535b4877a951792b6a3d257cafdc3a40994cd2d98f681f0f19e",
+      "sha256": "4cbbd2e084c29535b4877a951792b6a3d257cafdc3a40994cd2d98f681f0f19e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_3.dds.phyre",
+      "source_sha256": "8f42770c49b1b1798cadb55407019ff5c5f83865d068aa9b7b14808376fa9678",
+      "sha256": "f3a6d7707fca229dedf767c069413039ec4ca53c9ca5fa7d75f6ae43fe1916c9",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_4.dds.phyre",
+      "source_sha256": "904435ced05d0422c8c361899a9ad5d96f0e8cb65b1d14545a41298bfb8ec019",
+      "sha256": "904435ced05d0422c8c361899a9ad5d96f0e8cb65b1d14545a41298bfb8ec019",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_5.dds.phyre",
+      "source_sha256": "93d79c8042befe8ac3b7fdd08fb0bc22b9e998f541d0acff7492167abb04e5dc",
+      "sha256": "92403d298b9d7b008f8d1f7e96bd46318ec8949547728a41d0d9403950a7c754",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_6.dds.phyre",
+      "source_sha256": "992a19dfc6362efcf65257a4bec64b6ed43399eb0d085ae0079dfd2129951d73",
+      "sha256": "ee7683b0457d5f12a96c298b7c89a4ec59bc97915c7a7a028c0285ee2991be53",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_7.dds.phyre",
+      "source_sha256": "4d5a685c635e20d474bcd5e995f15faa35e7affb91b57e2ca0ed5d5660e76cfc",
+      "sha256": "4d5a685c635e20d474bcd5e995f15faa35e7affb91b57e2ca0ed5d5660e76cfc",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_8.dds.phyre",
+      "source_sha256": "39ba8bf08c577c4e5c48c622716c6f86585f6920c19d941f25b91f390a8c4653",
+      "sha256": "39ba8bf08c577c4e5c48c622716c6f86585f6920c19d941f25b91f390a8c4653",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_16_132_16_9.dds.phyre",
+      "source_sha256": "da70e020047e67228ad5d9765e12a9491e93f6f71983a334bb502e252f5429b0",
+      "sha256": "2b1d7312a66cf70f3f7ff94fc48ffbe7216c19666d3940accf0c15ff04acccec",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_1.dds.phyre",
+      "source_sha256": "38ec888a57844938b1b92b54a38fc460fba5784ff9a859da716a4b703a332780",
+      "sha256": "d67eaa507f9f06fdcf34fa10baebf5b2be11631488f2c0f98b33970104541357",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_10.dds.phyre",
+      "source_sha256": "8ab6de0eb7d92bc37b293acfe8d5321634a309d9a0cdf80d32fe9c65c0220c3d",
+      "sha256": "a5f905e954fc87c0ecfbfecbec458a51965b6f828efb1d72d2e764fd88ea594f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_11.dds.phyre",
+      "source_sha256": "b018f04ca95e811dd85abd578569921596af690847d7a11672d957617b2126aa",
+      "sha256": "674fc894829246b309b05a158150e6bef1e6cc1c329193aca3f831f153023a7e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_12.dds.phyre",
+      "source_sha256": "25c1e7529907beed7ba694cfeb11272bafa61043adc28e470eb30ab2985a987f",
+      "sha256": "1990208671639fb03a4b8027962aff9c689e875c7a7019a6fe693a5e74072eb6",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_13.dds.phyre",
+      "source_sha256": "ba4ab03ee651eb76e85a0e3210c0be3dfc1bbd7a0392b00f3665c91da8a3d5e2",
+      "sha256": "ac0110e7f0c9645490732edc42191598e3c9070d014b1a0b6fb174c66ff73398",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_14.dds.phyre",
+      "source_sha256": "9f4cbffb8605996cd68f4d2c0dced65d6445c72ee5498a88412eafc121abe38e",
+      "sha256": "558b756027c7b4f154e5f4b85b7437279fc7eef4c36b23f5feb000e839c41788",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_15.dds.phyre",
+      "source_sha256": "90d9c7116f90bb064e08c39f33a75ddcef8e4c82a1f8ae6f0fb32776566c8e6d",
+      "sha256": "9003f208e6ef087c3bd9ce55e3d5fd8c1e431a786b3ac16e42b8dbdfb20724a4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_16.dds.phyre",
+      "source_sha256": "28abdaffc48a0ae0e301e0c3e7625fbb1d95e05243e41d0e51f1a65d3d28b48a",
+      "sha256": "28abdaffc48a0ae0e301e0c3e7625fbb1d95e05243e41d0e51f1a65d3d28b48a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_17.dds.phyre",
+      "source_sha256": "b8657dadbd861d3f00b3ed5d3115c871c7079f48a66e4d5dc54eee25f9fe01ea",
+      "sha256": "d0ee7053f6bb87f4b089b45a4201bb128bf29ab93f2221a0714d0a807319fcb8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_18.dds.phyre",
+      "source_sha256": "8bc2d16c10197381774ee2399d61e04e18ca65cea3bbf97b03a35b4a08e01669",
+      "sha256": "10bac5eb6a8534e26ac78ffabc68fb794d0e8d5f568ceb3b896caa0adf3c34d4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_19.dds.phyre",
+      "source_sha256": "1c0f7133a2709860731e15d43d0d82826f50cef66d938e90acc606bb68be35af",
+      "sha256": "00f446ca37a3d76206df8980114baa2033dd5dbf4b1f7b83c5047457e5f6d48d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_2.dds.phyre",
+      "source_sha256": "51c4cb848995d241fbab6be2140f08c22337e32c6ca58b0c91722c6c55af9602",
+      "sha256": "fef2db22e9adae734682175912d103bf523662af50bf5a324d97a143ed1386d1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_20.dds.phyre",
+      "source_sha256": "5b2613967f90a3ef52145afecafed7da1c43edbb3bed750c781d201719172f81",
+      "sha256": "f831a1c796d3852a6816e5d0be6afb85cc9b99f886cb97d25ace7dc51079f46f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_21.dds.phyre",
+      "source_sha256": "24331286072fc09a1c7ff265bdb5bc3ab49530bb973ddabbc730a0bf516cfedd",
+      "sha256": "24331286072fc09a1c7ff265bdb5bc3ab49530bb973ddabbc730a0bf516cfedd",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_22.dds.phyre",
+      "source_sha256": "713afdf6eeddaf4bcf00c9fbbbf742c21a3986febae0e730fbc16c75f753d8f2",
+      "sha256": "0ba154444d89689daa53854e7d0c7f1d25291d99c2a9c24f1ea4435276290f18",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_23.dds.phyre",
+      "source_sha256": "f27009bc649dce9a36282f3c7fbbaa6a124b22e2332d081ba1eff3420088860e",
+      "sha256": "f2da7e5cc8d397ea6f814a2d97a573675aae9a38283bfcf3f157a014a33ede9e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_24.dds.phyre",
+      "source_sha256": "f30341a83b1a39aa7db35932d521f5611c2f0cb5938e9414094f6e54aed0a4d0",
+      "sha256": "4c7c355744835b82e8fb19544dd11db5ddeddee189cd2b63d918ea3989362960",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_25.dds.phyre",
+      "source_sha256": "2342ff765651650a238eff5403042e9eb13dab3603edaaf17235346a9b1294c5",
+      "sha256": "a45be7386194cc9547e123c851412c934a7b40adfbd72c44c8d48d4e615bc32a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_26.dds.phyre",
+      "source_sha256": "24c5b69f28f3144c852ce974b492bf9a20922842580edbdf0f67fae1e67952c5",
+      "sha256": "24c5b69f28f3144c852ce974b492bf9a20922842580edbdf0f67fae1e67952c5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_3.dds.phyre",
+      "source_sha256": "8ae2e8194031c8fe8ffa345c449c152e28ddffd72a142f1ed0e809f1db94d120",
+      "sha256": "692fdc8efffd820f14875977981a79d47a754e45e7e98f729e44c1f3286ee6b4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_4.dds.phyre",
+      "source_sha256": "69bc91a0f8a454ec9595d1f7ba8709511e2f7c8cdf3553f9e39400351af6dcaf",
+      "sha256": "69bc91a0f8a454ec9595d1f7ba8709511e2f7c8cdf3553f9e39400351af6dcaf",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_5.dds.phyre",
+      "source_sha256": "8b1284d583d8fe909a1162ee4cfa357011ac96e93ac2707984bc1d99cada1c7b",
+      "sha256": "10cb7d02f591b5777ce8047311e3bb71687f55fc3264734e034719e7906f8a65",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_6.dds.phyre",
+      "source_sha256": "3aebb18f7ce72d9e2f0476d2e52d6df101d6658bf763915293743458c8a0cc7a",
+      "sha256": "215e24461bd30de5d5d06272f15a787542ef3bf447ead0d78afce5f1bc296443",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_7.dds.phyre",
+      "source_sha256": "6e388b35a9d0bb5ae929303be6e6ebd07d876448910893bb3109d03bb87f41fc",
+      "sha256": "6e388b35a9d0bb5ae929303be6e6ebd07d876448910893bb3109d03bb87f41fc",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_8.dds.phyre",
+      "source_sha256": "4cfe3c39737c7f7d55b53571d9202721add1507fba8c094a63756e5b4e380927",
+      "sha256": "4cfe3c39737c7f7d55b53571d9202721add1507fba8c094a63756e5b4e380927",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_17_132_16_9.dds.phyre",
+      "source_sha256": "de130e0309ead601c3ad1b4efe3e23a0111f1ed2db10dd0c0bc92c9b54b3ce13",
+      "sha256": "017b87723c5f90b87d62a3fdad171881da671a6bf74d29b5fc86d4bb87f298d4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_1.dds.phyre",
+      "source_sha256": "bf438b714e97734bb2fb4e17fa7ac020eccc2fed79a28567f4cfe4eb9b01c2ce",
+      "sha256": "e1fac2bed923cbb000774532bbd7e7672d5a5e8d45461aababafa833349f3940",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_10.dds.phyre",
+      "source_sha256": "72ad5698954b36a83afbc634cb0cfe127b01270be30fdd8340e97c926c3fe90c",
+      "sha256": "e9eb56421823d6d619d72a196627e88749e82fac0f1e24cea3c81a243f734d36",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_11.dds.phyre",
+      "source_sha256": "cb307554e1d22fe82debb381c6e2f13229b35e20ce1097d0bf1891f19fc80cb4",
+      "sha256": "c6dd961694eecb2a6cab34dd908328bb11b646c3bd39aafe9564b16dfb141cc5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_12.dds.phyre",
+      "source_sha256": "dc1ef7beb1a7818fc083f082070e96e6e19ed685307b0d05bdb00047cb0fc5ff",
+      "sha256": "04d12da2b00262c5cdd77804a842e966c426f2504c5abe0095cf57193f07c424",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_13.dds.phyre",
+      "source_sha256": "0bbead29e34b4bce1472d0932284ee211427246396ed39eeed94b580ef99422a",
+      "sha256": "2655ef925bcd9516e8cb9a841c8083c23833cb55590b33e0fc8efe077e570c8d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_14.dds.phyre",
+      "source_sha256": "b4f91d4eb978fa27bfc0c5ddead35b2d13dc0fc36663225bdb57180283b62f01",
+      "sha256": "ec90c2a110be794df235e3977e275d3166e7fb8088c6e829156d397a1b9871a9",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_15.dds.phyre",
+      "source_sha256": "2d965ebacc90f7692eadef01ec2af2a76cbac8505fec73a170f9be05f141f67c",
+      "sha256": "05e0be7f5d32998828edcb63c53915f68f078d4d897ff7490465f3f3e862cb78",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_16.dds.phyre",
+      "source_sha256": "3cd349812309dc706b98a426f1da2c1e01f1ac163e7eb5ebb180f378af386e43",
+      "sha256": "3cd349812309dc706b98a426f1da2c1e01f1ac163e7eb5ebb180f378af386e43",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_17.dds.phyre",
+      "source_sha256": "a7ae5758f2c3f59dfc2322ce5bd3c32150a2069ef50fa5f7e5df4aae427df96d",
+      "sha256": "eabb97a2e930dbe8ccbcb9a07a35148dabd68da48c4d4980b8bbc59e36b6054d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_18.dds.phyre",
+      "source_sha256": "02c92db48b5e6e079fd61747f516a3974df791fc4ccf07b83e8c66d3802ac3de",
+      "sha256": "140c47df62cdc162608861cfed248dfb21710275e74d01c727e6c396cb567558",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_19.dds.phyre",
+      "source_sha256": "ef22324305000e1869a5959d91f9c145fe8e7bd6618d9a5c1ce3cb9948d65fc6",
+      "sha256": "1fdc88080dfd78e57cf86245685bd69712ad450f50b7147f154bdecb0b26b694",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_2.dds.phyre",
+      "source_sha256": "4cafb8d4ab253cc2b8228ea5d411453f06ddff407b0731969d5e9dd8a3862bb6",
+      "sha256": "96762dd0bd411ff7db5330ddf931b3ddf2fbe7857de4cd5d52c7f349b30769cf",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_20.dds.phyre",
+      "source_sha256": "19c9a5120214d1719f57c4be2d59c2431caf509f11ef17e15f777368033e1dbd",
+      "sha256": "7b3c98bb2844a6020351479aca1b9053fb05ecc782c8d5f306207fb3cc092213",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_21.dds.phyre",
+      "source_sha256": "a51e7ef970a3dedc8450285ed309820a2e119bcb5d8373d1ce3f34ca8de5281c",
+      "sha256": "a51e7ef970a3dedc8450285ed309820a2e119bcb5d8373d1ce3f34ca8de5281c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_22.dds.phyre",
+      "source_sha256": "7cade60cfabf8df5c9772af263422a1f05fe15f06e9e56063e45f9e43d7ff371",
+      "sha256": "d14988d8fb3a99b126dc423d9c24b82e4807b9dba10930431ccf241e20d19fcb",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_23.dds.phyre",
+      "source_sha256": "b44d3ec393c4fc03a896b9e5be830784b912a2a9ced7eb580b0ac5f47edb0497",
+      "sha256": "882d01dcfdbb8b9042198a2020413eeeefcff1ae837254904ff493d2e6ce19c2",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_24.dds.phyre",
+      "source_sha256": "f9d231cfcb49ff4aae1e71e095d219448681698241e93104bdb221fbf386f063",
+      "sha256": "85bf2907f6dc71a9a8af07dfcf51348e06d9af99090ab97ca8328e9489e2a1e9",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_25.dds.phyre",
+      "source_sha256": "c0c2a7d803aad0825fa8ceea2f4104f6a2adf432c41805cb59700e6473e3d3cd",
+      "sha256": "0391895837ef87153429586b5f117ac7c00dc133acffd65e8aaa84ff267f3a87",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_26.dds.phyre",
+      "source_sha256": "7e13ec1bdb889cf391909ddcef8f475e5a995b3a275dbab2632393bae7ce2fa5",
+      "sha256": "7e13ec1bdb889cf391909ddcef8f475e5a995b3a275dbab2632393bae7ce2fa5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_3.dds.phyre",
+      "source_sha256": "974a87fb9a738f5860bf223be367011670fb214313f8f195bf58dbc869160132",
+      "sha256": "23632df53ce37ddeaa0a0795dfa7f6f7c28af45943ef5ea367090992dbeee590",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_4.dds.phyre",
+      "source_sha256": "b94ccd03b7ea76276af46f46ed533c4834ae8a6be52016f9a2784b2e33b66089",
+      "sha256": "b94ccd03b7ea76276af46f46ed533c4834ae8a6be52016f9a2784b2e33b66089",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_5.dds.phyre",
+      "source_sha256": "5130b086174799e976d730b7fdf5a96d98ef57443b0e7a1605fd926b0d6267f7",
+      "sha256": "599189ccf0bcd914677c2a34f71158f206c53e9988251502c190b03270383fbb",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_6.dds.phyre",
+      "source_sha256": "c383199637377b5b78c9fe4d3033c392ff5cdb8ea75680b200fa6ef5bd390f17",
+      "sha256": "457e3ddb1821330af913c960399da5d021428533206227780d26ba9aa6a66316",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_7.dds.phyre",
+      "source_sha256": "79906708bc152cda9392f90da3de4138dbb6cc63801fcf3c966c657ffe86e271",
+      "sha256": "79906708bc152cda9392f90da3de4138dbb6cc63801fcf3c966c657ffe86e271",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_8.dds.phyre",
+      "source_sha256": "4822a6adaf6ace1c334435a992a9260f23b830669858b3630b40f31fd8a78341",
+      "sha256": "4822a6adaf6ace1c334435a992a9260f23b830669858b3630b40f31fd8a78341",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_18_132_16_9.dds.phyre",
+      "source_sha256": "06fbe6b99525f01cc2cdea71da57d6aff126a56dbdb95000bde0a4ffbbf062db",
+      "sha256": "cff5eddc81b03b6ddae946313626ccd5ab228cecff4c3ef00fa77b2a7ebdc10f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_1.dds.phyre",
+      "source_sha256": "b4f52817f838bf0701806f033238dabfafbfc6ea52e44db38db0121390cd57b7",
+      "sha256": "764599f3c1fd06bc9face276b7232b05d9fd41cb2edfba0b7c20d36a2e9bec30",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_10.dds.phyre",
+      "source_sha256": "5c87a2ed5e8c5a28b2e85bdee018eb08d58ff29b5843edb0883ed271a9d26912",
+      "sha256": "445bda7a07e04936b03a80a4472ea18dee5bc3346647fc4f55fd3eebe0aeb58b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_11.dds.phyre",
+      "source_sha256": "1acae81fb8b788c1ee29080df8b71977cf50e0616c789045120bbb06a555bfb1",
+      "sha256": "6393820a4e21ee051cf45e2a8f2a455d1ba585a6a0bbb283aedd7d358c30973d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_12.dds.phyre",
+      "source_sha256": "50ea9e23b3f58c85f5b6c43298c91bba5a1e56bf5a739da556ec7c438f1985f2",
+      "sha256": "5a87157eb8400c3df2eac6b1fb47b77ee4a921f51b02071e4a1948df41ddd052",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_13.dds.phyre",
+      "source_sha256": "500f6fb0caff92fc6ca348f61100aaac209c8d8aea6a296078a23f6424661e23",
+      "sha256": "63ad61758d641223793240e0b680117a38ecb550c47264650e0f560d85a1cb86",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_14.dds.phyre",
+      "source_sha256": "e19474dc9b363dda51114371fbe615273e9ad67077887bfda6d47c0eacebb613",
+      "sha256": "ca3a5437b004550f3c2a1003123d0da2692997fcd930e616b5d6d90393fcb5b9",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_15.dds.phyre",
+      "source_sha256": "c2dababf0b4296abfbd97015e5bf292c019d860ea56b81f945278ff33b1fe650",
+      "sha256": "944e2cdd3823c851a11ab07a098a70c0c90c9d90bd0b7b1e19f9d2b348d74919",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_16.dds.phyre",
+      "source_sha256": "a7c75b9907990e146514c49e8f4b4b65c11c189bf5220f1535333ee142141fe2",
+      "sha256": "a7c75b9907990e146514c49e8f4b4b65c11c189bf5220f1535333ee142141fe2",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_17.dds.phyre",
+      "source_sha256": "118817acfee1df73a2ddd1351a2d0a309d3f237baaa5887dd4f9c44ef91638fc",
+      "sha256": "a294ee29fe09fa405514552745883dfafd2dae7871ddb0db14dc71b172943f6e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_18.dds.phyre",
+      "source_sha256": "540dbc01fa487df31b0b4a07a3859ab561f1d118cfee2edf96b2500bf1b90b88",
+      "sha256": "34f4b4348b634e35f3e429baa6e2dc618e32a2e629854d6b5a8d9fc0eb8d1e37",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_19.dds.phyre",
+      "source_sha256": "59f4c94ca20761f03a17df935353da37e701e15593914aa6170b274cc0d688a8",
+      "sha256": "3b8b27112e00e1727d193a4b5076237500e78537c8333ac6905749b4d8ef2532",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_2.dds.phyre",
+      "source_sha256": "08ddf6c07e62d69aaf145df4346847cadb3f643d7f3d1c98ab27e55f7ca7d2e8",
+      "sha256": "e9288c27aaa012c0ebb06f8fd1c669404a35a01c7cfc844c979ab69a4ea96203",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_20.dds.phyre",
+      "source_sha256": "56243b19a00377fe4b0aa6c9b53d312b91bd5ce49422738a1a9e55a7aa38fe80",
+      "sha256": "d5342438bf26b33fc52fdbb224ca4fce01cf442c5b34cd7aa212a8fb935bab6d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_21.dds.phyre",
+      "source_sha256": "4173f477bdeaf591c626b8141f63333283fcd3d38ec646c740e6dc431bf50a88",
+      "sha256": "4173f477bdeaf591c626b8141f63333283fcd3d38ec646c740e6dc431bf50a88",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_22.dds.phyre",
+      "source_sha256": "34db166a9d14469f28b2dc2b98765a80d523a78831a2de10282507605a92629b",
+      "sha256": "b3bed8fb30217b09c26cb27c445e8bcfd396a863e8ef4e98bb65945be2751ec0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_23.dds.phyre",
+      "source_sha256": "38854d208592fb52b9ce9c9b17b6ba69f6854f1d129200a7fb27fd77f3cce3f0",
+      "sha256": "67f58185d4376e998f712c7f53d00ac8e0b8769b9afaf4bfc35c9f0a0f788c76",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_24.dds.phyre",
+      "source_sha256": "2ae09512f2e398dda2042f19c848a679685271891bad76b8997b2eee7fd13c7a",
+      "sha256": "43b29fd6f94e711992d9aefa7d7b7c5f3b57465c2d501a6eb013c52182f13eae",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_25.dds.phyre",
+      "source_sha256": "b4272f3afef7638b308d1e64d4e1258439f4a0e6d6cc8fe1db5571f19d043022",
+      "sha256": "5472d53baaed8e3985f82a424b65f294a3fc230a60601308e2139b701a3fb331",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_26.dds.phyre",
+      "source_sha256": "80c4e1451f60625dc70f9c2e901161f4daf02ced6213443333a4907ad65c2090",
+      "sha256": "80c4e1451f60625dc70f9c2e901161f4daf02ced6213443333a4907ad65c2090",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_3.dds.phyre",
+      "source_sha256": "ec47ee2b68b7c48f292d2762ab6e45ced1731adcf51b4653d44a43a56049f059",
+      "sha256": "7ae42d13b85f347632a6c86a8504c38290bae3c5815be1b22203d7ddb6eb3d73",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_4.dds.phyre",
+      "source_sha256": "97ba1c952a3784c7fbd7f4702f8bf4a6d51f787c10fbce203f98f46aa6c424ec",
+      "sha256": "97ba1c952a3784c7fbd7f4702f8bf4a6d51f787c10fbce203f98f46aa6c424ec",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_5.dds.phyre",
+      "source_sha256": "09defe6c837111c479a6477ed7f2431680ed5d2c3f2527a90bf66d2a4fd1ff91",
+      "sha256": "31ea17162c88cb53c0daa713b36560f6c49a894ee2492eabdf10c674d61f2e3c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_6.dds.phyre",
+      "source_sha256": "82b050c1202751eb94a8bf8099f35013250b27075c8159de203f5b3a7ad90d3d",
+      "sha256": "2493727b9cf736eb38d1041fdc1d0681238fec73993520b27cd369bc4fcbcc29",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_7.dds.phyre",
+      "source_sha256": "80fe4179297f9b527263c3568f330fe69f23c5b3d13d89611397ff2f56a84021",
+      "sha256": "80fe4179297f9b527263c3568f330fe69f23c5b3d13d89611397ff2f56a84021",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_8.dds.phyre",
+      "source_sha256": "cccc9725b4db6f1eeec0e3bd2c8d04f984f9663c70ee6cfc576a2bf6af1db9e0",
+      "sha256": "cccc9725b4db6f1eeec0e3bd2c8d04f984f9663c70ee6cfc576a2bf6af1db9e0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_19_132_16_9.dds.phyre",
+      "source_sha256": "d4ed18b98f5369207f3fd913c51af2315b05bce0376f44af5bde9e5db828ecf1",
+      "sha256": "2579d20d0431db2b36d208853ff2721b6c265bbd89ad2d270645b22ca2889436",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_1.dds.phyre",
+      "source_sha256": "e763ba18ff4c0e389bea01e1d80249831568a1deb6643e6efeb34c91a861f17b",
+      "sha256": "64e13f51bcaeff9d3187d5ed421fe458357196556411c057fdb0ba57addda20f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_10.dds.phyre",
+      "source_sha256": "a7204f6b2bcac4f7d55844d8dae9fd3faf9f24b3c27b869c6dbf4ebc15d059c8",
+      "sha256": "fc7d816e091b0583a4fd56f8e1532aa2bf4f4b643ffb3fa82b897b075a43b992",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_11.dds.phyre",
+      "source_sha256": "585a80129fb72aff41577097098142328a6efbbb3ca9596766a3e6d38027074a",
+      "sha256": "8255239c8d8c4485edd91c98bf72bce3ff81eb4295887b202589178871c3d5aa",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_12.dds.phyre",
+      "source_sha256": "612ce591d2297117ee156dfaec8bc57a6ef79d76458fb48fd405ab9b15e91239",
+      "sha256": "fc7634b08747f49992943857df86c33344ea08d95c625401de50bb6f5c50dcee",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_13.dds.phyre",
+      "source_sha256": "ad5463c0fa8430c1da6705f1368f4545b27d32dab775501fe847e771f680c543",
+      "sha256": "78a21d73e69a1ec13569c1c926f10bf038b384bd321fd2358db4882a7dc9cdf1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_14.dds.phyre",
+      "source_sha256": "a4a72d7114dc6e5fb995c12fd3adddbb9b81fa969fe646c1be2cc0e2db0a242f",
+      "sha256": "9e01f802d60df68e939fe9771a06883dc9be151bb0d1e91f5c8f75e61ea6c0dc",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_15.dds.phyre",
+      "source_sha256": "434f093dcd4908f88e85e89d093284ab0e848d3aef8bf141d0d9009aa8937487",
+      "sha256": "1f0842e42cca8fb3196da0f502cf6849b8a55d8b25d54737a5c45eaa991dfebe",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_16.dds.phyre",
+      "source_sha256": "7df0303e32f097a138e8d9cf63113c85312af367e21bdbde344bff5e4e27384e",
+      "sha256": "7df0303e32f097a138e8d9cf63113c85312af367e21bdbde344bff5e4e27384e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_17.dds.phyre",
+      "source_sha256": "fa563267c62fb24ba63751692ec31bbdd88bd57e029edd5150b4514da07bcbee",
+      "sha256": "6b10259ab98a7370c99d167108521cb9bfb389b8e62123396a2f6c5ffae7ef8e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_18.dds.phyre",
+      "source_sha256": "a848c44a52dd15def7f2ad091cdbbe7f2ea985668b8861f8de9026e663231eb3",
+      "sha256": "dea8e34dbc94cb7ede741ae541d4f115bd1c517a9db10e473e4376731ee59e66",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_19.dds.phyre",
+      "source_sha256": "5dc48ec9be9f6f552bb769d383fa12511faa62962880bbe9b1c9c57d77cc3bcd",
+      "sha256": "ed85ead7488cd6788bc22a8527f8c28937a4988ecbcba76af25aa33f3bf3e34f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_2.dds.phyre",
+      "source_sha256": "cd0fb63dd0d4af8e3b3c17ad15dc4cf4171eb758b62653bd301e2f50c5d43b2b",
+      "sha256": "5f9dd7abcad96842d9d4c2d5a6b7d77b7b03ae5f48f07720fb118f24ccabd6c0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_20.dds.phyre",
+      "source_sha256": "5c9b29aab28136e316ba1ca7a722bb25c7ec1eb98f621cebc452e33bcba012f6",
+      "sha256": "bd3ec97be247c0d01fe8534a67dc3c9640ac16af067d1c4e6d0dddcb6d5f9405",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_21.dds.phyre",
+      "source_sha256": "85194326ef0fb972da88a7bb27ac7aa117a85fa7c35a7bc9c888fc8d905fa81c",
+      "sha256": "85194326ef0fb972da88a7bb27ac7aa117a85fa7c35a7bc9c888fc8d905fa81c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_22.dds.phyre",
+      "source_sha256": "9619686f8fd1b087ba788c0412aea6884e7842ca301ed9e0b5495b9c5ccbef46",
+      "sha256": "f1268edc9d1fe9faf0ca5ab421feb45d244218dae92b92bb42f4b5b2ec0c7abd",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_23.dds.phyre",
+      "source_sha256": "e0206aa42a66fed48c2d7929c60def5eb7f48da9dd919c94b68a875b6e049865",
+      "sha256": "24b6b98d23dce517cb551232d3178530a6b951605eaad337dd0b892919b1d759",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_24.dds.phyre",
+      "source_sha256": "c97dc25df37246ec89978bdcde4326f81d54470b3806c6cfc602d3909b4c7c2c",
+      "sha256": "b5d6cc5bac232a2dbfbc1d55fdf7f1358535bdd6d6e47013cc53513de46b4597",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_25.dds.phyre",
+      "source_sha256": "6cb960b8714b2cd77135d85413bee5e49986e8a53d761c19443324c62b77521a",
+      "sha256": "5cde3e28e257e6251a4be8e6060e32bdec54f6d291e6614bc8c56d88415fd6c6",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_26.dds.phyre",
+      "source_sha256": "3847516cde8de5b6d4db5ba93b6440cb36fe9a68365f8dc2becd0a534e415020",
+      "sha256": "3847516cde8de5b6d4db5ba93b6440cb36fe9a68365f8dc2becd0a534e415020",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_3.dds.phyre",
+      "source_sha256": "62da5d79df90c7552e28ea60ffa57768845d2fe5212c221ce2c0fcf57d66e2bd",
+      "sha256": "8acce2a6d0a5703715539e1f80114685613aae71755fa8ab626d4b98362353a5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_4.dds.phyre",
+      "source_sha256": "93a12d0f7d788e206019fb056b822412a4f08541499b826fcde01a73bfdb6906",
+      "sha256": "93a12d0f7d788e206019fb056b822412a4f08541499b826fcde01a73bfdb6906",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_5.dds.phyre",
+      "source_sha256": "5df5bf96fc4e5ec6fa653117280513865ceaadd49ac165b88795355200508eae",
+      "sha256": "a7216285a1a7c5ddb773cdcf55d940352589920d989ef3a0b4af2b74e23abd84",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_6.dds.phyre",
+      "source_sha256": "218df5a92d998d9516f0af2ab16906d3d8b0d56c16077404385e5d997efe132b",
+      "sha256": "ccc3dda3981c1c9254e39609b9a13d3deced885825aa85c6e9d86e21bd52cf4c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_7.dds.phyre",
+      "source_sha256": "4080bf676dfc91519399f62a96edef45aee4fcaa9760e7588afce884751c2332",
+      "sha256": "4080bf676dfc91519399f62a96edef45aee4fcaa9760e7588afce884751c2332",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_8.dds.phyre",
+      "source_sha256": "8ac4f89171f2a97420128272cd52aa278da3b5a2232bedba75f0dba00f947186",
+      "sha256": "8ac4f89171f2a97420128272cd52aa278da3b5a2232bedba75f0dba00f947186",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_20_132_16_9.dds.phyre",
+      "source_sha256": "c3ad394c346f87f4547ef7d6c5df27191008cb09d9bf006586e48c56fccf5d04",
+      "sha256": "048fb63b24543cf50ee5894ebafa13c925d24d1864cb9b4c0b4e9d8a986b009b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_1.dds.phyre",
+      "source_sha256": "9bbf7461e3087cf8ef8d67c4f2bf78423d02a6b7f26e8c1c9584f56a9a6e51b5",
+      "sha256": "d8827e4b1817847c3479d007cd03cb0df6e45892bd076e95c74129ddad6c2770",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_10.dds.phyre",
+      "source_sha256": "fc45cca784378cae2fe34745479eec8c51139c6adab24180cb905fc0a7de20da",
+      "sha256": "1dce562ac4fcd38ac1992f3418afe6134d6f5cd0f1df0177c50cd1b904dabea0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_11.dds.phyre",
+      "source_sha256": "e5cfe9f2d2cf4e302e80e4307c381513fec2d654c80c2c1ed8c1d3735940d5dd",
+      "sha256": "a48527c270a2068114c70e666a5e55b9fba86aa31a072eaf768a919fee8a69a9",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_12.dds.phyre",
+      "source_sha256": "586c1a5a0da58ce50e8647ff179e9eef6f7b4d5a7e14be2df7ce8e743cb41f5b",
+      "sha256": "c035d884bf2bc7c5d089e7a4e5af9ce1dea99f2a9a05bc9bcd532a8d67e82277",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_13.dds.phyre",
+      "source_sha256": "654a7170cae39deff60ed3839f333c0adc3dc3a2afc7dee03c449ae53f3c0e83",
+      "sha256": "a8c760995e1c93a69004f77c95f213f10c52d7a6bc14ad0792bc39ea421589a8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_14.dds.phyre",
+      "source_sha256": "598437c24ca444f345617b86819bfb413eb1ae7740429de0ebcf5ed1cdf7a71a",
+      "sha256": "98eb852f0fc247efb9e79cadb61417074666eadaa5b57f76a8f63e42b4424fd8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_15.dds.phyre",
+      "source_sha256": "8ce52aeb13436a2e0066e49c4a7144666a6f6eb2e13bc6e47a08f066d70033ea",
+      "sha256": "f0c71cf45e65997fb3b30ebcee4071965bead0405f386ce9cb52ed4444d5a418",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_16.dds.phyre",
+      "source_sha256": "aa15a5d76c4c9ff6e2c984cf0e33614e433d6d798348b0d1d5e477cce5d24829",
+      "sha256": "aa15a5d76c4c9ff6e2c984cf0e33614e433d6d798348b0d1d5e477cce5d24829",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_17.dds.phyre",
+      "source_sha256": "dffa80c68d1192b493cc00cea32c85d56aeb7d83d43e4a68a0d25dd5e606a236",
+      "sha256": "485135502b972a52bf6daa105b66c78e61f3a9ac2423cb92b9eaa7997d1e4691",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_18.dds.phyre",
+      "source_sha256": "4ae3cbad64dda047dedbaad20e92a93a029bd9781305c2997533183bc0b64b42",
+      "sha256": "d0db01d9999afded4f64c44cb0d189f02c2113e07fe8069f714665df8715cdb4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_19.dds.phyre",
+      "source_sha256": "fc9ce4ed0a4236167cbb9064ca0206c6374bf1d991a002bd893ecefb210d28f4",
+      "sha256": "7ac9ceab51b6f661910a4901d85a5ddba663fef7095a6d69b7223563d5cf55d0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_2.dds.phyre",
+      "source_sha256": "1f3ac686554c581cbf67a37107b0c942b4d535515c06ce4331fd5bccfb78316d",
+      "sha256": "80b8364b170024a892a89205aa27e6a4687b1e9ba11fdf65edfd7f1decc7405e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_20.dds.phyre",
+      "source_sha256": "950fd3247fe0391f7f4ead9efaacd492920ede2601cc525a1538384ba0bb8cff",
+      "sha256": "417cc629217adb20d84d914e7127aea32a73c8ce4e010451988b0c8862850102",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_21.dds.phyre",
+      "source_sha256": "267f5769c7ce9603b4d4260b165e05c50a44fac65d623d8340f47e17732d79f1",
+      "sha256": "267f5769c7ce9603b4d4260b165e05c50a44fac65d623d8340f47e17732d79f1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_22.dds.phyre",
+      "source_sha256": "319aa33a34952c578e5689fabe6aec155e3fdb0f1a4d6592ae864301050009ee",
+      "sha256": "5363e6c4d3cb024d603a28ea630cf232cf17cf879f86d955d29b629cf83aacda",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_23.dds.phyre",
+      "source_sha256": "9e98f5dd6c817f6a00e154924c4462ce253393a17ccc1a55e30a3738f287cdcd",
+      "sha256": "545817f7eefbb671a8de9ca37ed33214cd449f07d8cfebda3de4948274bdc979",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_24.dds.phyre",
+      "source_sha256": "6019f2e71fb960a91d786962c5b46e28ec1a11aa397d52e290eb9c61b62a669b",
+      "sha256": "31dde568300b33ed90463f264cbed6d9e70809d6d0089d297b3dba31a65880d1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_25.dds.phyre",
+      "source_sha256": "1e8b7e7fe09705012dd9b134e1291428633bbe6d60210e92e4fe71d54de2437e",
+      "sha256": "340035e9f1fa915d5078b75ae705e6ccb13556c3132f0f8737912aff3021e447",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_26.dds.phyre",
+      "source_sha256": "3d67e6f0375340f510c6c4bc8173352ef2ce02a127c031b8df4e17b3759064f0",
+      "sha256": "3d67e6f0375340f510c6c4bc8173352ef2ce02a127c031b8df4e17b3759064f0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_3.dds.phyre",
+      "source_sha256": "1132f01f1ac51001cae34852cfb45de87c57c9031d35833d73a7a6b414d6ac18",
+      "sha256": "a64780b7027a403519793634580d99a37e9340729521e0560df80b7df206d028",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_4.dds.phyre",
+      "source_sha256": "097044cc5db2cf16b628f966156d79c9dad71dee98e6da803469a812022fda4a",
+      "sha256": "097044cc5db2cf16b628f966156d79c9dad71dee98e6da803469a812022fda4a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_5.dds.phyre",
+      "source_sha256": "06ad4e925d404e30d5b79654098342b159911f196ddc68879b8ed81d334d524f",
+      "sha256": "7265bc205a609118dba489a535f47494c8b799dd22241f0060ff5a78acd0008e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_6.dds.phyre",
+      "source_sha256": "c4784f827d8fe322b4dca5e4bd0769d7039642036547050a8bfe7ca9f179a370",
+      "sha256": "536347af610b4ac7afbcc031bec3ce467657a19cb8ada00e10cd872f8f40e304",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_7.dds.phyre",
+      "source_sha256": "758cddf943a32a56d0da7af39cd36e60ada07a588904ea7fc04509483685ab12",
+      "sha256": "758cddf943a32a56d0da7af39cd36e60ada07a588904ea7fc04509483685ab12",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_8.dds.phyre",
+      "source_sha256": "b44ac9298f47d6a09326f96f537b07f4867d0e52596e75b5f2003dc8ddbef423",
+      "sha256": "b44ac9298f47d6a09326f96f537b07f4867d0e52596e75b5f2003dc8ddbef423",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_21_132_16_9.dds.phyre",
+      "source_sha256": "41772daf4418a2c73aae6b3cca57e5b7e6683a9cf13d47133ea50f9af727e557",
+      "sha256": "eb3a0e046d040efb092754abe0ca5389b4b7c56847eba3c7b86070aebe538031",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_1.dds.phyre",
+      "source_sha256": "faefb06628fb4a837f9013a5ec1dc045b258ee120a2aafcf44c48a3311bb142e",
+      "sha256": "49e82b967e18cedc34c16c1f3386444ad87bfdea89a7b16b0dbd0d09f6375873",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_10.dds.phyre",
+      "source_sha256": "cdd5143e484f924e01050f4ddd48e14e4271a2cb9e4a51ac5a4714aba3ff99d5",
+      "sha256": "cba360ffd07a42742e3534bc792df54e0a07143d82ad87c0b7da911a534bab80",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_11.dds.phyre",
+      "source_sha256": "c1fef575f88df6bf7e374e93a142ea394db24acfab6c8aedddd419810ca6239c",
+      "sha256": "049bcf73107735e37ed9b3364d25e499e040d0cca085aaebb21d44bdb12ef6c1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_12.dds.phyre",
+      "source_sha256": "0925aa53fbd0ea3f48e4af4ca42b80e4f0c5b7e4061ec56f842da946bdd0fabb",
+      "sha256": "12e22c14b3686b0ac28674c3f6c68fdcdc090bb3136d80e71f493428d9f2375d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_13.dds.phyre",
+      "source_sha256": "9de1025efb5fbf00ea21ad7be87fed15dd39ed2e332e0c04cdffe3417877987d",
+      "sha256": "ef749e102d124803b2a6e2b3d770cd767b181cc7bbd1a8875f88803f98bcc1a1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_14.dds.phyre",
+      "source_sha256": "19bc679ac3735daa2387a70a5d90ae7807976ce6e2f8e29829b0105b07b007bd",
+      "sha256": "3ca9340ffaa1e7b29813653e1ba42cf4ede2f9397465fafbfc4c610fdc029e88",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_15.dds.phyre",
+      "source_sha256": "089316383cd14949503a174221bdadc716096ac108bdfd5a6abe6b1b443dede1",
+      "sha256": "458cba9d776d89406394fdd5096abf89aa95b265debb1a7967c2c186c47bf147",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_16.dds.phyre",
+      "source_sha256": "13687380873574aae17b9a9df72bef00be1b2a5b1f2109900977c969ae7dd412",
+      "sha256": "13687380873574aae17b9a9df72bef00be1b2a5b1f2109900977c969ae7dd412",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_17.dds.phyre",
+      "source_sha256": "e71aef2004fd52fa452fb9bfe81a4304e538191bdd98f8f3d73f89e1399d02b4",
+      "sha256": "0092c730b79cc9715e716e0acc6afff179e062855a213d66670f13deab7e285b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_18.dds.phyre",
+      "source_sha256": "c33d8be8d64d6f920b86b2df0ec431e117cc4d00391c11beddd7b3a16cf156ae",
+      "sha256": "34a8437c7fec492fc87731fc7cc0bf606d63e7394fc72f1ca693cf3339eb5dc2",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_19.dds.phyre",
+      "source_sha256": "fdbb6ef3e9cfc232d73b0f60d904fe7d428e03d8bb3b4692b34356eb964b8a2b",
+      "sha256": "83eb51fdd6675da6a977a9631f01872ee765679e70f7189b4aa09d6f9c5ddca3",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_2.dds.phyre",
+      "source_sha256": "102466466cb8d752add511e6dde5beccbde7aef9ebfc1b743eb6d83660350088",
+      "sha256": "e348d93e796159c0e5cb6390d20ae4cc82372fd22bd6122a7aa20ce7966e23df",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_20.dds.phyre",
+      "source_sha256": "b0e0e18ee3ea20e60efe4e03f4fcd294e17046f9a9bc3e285da700a36efb7499",
+      "sha256": "a3b495551742bd9d58fc5ff18f8e96e0ff07f26e67421c4ceb4e4224310d5009",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_21.dds.phyre",
+      "source_sha256": "5b26cb68f844ee5e15c5869874ac03d2039a570f05b746ca92960d1e840ef72c",
+      "sha256": "5b26cb68f844ee5e15c5869874ac03d2039a570f05b746ca92960d1e840ef72c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_22.dds.phyre",
+      "source_sha256": "b6730d2114e0a353bbdf06cdc8970444ce2a544a2990c753a71637829dfbd7f2",
+      "sha256": "90ba4c3bd8d17e3b24a3aefca909ab2c2289de320d679669ecc3ad5fdca9fa1a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_23.dds.phyre",
+      "source_sha256": "b269dfe07867750ff9ab49111c6a9ce40e586cc00c93be03affaa50ff27588ed",
+      "sha256": "32122f3a6997c2c780bc7ec2807b2de2aba34488a62b119f8d922d3823ec0181",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_24.dds.phyre",
+      "source_sha256": "119951cc110dd0cb7f523b23c9f56536ea940431b8489ece915f4c33226d6c42",
+      "sha256": "8731eb7aec66bb99424c48c9aa01d8bccca8cd8601e362660b380b68c75f9c36",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_25.dds.phyre",
+      "source_sha256": "cf96e0a8d41004064efbfd4ed112d64c73a976f850b1a960784456c7b5914b7e",
+      "sha256": "74e6bd524d009b31a53ed11d4a61595c895a2ae7a5178355e984581186c6495d",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_26.dds.phyre",
+      "source_sha256": "6cc1c453f8c733fab43274053bfcd135cb40655b2c455fa972ebc1d3749801b8",
+      "sha256": "6cc1c453f8c733fab43274053bfcd135cb40655b2c455fa972ebc1d3749801b8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_3.dds.phyre",
+      "source_sha256": "c6752f44ae310e88dcad3434bfd8d636a4e9c03d3c41cf0385d38ba93fedfbea",
+      "sha256": "432eaacf70fd3197a1a1a1da3c7209b11e291797b0877c82eff70f30e5cce333",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_4.dds.phyre",
+      "source_sha256": "d024df25a36346ab87abb15595db478f431848385a705f1a397bc84c010913cf",
+      "sha256": "d024df25a36346ab87abb15595db478f431848385a705f1a397bc84c010913cf",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_5.dds.phyre",
+      "source_sha256": "ec62593d75d224723f1958fce97b04c0f1581f86f1ecc8c932ff937f0dd09d7c",
+      "sha256": "4cd4d63e9b82d2abea658803e7ebc5e24328edff1170718d200b44ee5f5c2628",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_6.dds.phyre",
+      "source_sha256": "052885ed3b72a81186873aca9183c0df7b922f69bc6682df4b0b913780f300e8",
+      "sha256": "cd5b3dc221c1b64b8249479e3ebe540fa8013d60f2339c4b91bc465e7cd405f0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_7.dds.phyre",
+      "source_sha256": "12dbd35f8875bd05d09e6784a0d4b95e162edb7b1d989f8f9b1a9f58ccb457fb",
+      "sha256": "12dbd35f8875bd05d09e6784a0d4b95e162edb7b1d989f8f9b1a9f58ccb457fb",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_8.dds.phyre",
+      "source_sha256": "bd53497e0b9cc01c4215b7dfe71df563e6c47d500c5d8efb65e306066f8dad89",
+      "sha256": "bd53497e0b9cc01c4215b7dfe71df563e6c47d500c5d8efb65e306066f8dad89",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_22_132_16_9.dds.phyre",
+      "source_sha256": "93081bfe5e53f36a9e08935af23adbe53e04d417c101fb9b873b3e7042f9b1e4",
+      "sha256": "ef5318fb981932b530ebd9f27a52f5e3859b1a7ab186ed5ca33319164c6589a5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_1.dds.phyre",
+      "source_sha256": "d3fc700208d1323899cb4298ed260f77630cf26d2c8d43de92a22694f4b54423",
+      "sha256": "6b582fd7d8ef49d531e688c934d2895490b82004a286822ecdbd719f61bfed84",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_10.dds.phyre",
+      "source_sha256": "09f12d3fced1bad7ac0a054f303b267d892bb11f1b338c322ab5aa6b47ce1657",
+      "sha256": "ff8a082fca8c06666354e88a3575b4d52fade80af2f6e8378fd51954cd20d1de",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_11.dds.phyre",
+      "source_sha256": "12838b8680ecbc9c747afa5e5634857db0169e335989e299da1c6c0aeb446049",
+      "sha256": "8dedb0a9244f5f0a77a0313a58768d6d78c5c782ccb6b19bf9e7ff1ada81b5e0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_12.dds.phyre",
+      "source_sha256": "9993c3d6721f696d37a2cb860f5e3a5825f59b1707d9b7b886bba5416270b1f3",
+      "sha256": "d06982418bba225e2ad4630b6769f5e36371bee3ac5877fe81ccb5fe2278beb5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_13.dds.phyre",
+      "source_sha256": "b1335eaff641d8641c1a73d5dea7793966c4208711a528ba49d69397b2a6c1a4",
+      "sha256": "50d4f7b94ff1573102769d955a64900d9cdd6a8013798eae304f4957e634ae40",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_14.dds.phyre",
+      "source_sha256": "2e143fa7114328fa0056a53432aa7d0245eed5a26219a0d2454bbd296b603fc1",
+      "sha256": "ca0d3b0a017398aee8926979032d452b08988d839bfecc20776e17c6c1544965",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_15.dds.phyre",
+      "source_sha256": "2888a6781ee8f746d6fabe447d43937f364e33636cdec2a4f8a81c9647677863",
+      "sha256": "b7612f4af2a8c88a7f3c7d8501e5a02bddbea59df8e4a63eb4db6786df3b2535",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_16.dds.phyre",
+      "source_sha256": "763414881eafdb8e11fe60aa93ed3943cb9f9812fbba7f4d3a120c450e6e9bc0",
+      "sha256": "763414881eafdb8e11fe60aa93ed3943cb9f9812fbba7f4d3a120c450e6e9bc0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_17.dds.phyre",
+      "source_sha256": "c025876dd8595260e5201ca417417fea4cd730b88126a823d0e6786e8bcdbe5e",
+      "sha256": "a7b799f2f1631cd0c247dd4f3bdc7b2c24977bd70fd9eeab4d7b7c353378d5a2",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_18.dds.phyre",
+      "source_sha256": "fa42c0ba13a5036b643f79bafa7f196dcdd64d37d2d1dbe887b8b4f90d228298",
+      "sha256": "47ba88cd185e3bb5a6af2f336df61958169fee4f577d65219802471812218d70",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_19.dds.phyre",
+      "source_sha256": "4abfd36a51276dc403aae56884567bbf1463fdfdf107808be69d10932f708353",
+      "sha256": "cb51fdbbdf84c97648494f217b2b1582182bda83e479a731233749b7cb6ebe91",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_2.dds.phyre",
+      "source_sha256": "f52ef2fba9abacb8eee07470957f07ecdc34f05e34d2fb200fff0afc6242a313",
+      "sha256": "11c412eabfdc447693bf3914d0301eb812cfd8220708ec86ad306df4e9cb9723",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_20.dds.phyre",
+      "source_sha256": "7007f13ff469db93fa980f1effe24e1171d2bcbe0eb555a91739a6f16b5e6e46",
+      "sha256": "c1c47bc398f9ced2838fe9bf4e4fd08b1d5733f094145e6f95b10a072961de86",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_21.dds.phyre",
+      "source_sha256": "12f405d1b67f6dc3f8f2317c965c9daa21d4fd33883238178d45f3b5a9791908",
+      "sha256": "12f405d1b67f6dc3f8f2317c965c9daa21d4fd33883238178d45f3b5a9791908",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_22.dds.phyre",
+      "source_sha256": "bdf6993d39b1dbebbcba52068fbf301a3e761d735d837263df4190173ff43a4c",
+      "sha256": "8e8d5367ba9a616a2c85eb85329ec2301e6a58401928a1f5dd876025d9e186ae",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_23.dds.phyre",
+      "source_sha256": "8276cf85a9cfcf66c61025ee3011374c028c138a0dcc67aefa1df3bde1371384",
+      "sha256": "e42c3b2880a9ba8bbea4021247de95f629bd144c6d595cbd9ddb84a935169865",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_24.dds.phyre",
+      "source_sha256": "bcd535953663f4e3bc31f20d57b57bd2888290f6c7c24050942aaa70bb485892",
+      "sha256": "64648d0541a664b55047cff29bcfae7beeb7e4571c2209d6bb68da2f3cb87b83",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_25.dds.phyre",
+      "source_sha256": "aa85996d070f3f05036764dc119956a3950ac30e4be2c6986d5d801c50dfc649",
+      "sha256": "047dde138b25dd208a672a15570faad735ffe2768ac5ddd6b0e2011997ab7b25",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_26.dds.phyre",
+      "source_sha256": "60a07d35fae6190dbcd0dbabdd23c9b649b7c9ee77e132dffa03244d7ec550ca",
+      "sha256": "60a07d35fae6190dbcd0dbabdd23c9b649b7c9ee77e132dffa03244d7ec550ca",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_3.dds.phyre",
+      "source_sha256": "75417ec5e15d815fae0f2e0d39635ab6eec69c3d8d7e1036ffed4b8c4bc6ba50",
+      "sha256": "b6374c30e05b0efcbcd7fb4cdd2070d4dd8ddda4ca3bc90bf4020f6bbb7cb616",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_4.dds.phyre",
+      "source_sha256": "31fe0782a1a69034a57aff061dacbe920030579758f926117435f6e18aa5ef83",
+      "sha256": "31fe0782a1a69034a57aff061dacbe920030579758f926117435f6e18aa5ef83",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_5.dds.phyre",
+      "source_sha256": "44db658d9fe9ec84be60daaa1e8bdac07219342d06b067ae50794d64347bb921",
+      "sha256": "860fec2681f2bf7035e60d2fd40b487282f7eb50b6e412224f4e66c7efd061aa",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_6.dds.phyre",
+      "source_sha256": "e6478316edc4c7167fb2bfa5700a298331ae263fcfd035c0c59f9cb3e58caed2",
+      "sha256": "6bb6e99e921624d785bedfd937aa16bcfb4218da6af5b0f0d82be9bd49761049",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_7.dds.phyre",
+      "source_sha256": "b38bf1551a17fb2b3e2d3182b1fba527dcbc24f19865e6b08bc8f35d6eb6e091",
+      "sha256": "b38bf1551a17fb2b3e2d3182b1fba527dcbc24f19865e6b08bc8f35d6eb6e091",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_8.dds.phyre",
+      "source_sha256": "a706252d9757a2b8b5eb3ccfb9e06820f1f2314d593a4965a43e509dc85a4800",
+      "sha256": "a706252d9757a2b8b5eb3ccfb9e06820f1f2314d593a4965a43e509dc85a4800",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_23_132_16_9.dds.phyre",
+      "source_sha256": "7bc5bf656722df97591c7c08f798a61bfe7269ae67912c2a71d3b487fd10193f",
+      "sha256": "856582c8d9f908b3fa5ba41fa6d9cfd1ae117e33e2149d4a084271da5827c6eb",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_1.dds.phyre",
+      "source_sha256": "fcf3db0de39061b02b5f9160a75a91cf4ccd3b671e99c4dc9e2d9b53a0f71bbd",
+      "sha256": "ecdb3604753dbb2def02d6da7ce071228ddef3030b3cebbfffe3a9971356bae0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_10.dds.phyre",
+      "source_sha256": "49836d03e130e73d3a446861907de21e6a7fd4731ca16b234970380044e35b08",
+      "sha256": "ca444c0ca3ac428aa47a3c5651d8a1fde616ddb3b6f7c66b233f2528156396cf",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_11.dds.phyre",
+      "source_sha256": "4fb79cac71702f6c22f464504b4236af8007cad4fb216dfc72babacae15841cc",
+      "sha256": "439e65fa6ce0154a2a9ffc90c7d2e20956ff1dcec8e8a3fa1faf45d928e46d57",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_12.dds.phyre",
+      "source_sha256": "c26d9f7cca99e95973e3a09f7a7cf7df8f98a941e2db0cf25060126a5eca5c65",
+      "sha256": "c66be2addc5814b1ccf4e93847603e987edd6cb146affa7397c3fd2bfbd54a85",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_13.dds.phyre",
+      "source_sha256": "a8eeb6166760dd939fa81fc4b5b7e4e68cedef6ba5a1f4fbad750ebd7d41c024",
+      "sha256": "801f5701322e9ae8f51189a19b390d1e6b96085cc3a316e2c6625d12531238e1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_14.dds.phyre",
+      "source_sha256": "32105af03c7eb8cf6c1b8d0a831c9d17f652f5376ef877981f4c8e1b3198b0d3",
+      "sha256": "db6fb0b07b7500c6bc30e785c083346b7dac98a77599de0e476a53cd3f9eb65c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_15.dds.phyre",
+      "source_sha256": "505b1337438dc9c5b32c14ddfd589c97dd38dd8f1c1cbdf7b824b8d5f28c09e9",
+      "sha256": "8749a536581a1d98a4aa88c100e7a0c340e465d80403173c9935e8dc17238b1c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_16.dds.phyre",
+      "source_sha256": "50763230ee2ce9251d8d7a00a68cb4929f259f4d72b311be16d41ac6799aee6c",
+      "sha256": "50763230ee2ce9251d8d7a00a68cb4929f259f4d72b311be16d41ac6799aee6c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_17.dds.phyre",
+      "source_sha256": "b0859b3eaec52516d1db1506df3f9b084928311f5ddf3a6c5a927029fc509197",
+      "sha256": "fd133a7a80003ae0593523e5b39b871f03fa496091d687d361d6c23f57e3b0b2",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_18.dds.phyre",
+      "source_sha256": "2958b2aeca582ae79140c2c5f355aa018ced56c65fd2261e3b3ba0f39cfe2339",
+      "sha256": "e5565a39af766db29e16bc639837cd918291f43f34e5d533fdc89c6a529e4817",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_19.dds.phyre",
+      "source_sha256": "7c1eb1e0bc5541f0340ecf270dfed7d6bb3d0443dd73f460deb6ef25e6bffa75",
+      "sha256": "a84599f30ae3d4ead56fc456f46671c7521e814244b05f687459e1ff35b5cbcc",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_2.dds.phyre",
+      "source_sha256": "3a5afc44fd21a6edf2165bddc7ab367c35d69ad29a940e99ac4c879dd7dde08f",
+      "sha256": "5c398509dd42f57766e49711e32c3528e0b3801cd7fa4f7c7b1940e82c2bfa0c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_20.dds.phyre",
+      "source_sha256": "91d0ad8c34a14e3cb9260e0fb3f0276afe063feacd9f5f00a0b9d250c5ff99be",
+      "sha256": "ab4ba9a6f35b653f69b34053f7e8331feedb10e976423004ef3800739d4e66b5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_21.dds.phyre",
+      "source_sha256": "07814eecf5263e505470bd11329eee83f70f83b33f6bfb544f97336737a1abcd",
+      "sha256": "07814eecf5263e505470bd11329eee83f70f83b33f6bfb544f97336737a1abcd",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_22.dds.phyre",
+      "source_sha256": "0448ae244677e1b8c7aa7e59137a8d3498c2cdebcaab17342fc6b58831467f34",
+      "sha256": "1b7fd41e02f4a066329ecc49407631e26160743154f340844234dccb489a7133",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_23.dds.phyre",
+      "source_sha256": "f9d2948d3def0fc98d193858d193fdf4ae184388739304e15da6bc283d46c326",
+      "sha256": "fa01671b3c889760838e5a909198a92f8e927c0f018ba8ca0d328711c83bac27",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_24.dds.phyre",
+      "source_sha256": "50039bf4247ffaab5081bd0d7c396d3193fb5aac05377eee99d67b1dcb420f64",
+      "sha256": "34512efa9e2d511feb31e8f87e9e3b71d22d467a38e9d149c7af48d98f8ecfb7",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_25.dds.phyre",
+      "source_sha256": "2416c15b004e5072a1ca60afb8eaf14aa6c9c920c8a6fb3fb76dbc66b6f49457",
+      "sha256": "612ddaf89fd3f9d9483241f8aca5b205a1e47dc795ad8706fb4d16b423ab90b4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_26.dds.phyre",
+      "source_sha256": "592a97c8b1d7f5df27fb306fd4de9567d3575fbf877b022df231f01cacd514b5",
+      "sha256": "592a97c8b1d7f5df27fb306fd4de9567d3575fbf877b022df231f01cacd514b5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_3.dds.phyre",
+      "source_sha256": "b0555544c5948eed5c396d916301ff817eeacea2914a8cf9a5a46755c7b57fc7",
+      "sha256": "fd85319dcbc87246e1ff06c65b759d0502a8546a1a56e3100a07c98e7c5c6a17",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_4.dds.phyre",
+      "source_sha256": "e5615331d798210a4ca67cda5ab1544b75c58f5e37410c680fd759401a1ff3d9",
+      "sha256": "e5615331d798210a4ca67cda5ab1544b75c58f5e37410c680fd759401a1ff3d9",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_5.dds.phyre",
+      "source_sha256": "1c06f0bfbde1995c9ac74242c7e00193cf829eb8dc353397a8bce3663a735768",
+      "sha256": "47d8964083d157219189727a4a0640fcaac1e9268b2d384bcbcf22b9027329e1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_6.dds.phyre",
+      "source_sha256": "8e3739f2279c4ef4228214bf6e0032a947bd944706a1e8a6bbbf2ad6415e3f87",
+      "sha256": "a3a27703a2219e705b460b3ad57936977e573a894c57a634842337eb726db3c4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_7.dds.phyre",
+      "source_sha256": "bc8c2c9eee6a02ec529906e6b0d399c53e96f72218a4e34c1caf6ee398034ac8",
+      "sha256": "bc8c2c9eee6a02ec529906e6b0d399c53e96f72218a4e34c1caf6ee398034ac8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_8.dds.phyre",
+      "source_sha256": "44f6fd2283da27bbe9966cf3d9d433570bd5fe34d5d83c9ae4e5b75c012129ef",
+      "sha256": "44f6fd2283da27bbe9966cf3d9d433570bd5fe34d5d83c9ae4e5b75c012129ef",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_24_132_16_9.dds.phyre",
+      "source_sha256": "fec901e3c3cc91cbd4d17cf62b8cad00bc5c6f0b86b6a4968e24b13d6981066e",
+      "sha256": "648f56e6f2b13ea0aee0e0922a68265656f6c809b058f72983a9b4ae5131f790",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_1.dds.phyre",
+      "source_sha256": "65c1be8a820d7561d154b82b2cacb023e01463db188d29406f4b446eaf70a6bc",
+      "sha256": "f44df1d9c9c04b4e3203a15abc15cc001a00d315c13153eb596eab573a8501a2",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_10.dds.phyre",
+      "source_sha256": "bd0ba220352129be10f7c65858b7bc778efd140c38bdbffb8fbeb91d94cbe5ee",
+      "sha256": "41600da421b16e876df1786ff17cabbaa85d864214c35864dcb40635ff7d2dd1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_11.dds.phyre",
+      "source_sha256": "6e8d5fef59eda6c909157ae81742e413a11f3ef774db13470d0829c351836ef9",
+      "sha256": "c0073d0b89554b09b780dfb3c8534fac207a089bc0f667242bfa72be381dadf0",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_12.dds.phyre",
+      "source_sha256": "b9f371b54cfe1407ba9dabffb13b4dc338d10511ec0d505e83623b42f1265f59",
+      "sha256": "250c131af0780b188f17a4b06369677c070ba3a72d477f3b5c28300254de8574",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_13.dds.phyre",
+      "source_sha256": "471eec74e64955da8cff9d2f786bd53a73129b34bba5d7dff512f331d63aa9fe",
+      "sha256": "ceba300a84b87c4dedae7c76437116ec7a7b1215381cbca6e30f85488a3d1ff2",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_14.dds.phyre",
+      "source_sha256": "852494cd5967465509cb62ed86a5787924567228f04b39934a5e57f69c53ddd3",
+      "sha256": "65e7e2198ac0194604b69445346f4a3a2c0dad2ca1dd5982928a011c91104953",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_15.dds.phyre",
+      "source_sha256": "f0fce6667394dda79c54c38f904c1a21add1d6f5e1777e0ac176067dc9d3a4f6",
+      "sha256": "a21c4e1a45171cfe23d66f57df463a8d577f38c21112d0fb0b33a6af88c193b4",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_16.dds.phyre",
+      "source_sha256": "77cfdf4cc0f412a0d7f283a9af5567022848669f86a52e995184a8d72f58b76f",
+      "sha256": "77cfdf4cc0f412a0d7f283a9af5567022848669f86a52e995184a8d72f58b76f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_17.dds.phyre",
+      "source_sha256": "65f30545b569fafb0398d24959e47d40e2c55179be4d2e0a4ede7245a113e3e4",
+      "sha256": "870055013c175796ddc066f45decae36ae75f7416ce3848394f2c59aea09e30b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_18.dds.phyre",
+      "source_sha256": "3549e3d48550e2c2c9b087df0cf655ebf570cabf3052caf92e3112aff6ce4013",
+      "sha256": "09eeb0ae7477d7969c3fac2a7919c435caa52e93771df13972cb88f287fec103",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_19.dds.phyre",
+      "source_sha256": "ebd864647fd6aaf4d2af61168a3514daff10a59d014542ac8b27c2bae9d17404",
+      "sha256": "84ee18793e9d03605d7b13df0986c19ef48a4e2d7e2cb2db2b11ba600bba1551",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_2.dds.phyre",
+      "source_sha256": "c3a67e174d2bd0784cb7f948b867a33f9b0abb5456cbd52736ceb17399ac2c24",
+      "sha256": "5c55f6bb3427bb905e650d8a17cc2df157824dd5217d49502ee5659bae387d9e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_20.dds.phyre",
+      "source_sha256": "c1adeb83244475235cc5ee394d1291ed6921b85ca859ad2247ff709ea103df3b",
+      "sha256": "38a412f1e289aa759f7de7c4b1d23bd15836c2fc50f312f763b2960550895732",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_21.dds.phyre",
+      "source_sha256": "b5745bebf03634c9b8c0d531a72d0aa45a3ce9b43c727306dd39ca383e74c675",
+      "sha256": "b5745bebf03634c9b8c0d531a72d0aa45a3ce9b43c727306dd39ca383e74c675",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_22.dds.phyre",
+      "source_sha256": "73f471e3ba4a9aff2db3b69b71c0e1a382fceda33adb23c81ebfef6e88f7c604",
+      "sha256": "5e7de48a3719a4a57f613d58d3cfade33c576568a60060e7a10b3f3d36901db1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_23.dds.phyre",
+      "source_sha256": "21a68c1ab1188e95884b590ab4b42368018a7d322c4c2d968a6bf22d04fbc399",
+      "sha256": "e607726f5f49fd73aca3acf4ac79dbb027c8848225bbe81dbbc1161f71b653e1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_24.dds.phyre",
+      "source_sha256": "d521e690293ce3ef3bb44cff12778d2aa6d58215c43d0e2cb9d70b09932cf57f",
+      "sha256": "104bf8b57daea869090f523baa94a660ecc73826c2c06a0de7d876a2fa96df9a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_25.dds.phyre",
+      "source_sha256": "e88b35d500e784480053b3a1b6186268e100b4c0298c7c1d381566664c5c897a",
+      "sha256": "c68918e8389552f3783abc71a86c472663bf4fdae32ff9269d549bcf000695e6",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_26.dds.phyre",
+      "source_sha256": "73c5538144acdc58b33e33bfe7e407211eef7e6533291f77a0c99fa69da38b72",
+      "sha256": "73c5538144acdc58b33e33bfe7e407211eef7e6533291f77a0c99fa69da38b72",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_3.dds.phyre",
+      "source_sha256": "1d264c253914254e2216a34d5c2b8c7c4e5894c04db93244b30fcb6d3c1c13b3",
+      "sha256": "6218f34a892c20360e54e95290c1e1ae0be2a2f3004ced3bade42b4a4241242e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_4.dds.phyre",
+      "source_sha256": "b0bfe8ff488ad8049df18b7550d76c32fecdde9c90d52a8f6ec93f83718dbfaf",
+      "sha256": "b0bfe8ff488ad8049df18b7550d76c32fecdde9c90d52a8f6ec93f83718dbfaf",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_5.dds.phyre",
+      "source_sha256": "89a204b04ac28102d786e46de6f148708b3fbf73e0a8ee88c9a24d1627cd4068",
+      "sha256": "954e88f0ea6b1c474237a4fcc0cf1787d7ae1f3a99d9fbf3080fbc0efc0c6dc5",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_6.dds.phyre",
+      "source_sha256": "6764a59bb2e5ef27bc1fd58e7c3b9d301b9fcec1961547d744ff0e589f7bf740",
+      "sha256": "f7260e6dc0b851afaa23492a3f22210f1ef24f47f9093ebec3cfb8ba3bc6ea8e",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_7.dds.phyre",
+      "source_sha256": "14bb2f1853b7653a5c3f74b2d91c7a01be840512793ea914383f62fe3cfd6e3c",
+      "sha256": "14bb2f1853b7653a5c3f74b2d91c7a01be840512793ea914383f62fe3cfd6e3c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_8.dds.phyre",
+      "source_sha256": "975a9edd84e58c5b4db3bcc3ebb4c76d782674771c4d5e6a41bc89625b23c13a",
+      "sha256": "975a9edd84e58c5b4db3bcc3ebb4c76d782674771c4d5e6a41bc89625b23c13a",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_25_132_16_9.dds.phyre",
+      "source_sha256": "3e50abdbd5cf8eb6754563a07d89a6e6e5d03a49f1f8f4bd07635b6133548347",
+      "sha256": "ce88e31f0b3ccdb6b08da7bd0ef45db30d622d6753e07b5b2d6aeea03d092270",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_27_242_16_0.dds.phyre",
+      "source_sha256": "c54976e78d8a725dff0af71388250666bf2dcad03a7adf89c48e4c3beb855a00",
+      "sha256": "beeb3ba2ca96a86581e4b0448d4e4f16f6011afee5e6d59bd3eb141b64f4d63e",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_29_184_58_0.dds.phyre",
+      "source_sha256": "a92c8f2d24168436051183279676b6cb236b78a99c9fb4bfb3a48da8f8f5832f",
+      "sha256": "5eca499d1a641d61fc1612cc1c7d19f76cf405024bdcfec942b3ce948a6e990f",
+      "size": 133752
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_29_184_58_1.dds.phyre",
+      "source_sha256": "a24c479f2ce741cac80aaf9943d6348d1dd20ac7770dbc9704d94dbc4747bf46",
+      "sha256": "763bae41cc7e17e37e1a3c5b8b16540fd4f6b41fb0c78aade6f41f4f9bddc4a9",
+      "size": 133752
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_30_242_16_0.dds.phyre",
+      "source_sha256": "65e18defa75655d185fdbc884217b06d4d1d7a5830cd8aee43e90378f9b879c7",
+      "sha256": "b24e8efe94d68a6cd704c45a61a8667f6b8a2033959158aff8b6ab6d28b34510",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_31_242_16_0.dds.phyre",
+      "source_sha256": "6a2f5bb2c2ca31a4a2509c4f7d7f5263830f15306010fde4ae4db584b369c524",
+      "sha256": "d54afdf2607c0aa7615b86e7ba2919f68bc801a0084d131d6e4d6b22960f0617",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_32_242_16_0.dds.phyre",
+      "source_sha256": "f4d07fa853f336b44574fef88e77d8ee0b4defc01c6efeae7a4309527c3a05e8",
+      "sha256": "a37f75f9bab2dd97912d838ef8b2083a689bd1ca621269dc1d2f3e0e7dc2f84b",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_33_242_16_0.dds.phyre",
+      "source_sha256": "4f3f47ea024be1eb1117dc9fce541a66245077ce17ed7f20c6592aa7a9e34ba2",
+      "sha256": "0ee612ead6941631e4cd95023c95cd70da94b4dc8ebace84413042f50153470e",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_34_242_16_0.dds.phyre",
+      "source_sha256": "5d2eb5321a010b705957562147f9d6bb1c94fb33e675f3f0c1053e296707a411",
+      "sha256": "b55ef304b2e053149b49ac0d07dd2e5bff91016cf2273d2625b0854be2c4d56b",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_35_242_16_0.dds.phyre",
+      "source_sha256": "55ffe8fc63b7d213b612c658e445c05ed0576e3c5a21de42229db5439f06945b",
+      "sha256": "727576f240ca477434ae629b6906428b5bbc294c1dfb08a99ff6489e844f2ba1",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_36_242_16_0.dds.phyre",
+      "source_sha256": "648fec6f76e8e7ad494040fd79a28e2d7fbb6e8e27c7b0b98175e798a8204ee5",
+      "sha256": "bcc26a3a39f3221a0a35d42bd6e6cf5f38e7a7df79c8515ff720d8f14b4cfbe0",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_37_242_16_0.dds.phyre",
+      "source_sha256": "76a2640b4ee94654afc98db3bc87eb715a8417f38ee9f789488992e82ca72412",
+      "sha256": "c5e9994bd5f2febea8c3e722d902dd54483f698289a5ac165c74aea13d4bd1b0",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_38_242_16_0.dds.phyre",
+      "source_sha256": "4a008fc0ab657e095dc7a29be49382aaa118d1086b4e77d6a481faf8819dcae1",
+      "sha256": "e1397d01e7b20022c2ff04dc053dd826de161c8393c35d7dc329de2dccc1972a",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_39_242_16_0.dds.phyre",
+      "source_sha256": "0bc508c1b534706cce1e66846a30a191a38090c2c7017f414a570c22495cc0dc",
+      "sha256": "8903df8f1a1962e3b0363282d913dcc9ce6d4a4371f95da456ef01de906e3078",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_1.dds.phyre",
+      "source_sha256": "a4a40c7659553e40a76ae1d268355dab6e94a84dcc6472d8e78e7f085315e07c",
+      "sha256": "5f9dceac239453ed32050edd975fa7589987706f76b355531e59b7a47eb272e7",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_10.dds.phyre",
+      "source_sha256": "ace12d51aae8efbb7221e2b4bad89e85039d7e2549b9699be32f89daec731d88",
+      "sha256": "305a3a296ee82a7dcbaacd85ccb5bc585add5d0c8559b6a38d99175ae759fd6f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_11.dds.phyre",
+      "source_sha256": "8843407a6fa6c0b081ca6a6a752c5ff879db270bc86a3a69284cff5528b6b03c",
+      "sha256": "f37471dd57c5226d909202871f973aef4b234ff30e73d2a9941b52adaa9a70e1",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_12.dds.phyre",
+      "source_sha256": "7101030194eb18f24198459bd18329c739fc3d87286b07ca1d0df01898cc6236",
+      "sha256": "ac2bcdf281986b5794542a4b2162128454eb1b3ffefafc6679fe4c85ece64233",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_13.dds.phyre",
+      "source_sha256": "c447d7c3ad3f4bf2d017ec1c4aec03846ce2f10e431ca37c75f33a7c3553eb9c",
+      "sha256": "343813a92f46df4f8c4e667c6e7ba1deddfd9e8c675871d050c70d55a05b6f24",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_14.dds.phyre",
+      "source_sha256": "d14121e460f771da053870ec5d4fbbe5bc0cd70de930161cdf4173af353e68b8",
+      "sha256": "4dcca3d7947574ddf695d585f29bca70a947efd1cc8f53750cad43e1872d5577",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_15.dds.phyre",
+      "source_sha256": "4a953758907bcc7c7515f02fe14c8b94b6b421061b4414c975bf259b9c11880c",
+      "sha256": "ac3355ef68d87a41c1f5d07144d31a3550fa18a626404b92f44cb31183f43e21",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_16.dds.phyre",
+      "source_sha256": "d86619792f622f433aa5f92b83ae3ec0c6d79c38ea522b25d626c53447bd1f5c",
+      "sha256": "d86619792f622f433aa5f92b83ae3ec0c6d79c38ea522b25d626c53447bd1f5c",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_17.dds.phyre",
+      "source_sha256": "2b4eee42bba48ad8947aa066bc570ab76f1e0800c37e0ce5da109cbdb65c39ca",
+      "sha256": "ec1aab71e4560d828d73e318abfbcb10a461c3f335e0ca1739272276816b93e9",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_18.dds.phyre",
+      "source_sha256": "710c52a0a60734d41ffea8dce8e57fed3b44ab9b6244fde37d4d5f76e0d6a757",
+      "sha256": "f6e365f2367e173aba730b9e15565bda23d0ffb75a0b490bbaad7432e0bfa9ef",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_19.dds.phyre",
+      "source_sha256": "d930e1685ff190f9870762d47efa28e89a4af54c9d512f93d567ddd07d1fd4dc",
+      "sha256": "91d12063c5a2287e9d2b42fe343a4670a17b118ba56f678252aecc07f867c1e3",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_2.dds.phyre",
+      "source_sha256": "99e405c68eb31baec3ff1ea47a48d1220c59d12fa2b5ee77eb221b27f0ec85ce",
+      "sha256": "cf0f8e015578b3a018a4bc374b301e278d3800bee0781ae5ff45e8365e52be69",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_20.dds.phyre",
+      "source_sha256": "e5cdd28d0b803252b7f6e3f73a50cd8c53b9607d521f4c80e8177f8eca963f58",
+      "sha256": "9a83ece0490622f8b330a3f468eb567d0975393294dc6ea0d5943cb5570bba3f",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_21.dds.phyre",
+      "source_sha256": "650dd3f06dc23c8f6852d6a90623353f572ad0cb44106e260f2d646ebc7347e8",
+      "sha256": "650dd3f06dc23c8f6852d6a90623353f572ad0cb44106e260f2d646ebc7347e8",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_22.dds.phyre",
+      "source_sha256": "420e3ec9a965b95a36ec732b4e8b8408edeb20d698f562398d344b55d7545ea9",
+      "sha256": "2e6c3046ca6f4bce6dd41e226294cdd80f8d97d9bec972215e31f20e743db4db",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_23.dds.phyre",
+      "source_sha256": "685102b297725d1877c3b6c1d521db8f1c77ade610839200b2aaa1527852ad24",
+      "sha256": "f19632cd6233e95ff84a9f618b93db00894aa8aa5754853da458756f10e402ea",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_24.dds.phyre",
+      "source_sha256": "ac97c76d658a001bf6e66178960ff6461ef7e672f4a4bc553db47836d5550419",
+      "sha256": "d69cb0e0b0eefc1b5e267cb214c52626d1d5ab3cd4f8dbab6ef177223bf5b2ff",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_25.dds.phyre",
+      "source_sha256": "6aa71693cc8fc9558b9f0deb0ba19c5b0f5009e6909786bf0c62539d9270150e",
+      "sha256": "449742b4845dfe656124e798cd3d3b618025ddae28cde583c4c5c1d2b6dfb368",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_26.dds.phyre",
+      "source_sha256": "469b081fbd2d3758e2660860914330691577a596727128da1e1014548bdfd34b",
+      "sha256": "469b081fbd2d3758e2660860914330691577a596727128da1e1014548bdfd34b",
+      "size": 35448
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_3.dds.phyre",
+      "source_sha256": "dfc943d910caa9081abd6ecea15107bb607eee81b735c394a432675b2a4ef32b",
+      "sha256": "e179909667318eb0bb6290d26fd94a6a8777deeabcc4ac6d558de5711247a360",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_4.dds.phyre",
+      "source_sha256": "de6f69b9ee517cdfb5348da0b866cacc75d0a196f7f281a717c6205f1a8d7f16",
+      "sha256": "de6f69b9ee517cdfb5348da0b866cacc75d0a196f7f281a717c6205f1a8d7f16",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_5.dds.phyre",
+      "source_sha256": "bb8b112835aed1b98eb6de840a2c249d9c91562f1e18bfa7d4022eb8c72cbcf4",
+      "sha256": "7eb4a9457ef4bf1824426be6e85617594a6fbf9907af2c9d41280a0b372eaa5a",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_6.dds.phyre",
+      "source_sha256": "569db55602fa91d8e3bbb9bd244282d2e6ebdbd843f1b7cdbe60c043fbb1ad50",
+      "sha256": "f8bf1257056d46d3a6581cad1a577cb7c8d96bace6fabf88faa6959a33a4b243",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_7.dds.phyre",
+      "source_sha256": "71331a45d2695b1b7a76ec2e0106f80c0e7ceb304853d7b32fabb0dfc0a0da67",
+      "sha256": "71331a45d2695b1b7a76ec2e0106f80c0e7ceb304853d7b32fabb0dfc0a0da67",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_8.dds.phyre",
+      "source_sha256": "90fd7287cb73d8feabeff1edc87fa195df7972d1af5e485ee1edcd715d69497e",
+      "sha256": "90fd7287cb73d8feabeff1edc87fa195df7972d1af5e485ee1edcd715d69497e",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_3_172_22_9.dds.phyre",
+      "source_sha256": "a85157c7d023b1eeeb062501d285bf3fae5372aaf1fd23cba5b14779995a757a",
+      "sha256": "341140ca6944ef693197a79471d7a48521f0e72e19a712f1469f3519d6ea862c",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_40_242_16_0.dds.phyre",
+      "source_sha256": "9b1108a688cb0a84483fd882a3d64889c064f5348ad0e84a743ed3df5c7e71d9",
+      "sha256": "4d082874804b28027a4ebe2bd8f508d97d183a5eae14a2a448acad7dba9fb8cb",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_41_242_16_0.dds.phyre",
+      "source_sha256": "b0e5825733fe232df3e9a10de198193e535c6a7543b35a1c4bd25d9f8ddf30b9",
+      "sha256": "1ef24b82a46541ff6052770fb592af39b26b52aa9167ca1ec0fb47d98c608487",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_42_242_16_0.dds.phyre",
+      "source_sha256": "f5222aca0f3423a93cd0f280bfc34daef433221c5d86e7e008737fbc4a11b53f",
+      "sha256": "961e0a4f82ea8a526514930cce52f5470dc6115ccfbb9e76348394df16d1b91a",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_43_242_16_0.dds.phyre",
+      "source_sha256": "14b10d91698c81889e4be57d40fb171814f7e0a4e54b617a88a89085b82199f8",
+      "sha256": "64755f11a9f724181c87d0d834103504dc9064726f6c74c8e7fb940b5a8da1df",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_44_242_16_0.dds.phyre",
+      "source_sha256": "f7a9301c9f600004e7cc561f9e5f0f63b5288854263b048ceb00c069bf0a336a",
+      "sha256": "d1bb9cb637a052f7ae3d2a2464e35571e5848b300f455b442e9d8328da51e97b",
+      "size": 68216
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_45_14_7_0.dds.phyre",
+      "source_sha256": "42889622b9f3f92940d69fa8eb4e60ce46b35fb3e6eb1b215d6507c478869038",
+      "sha256": "42889622b9f3f92940d69fa8eb4e60ce46b35fb3e6eb1b215d6507c478869038",
+      "size": 4724
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_4_96_30_0.dds.phyre",
+      "source_sha256": "e4b4652e3e592a41111aca7ef53d2aa244b0f304d5d9f29bcd629178cf0ae2b1",
+      "sha256": "18a098933286a720c5d259321a98dfd8db6abeda5b8d94c3afb8633ef5cf7e5d",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_4_96_30_1.dds.phyre",
+      "source_sha256": "9730a0b6e601e97599c1f15f8d72cb2c17e98b0a278852a4ca0cea5386a5a3e5",
+      "sha256": "096c07689aee43c873d991b5927c42302c6be5873ab0514a999c39a252ae5965",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_4_96_30_2.dds.phyre",
+      "source_sha256": "d59492967c305724ed8441361df6391b02c600ed69da5eb9a2ef4db632379e57",
+      "sha256": "cf1d74b81c322606e9b9bb587d58b5394c33e7fd2a30752048453c1a016f0267",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_5_96_30_0.dds.phyre",
+      "source_sha256": "006f4490e26ad0fbb2175d3bfcc3bf9a95d76d960a058169374e43fcce8fa804",
+      "sha256": "0f7b7213beba0e8d8a67541f37ed646a4c0416ff3bfe961672a3ee994cecb05d",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_5_96_30_1.dds.phyre",
+      "source_sha256": "cebe49d329a9b81d7424ffef3769f05920438c39c8176c939fb8ba7539012b37",
+      "sha256": "c66176dbe8ac0c677c54b40f45b318682f2aab8f5763fb9abec30875f299a245",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_5_96_30_2.dds.phyre",
+      "source_sha256": "f1ca4cf235653c9d972a059d656378b18831aa6fa72130da885420cab2417022",
+      "sha256": "615df4c5adcf81e9903e0bc0ea17c51cc9d81e2bbfb22d3683098ec389ce37fe",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_6_96_30_0.dds.phyre",
+      "source_sha256": "e3c17b79186531f69b20a48370e28214db46a5d0022726cc835ee3a59ad939af",
+      "sha256": "f0469998e7398ff9b103411dd52b4a4015f23194d4a5693c0faae9e1ab95681e",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_6_96_30_1.dds.phyre",
+      "source_sha256": "5a25ea474e6662b50830e7675205c378738dcf66316db8c68b036aaacae6e654",
+      "sha256": "07fbe320ec6f5e11cec76f364c0e02a8b5dbfe1529622d78004f1fae9ec13642",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/hiku/hiku22/2d/tex/d3d11/0_6_96_30_2.dds.phyre",
+      "source_sha256": "3e9c1060a533abfa127453d399cba2f1a68facfdee0de0f3a4cc82e83907c575",
+      "sha256": "9452186bb6b88cb3732e0a89185d3b543ee21542006a43d04b4364064b6d7141",
+      "size": 35444
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/titl/titl00/2d/tex/d3d11/0_0_512_448_0.dds.phyre",
+      "source_sha256": "40d0bc0963530228a73682168aac040f9277a50cdd830a1735889b6a103a5b4a",
+      "sha256": "e3eae040e17f467bec0810a472e021bc4de02d54dfabbbaaf5843dac0d78c84e",
+      "size": 2099832
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/titl/titl00/2d/tex/d3d11/0_13_512_448_0.dds.phyre",
+      "source_sha256": "bd9ce1d11ab6818f96ec04bc2822706d14e673cda01694bfc51cd822b3861263",
+      "sha256": "ee56d6fabd4c13c7e6e80e6362353ff7e2144327725b88062b637c9b82b89d65",
+      "size": 2099832
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/titl/titl01/2d/tex/d3d11/0_0_512_448_0.dds.phyre",
+      "source_sha256": "ebda722eaa5b882ff5fe2691286a7622323ffc021274306e8efaf616d5683088",
+      "sha256": "130b5b2742b358b9a71955973e31aa409fa737ff67c5b3bc8fb5acc4db9db215",
+      "size": 2099832
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/titl/titl01/2d/tex/d3d11/0_2_512_448_0.dds.phyre",
+      "source_sha256": "6378fe35cd2ac4dd179d69a74832eb4962c59dda2a781824f9bb561ff55ed3de",
+      "sha256": "718075cbbf0fd986d1ca438965e6ef39d97772abab63945a9d4077d77519a50d",
+      "size": 2099832
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/titl/titl02/2d/tex/d3d11/0_1_512_448_0.dds.phyre",
+      "source_sha256": "1b00f5d23af25cd682aa89495948be6de6647f5ad3ec2ad179ca3aa258c34e6d",
+      "sha256": "1b00f5d23af25cd682aa89495948be6de6647f5ad3ec2ad179ca3aa258c34e6d",
+      "size": 2099832
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/map/titl/titl02/2d/tex/d3d11/0_5_512_448_0.dds.phyre",
+      "source_sha256": "62e3d8f8548dd0a5a1521572be9d7b2bde052deb059cfc7ef4aff4f1f127fefb",
+      "sha256": "62e3d8f8548dd0a5a1521572be9d7b2bde052deb059cfc7ef4aff4f1f127fefb",
+      "size": 2099832
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/menu/abmap/dat00/tex/d3d11/12288_19.dds.phyre",
+      "source_sha256": "a837580fcb6b5d731d7a6c4ebc61a56df5a5bf72d90a97089c9069858ee1bb09",
+      "sha256": "7ea9d755e94de1159ddd7a72ae81b8e3de145fa1c5266e48573d0b481ac2e857",
+      "size": 1051248
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/menu_us/d3d11/battle.dds.phyre",
+      "source_sha256": "fc952b3c0352c7c1928267e17f4364cf7284bf2e249a9df07acf7a813facc213",
+      "sha256": "17e44650bf1538aa13ca7c6bbc7d11bf4b68d53d8ba86a5111b9e7e6eca968a8",
+      "size": 1051232
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/menu_us/d3d11/icon.dds.phyre",
+      "source_sha256": "9867efe194951ea1a5db364a6b802b6a3a374830e06d2662e73fee6d874e6e16",
+      "sha256": "6fb3b8744d7850d77a87d3e1dcd55771e32448ddbeb302c07a8291dd1edc7d68",
+      "size": 2099809
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/menu_us/d3d11/meswin.dds.phyre",
+      "source_sha256": "7fb0c26dfee5718f2a7a919721aed80b0cf795c752497dc7e24c7d569f260dd3",
+      "sha256": "c8d67f6b65f2dc8000eda55be0ea8fa31787e3d2a1684b89168238788070c1f0",
+      "size": 1051232
+    },
+    {
+      "request": "/ffx_data/gamedata/ps3data/menu_us/d3d11/strtex.dds.phyre",
+      "source_sha256": "2e006695d6b6aff6c875d37af9be1a8cfdc8abda874005dfc9b8b86f1e17a51c",
+      "sha256": "54839773718990a35a8fe5259e878dd35cb5333c11a111a5cf7967266fbbe623",
+      "size": 1051232
+    }
+  ]
+}

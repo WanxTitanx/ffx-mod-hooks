@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 
 #include <array>
@@ -107,18 +108,18 @@ inline bool Move(Layout *layout, std::uint8_t slot, float dx, float dz) noexcept
 }
 
 // Exact PE32 accessor at RVA 0x003AC000. The one absolute operand is rebased.
-inline constexpr std::uint32_t kAccessorRva = 0x003AC000u;
+inline constexpr std::uint32_t kAccessorRva = (::FfxHooks::ExecutableProfile::Rva<0x003AC000u>());
 inline constexpr std::size_t kAccessorSignatureBytes = 26u;
 inline bool AccessorSignatureMatches(const std::uint8_t *bytes, std::size_t size,
                                      std::uintptr_t imageBase) noexcept
 {
     if (!bytes || size < kAccessorSignatureBytes || imageBase == 0u ||
-        imageBase > (std::numeric_limits<std::uint32_t>::max)() - 0x00D2A9B0u)
+        imageBase > (std::numeric_limits<std::uint32_t>::max)() - ::FfxHooks::ExecutableProfile::Rva<0x00D2A9B0u>())
         return false;
     std::array<std::uint8_t, kAccessorSignatureBytes> expected{
         {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x14, 0x8B, 0x4D, 0x10, 0x53, 0x8B, 0x1D, 0xB0,
          0xA9, 0x12, 0x01, 0x56, 0xC7, 0x45, 0xFC, 0,    0,    0,    0,    0x8B, 0xF3}};
-    const auto global = static_cast<std::uint32_t>(imageBase + 0x00D2A9B0u);
+    const auto global = static_cast<std::uint32_t>(imageBase + ::FfxHooks::ExecutableProfile::Rva<0x00D2A9B0u>());
     std::memcpy(expected.data() + 12u, &global, 4u);
     return std::memcmp(bytes, expected.data(), expected.size()) == 0;
 }

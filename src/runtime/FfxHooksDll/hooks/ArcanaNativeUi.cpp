@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "ArcanaNativeUi.h"
 #include "ArcanaAcquisition.h"
 #include "ArcanaEvidence.generated.h"
@@ -13,7 +14,7 @@
 namespace FfxHooks::Arcana::NativeUi {
 namespace {
 enum Hook {Control,Draw,Enter,Leave,Cursor,ScaleY,ScaleX,Overview,Count};
-constexpr std::uint32_t rvas[Count]={0x4CEFF0,0x4CF640,0x4CF800,0x4CF8E0,0x4CF960,0x2449D0,0x244990,0x4D26E0};
+constexpr std::uint32_t rvas[Count]={(::FfxHooks::ExecutableProfile::Rva<0x4CEFF0>()),(::FfxHooks::ExecutableProfile::Rva<0x4CF640>()),(::FfxHooks::ExecutableProfile::Rva<0x4CF800>()),(::FfxHooks::ExecutableProfile::Rva<0x4CF8E0>()),(::FfxHooks::ExecutableProfile::Rva<0x4CF960>()),(::FfxHooks::ExecutableProfile::Rva<0x2449D0>()),(::FfxHooks::ExecutableProfile::Rva<0x244990>()),(::FfxHooks::ExecutableProfile::Rva<0x4D26E0>())};
 void* originals[Count]{};
 void* statusOriginal[1]{};
 std::uintptr_t module=0;
@@ -54,15 +55,15 @@ unsigned Argb2Abgr(unsigned color){return (color&0xFF00FF00u)|((color>>16)&0xFFu
 namespace DrawNative {
 // Use the admitted module explicitly. The same code then exercises the real
 // functions in a privately mapped PE fixture, without assuming the main EXE.
-float SX(float value){return reinterpret_cast<NativeApi::Fn_ScaleX>(module+0x244990)(value);}
-float SY(float value){return reinterpret_cast<NativeApi::Fn_ScaleY>(module+0x2449D0)(value);}
+float SX(float value){return reinterpret_cast<NativeApi::Fn_ScaleX>(module + (::FfxHooks::ExecutableProfile::Rva<0x244990>()))(value);}
+float SY(float value){return reinterpret_cast<NativeApi::Fn_ScaleY>(module + (::FfxHooks::ExecutableProfile::Rva<0x2449D0>()))(value);}
 float MenuPhysW(){return SX(1920.f);}
-void DrawWindow(float x,float y,float width,float height,int style){reinterpret_cast<NativeApi::Fn_DrawWindow>(module+0x4F5F70)(x,y,width,height,style);}
-void DrawString(const unsigned char* text,float x,float y){reinterpret_cast<NativeApi::Fn_DrawString>(module+0x5016B0)(0,text,x,y,0,.78f,1.f);}
-void DrawStringSub(const unsigned char* text,float x,float y){reinterpret_cast<NativeApi::Fn_DrawString>(module+0x5016B0)(0,text,x,y,0,.52f,.7f);}
-void DrawCursor(float x,float y){reinterpret_cast<NativeApi::Fn_DrawCursor>(module+0x4C0640)(x,y,0);}
+void DrawWindow(float x,float y,float width,float height,int style){reinterpret_cast<NativeApi::Fn_DrawWindow>(module + (::FfxHooks::ExecutableProfile::Rva<0x4F5F70>()))(x,y,width,height,style);}
+void DrawString(const unsigned char* text,float x,float y){reinterpret_cast<NativeApi::Fn_DrawString>(module + (::FfxHooks::ExecutableProfile::Rva<0x5016B0>()))(0,text,x,y,0,.78f,1.f);}
+void DrawStringSub(const unsigned char* text,float x,float y){reinterpret_cast<NativeApi::Fn_DrawString>(module + (::FfxHooks::ExecutableProfile::Rva<0x5016B0>()))(0,text,x,y,0,.52f,.7f);}
+void DrawCursor(float x,float y){reinterpret_cast<NativeApi::Fn_DrawCursor>(module + (::FfxHooks::ExecutableProfile::Rva<0x4C0640>()))(x,y,0);}
 void DrawSolidRect(float x,float y,float width,float height,unsigned top,unsigned bottom){
-    reinterpret_cast<NativeApi::Fn_DrawColorQuad>(module+0x4F4B20)(x,y,width,height,NativeApi::Argb2Abgr(top),NativeApi::Argb2Abgr(bottom));
+    reinterpret_cast<NativeApi::Fn_DrawColorQuad>(module + (::FfxHooks::ExecutableProfile::Rva<0x4F4B20>()))(x,y,width,height,NativeApi::Argb2Abgr(top),NativeApi::Argb2Abgr(bottom));
 }
 } // namespace DrawNative
 
@@ -83,7 +84,7 @@ bool Idle() noexcept {
 }
 bool Snapshot(State& state,std::uint64_t& session,unsigned& actor) noexcept {
     if(!callbacks.capture(state,session)||!session)return false;
-    actor=static_cast<unsigned>(reinterpret_cast<VoidFn>(module+0x4A9810)());
+    actor=static_cast<unsigned>(reinterpret_cast<VoidFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x4A9810>()))());
     if(actor>=kActorCount||Validate(state)!=Error::None)return false;
     if(lastSession!=session){lastSession=session;++menuGeneration;view={};Hide();}
     else if(view.page!=Ui::Page::Closed&&view.actor!=actor){
@@ -101,14 +102,14 @@ void Text(const char* text,float x,float y,bool small=false) {
 float NativeTextFit(const char* text,float width,float factor) {
     unsigned char encoded[192]{};NativeApi::EncodeLabel(text,encoded,sizeof(encoded));float measured=0;
     using Measure=int(__cdecl*)(const unsigned char*,float*,unsigned,float,float);
-    reinterpret_cast<Measure>(module+0x505290)(encoded,&measured,0,.78f*factor,factor);
+    reinterpret_cast<Measure>(module + (::FfxHooks::ExecutableProfile::Rva<0x505290>()))(encoded,&measured,0,.78f*factor,factor);
     if(std::isfinite(measured)&&measured>width&&width>0)factor*=width/measured;
     return factor;
 }
 void NativeText(const char* text,float x,float y,float factor=1.f) {
     unsigned char encoded[192]{};NativeApi::EncodeLabel(text,encoded,sizeof(encoded));
     using Draw=int(__cdecl*)(const unsigned char*,float,float,unsigned,float,float);
-    reinterpret_cast<Draw>(module+0x505AB0)(encoded,x,DrawNative::SY(y),0,.78f*factor,factor);
+    reinterpret_cast<Draw>(module + (::FfxHooks::ExecutableProfile::Rva<0x505AB0>()))(encoded,x,DrawNative::SY(y),0,.78f*factor,factor);
 }
 void Box(float x,float y,float width,float height) {
     DrawNative::DrawSolidRect(DrawNative::SX(x),DrawNative::SY(y),DrawNative::SX(width),DrawNative::SY(height),0xFF303451u,0xFF22283Fu);
@@ -149,7 +150,7 @@ const char* ErrorText(Error error) {
 }
 void Root(const State& state,Images& images) {
     const unsigned slots=state.mode==Mode::Twin?2u:3u;
-    const float cursorX=static_cast<float>(reinterpret_cast<VoidFn>(module+0x4D5470)());
+    const float cursorX=static_cast<float>(reinterpret_cast<VoidFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x4D5470>()))());
     for(unsigned slot=0;slot<slots;++slot){
         const float y=492.f+float(slot)*60.f;
         const bool locked=Ui::SlotLocked(state,view.actor,slot);
@@ -257,7 +258,7 @@ void StatusOverlay(void* object,unsigned nativeCapacity) noexcept {
        !callbacks.capture(state,session)||!session)return;
     // Capture admits only the save-owning thread outside battle. Status can be
     // entered before Equip, so it must not borrow Equip's context/generation.
-    const auto actor=static_cast<unsigned>(reinterpret_cast<VoidFn>(module+0x4A9810)());
+    const auto actor=static_cast<unsigned>(reinterpret_cast<VoidFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x4A9810>()))());
     const auto rows=Ui::BuildStatusRows(state,actor);
     const auto geometry=Ui::StatusLayout(nativeCapacity,rows.count);
     if(!geometry.pitch)return;
@@ -271,7 +272,7 @@ void StatusOverlay(void* object,unsigned nativeCapacity) noexcept {
             // Status supplies the real Auto-Abilities atlas caption ID. Reuse
             // that artwork at its native 430x36 geometry, rather than a font imitation.
             using Caption=void(__cdecl*)(unsigned,float,float,float,float,unsigned);
-            reinterpret_cast<Caption>(module+0x4F8D50)(context[4],DrawNative::SX(745.f),DrawNative::SY(geometry.header+6.f),DrawNative::SX(430.f),DrawNative::SY(36.f),128);
+            reinterpret_cast<Caption>(module + (::FfxHooks::ExecutableProfile::Rva<0x4F8D50>()))(context[4],DrawNative::SX(745.f),DrawNative::SY(geometry.header+6.f),DrawNative::SX(430.f),DrawNative::SY(36.f),128);
             float factor=(std::min)(1.f,(geometry.height-6.f)/32.f);
             for(unsigned i=0;i<rows.count;++i)factor=NativeTextFit(rows.rows[i].text.data(),DrawNative::SX(494.f),factor);
             for(unsigned i=0;i<rows.count;++i){
@@ -295,16 +296,16 @@ int __cdecl OverviewShim(void* object) {
     const int result=reinterpret_cast<ControlFn>(originals[Overview])(object);
     State state;std::uint64_t session=0;short phase=0,cover=0,direction=0;
     if(!active.load()||!NativePageLive(object)||!callbacks.capture(state,session)||!session||
-       !NativeUiSupport::Copy(&cover,reinterpret_cast<const void*>(module+0x146A9C0),sizeof(cover))||
-       !NativeUiSupport::Copy(&direction,reinterpret_cast<const void*>(module+0x146A9BC),sizeof(direction))||
+       !NativeUiSupport::Copy(&cover,reinterpret_cast<const void*>(module + (::FfxHooks::ExecutableProfile::Rva<0x146A9C0>())),sizeof(cover))||
+       !NativeUiSupport::Copy(&direction,reinterpret_cast<const void*>(module + (::FfxHooks::ExecutableProfile::Rva<0x146A9BC>())),sizeof(direction))||
        cover!=0||direction>0||
        !NativeUiSupport::Copy(&phase,static_cast<unsigned char*>(object)+0x52,sizeof(phase)))return result;
     // The cached overview still draws under the native page-cover transition.
     // Its object animation is independent: only the global cover being fully
     // gone admits additions after the original draw, including on return.
-    const auto actor=static_cast<unsigned>(reinterpret_cast<VoidFn>(module+0x4A9810)());
+    const auto actor=static_cast<unsigned>(reinterpret_cast<VoidFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x4A9810>()))());
     const auto slots=Ui::BuildEquippedSlots(state,actor);if(!slots.count)return result;
-    const int animation=reinterpret_cast<int(__cdecl*)(int,int)>(module+0x4D3090)(phase,1);
+    const int animation=reinterpret_cast<int(__cdecl*)(int,int)>(module + (::FfxHooks::ExecutableProfile::Rva<0x4D3090>()))(phase,1);
     const float offset=static_cast<float>(std::int64_t(animation)*341/4096);
     const float width=(1240.f-12.f*float(slots.count-1))/float(slots.count);
     const bool previous=textDrawing;textDrawing=false;
@@ -340,9 +341,9 @@ void AdvanceNativePortrait() {
     // The original Equip controller performs this on every frame before its
     // input state machine. Private Tarot input must not freeze that transition.
     using Fn=void(__cdecl*)(int,int*,int*,int*,int*);
-    reinterpret_cast<Fn>(module+0x4BF720)(0,reinterpret_cast<int*>(module+0x1FCC3C8),
-        reinterpret_cast<int*>(module+0x1FCC3C4),reinterpret_cast<int*>(module+0x1FCC3C0),
-        reinterpret_cast<int*>(module+0x1FCC3BC));
+    reinterpret_cast<Fn>(module + (::FfxHooks::ExecutableProfile::Rva<0x4BF720>()))(0,reinterpret_cast<int*>(module + (::FfxHooks::ExecutableProfile::Rva<0x1FCC3C8>())),
+        reinterpret_cast<int*>(module + (::FfxHooks::ExecutableProfile::Rva<0x1FCC3C4>())),reinterpret_cast<int*>(module + (::FfxHooks::ExecutableProfile::Rva<0x1FCC3C0>())),
+        reinterpret_cast<int*>(module + (::FfxHooks::ExecutableProfile::Rva<0x1FCC3BC>())));
 }
 int __cdecl ControlShim(void* context) {
     if(!active.load()||context!=nativeContext||ownerThread!=GetCurrentThreadId())
@@ -356,8 +357,8 @@ int __cdecl ControlShim(void* context) {
         return reinterpret_cast<ControlFn>(originals[Control])(context);
     }
     Ui::Observe(view,state,reinterpret_cast<std::uintptr_t>(context),menuGeneration,actor,true);
-    const unsigned direction=reinterpret_cast<PadFn>(module+0x4BE440)();
-    const unsigned edge=reinterpret_cast<PadFn>(module+0x4BE480)();
+    const unsigned direction=reinterpret_cast<PadFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x4BE440>()))();
+    const unsigned edge=reinterpret_cast<PadFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x4BE480>()))();
     if(view.page==Ui::Page::Root&&(direction&12u)&&!(direction&0x5000u)&&!(edge&0x60u))
         return reinterpret_cast<ControlFn>(originals[Control])(context);
     Ui::Key key=Ui::Key::None;
@@ -371,10 +372,10 @@ int __cdecl ControlShim(void* context) {
     const auto command=Ui::Input(view,state,key);
     if(view.page==Ui::Page::Root&&view.category<2){
         const unsigned selected=view.category;
-        if(!NativeUiSupport::Copy(reinterpret_cast<void*>(module+0x146A5E4),&selected,4)){ClearView();return 0;}
+        if(!NativeUiSupport::Copy(reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0x146A5E4>())),&selected,4)){ClearView();return 0;}
         using GearFn=unsigned(__cdecl*)(unsigned);
-        const unsigned gear=reinterpret_cast<GearFn>(module+(selected?0x4A97D0u:0x4A9C20u))(actor);
-        if(gear>0xFFFFu||!NativeUiSupport::Copy(reinterpret_cast<void*>(module+0x146A5F0),&gear,4)){ClearView();return 0;}
+        const unsigned gear=reinterpret_cast<GearFn>(module+(selected?(::FfxHooks::ExecutableProfile::Rva<0x4A97D0u>()):(::FfxHooks::ExecutableProfile::Rva<0x4A9C20u>())))(actor);
+        if(gear>0xFFFFu||!NativeUiSupport::Copy(reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0x146A5F0>())),&gear,4)){ClearView();return 0;}
     }
     if(command.action==Ui::Action::NativeWeapon||command.action==Ui::Action::NativeArmor||command.action==Ui::Action::NativeBack){
         if(command.action==Ui::Action::NativeBack)ClearView();
@@ -394,7 +395,7 @@ int __cdecl ControlShim(void* context) {
     // The native controller owns sounds on delegated paths. Only a consumed
     // private input emits one cue, after its outcome is known, never from Draw.
     const auto sound=Ui::Feedback(before,view,key,command,result);
-    if(sound!=Ui::Sound::None)reinterpret_cast<int(__cdecl*)(int)>(module+0x486B00)(static_cast<int>(sound));
+    if(sound!=Ui::Sound::None)reinterpret_cast<int(__cdecl*)(int)>(module + (::FfxHooks::ExecutableProfile::Rva<0x486B00>()))(static_cast<int>(sound));
     return 0;
 }
 int __cdecl DrawShim() {
@@ -439,7 +440,7 @@ bool Start(std::uintptr_t base,bool requested,bool validateOnly,const Callbacks&
     }
     if(sharedStatus)EquipmentWorkshop::NativeUi::SetStatusObserver(StatusOverlay);
     else {
-        constexpr std::uint32_t statusRva[]={0x4D2760};void* replacement[]={reinterpret_cast<void*>(&StatusShim)};
+        constexpr std::uint32_t statusRva[]={::FfxHooks::ExecutableProfile::Rva<0x4D2760>()};void* replacement[]={reinterpret_cast<void*>(&StatusShim)};
         if(!NativeUiSupport::Install(base,statusRva,replacement,statusOriginal,MinHookBatch::Owner::ArcanaUi,reinterpret_cast<const void*>(&Start))){
             if(log)log("[ffx-hooks] Arcana Status: native installation rejected; admission remains OFF\n");return false;
         }

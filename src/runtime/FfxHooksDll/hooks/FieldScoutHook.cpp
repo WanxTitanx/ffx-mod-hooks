@@ -1,4 +1,6 @@
 #include "FieldScoutHook.h"
+#include <atomic>
+#include <intrin.h>
 #include "FieldScoutAdmissionCore.h"
 #include "FieldScoutDedupe.h"
 #include "MinHookBatchCoordinator.h"
@@ -1817,7 +1819,9 @@ static int __cdecl ChrSetWorldPosition_FieldScoutHook(
     return g_chrSetPosTrampoline(instHandle, x, y, z);
 }
 
+static std::atomic<FfxHooks::FieldScoutNaturalObserver> g_naturalObserver{nullptr};
 static int __cdecl MsBattleEncountExe_QuiesceHook(int selector, int group, float walkDelta) {
+    const auto returnAddress = reinterpret_cast<uintptr_t>(_ReturnAddress());
     const bool entryAllowed = FieldScoutShimEntryAllowed(
         FieldScoutAdmission::ShimFamily::BattleEncounter);
     if (entryAllowed) {
@@ -1826,7 +1830,28 @@ static int __cdecl MsBattleEncountExe_QuiesceHook(int selector, int group, float
             FieldScoutAdmission::PathTransition::QuiesceBattle,
             true);
     }
-    return g_encounterTrampoline(selector, group, walkDelta);
+    const int result = g_encounterTrampoline(selector, group, walkDelta);
+    if (const auto observer = g_naturalObserver.load(std::memory_order_acquire))
+        observer(selector, group, walkDelta, result, returnAddress);
+    return result;
+}
+
+bool OwnsNaturalProducerImpl(uintptr_t moduleBase) {
+    if (!g_installed || !g_fieldScoutBatchApplied || g_base != moduleBase || !g_encounterTrampoline) return false;
+    __try {
+        const auto* site = reinterpret_cast<const unsigned char*>(moduleBase + RVA_FFX_BATTLE_ENCOUNTER_EXE);
+        if (site[0] != 0xE9) return false;
+        int32_t delta = 0; std::memcpy(&delta, site + 1, sizeof(delta));
+        return reinterpret_cast<uintptr_t>(site + 5) + delta == reinterpret_cast<uintptr_t>(&MsBattleEncountExe_QuiesceHook);
+    } __except(EXCEPTION_EXECUTE_HANDLER) { return false; }
+}
+bool AttachNaturalObserverImpl(uintptr_t moduleBase, FfxHooks::FieldScoutNaturalObserver observer) {
+    if (!observer || !OwnsNaturalProducerImpl(moduleBase)) return false;
+    FfxHooks::FieldScoutNaturalObserver expected = nullptr;
+    return g_naturalObserver.compare_exchange_strong(expected, observer) || expected == observer;
+}
+void DetachNaturalObserverImpl(FfxHooks::FieldScoutNaturalObserver observer) {
+    g_naturalObserver.compare_exchange_strong(observer, nullptr);
 }
 
 
@@ -2537,4 +2562,7 @@ bool IsFieldScoutHookInstalled() {
     return g_installed;
 }
 
+bool FieldScoutOwnsNaturalProducer(uintptr_t moduleBase) { return OwnsNaturalProducerImpl(moduleBase); }
+bool FieldScoutAttachNaturalObserver(uintptr_t moduleBase, FieldScoutNaturalObserver observer) { return AttachNaturalObserverImpl(moduleBase, observer); }
+void FieldScoutDetachNaturalObserver(FieldScoutNaturalObserver observer) { DetachNaturalObserverImpl(observer); }
 } // namespace FfxHooks

@@ -42,11 +42,14 @@ static void NestedFeatureMenuCases(){
         NativeMenu::WrW(obj,NativeMenu::O_SELECTED,3);NativeMenu::WrW(obj,NativeMenu::O_TOP,1);
         const auto before=f8Writes;F8NativeSettingsPush(obj,page);
         Check(f8Writes==before,"opening a group never changes any settings");
-        const int leaves=page==NativeSettingsPage::AdditionalMods?8:4;
+        const int leaves=page==NativeSettingsPage::AdditionalMods?9:4;
         Check(F8NativeSettingsCount(page)==leaves+1,"each group exposes its complete set of controls and Back");
         for(int row=0;row<leaves;++row){const auto* flag=F8NativeNestedSpec(page,row);
             Check(flag&&F8NativeNestedFlag(*flag),"nested leaf is hidden at the tab root but stays in the authority catalog");
             if(!flag)continue;const bool old=ResolveF8Flag(*flag).value;
+            if(page==NativeSettingsPage::AdditionalMods&&row==8)
+                Check(std::strcmp(flag->gate.canonicalKey,"rng.original_ps2")==0&&!old&&flag->activation==F8Activation::RestartRequired,
+                    "the ninth additional mod is the default-OFF restart-required PS2 RNG control");
             F8NativeSettingsActivate(obj,row);Check(ResolveF8Flag(*flag).value!=old,"nested control persists through the real settings handler");}
         const auto writes=f8Writes;F8NativeSettingsActivate(obj,leaves);
         Check(!F8NativeSettingsActive()&&f8Writes==writes&&NativeMenu::RdW(obj,NativeMenu::O_SELECTED)==3&&NativeMenu::RdW(obj,NativeMenu::O_TOP)==1,

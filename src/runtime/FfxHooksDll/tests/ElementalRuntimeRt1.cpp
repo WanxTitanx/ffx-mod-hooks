@@ -1,6 +1,8 @@
 // Jarvis-HOOK: actual loaded-bank readers and the native producer entry in a
 // private PE. Its formula endpoint supplies precap amounts; the Nova suite
 // separately executes the x86 clamp graph. This is not a live-game test.
+#include "ExecutableFixtureIdentity.h"
+#include "../shared/ExecutableProfile.h"
 #include <cstdio>
 #if __has_include("../hooks/ElementalRuntime.h")
 #define WIN32_LEAN_AND_MEAN
@@ -8,6 +10,8 @@
 #include <windows.h>
 #include "PrivatePeFixture.h"
 #include "../hooks/ElementalRuntime.h"
+#include "../hooks/ElementalScanView.h"
+#include <thread>
 #include "../hooks/EquipmentWorkshopRuntime.h"
 #include "../hooks/EquipmentWorkshopStore.h"
 #include "../hooks/NovaSuperDamageHook.h"
@@ -33,7 +37,7 @@ static std::string Hash(const void* bytes,std::size_t size){
 }
 static std::string Pack(const std::vector<unsigned char>& bank){
     std::string json=R"({"schema":"ffx.mod007.elements.v1","package_id":"tests.magic","version":1,
-        "exe_sha256":"78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+        "exe_sha256":")"+std::string(ExecutableFixtureIdentity::Sha256)+R"(",
         "requires":["mod007.registry.v1","mod007.context.v1","mod007.spell-cap.v1"],
         "fallback":"native-unmodified","elements":[)";
     for(unsigned i=0;i<8;++i){if(i)json+=",";const auto key="native.e"+std::to_string(i);
@@ -94,10 +98,10 @@ int main(int argc,char** argv){
     std::vector<unsigned char> actors(31*0xF90),bank(20+CommandCount*96+1),language(28);
     const auto ap=reinterpret_cast<std::uintptr_t>(actors.data()),bp=reinterpret_cast<std::uintptr_t>(bank.data());
     const auto lp=reinterpret_cast<std::uintptr_t>(language.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD334CC),&ap,4);
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A92C),&bp,4);
-    std::memcpy(reinterpret_cast<void*>(base+0x8DED48),&lp,4);W32(language.data()+4,1);
-    *reinterpret_cast<unsigned char*>(base+0xD2A8E0)=1;
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&ap,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A92C>()),&bp,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x8DED48>()),&lp,4);W32(language.data()+4,1);
+    *reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())=1;
     W16(bank.data(),1);W16(bank.data()+10,CommandCount-1);W16(bank.data()+12,96);W16(bank.data()+14,CommandCount*96);W32(bank.data()+16,20);
     for(unsigned i=0;i<31;++i){auto* a=actors.data()+i*0xF90;W16(a+0xC,i);W16(a+0xE,i<18?i:0x1000+i);a[0xDC8]=1;W32(a+0x5D0,1000);}
     for(unsigned i=64;i<68;++i){auto* r=bank.data()+20+96*i;r[0x19]=255;r[0x20]=2;r[0x23]=1;r[0x28]=4;r[0x2A]=16;}
@@ -116,18 +120,18 @@ int main(int argc,char** argv){
     W32(abilityBank.data(),1);W16(abilityBank.data()+10,200);W16(abilityBank.data()+12,108);
     W16(abilityBank.data()+14,201*108);W32(abilityBank.data()+16,20);
     if(equipment){const auto address=reinterpret_cast<std::uintptr_t>(abilityBank.data());
-        std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&address,4);
-        W16(reinterpret_cast<unsigned char*>(base+0xD2A970),static_cast<unsigned>(abilityBank.size()));}
+        std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&address,4);
+        W16(reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),static_cast<unsigned>(abilityBank.size()));}
     if(arcana)CardRows(bank);
     auto json=arcanaPack?CardPack(bank,arcanaNativeExact):builtin?E::BuiltinPackText():equipment?EquipmentPack(bank,abilityBank):gravity?GravityPack(bank,monsterFile,gravityOverride):monster?MonsterPack(bank,monsterFile):tactics?TacticsPack(bank):core?CorePack(bank):Pack(bank);
 #ifdef FFXHOOKS_NUL_COMPOSITION
     json=NulCompositionPack(bank);
 #endif
     E::RuntimeOptions options{};options.magicBdl=!core&&!gravity;options.core=core;options.tactics=tactics;options.gravity=gravity;
-    unsigned char original[16]{};std::memcpy(original,reinterpret_cast<void*>(base+0x38E680),16);
+    unsigned char original[16]{};std::memcpy(original,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38E680>()),16);
     Check(!E::PrepareText(base,{},json,false,Log)&&!B::Required(),"OFF publishes no shared producer request");
     Check(!E::PrepareText(base,options,json,true,Log)&&!B::Required(),"validate-only cannot arm the feature");
-    Check(!std::memcmp(original,reinterpret_cast<void*>(base+0x38E680),16),"OFF and validate-only preserve native bytes");
+    Check(!std::memcmp(original,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38E680>()),16),"OFF and validate-only preserve native bytes");
 #ifdef FFXHOOKS_NUL_COMPOSITION
     FfxHooks::NulWardInstallOptions nulOptions{};nulOptions.nativeSlots=true;
     nulOptions.allElements=true;
@@ -143,6 +147,12 @@ int main(int argc,char** argv){
     W::DamageProducerForTests(reinterpret_cast<void*>(&Endpoint));
     Check(E::Activate(),"activation requires both actual shared native owners");E::TickMainThread();
     Check(E::RuntimeState().code==E::RuntimeCode::Ready,"loaded bank and native locale pass SHA-256 admission");
+    if(core){
+        FfxHooks::ElementalScanView::Snapshot drawSnapshot{};bool drawAvailable=false;
+        std::thread draw([&]{drawAvailable=FfxHooks::ElementalScanView::Capture(18,0,drawSnapshot);});draw.join();
+        Check(drawAvailable&&drawSnapshot.count>0,
+            "the Info render thread reads an admitted immutable numerical snapshot without owning gameplay state");
+    }
 #ifdef FFXHOOKS_NUL_COMPOSITION
     if(!nulFirst)Check(FfxHooks::InstallNulWardHook(base,true,false,Log,&nulOptions).ok,"NulWard can prepare after Elemental");
     Check(FfxHooks::SharedAction::Start(base),"one shared result owner survives both initialization orders");
@@ -166,7 +176,7 @@ int main(int argc,char** argv){
     if(core){CoreCases(base,actors,bank);W::RequestStop();FfxHooks::RemoveNovaSuperDamageHook(Log);
         std::printf("ELEMENTAL_RUNTIME_CORE %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     auto* source=actors.data();auto* target=actors.data()+18*0xF90;std::array<unsigned char,44> info{};
-    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+0x38E680);
+    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+::FfxHooks::ExecutableProfile::Rva<0x38E680>());
     const auto hit=[&](unsigned id,const void* row){return static_cast<int>(producer(0,source,18,target,row,id,info.data(),0,0,0,0));};
     auto* magic=bank.data()+20+96*64;
     Check(hit(0x3040,magic)==450000&&calls==1,"producer preserves an eligible precap amount without multiplying it");
@@ -184,7 +194,7 @@ int main(int argc,char** argv){
     E::TickMainThread();Check(E::RuntimeState().code==E::RuntimeCode::DataMismatch,"a different locale remains unavailable");
     W32(language.data()+4,1);E::TickMainThread();Check(hit(0x3040,magic)==450000,"matching restored data can be admitted again");
     auto replacement=bank;const auto rp=reinterpret_cast<std::uintptr_t>(replacement.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A92C),&rp,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A92C>()),&rp,4);
     Check(hit(0x3040,magic)==99999,"old row pointers cannot borrow a newly loaded bank");
     E::TickMainThread();Check(hit(0x3040,replacement.data()+20+96*64)==450000,"fresh admission uses the replacement bank's real address");
     Check(B::currentDamage==nullptr,"every callback retires its TLS context");

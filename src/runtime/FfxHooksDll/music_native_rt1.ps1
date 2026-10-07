@@ -1,6 +1,7 @@
 param([Parameter(Mandatory=$true)][string]$ExecutablePath)
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 $ErrorActionPreference = 'Stop'
-if ((Get-FileHash -Algorithm SHA256 -LiteralPath $ExecutablePath).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED') {
+if ((Get-FileHash -Algorithm SHA256 -LiteralPath $ExecutablePath).Hash -ne (Get-FfxTestExecutableHash)) {
     throw 'Exact reviewed PE fixture required; do not launch the game'
 }
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'

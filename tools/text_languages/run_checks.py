@@ -20,6 +20,7 @@ def main() -> int:
     parser.add_argument('--pack', type=Path)
     parser.add_argument('--reference', type=Path)
     parser.add_argument('--sanitizers', action='store_true')
+    parser.add_argument('--profile', choices=('legacy','steam-20261001'), default='legacy')
     args = parser.parse_args()
     if bool(args.pack) != bool(args.reference):
         parser.error('--pack and --reference must be supplied together')
@@ -42,21 +43,22 @@ def main() -> int:
     run('python', [sys.executable, '-m', 'unittest', 'discover', '-s', 'tools/text_languages/tests', '-p', 'test_*.py', '-v'])
     common = [str(HERE / 'hooks/TextLanguageCore.cpp')]
     payload = common + [str(HERE / 'hooks/TextLanguagePayload.cpp')]
-    targets = [('Core', common), ('Payload', payload), ('Field', payload)]
+    targets = [('Core', common), ('Payload', payload), ('Field', payload), ('Extended', payload)]
+    profile_flags = ['-DFFXHOOKS_TARGET_STEAM_20261001'] if args.profile == 'steam-20261001' else []
     for name, sources in targets:
         modes = [('release', [])]
         if args.sanitizers:
             modes.append(('sanitized', ['-fsanitize=address,undefined', '-fno-omit-frame-pointer', '-g']))
         for mode, flags in modes:
             executable = out / f'{name}-{mode}'
-            run(f'{name}-{mode}-build', ['g++', '-std=c++17', '-Wall', '-Wextra', '-Werror', '-O2', *flags,
+            run(f'{name}-{mode}-build', ['g++', '-std=c++17', '-Wall', '-Wextra', '-Werror', '-O2', *profile_flags, *flags,
                 *sources, str(HERE / f'tests/TextLanguage{name}Rt0.cpp'), '-o', str(executable)])
             env = dict(os.environ, ASAN_OPTIONS='detect_leaks=1', UBSAN_OPTIONS='halt_on_error=1')
             run(f'{name}-{mode}', [str(executable)], env=env)
     pack_sources = payload + [str(HERE / 'hooks/TextLanguagePack.cpp')]
     for test, filename in [('Validate', 'TextLanguageValidate'), ('Pack', 'TextLanguagePackRt0')]:
         executable = out / filename
-        run(test + '-build', ['g++', '-std=c++17', '-Wall', '-Wextra', '-Werror', '-O2', *pack_sources,
+        run(test + '-build', ['g++', '-std=c++17', '-Wall', '-Wextra', '-Werror', '-O2', *profile_flags, *pack_sources,
                              str(HERE / f'tests/{filename}.cpp'), '-lcrypto', '-o', str(executable)])
         if args.pack:
             run(test, [str(executable), str(args.pack.resolve()), str(args.reference.resolve())])

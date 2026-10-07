@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "ArcanaUiCore.h"
 #include <algorithm>
 #include <cstdio>
@@ -7,13 +8,13 @@ namespace FfxHooks::Arcana::Ui {
 float LayoutY(std::uint32_t caller,float value,Mode mode) noexcept {
     const float extra=mode==Mode::Twin?120.f:180.f;
     switch(caller){
-    case 0x4cf6c3:case 0x4cf766:case 0x4cf712:case 0x4cf7b5:
-    case 0x4d02f6:case 0x4d0390:return value+extra;
-    case 0x4d031b:return mode==Mode::Twin?58.f:48.f;
-    case 0x4d0357:case 0x4d03df:return mode==Mode::Twin?64.f:52.f;
-    case 0x4f4f54:return mode==Mode::Constellation?38.f:value;
-    case 0x4f4f78:return mode==Mode::Constellation?4.f:value;
-    case 0x4f4fc8:return mode==Mode::Constellation?6.f:value;
+    case (::FfxHooks::ExecutableProfile::Rva<0x4cf6c3>()):case (::FfxHooks::ExecutableProfile::Rva<0x4cf766>()):case (::FfxHooks::ExecutableProfile::Rva<0x4cf712>()):case (::FfxHooks::ExecutableProfile::Rva<0x4cf7b5>()):
+    case (::FfxHooks::ExecutableProfile::Rva<0x4d02f6>()):case (::FfxHooks::ExecutableProfile::Rva<0x4d0390>()):return value+extra;
+    case (::FfxHooks::ExecutableProfile::Rva<0x4d031b>()):return mode==Mode::Twin?58.f:48.f;
+    case (::FfxHooks::ExecutableProfile::Rva<0x4d0357>()):case (::FfxHooks::ExecutableProfile::Rva<0x4d03df>()):return mode==Mode::Twin?64.f:52.f;
+    case (::FfxHooks::ExecutableProfile::Rva<0x4f4f54>()):return mode==Mode::Constellation?38.f:value;
+    case (::FfxHooks::ExecutableProfile::Rva<0x4f4f78>()):return mode==Mode::Constellation?4.f:value;
+    case (::FfxHooks::ExecutableProfile::Rva<0x4f4fc8>()):return mode==Mode::Constellation?6.f:value;
     default:return value;
     }
 }
@@ -23,7 +24,7 @@ float WorkshopLabelY(float value,Mode mode) noexcept {
     return 599.f+extra+(value-599.f)*(spacing/79.f);
 }
 float LayoutX(std::uint32_t caller,float value,Mode mode) noexcept {
-    return caller==0x4f4f66&&mode==Mode::Constellation?32.f:value;
+    return caller==(::FfxHooks::ExecutableProfile::Rva<0x4f4f66>())&&mode==Mode::Constellation?32.f:value;
 }
 namespace {
 const char* StatusFormat(EffectKind kind,int value) noexcept {

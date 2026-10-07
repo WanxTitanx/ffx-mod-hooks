@@ -1,4 +1,5 @@
 #include "SphereGridProgress8Runtime.h"
+#include "../shared/ExecutableProfile.h"
 #include "SphereGridProgress8Store.h"
 #include "NativeSaveEvents.h"
 #include "GridLearnedStore.h"
@@ -108,7 +109,7 @@ void Reset() noexcept {Callback call;if(call.Active())service.Invalidate();}
 void LoadStarting(std::uint64_t,void* destination,const void*) noexcept {
     Callback call;
     // File previews and copies into another destination do not replace the live save.
-    if(call.Active()&&reinterpret_cast<std::uintptr_t>(destination)==moduleBase.load()+0xd2ca90u)service.Invalidate();
+    if(call.Active()&&reinterpret_cast<std::uintptr_t>(destination)==moduleBase.load()+::FfxHooks::ExecutableProfile::Rva<0xd2ca90u>())service.Invalidate();
 }
 void LoadCompleted(std::uint64_t,bool) noexcept {}
 void Staged(std::uint64_t ticket,const wchar_t* path,const unsigned char* data,std::size_t size) noexcept {

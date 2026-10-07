@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "F8RuntimeCore.h"
 
 #include "../shared/ffx_addresses.h"
@@ -10,7 +11,7 @@ namespace {
 // Offline PE evidence for the supported 32-bit FFX.exe snapshot; profile selection is exact.
 constexpr uint16_t kSupportedMachine = 0x014C;
 constexpr uint16_t kSupportedOptionalMagic = 0x010B;
-constexpr uint32_t kSupportedTimestamp = 0x55D2F3CC;
+constexpr uint32_t kSupportedTimestamp = ExecutableProfile::Timestamp;
 constexpr uint32_t kSupportedSizeOfImage = 0x0237D000;
 constexpr size_t kMinimumDosHeaderSize = 0x40;
 constexpr size_t kDosPeOffsetField = 0x3C;

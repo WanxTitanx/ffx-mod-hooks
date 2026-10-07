@@ -88,7 +88,7 @@ class ControllerTests(unittest.TestCase):
             self.assertIsNone(view['after']);self.assertTrue(view['requirements_only'])
             self.assertNotIn('chosenAbility',view)
             costs={c['id']:c['amount'] for c in view['costs']}
-            self.assertEqual(costs,{70:1,73:1,77:1,57:7,67:1})
+            self.assertEqual(costs,{70:1,73:1,77:1,57:2,67:1})
             if requirements is not None:self.assertEqual(costs,requirements)
             requirements=costs
 

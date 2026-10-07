@@ -1,0 +1,251 @@
+{
+  "producer": "Jarvis-HOOK",
+  "release": "v0.6.0-beta.4",
+  "runtime_source_commit": "df532011907b94c348ecb498714ca268c7217ddc",
+  "public_copy_checks": [
+    {
+      "name": "workshop",
+      "command": "python3 research/equipment_workshop/run_checks.py",
+      "exit": 0,
+      "log_sha256": "36fbff77522f4e8d4869e074101d37dc08398d90e4087615e86a87de427de788"
+    },
+    {
+      "name": "text-languages",
+      "command": "python3 tools/text_languages/run_checks.py --output work/beta4-portable --sanitizers --profile steam-20261001",
+      "exit": 0,
+      "log_sha256": "9efe3870cf16066f82cbf5dc95cec379693ec0272b1c0414e1dc952231ca8983"
+    }
+  ],
+  "portable_stages": [
+    {
+      "name": "python",
+      "exit": 0
+    },
+    {
+      "name": "Core-release-build",
+      "exit": 0
+    },
+    {
+      "name": "Core-release",
+      "exit": 0
+    },
+    {
+      "name": "Core-sanitized-build",
+      "exit": 0
+    },
+    {
+      "name": "Core-sanitized",
+      "exit": 0
+    },
+    {
+      "name": "Payload-release-build",
+      "exit": 0
+    },
+    {
+      "name": "Payload-release",
+      "exit": 0
+    },
+    {
+      "name": "Payload-sanitized-build",
+      "exit": 0
+    },
+    {
+      "name": "Payload-sanitized",
+      "exit": 0
+    },
+    {
+      "name": "Field-release-build",
+      "exit": 0
+    },
+    {
+      "name": "Field-release",
+      "exit": 0
+    },
+    {
+      "name": "Field-sanitized-build",
+      "exit": 0
+    },
+    {
+      "name": "Field-sanitized",
+      "exit": 0
+    },
+    {
+      "name": "Extended-release-build",
+      "exit": 0
+    },
+    {
+      "name": "Extended-release",
+      "exit": 0
+    },
+    {
+      "name": "Extended-sanitized-build",
+      "exit": 0
+    },
+    {
+      "name": "Extended-sanitized",
+      "exit": 0
+    },
+    {
+      "name": "Validate-build",
+      "exit": 0
+    },
+    {
+      "name": "Pack-build",
+      "exit": 0
+    }
+  ],
+  "windows": {
+    "profile": "steam-20261001",
+    "stages": [
+      {
+        "exit": 0,
+        "name": "TextLanguageCoreRt0-build"
+      },
+      {
+        "exit": 0,
+        "name": "Core"
+      },
+      {
+        "exit": 0,
+        "name": "TextLanguagePayloadRt0-build"
+      },
+      {
+        "exit": 0,
+        "name": "Payload"
+      },
+      {
+        "exit": 0,
+        "name": "TextLanguageFieldRt0-build"
+      },
+      {
+        "exit": 0,
+        "name": "Field"
+      },
+      {
+        "exit": 0,
+        "name": "TextLanguageExtendedRt0-build"
+      },
+      {
+        "exit": 0,
+        "name": "Extended"
+      },
+      {
+        "exit": 0,
+        "name": "TextLanguageSettingsRt0-build"
+      },
+      {
+        "exit": 0,
+        "name": "Settings"
+      },
+      {
+        "exit": 0,
+        "name": "TextLanguageFilesRt1-build"
+      },
+      {
+        "exit": 0,
+        "name": "TextLanguageValidate-build"
+      },
+      {
+        "exit": 0,
+        "name": "Files-private"
+      },
+      {
+        "exit": 0,
+        "name": "Pack-private"
+      },
+      {
+        "exit": 0,
+        "name": "Received-pack-private"
+      },
+      {
+        "exit": 0,
+        "name": "MinHook-build"
+      },
+      {
+        "exit": 0,
+        "name": "TextLanguageNativeRt1-build"
+      },
+      {
+        "exit": 0,
+        "name": "Native-active"
+      },
+      {
+        "exit": 0,
+        "name": "Native-concurrent"
+      },
+      {
+        "exit": 0,
+        "name": "Native-early"
+      },
+      {
+        "exit": 0,
+        "name": "Native-stop"
+      },
+      {
+        "exit": 0,
+        "name": "Native-stop-validated"
+      },
+      {
+        "exit": 0,
+        "name": "Native-stop-reading"
+      },
+      {
+        "exit": 0,
+        "name": "Native-stop-committed"
+      },
+      {
+        "exit": 0,
+        "name": "Native-bad-font"
+      },
+      {
+        "exit": 0,
+        "name": "Native-late"
+      },
+      {
+        "exit": 0,
+        "name": "Native-cooperative"
+      },
+      {
+        "exit": 0,
+        "name": "Native-cooperative-conflict"
+      },
+      {
+        "exit": 0,
+        "name": "Native-cooperative-stop"
+      },
+      {
+        "exit": 0,
+        "name": "F8-and-Workshop"
+      },
+      {
+        "exit": 0,
+        "name": "Audio-languages"
+      },
+      {
+        "exit": 0,
+        "name": "Full-DLL-Release"
+      }
+    ],
+    "log_sha256": "f757d944edfb54a4ca185f1452a74fb837caab7371b03641f5345a155c7d9fcf",
+    "candidate": {
+      "bytes": 4901888,
+      "sha256": "10d7a7614ac1e970fe07852e22dedf1094c62bb5322cd4de30ee862ac0d7d208"
+    },
+    "source_input_matches": 844
+  },
+  "additional_public_checks": {
+    "ui_catalog": "PASS: 487 rows across 9 locales",
+    "ui_tests": "PASS: 12 tests",
+    "native_menu_profile_bindings": "PASS: 4 tests, 2 optional private-fixture skips"
+  },
+  "fixture_notes": [
+    "Workshop skips two optional private-save fixtures.",
+    "Public portable checks use no private translation package.",
+    "The isolated Windows host checked private user-owned resources; those fixtures and raw private logs are not public release members."
+  ],
+  "hosted_source_checks": "Required before publishing; see the release commit checks in GitHub Actions.",
+  "translation_pack_included": false,
+  "game_started": false,
+  "deployed": false,
+  "rt2": false
+}

@@ -1,6 +1,7 @@
 // Jarvis-HOOK: isolated mapped-PE producer test, not a game session.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "PrivatePeFixture.h"
 #include "../hooks/VanguardRuntime.h"
@@ -40,25 +41,25 @@ int main(int argc,char** argv){
     base=reinterpret_cast<std::uintptr_t>(image);Check(PrivatePeFixture::NormalizeRelocations(image),"private PE relocations");
     std::vector<unsigned char> actors(31*0xF90),kernel=Kernel();
     const auto actorAddress=reinterpret_cast<std::uintptr_t>(actors.data()),kernelAddress=reinterpret_cast<std::uintptr_t>(kernel.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD334CC),&actorAddress,4);std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&kernelAddress,4);
-    const auto size=static_cast<unsigned short>(kernel.size());std::memcpy(reinterpret_cast<void*>(base+0xD2A970),&size,2);
-    *reinterpret_cast<unsigned char*>(base+0xD2A8E0)=1;
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&actorAddress,4);std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&kernelAddress,4);
+    const auto size=static_cast<unsigned short>(kernel.size());std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),&size,2);
+    *reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())=1;
     for(unsigned i=0;i<31;++i){auto* a=actors.data()+i*0xF90;a[0xC]=static_cast<unsigned char>(i);W16(a+0xE,i<18?i:0x1000+i);
         a[0x592]=a[0x593]=255;a[0xDC8]=1;W32(a+0x594,10000);W32(a+0x598,999);W32(a+0x5D0,10000);W32(a+0x5D4,200);a[0x5A8]=32;a[0x5AA]=40;a[0x5BD]=100;}
     auto* source=actors.data();auto* target=actors.data()+0xF90;
-    auto* pct=reinterpret_cast<unsigned char*>(base+0x1F11240);std::memset(pct,0,31*4);
-    auto* gear=reinterpret_cast<unsigned char*>(base+0xD30F2C);std::memset(gear,0,4400);
+    auto* pct=reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0x1F11240>());std::memset(pct,0,31*4);
+    auto* gear=reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD30F2C>());std::memset(gear,0,4400);
     std::array<unsigned char,96> command{};command[0x20]=1;command[0x23]=1;command[0x28]=4;command[0x2A]=16;
     using Percent=int(__cdecl*)(unsigned,unsigned,const unsigned char*,int);
     using Formula=int(__cdecl*)(const unsigned char*,const unsigned char*,const unsigned char*,int,int,unsigned,unsigned,int,int*,int*,int);
     using Critical=int(__cdecl*)(const unsigned char*,const unsigned char*,const unsigned char*,unsigned*,int);
     using Element=int(__cdecl*)(const unsigned char*,const unsigned char*,unsigned,int);
-    const auto percent=reinterpret_cast<Percent>(base+0x3892A0);const auto formula=reinterpret_cast<Formula>(base+0x389CB0);
-    const auto critical=reinterpret_cast<Critical>(base+0x389750);const auto element=reinterpret_cast<Element>(base+0x38A420);
+    const auto percent=reinterpret_cast<Percent>(base+::FfxHooks::ExecutableProfile::Rva<0x3892A0>());const auto formula=reinterpret_cast<Formula>(base+::FfxHooks::ExecutableProfile::Rva<0x389CB0>());
+    const auto critical=reinterpret_cast<Critical>(base+::FfxHooks::ExecutableProfile::Rva<0x389750>());const auto element=reinterpret_cast<Element>(base+::FfxHooks::ExecutableProfile::Rva<0x38A420>());
     C::ResetForTests();C::LoadTextForTests("[vanguard]\n","C:\\private-vanguard-native.ini");
-    unsigned char pristine[16]{};std::memcpy(pristine,reinterpret_cast<void*>(base+0x3892A0),16);
+    unsigned char pristine[16]{};std::memcpy(pristine,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x3892A0>()),16);
     Check(!V::Start(base,true,Log)&&!V::Active(),"validate-only installs nothing");
-    Check(!V::Start(base,false,Log)&&!V::Active()&&!std::memcmp(pristine,reinterpret_cast<void*>(base+0x3892A0),16),"default-OFF leaves native code unchanged");
+    Check(!V::Start(base,false,Log)&&!V::Active()&&!std::memcmp(pristine,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x3892A0>()),16),"default-OFF leaves native code unchanged");
     std::string settings="[vanguard]\n";for(const auto& feature:V::Features)settings+=std::string(feature.key)+"=1\n";
     settings+="[f8_authority]\n";for(const auto& feature:V::Features)settings+=std::string("vanguard_")+feature.key+"=1\n";
     Check(C::LoadTextForTests(settings.c_str(),"C:\\private-vanguard-native.ini"),"complete authoritative fixture parses");target[0x5A9]=60;
@@ -82,12 +83,12 @@ int main(int argc,char** argv){
     source[0x5BC]=50;Check(percent(0,1,command.data(),1000)==1000,"strict OD threshold");
     source[0x5BC]=76;source[0x592]=255;Check(percent(0,1,command.data(),1000)==1000,"unequipped rows grant nothing");
     source[0x592]=0;W16(gear+14,0x8087);W16(gear+16,255);
-    unsigned char before[5]{},jump[5]={0xE9};std::memcpy(before,reinterpret_cast<void*>(base+0x398900),5);
-    const auto delta=static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(&FixedRandom)-(base+0x398900+5));std::memcpy(jump+1,&delta,4);
-    Check(Patch(base+0x398900,jump,5),"private RNG boundary control");command[0x20]=4;command[0x27]=75;unsigned flags=0;rngCalls=0;
+    unsigned char before[5]{},jump[5]={0xE9};std::memcpy(before,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x398900>()),5);
+    const auto delta=static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(&FixedRandom)-(base+::FfxHooks::ExecutableProfile::Rva<0x398900>()+5));std::memcpy(jump+1,&delta,4);
+    Check(Patch(base+::FfxHooks::ExecutableProfile::Rva<0x398900>(),jump,5),"private RNG boundary control");command[0x20]=4;command[0x27]=75;unsigned flags=0;rngCalls=0;
     Check(critical(source,target,command.data(),&flags,1000)==2000&&(flags&0x100)&&rngCalls==1,"Bravery uses one RNG sample");
     VanguardAccuracyCases(source,target,gear);
-    Check(Patch(base+0x398900,before,5),"private RNG restored");
+    Check(Patch(base+::FfxHooks::ExecutableProfile::Rva<0x398900>(),before,5),"private RNG restored");
     kernel[20+135*108+0x20]=1;Check(V::ReadMapping(mapping)&&mapping.codes[0]==V::MappingCode::NativePayload&&mapping.codes[1]==V::MappingCode::Valid,"kernel mutation invalidates stale mapping");
     Check(!V::SaveMapping(0,134),"reserved ID is rejected");Check(!V::SaveMapping(0,136),"battle mapping edits are rejected");
     kernel[20+135*108+0x20]=0;VanguardCostStatusCases(source,actors.data()+18*0xF90,gear);
@@ -112,8 +113,8 @@ int main(int argc,char** argv){
     for(unsigned id:{148u,175u})std::memcpy(extended.data()+20+id*108,kernel.data()+20+135*108,108);
     const auto extendedAddress=reinterpret_cast<std::uintptr_t>(extended.data());
     const auto extendedSize=static_cast<unsigned short>(extended.size());
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&extendedAddress,4);
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A970),&extendedSize,2);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&extendedAddress,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),&extendedSize,2);
     const auto reservedConfig=settings+"[vanguard_ids]\nhero_bravery=148\n";
     Check(C::LoadTextForTests(reservedConfig.c_str(),"C:\\private-vanguard-native.ini")&&V::ReadMapping(mapping)&&
           mapping.codes[0]==V::MappingCode::InvalidId&&mapping.codes[1]==V::MappingCode::Valid,
@@ -121,8 +122,8 @@ int main(int argc,char** argv){
     const auto remappedConfig=settings+"[vanguard_ids]\nhero_bravery=175\n";
     Check(C::LoadTextForTests(remappedConfig.c_str(),"C:\\private-vanguard-native.ini")&&V::ReadMapping(mapping)&&
           mapping.codes[0]==V::MappingCode::Valid,"actual loaded-kernel mapping retains a verified unreserved extended row");
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&kernelAddress,4);
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A970),&size,2);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&kernelAddress,4);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),&size,2);
     V::RequestStop();Check(!V::Active(),"stop closes admission");pct[1]=20;command[0x20]=1;command[0x28]=4;
     Check(percent(0,1,command.data(),1000)==1000,"stopped detours preserve native behavior");
     std::printf("VANGUARD_RUNTIME_RT1 %u/%u passed\n",checks-failures,checks);return failures?1:0;

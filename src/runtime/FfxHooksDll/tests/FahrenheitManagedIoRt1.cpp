@@ -1,6 +1,7 @@
 // Jarvis-HOOK: real filesystem and production serializers, no game entrypoint.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include <cstdio>
 #if __has_include("../hooks/FahrenheitManagedIo.inl")
@@ -80,16 +81,16 @@ int main(int argc,char** argv){
         v.readStarting=ReadStarting;v.rejectRead=ReadRejected;return v;}();
     Check(NativeSaveEvents::Subscribe(&observer),"existing observer registry admits the negotiated transport");
     std::array<unsigned char,4> oldRead{},oldWrite{},oldClose{};
-    std::memcpy(oldRead.data(),reinterpret_cast<void*>(base+0x70C3F4),4);
-    std::memcpy(oldWrite.data(),reinterpret_cast<void*>(base+0x70C428),4);
-    std::memcpy(oldClose.data(),reinterpret_cast<void*>(base+0x70C3F0),4);
+    std::memcpy(oldRead.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>()),4);
+    std::memcpy(oldWrite.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C428>()),4);
+    std::memcpy(oldClose.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F0>()),4);
     PreparedRuntime runtime{};
     Check(PrepareRuntime(base,gameplay,nullptr,&runtime,storePath.c_str()),"same profiled Ronso serialization owner prepares for managed I/O");
     Check(InstallIoImports(),"managed transport publishes readiness without touching CRT imports");
     ActivateRuntime();Check(state.Finish(true)&&IsVerifiedSaveIoReady(),"managed save verification is available after activation");
-    Check(std::memcmp(oldRead.data(),reinterpret_cast<void*>(base+0x70C3F4),4)==0&&
-          std::memcmp(oldWrite.data(),reinterpret_cast<void*>(base+0x70C428),4)==0&&
-          std::memcmp(oldClose.data(),reinterpret_cast<void*>(base+0x70C3F0),4)==0,"all three native IAT cells remain byte-for-byte unchanged");
+    Check(std::memcmp(oldRead.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>()),4)==0&&
+          std::memcmp(oldWrite.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C428>()),4)==0&&
+          std::memcmp(oldClose.data(),reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F0>()),4)==0,"all three native IAT cells remain byte-for-byte unchanged");
     Check(Put(path,disk)&&Put(other,disk),"owned input fixtures are written");
     Check(Read(path,target,disk)&&readEvents==1,"actual managed read reaches existing observers once after CRC admission");
     Check(target[kSaveMaximum]==(gameplay?200:disk[kSaveMaximum]),"Ronso conversion follows the independent gameplay flag");

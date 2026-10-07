@@ -20,6 +20,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_TESTS = {
+    "executable_startup_rt0.ps1",
+    "executable_startup_hash_rt1.ps1",
+    "scan_text_rt1.ps1",
     "weapon_strike_vfx_rt1.ps1",
     "monster_rewards_rt1.ps1",
     "f7_runtime_rt0.ps1",
@@ -76,7 +79,8 @@ def checked(arguments: list[str], **options: object) -> subprocess.CompletedProc
     return subprocess.run(arguments, text=True, check=True, **options)
 
 
-def snapshot(destination: Path, ability_kernel: Path | None) -> list[dict[str, object]]:
+def snapshot(destination: Path, ability_kernel: Path | None, executable: Path | None = None,
+             battle_effect: Path | None = None) -> list[dict[str, object]]:
     result = checked(["git", "ls-files", "-z", "-co", "--exclude-standard"],
                      cwd=ROOT, capture_output=True)
     entries = []
@@ -111,6 +115,21 @@ def snapshot(destination: Path, ability_kernel: Path | None) -> list[dict[str, o
             archive.writestr(relative, data)
             entries.append({"path": relative, "bytes": len(data), "kind": "private_fixture",
                             "sha256": hashlib.sha256(data).hexdigest()})
+        if executable is not None:
+            data = executable.read_bytes()
+            if hashlib.sha256(data).hexdigest() != "0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d":
+                raise RuntimeError("The Steam fixture does not match the inspected executable")
+            relative = "private-current-fixture/FFX.exe"
+            archive.writestr(relative, data)
+            entries.append({"path": relative, "bytes": len(data), "kind": "private_fixture", "sha256": hashlib.sha256(data).hexdigest()})
+        if battle_effect is not None:
+            data = battle_effect.read_bytes()
+            if hashlib.sha256(data).hexdigest() != "1f4ebc789a7815c6a9162bc921b30ecd58a8f262733d47082d77b718769656e2":
+                raise RuntimeError("The battle effect fixture does not match the inspected native member")
+            relative = "private-current-fixture/et_battle.bin"
+            archive.writestr(relative, data)
+            entries.append({"path": relative, "bytes": len(data), "kind": "private_fixture",
+                            "sha256": hashlib.sha256(data).hexdigest()})
         archive.writestr("source-manifest.json", json.dumps(entries, indent=2) + "\n")
     if not entries:
         raise RuntimeError("No eligible source files were captured")
@@ -126,7 +145,16 @@ def main() -> int:
                         help="Explicit local private a_ability.bin fixture; required outside the Nova-only harness")
     parser.add_argument("--fixture-root", default=r"C:\VMTasks\ffx-hooks-jarvis-20260918\native-fixtures")
     parser.add_argument("--dependency-root", default=r"C:\VMTasks\ffx-hooks-jarvis-20260918\src\runtime\FfxHooksDll\vcpkg_installed")
+    parser.add_argument("--steam-profile", action="store_true", help="Select the new executable for isolated native harnesses")
+    parser.add_argument("--executable-fixture", type=Path, help="Explicit current private FFX.exe, required with --steam-profile")
+    parser.add_argument("--battle-effect", type=Path, help="Explicit private et_battle.bin for native weapon-effect harnesses")
     args = parser.parse_args()
+    if args.steam_profile and (args.executable_fixture is None or not args.executable_fixture.is_file()):
+        parser.error("--steam-profile requires an existing --executable-fixture")
+    if args.executable_fixture is not None and not args.steam_profile:
+        parser.error("--executable-fixture requires --steam-profile; mixed-profile lanes are unsupported")
+    if args.battle_effect is not None and not args.battle_effect.is_file():
+        parser.error("--battle-effect requires an existing private member")
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,100}", args.windows_host):
         parser.error("Use a configured SSH alias or a plain hostname")
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,50}", args.label):
@@ -142,12 +170,15 @@ def main() -> int:
     evidence = ROOT / ".superpowers/mod007" / (args.label + "-" + lane)
     evidence.mkdir(parents=True)
     archive = evidence / "source.zip"
-    entries = snapshot(archive, args.ability_kernel)
+    entries = snapshot(archive, args.ability_kernel, args.executable_fixture, args.battle_effect)
     remote = "C:/VMTasks/" + lane
     receipt: dict[str, object] = {
         "producer": "Jarvis-HOOK", "level": "RT1-isolated-Windows-harness",
         "host": args.windows_host, "remote_lane": remote, "tests": args.test,
         "ability_kernel_source": str(args.ability_kernel.resolve()) if args.ability_kernel else None,
+        "steam_profile": args.steam_profile,
+        "executable_fixture_source": str(args.executable_fixture.resolve()) if args.executable_fixture else None,
+        "battle_effect_source": str(args.battle_effect.resolve()) if args.battle_effect else None,
         "source_manifest": entries, "source_zip_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
         "started_unix": time.time(), "completed": False,
         "limitations": ["No game session", "No installed DLL or asset was changed",
@@ -180,6 +211,15 @@ foreach ($entry in $manifest) {
     }
 }
 Copy-Item -LiteralPath $fixtureSource -Destination (Join-Path $lane 'native-fixtures') -Recurse
+if (Test-Path -LiteralPath (Join-Path $lane 'private-current-fixture/et_battle.bin')) {
+    Copy-Item -LiteralPath (Join-Path $lane 'private-current-fixture/et_battle.bin') -Destination (Join-Path $lane 'native-fixtures/et_battle.bin') -Force
+}
+if (__STEAM_PROFILE__) {
+    Copy-Item -LiteralPath (Join-Path $lane 'private-current-fixture/FFX.exe') -Destination (Join-Path $lane 'native-fixtures/FFX.exe') -Force
+    # MSVC's CL option interface is changed only in this disposable runner process
+    # and its children, never in the user/machine environment.
+    $env:CL = (($env:CL + ' /DFFXHOOKS_TARGET_STEAM_20261001').Trim())
+}
 $runtime = Join-Path $lane 'src\runtime\FfxHooksDll'
 if (Test-Path -LiteralPath $dependencySource) {
     New-Item -ItemType Junction -Path (Join-Path $runtime 'vcpkg_installed') -Target $dependencySource | Out-Null
@@ -203,13 +243,18 @@ Write-Output 'ISOLATED_NATIVE_CHECKS_PASS'
         "__DEPENDENCIES__": powershell_literal(args.dependency_root),
         "__ZIP_HASH__": powershell_literal(str(receipt["source_zip_sha256"])),
         "__TESTS__": tests,
+        "__STEAM_PROFILE__": "$true" if args.steam_profile else "$false",
     }
     for placeholder, value in substitutions.items():
         script = script.replace(placeholder, value)
-    (evidence / "run.ps1").write_text(script, encoding="utf-8")
-    encoded = base64.b64encode(script.encode("utf-16le")).decode("ascii")
+    runner = evidence / "run.ps1"
+    runner.write_text(script, encoding="utf-8-sig")
+    remote_runner = remote + ".run.ps1"
+    checked(["scp", "-q", str(runner), args.windows_host + ":" + remote_runner])
+    receipt["runner_sha256"] = hashlib.sha256(runner.read_bytes()).hexdigest()
     arguments = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", args.windows_host,
-                 "powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded]
+                 "powershell.exe", "-NoLogo", "-NoProfile", "-NonInteractive",
+                 "-ExecutionPolicy", "Bypass", "-File", remote_runner]
     exit_code = 1
     with (evidence / "windows.log").open("w", encoding="utf-8") as log:
         process = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

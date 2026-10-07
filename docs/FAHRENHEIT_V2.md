@@ -1,5 +1,8 @@
 # Optional Fahrenheit V2 add-on — v0.6.0-beta.3
 
+> Historical beta.3 add-on: no new provider/bridge is included in beta.4. Compatibility with the updated Steam executable is not certified.
+> Complemento histórico da beta.3: a beta.4 não inclui novo provider/bridge. A compatibilidade com o executável Steam atualizado não está certificada.
+
 Jarvis-HOOK, 2026-09-29. This add-on targets Fahrenheit alpha12 source
 `cdb145d93295c1c6e2bf4766fda5a12877369f54` from
 [the Fahrenheit contributors](https://github.com/fahrenheit-crew/fahrenheit).

@@ -1,8 +1,9 @@
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 $ErrorActionPreference='Stop'
 $here=$PSScriptRoot
 $repo=(Resolve-Path (Join-Path $here '../../..')).Path
 $fixture=Join-Path $repo 'native-fixtures/FFX.exe'
-if((Get-FileHash $fixture).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Exact private FFX fixture required; never start its entrypoint'}
+if((Get-FileHash $fixture).Hash -ne (Get-FfxTestExecutableHash)){throw 'Exact private FFX fixture required; never start its entrypoint'}
 $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
 $vs=& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 if(!$vs){throw 'MSVC x86 required'}

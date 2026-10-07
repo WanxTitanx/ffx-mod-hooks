@@ -1,4 +1,5 @@
 #include "NulWardHook.h"
+#include "../shared/ExecutableProfile.h"
 #include "NulElementCommands.h"
 #include "SharedNulRuntime.h"
 #include "SharedActionRuntime.h"
@@ -62,7 +63,7 @@ ActorState* Actor(unsigned owner) noexcept {
     if(owner>=ActorCount||!Context())return nullptr;
     std::uint32_t pool=0,file=0;std::uint16_t slot=0xFFFF,identity=0xFFFF,status=0;
     Byte exists=0,removed[2]{};int hp=0;
-    if(!Read(image+0xD334CC,pool)||pool<0x10000||pool>UINT32_MAX-ActorCount*0xF90u){Retire(owner);return nullptr;}
+    if(!Read(image+::FfxHooks::ExecutableProfile::Rva<0xD334CC>(),pool)||pool<0x10000||pool>UINT32_MAX-ActorCount*0xF90u){Retire(owner);return nullptr;}
     const auto address=std::uintptr_t(pool)+owner*0xF90u;
     if(SharedActor::Busy(owner)||!Read(address+0xC,slot)||slot!=owner||!Read(address+0xE,identity)||identity==0xFFFF||
        (owner<18&&identity!=owner)||!Read(address+0x48,file)||!Read(address+0xDC8,exists)||!exists||
@@ -77,8 +78,8 @@ ActorState* Actor(unsigned owner) noexcept {
 ActionState* Track(unsigned owner) noexcept {
     const auto* actor=Actor(owner);if(!actor)return nullptr;
     Byte index=255;std::int8_t count=0;std::array<Byte,72> row{};
-    if(!Read(image+0xD2BDE1,count)||count<1||count>62||!Copy(&index,actor->pointer+0xDE5,1)||index>=count||
-       !Copy(row.data(),reinterpret_cast<const void*>(image+0xD2AC70+72u*index),row.size())||
+    if(!Read(image+::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>(),count)||count<1||count>62||!Copy(&index,actor->pointer+0xDE5,1)||index>=count||
+       !Copy(row.data(),reinterpret_cast<const void*>(image+::FfxHooks::ExecutableProfile::Rva<0xD2AC70>()+72u*index),row.size())||
        row[0]!=owner||!row[3]||row[3]>4||row[2]>row[3])return nullptr;
     auto& action=actions[owner];bool same=action.serial&&action.actor==actor->serial&&action.index==index&&
         action.row[1]==row[1]&&action.row[3]==row[3];
@@ -93,7 +94,7 @@ unsigned Command(const ActionState& action,unsigned sub) noexcept {
 bool CommandRow(unsigned command,const Byte*& row) noexcept {
     if((command&0xFFFFF000u)!=0x3000)return false;
     std::uint32_t bank=0;std::array<Byte,20> header{};
-    if(!Read(image+0xD2A92C,bank)||bank<0x10000||bank>UINT32_MAX-0x100000||
+    if(!Read(image+::FfxHooks::ExecutableProfile::Rva<0xD2A92C>(),bank)||bank<0x10000||bank>UINT32_MAX-0x100000||
        !Copy(header.data(),reinterpret_cast<const void*>(bank),header.size()))return false;
     const auto word=[&](unsigned at){return unsigned(header[at])|(unsigned(header[at+1])<<8);};
     const unsigned id=command&0xFFF;
@@ -140,7 +141,7 @@ bool Reserved(const Bus::DamageCall& call) noexcept {
 }
 bool ResolveNative(unsigned argument,unsigned mask,void* info,int& output) noexcept {
     if(!(mask&(expanded.load()?NulElements::Native:0x90u))||mask>255||!Context())return false;
-    std::uint32_t pool=0;if(!Read(image+0xD334CC,pool))return false;
+    std::uint32_t pool=0;if(!Read(image+::FfxHooks::ExecutableProfile::Rva<0xD334CC>(),pool))return false;
     const auto pointer=reinterpret_cast<std::uintptr_t>(info);
     if(pointer<pool||pointer>=std::uintptr_t(pool)+ActorCount*0xF90u)return false;
     const auto target=static_cast<unsigned>((pointer-pool)/0xF90u);auto* actor=Actor(target);if(!actor)return false;
@@ -211,13 +212,13 @@ void AfterResult(void* token,const SharedAction::ResultCall& call,int,bool compl
 void* BeforeFinish(const SharedAction::FinishCall& call) noexcept {
     if(!Context()||!SharedAction::finishDepth||SharedAction::finishDepth>finishes.size())return nullptr;
     auto* action=Track(call.owner);std::int8_t count=0;
-    if(!action||action->index!=call.index||!Read(image+0xD2BDE1,count)||count<1)return nullptr;
+    if(!action||action->index!=call.index||!Read(image+::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>(),count)||count<1)return nullptr;
     auto& frame=finishes[SharedAction::finishDepth-1];frame={observedEpoch,action->serial,static_cast<unsigned>(count)};return &frame;
 }
 void AfterFinish(void* token,const SharedAction::FinishCall& call,int result,bool completed) noexcept {
     const auto* frame=static_cast<const FinishFrame*>(token);std::int8_t count=0;
     if(!frame||!completed||result!=1||!Context()||frame->epoch!=observedEpoch||call.owner>=ActorCount||
-       actions[call.owner].serial!=frame->action||!Read(image+0xD2BDE1,count)||count<0||static_cast<unsigned>(count)+1!=frame->count)return;
+       actions[call.owner].serial!=frame->action||!Read(image+::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>(),count)||count<0||static_cast<unsigned>(count)+1!=frame->count)return;
     for(auto& reservation:reservations)if(reservation.source==call.owner)reservation={};actions[call.owner]={};
 }
 void BeforeActor(unsigned,unsigned owner) noexcept {if(Context())Retire(owner);}

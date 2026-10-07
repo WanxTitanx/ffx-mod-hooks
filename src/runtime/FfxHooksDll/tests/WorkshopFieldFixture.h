@@ -2,6 +2,7 @@
 // RT1-only entry/exit bridge in a private mapped PE. Calls the installed
 // production Field/Gear/Row detours with real caller addresses. Grid setup and
 // final stat stores are deliberately skipped; this is not an in-game test.
+#include "../shared/ExecutableProfile.h"
 #include <array>
 #include <climits>
 #include <cstdint>
@@ -28,16 +29,16 @@ inline int Percent(std::uintptr_t base,unsigned owner,unsigned statIndex){
     // The native loop at RVA386802 advances this local from weapon to armor.
     // Initialize it instead of bypassing the second equipped piece entirely.
     code.insert(code.end(),{0xC7,0x85});imm(static_cast<std::uint32_t>(-0x90));imm(0);
-    code.push_back(0xBB);imm(static_cast<std::uint32_t>(base+0xD3205C+owner*0x94));
+    code.push_back(0xBB);imm(static_cast<std::uint32_t>(base+(::FfxHooks::ExecutableProfile::Rva<0xD3205C>())+owner*0x94));
     code.insert(code.end(),{0x31,0xC0,0xE9});
-    imm(static_cast<std::uint32_t>(base+0x386765-reinterpret_cast<std::uintptr_t>(entry)-code.size()-4));
+    imm(static_cast<std::uint32_t>(base+(::FfxHooks::ExecutableProfile::Rva<0x386765>())-reinterpret_cast<std::uintptr_t>(entry)-code.size()-4));
     const auto tail=code.size();
     code.insert(code.end(),{0x8B,0x45,static_cast<unsigned char>(-0x3C+4*statIndex),0x5F,0x5E,0x5B,0x8B,0xE5,0x5D,0xC3});
     std::memcpy(entry,code.data(),code.size());
     struct Patch {std::uintptr_t address,target;unsigned size;std::array<unsigned char,6> before;};
     Patch patches[]={
-        {base+0x3861B9,reinterpret_cast<std::uintptr_t>(entry),5,{}},
-        {base+0x386850,reinterpret_cast<std::uintptr_t>(entry)+tail,6,{}}
+        {base+(::FfxHooks::ExecutableProfile::Rva<0x3861B9>()),reinterpret_cast<std::uintptr_t>(entry),5,{}},
+        {base+(::FfxHooks::ExecutableProfile::Rva<0x386850>()),reinterpret_cast<std::uintptr_t>(entry)+tail,6,{}}
     };
     unsigned applied=0;bool ok=true;
     for(auto& patch:patches){
@@ -48,7 +49,7 @@ inline int Percent(std::uintptr_t base,unsigned owner,unsigned statIndex){
         if(!Write(patch.address,branch.data(),patch.size)){ok=false;break;}
     }
     FlushInstructionCache(GetCurrentProcess(),entry,code.size());
-    const int result=ok?reinterpret_cast<int(__cdecl*)(unsigned)>(base+0x3861B0)(owner):INT_MIN;
+    const int result=ok?reinterpret_cast<int(__cdecl*)(unsigned)>(base+(::FfxHooks::ExecutableProfile::Rva<0x3861B0>()))(owner):INT_MIN;
     while(applied){const auto& patch=patches[--applied];if(!Write(patch.address,patch.before.data(),patch.size))ok=false;}
     VirtualFree(entry,0,MEM_RELEASE);return ok?result:INT_MIN;
 }

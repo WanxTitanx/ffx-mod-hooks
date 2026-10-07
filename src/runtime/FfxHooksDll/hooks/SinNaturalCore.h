@@ -1,17 +1,26 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 #include <array>
 #include <cstdint>
 
 namespace FfxHooks::SinNatural {
 // Exact 78CE... PE. Walking calls MsBattleEncountExe, not MsBattleLabelExe.
-inline constexpr std::uintptr_t kStepRva=0x00380DE0u;
-inline constexpr std::uint32_t kCallerRva=0x00471CEFu;
-inline constexpr std::uintptr_t kFieldRowRva=0x00D2C256u;
+inline constexpr std::uintptr_t kStepRva=(::FfxHooks::ExecutableProfile::Rva<0x00380DE0u>());
+inline constexpr std::uint32_t kCallerRva=(::FfxHooks::ExecutableProfile::Rva<0x00471CEFu>());
+inline constexpr std::uintptr_t kFieldRowRva=(::FfxHooks::ExecutableProfile::Rva<0x00D2C256u>());
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+inline constexpr std::array<std::uint8_t,24> kPrefix={0x55,0x8B,0xEC,0x83,0xEC,0x10,0x53,0x56,0xFF,0x75,0x08,0xBE,0x01,0x00,0x00,0x00,0xE8,0x9B,0xC4,0x01,0x00,0x83,0xC4,0x04};
+#else
 inline constexpr std::array<std::uint8_t,24> kPrefix={{
     0x55,0x8B,0xEC,0x83,0xEC,0x10,0x53,0x56,0xFF,0x75,0x08,0xBE,
     0x01,0x00,0x00,0x00,0xE8,0xEB,0xC3,0x01,0x00,0x83,0xC4,0x04,
 }};
+#endif
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+inline constexpr std::array<std::uint8_t,5> kCall={0xE8,0xC1,0xEF,0xF0,0xFF};
+#else
 inline constexpr std::array<std::uint8_t,5> kCall={{0xE8,0xF1,0xF0,0xF0,0xFF}};
+#endif
 struct Evidence {
     std::uint32_t caller=0;
     int result=0,field=-1,group=-1;

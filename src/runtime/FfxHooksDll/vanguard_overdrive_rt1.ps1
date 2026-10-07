@@ -1,3 +1,4 @@
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 # Jarvis-HOOK: isolated Vanguard producers; no live game.
 $ErrorActionPreference='Stop'
 $here=$PSScriptRoot
@@ -20,7 +21,7 @@ try {
  & $env:ComSpec /d /s /c $cmd
  if($LASTEXITCODE -ne 0){throw 'Workshop runtime build failed'}
  $fixture=Join-Path $repo 'native-fixtures\FFX.exe'
- if((Get-FileHash $fixture -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Wrong private PE fixture'}
+ if((Get-FileHash $fixture -Algorithm SHA256).Hash -ne (Get-FfxTestExecutableHash)){throw 'Wrong private PE fixture'}
  $data=Join-Path $obj ('private-'+[guid]::NewGuid().ToString('N'))
  $crt=Join-Path (Split-Path $fixture) 'msvcr110.dll'
  if((Get-FileHash $crt -Algorithm SHA256).Hash -ne 'B30160E759115E24425B9BCDF606EF6EBCE4657487525EDE7F1AC40B90FF7E49'){throw 'Wrong private CRT'}

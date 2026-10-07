@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 
 #include "CustomMixUltraCore.h"
@@ -12,9 +13,9 @@ namespace FfxHooks::CustomMixUltra::WindowsAdapter {
 // The production caller remains responsible for the executable hash/signature gate;
 // this adapter accepts an actual relocated image base and applies only these RVAs.
 constexpr std::uint32_t kSupportedPreferredImageBase = 0x00400000u;
-constexpr std::uint32_t kCarrierSizeRva = 0x00D2A9A6u;
-constexpr std::uint32_t kCarrierPointerRva = 0x00D2A9A8u;
-constexpr std::uint32_t kCarrierNameRva = 0x00D2C25Au;
+constexpr std::uint32_t kCarrierSizeRva = (::FfxHooks::ExecutableProfile::Rva<0x00D2A9A6u>());
+constexpr std::uint32_t kCarrierPointerRva = (::FfxHooks::ExecutableProfile::Rva<0x00D2A9A8u>());
+constexpr std::uint32_t kCarrierNameRva = (::FfxHooks::ExecutableProfile::Rva<0x00D2C25Au>());
 constexpr std::size_t kCarrierSizeReadWidth = sizeof(std::uint16_t);
 constexpr std::size_t kCarrierPointerReadWidth = sizeof(std::uint32_t);
 constexpr std::size_t kCarrierNameReadWidth = 10u;

@@ -1,10 +1,11 @@
 param([string]$FixtureRoot)
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 $ErrorActionPreference='Stop'
 $here=$PSScriptRoot
 if(-not $FixtureRoot){$FixtureRoot=Join-Path (Resolve-Path (Join-Path $here '..\..\..')).Path 'native-fixtures'}
 $pe=Join-Path $FixtureRoot 'FFX.exe'
 $effect=Join-Path $FixtureRoot 'et_battle.bin'
-if((Get-FileHash $pe -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBAdEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Unsupported private PE'}
+if((Get-FileHash $pe -Algorithm SHA256).Hash -ne (Get-FfxTestExecutableHash)){throw 'Unsupported private PE'}
 if((Get-FileHash $effect -Algorithm SHA256).Hash -ne '1F4EBC789A7815C6A9162BC921B30ECD58A8F262733D47082D77B718769656E2'){throw 'Unsupported private battle effect'}
 $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio\Installer\vswhere.exe'
 $vs=& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath

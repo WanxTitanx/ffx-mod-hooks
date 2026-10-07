@@ -3,6 +3,7 @@
 // private PE fixture. The native memcpy and destructive CRC function execute.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "../hooks/EquipmentWorkshopRuntime.h"
 #include "../hooks/RonsoPoolRuntime.h"
@@ -68,7 +69,7 @@ bool Read(const std::wstring& path,SaveImage& bytes){
         if(!ok){FfxHooks_FahrenheitAbortIoV2(ticket);return false;}
         return FfxHooks_FahrenheitEndReadV2(ticket,1)==1;
     }
-    void* file=openFile(path.c_str(),L"rb");if(!file)return false;uint32_t count=static_cast<uint32_t>(bytes.size());void* data=bytes.data();Patch(base+0x8E72F4,&count,4);Patch(base+0x8E72F8,&data,4);const auto got=NativeRead(file,reinterpret_cast<void*>(base+0x2F0213));closeFile(file);return got==bytes.size();
+    void* file=openFile(path.c_str(),L"rb");if(!file)return false;uint32_t count=static_cast<uint32_t>(bytes.size());void* data=bytes.data();Patch(base+::FfxHooks::ExecutableProfile::Rva<0x8E72F4>(),&count,4);Patch(base+::FfxHooks::ExecutableProfile::Rva<0x8E72F8>(),&data,4);const auto got=NativeRead(file,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x2F0213>()));closeFile(file);return got==bytes.size();
 }
 bool Write(const std::wstring& path,SaveImage& bytes){
     if(managedTransport){
@@ -84,10 +85,10 @@ bool Write(const std::wstring& path,SaveImage& bytes){
         if(!ok){FfxHooks_FahrenheitAbortIoV2(ticket);if(file!=INVALID_HANDLE_VALUE)DeleteFileW(temp.c_str());return false;}
         return FfxHooks_FahrenheitEndWriteV2(ticket,1)==1;
     }
-    void* file=openFile(path.c_str(),L"wb");if(!file)return false;const auto got=NativeWrite(bytes.size(),bytes.data(),file,reinterpret_cast<void*>(base+0x2F06B8));closeFile(file);return got==bytes.size();
+    void* file=openFile(path.c_str(),L"wb");if(!file)return false;const auto got=NativeWrite(bytes.size(),bytes.data(),file,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x2F06B8>()));closeFile(file);return got==bytes.size();
 }
-void Apply(SaveImage& image){reinterpret_cast<int(__cdecl*)(void*,const void*)>(base+0x4B5450)(reinterpret_cast<void*>(base+0xD2CA90),image.data());}
-uint16_t ChecksumAndClear(SaveImage& image){return reinterpret_cast<uint16_t(__cdecl*)(void*)>(base+0x248030)(image.data());}
+void Apply(SaveImage& image){reinterpret_cast<int(__cdecl*)(void*,const void*)>(base+::FfxHooks::ExecutableProfile::Rva<0x4B5450>())(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2CA90>()),image.data());}
+uint16_t ChecksumAndClear(SaveImage& image){return reinterpret_cast<uint16_t(__cdecl*)(void*)>(base+::FfxHooks::ExecutableProfile::Rva<0x248030>())(image.data());}
 void Log(const char* s){std::fputs(s,stdout);}
 void LostPostWrite(const wchar_t*,const unsigned char*,std::size_t) noexcept {}
 }
@@ -104,7 +105,7 @@ int main(int argc,char** argv){
     const auto nativeRead=GetProcAddress(crt,"fread"),nativeWrite=GetProcAddress(crt,"fwrite"),nativeCopy=GetProcAddress(crt,"memcpy");
     openFile=reinterpret_cast<OpenFn>(GetProcAddress(crt,"_wfopen"));closeFile=reinterpret_cast<CloseFn>(GetProcAddress(crt,"fclose"));
     if(!nativeRead||!nativeWrite||!nativeCopy||!openFile||!closeFile)return 2;
-    Patch(base+0x70C3F4,&nativeRead,4);Patch(base+0x70C428,&nativeWrite,4);Patch(base+0x70C368,&nativeCopy,4);
+    Patch(base+::FfxHooks::ExecutableProfile::Rva<0x70C3F4>(),&nativeRead,4);Patch(base+::FfxHooks::ExecutableProfile::Rva<0x70C428>(),&nativeWrite,4);Patch(base+::FfxHooks::ExecutableProfile::Rva<0x70C368>(),&nativeCopy,4);
     const std::wstring root(argv[3],argv[3]+std::strlen(argv[3]));CreateDirectoryW(root.c_str(),nullptr);
     Check(EquipmentWorkshop::StartForTests(base,true,(root+L"\\workshop").c_str(),Log),"production Workshop detours installed");
     RonsoPool::PreparedRuntime prepared{};
@@ -112,8 +113,8 @@ int main(int argc,char** argv){
     if(failures)return 2;RonsoPool::ActivateRuntime();
     if(managedTransport&&!Coexistence::runtime.Finish(true))return 2;
     const unsigned char returnAfterCall[]={0x83,0xC4,0x10,0xC3};
-    Patch(base+0x2F0228,returnAfterCall,sizeof(returnAfterCall));Patch(base+0x2F06C5,returnAfterCall,sizeof(returnAfterCall));
-    const unsigned char postLoadReturn[]={0x31,0xC0,0xC3,0x90,0x90};Patch(base+0x4B546B,postLoadReturn,sizeof(postLoadReturn));
+    Patch(base+::FfxHooks::ExecutableProfile::Rva<0x2F0228>(),returnAfterCall,sizeof(returnAfterCall));Patch(base+::FfxHooks::ExecutableProfile::Rva<0x2F06C5>(),returnAfterCall,sizeof(returnAfterCall));
+    const unsigned char postLoadReturn[]={0x31,0xC0,0xC3,0x90,0x90};Patch(base+::FfxHooks::ExecutableProfile::Rva<0x4B546B>(),postLoadReturn,sizeof(postLoadReturn));
     SaveImage disk{},loaded{};std::ifstream f(argv[2],std::ios::binary);if(!f.read(reinterpret_cast<char*>(disk.data()),disk.size()))return 2;
     WorkshopEconomyFixture::Seed(disk);WorkshopEconomyFixture::Mode(1);
     const auto path=root+L"\\ffx_093";
@@ -133,7 +134,7 @@ int main(int argc,char** argv){
     unsigned char mixed[22]{};mixed[2]=1;mixed[6]=255;mixed[11]=4;
     const unsigned words[]={0,100,98,99};
     for(unsigned i=0;i<4;++i){mixed[14+2*i]=static_cast<unsigned char>(words[i]);mixed[15+2*i]=0x80;}
-    const auto created=reinterpret_cast<unsigned(__cdecl*)(const void*)>(base+0x3AB930)(mixed);
+    const auto created=reinterpret_cast<unsigned(__cdecl*)(const void*)>(base+::FfxHooks::ExecutableProfile::Rva<0x3AB930>())(mixed);
     Check(created>=0x5000&&created<0x50C8&&EquipmentWorkshop::Capture(state),
           "private native producer creates a mixed generic/numeric refinement fixture");
     if(created<0x5000||created>=0x50C8||!EquipmentWorkshop::Capture(state))return 2;
@@ -151,7 +152,7 @@ int main(int argc,char** argv){
           "actual generic refinement commits one rank and its material debit");
     Check(refinementGil-WorkshopEconomyFixture::Gil(base)==10000,"four initial A ranks charge sequential native Gil prices");
     Check(!EquipmentWorkshop::Commit(request,plan),"native flow cannot confirm the same refinement twice");
-    const auto donor=reinterpret_cast<unsigned(__cdecl*)(const void*)>(base+0x3AB930)(mixed);
+    const auto donor=reinterpret_cast<unsigned(__cdecl*)(const void*)>(base+::FfxHooks::ExecutableProfile::Rva<0x3AB930>())(mixed);
     Check(donor>=0x5000&&donor<0x50C8&&EquipmentWorkshop::Capture(state),"native save-flow fixture adds a distinct fusion donor");
     if(donor<0x5000||donor>=0x50C8||!EquipmentWorkshop::Capture(state))return 2;
     const unsigned donorSlot=donor&0xFFF;
@@ -159,7 +160,7 @@ int main(int argc,char** argv){
     mode.pieceId=state.pieces[donorSlot].id;mode.revision=state.revision;mode.value=1;
     Check(EquipmentWorkshop::Preview(mode,plan)==workshop::Error::Ok&&EquipmentWorkshop::Commit(mode,plan)&&EquipmentWorkshop::Capture(state),"save-flow donor uses the same mode as its target");
     const auto unfusedPath=root+L"\\ffx_092";
-    SaveImage unfused=disk;std::memcpy(unfused.data()+64,reinterpret_cast<void*>(base+0xD2CA90),0x68C0);RonsoPool::SealSave(unfused);
+    SaveImage unfused=disk;std::memcpy(unfused.data()+64,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2CA90>()),0x68C0);RonsoPool::SealSave(unfused);
     Check(Write(unfusedPath,unfused),"native write keeps an independent pre-fusion save and sidecar");
     const auto donorIdentity=state.pieces[donorSlot].id;
     workshop::Request fusion{};fusion.op=workshop::Op::Fuse;fusion.slot=static_cast<uint16_t>(slot);
@@ -167,11 +168,11 @@ int main(int argc,char** argv){
     fusion.revision=state.revision;fusion.count=2;fusion.from[1]=fusion.to[1]=1;
     const auto gilBeforeFusion=WorkshopEconomyFixture::Gil(base);
     Check(EquipmentWorkshop::Preview(fusion,plan)==workshop::Error::Ok&&EquipmentWorkshop::Commit(fusion,plan)&&EquipmentWorkshop::Capture(state),"native save flow commits two-ability fusion");
-    Check(!state.pieces[donorSlot].id&&*reinterpret_cast<unsigned char*>(base+0xD30F2C+22*donorSlot+2)==0,"donor occupancy is removed before native save serialization");
+    Check(!state.pieces[donorSlot].id&&*reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD30F2C>()+22*donorSlot+2)==0,"donor occupancy is removed before native save serialization");
     const auto afterFusionSpheres=state.items[73];
     const auto gilAfterFusion=WorkshopEconomyFixture::Gil(base);
     Check(gilBeforeFusion-gilAfterFusion==20000,"fusion debits actual native Gil in the same transaction");
-    SaveImage saved=disk;std::memcpy(saved.data()+64,reinterpret_cast<void*>(base+0xD2CA90),0x68C0);RonsoPool::SealSave(saved);
+    SaveImage saved=disk;std::memcpy(saved.data()+64,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2CA90>()),0x68C0);RonsoPool::SealSave(saved);
     // Simulate process loss after successful native fwrite but before the
     // post-write metadata callback. The pre-write journal must already exist.
     const NativeSaveEvents::Observer* observer=nullptr;

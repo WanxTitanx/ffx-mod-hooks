@@ -5,31 +5,31 @@ static void EnergyCases(unsigned char* gear,std::vector<unsigned char>& kernel){
     using Select=void(__cdecl*)(unsigned,unsigned char*,const unsigned char*,unsigned);
     using Debit=void(__cdecl*)(unsigned);
     using Percent=int(__cdecl*)(unsigned,unsigned,const unsigned char*,int);
-    const auto select=reinterpret_cast<Select>(base+0x3B03F0);
-    const auto debit=reinterpret_cast<Debit>(base+0x38E5F0);
-    const auto percent=reinterpret_cast<Percent>(base+0x3892A0);
+    const auto select=reinterpret_cast<Select>(base+(::FfxHooks::ExecutableProfile::Rva<0x3B03F0>()));
+    const auto debit=reinterpret_cast<Debit>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E5F0>()));
+    const auto percent=reinterpret_cast<Percent>(base+(::FfxHooks::ExecutableProfile::Rva<0x3892A0>()));
     std::vector<unsigned char> commands(20+320*96+1);
     W16(commands.data(),1);W16(commands.data()+10,319);
     W16(commands.data()+12,96);W16(commands.data()+14,320*96);W32(commands.data()+16,20);
     const auto commandAddress=reinterpret_cast<std::uintptr_t>(commands.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A92C),&commandAddress,4);
+    std::memcpy(reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2A92C>())),&commandAddress,4);
     for(unsigned id:{64u,65u}){
         auto* row=commands.data()+20+96*id;
         row[0x19]=255;row[0x20]=2;row[0x23]=1;row[0x26]=40;
         row[0x28]=6;row[0x2A]=16;row[0x2B]=2;row[0x2D]=1;
     }
     auto* command=commands.data()+20+96*64;
-    std::memset(reinterpret_cast<void*>(base+0x1F11240),0,31*4);
+    std::memset(reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0x1F11240>())),0,31*4);
     W16(gear+14,0x8088);W16(gear+16,0x8089);
     auto* actor=Actor(0);actor[0x5BD]=100;W32(actor+0x5D4,1000);
-    Check(PatchJump(base+0x3B06C0,reinterpret_cast<void*>(&EnergyNotice))&&
-          PatchJump(base+0x3B0CE0,reinterpret_cast<void*>(&EnergyNotice)),
+    Check(PatchJump(base+(::FfxHooks::ExecutableProfile::Rva<0x3B06C0>()),reinterpret_cast<void*>(&EnergyNotice))&&
+          PatchJump(base+(::FfxHooks::ExecutableProfile::Rva<0x3B0CE0>()),reinterpret_cast<void*>(&EnergyNotice)),
           "only the isolated fixture's post-debit notifications are replaced");
     auto queue=[&](){
-        auto* row=reinterpret_cast<unsigned char*>(base+0xD2AC70);
+        auto* row=reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2AC70>()));
         std::memset(row,0,72);row[3]=2;
         for(unsigned i=0;i<2;++i){W16(row+8+16*i,0x3040+i);W16(row+10+16*i,255);W32(row+16+16*i,1<<18);}
-        *reinterpret_cast<unsigned char*>(base+0xD2BDE1)=1;
+        *reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>()))=1;
         actor[0xDE5]=0;actor[0xDE7]=1;return row;
     };
     NewAction(2);auto* action=queue();actor[0x5BC]=100;

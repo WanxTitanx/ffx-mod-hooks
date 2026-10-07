@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "../shared/Config.h"
 #include "../shared/ffx_addresses.h"
 #include "../hooks/F8FlagCatalog.h"
@@ -598,8 +599,12 @@ bool ReplaceFirstSourceToken(std::string& source, const char* from, const char* 
 }
 
 bool ValidateTask6DetachBody(const std::string& body) {
-    return CompactSourceCode(body) ==
-           "caseDLL_PROCESS_DETACH:FfxHooks::Coexistence::runtime.Stop();FfxHooks::Arcana::NativeUi::Stop();FfxHooks::Arcana::Combat::Stop();FfxHooks::SetSupplementalDropProvider(nullptr);FfxHooks::Arcana::Assets::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::ElementalDominion::RequestDetachStop();FfxHooks::SpiraAbilities::RequestDetachStop();FfxHooks::MonsterRewards::RequestStop();FfxHooks::WeaponStrikeVfx::RequestStop();FfxHooks::RequestNulWardDetachStop();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::Vanguard::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::ElementNameInput::Abort();FfxHooks::NativeLanguage::RequestStop();FfxHooks::TextLanguage::Native::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
+    std::string normalized=body;
+    const std::string rngGuard="#ifdef FFXHOOKS_HAVE_POLYHOOK\n            FfxHooks::OriginalPs2Rng::Runtime::RequestStop();\n#endif";
+    const auto rngAt=normalized.find(rngGuard);
+    if(rngAt!=std::string::npos)normalized.replace(rngAt,rngGuard.size(),"FfxHooks::OriginalPs2Rng::Runtime::RequestStop();");
+    return CompactSourceCode(normalized) ==
+           "caseDLL_PROCESS_DETACH:FfxHooks::OriginalPs2Rng::Runtime::RequestStop();FfxHooks::UiNativeFont::Stop();FfxHooks::Coexistence::runtime.Stop();FfxHooks::Arcana::NativeUi::Stop();FfxHooks::Arcana::Combat::Stop();FfxHooks::SetSupplementalDropProvider(nullptr);FfxHooks::Arcana::Assets::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::ElementalDominion::RequestDetachStop();FfxHooks::SpiraAbilities::RequestDetachStop();FfxHooks::MonsterRewards::RequestStop();FfxHooks::WeaponStrikeVfx::RequestStop();FfxHooks::RequestNulWardDetachStop();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::Vanguard::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::ElementNameInput::Abort();FfxHooks::NativeLanguage::RequestStop();FfxHooks::TextLanguage::Native::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
            "FfxHooks::SeymourMenuList::RequestStop();"
            "FfxHooks::SeymourPersistentRoster::RequestStop();"
            "FfxHooks::SeymourSession::RequestStop();"
@@ -2063,6 +2068,12 @@ void TestTask6DllmainIntegrationContracts() {
         dllmain.body, "case DLL_PROCESS_DETACH:", "break;");
     Expect(dllmain.Valid() && !detach.empty() && ValidateTask6DetachBody(detach),
            "DLL_PROCESS_DETACH must contain only lock-free runtime stop requests");
+    std::string fontSource;
+    Expect(ReadWholeFile(RuntimeSourcePath("hooks/UiNativeFont.cpp"),fontSource),"native font stop source is readable");
+    const auto fontStop=SourceFunctionBody(fontSource,"void Stop() noexcept");
+    Expect(fontStop.Valid()&&CompactSourceCode(fontStop.body)=="stopped=true;"&&
+               fontSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos,
+           "font detach is a lock-free admission store without joins, IO, or pixel destruction");
     std::string nativeUiSource,elementSource;
     Expect(ReadWholeFile(RuntimeSourcePath("hooks/EquipmentWorkshopNativeUi.cpp"),nativeUiSource)&&
            ReadWholeFile(RuntimeSourcePath("hooks/ElementHook.cpp"),elementSource),"new native drawing stop sources are readable");
@@ -2302,6 +2313,8 @@ void TestTask6SourceValidatorMutationPressure() {
            "UnX booster source must be readable for Task 6 mutation pressure");
     const std::string validDetach =
         "case DLL_PROCESS_DETACH:\n"
+        "FfxHooks::OriginalPs2Rng::Runtime::RequestStop();\n"
+        "FfxHooks::UiNativeFont::Stop();\n"
         "FfxHooks::Coexistence::runtime.Stop();\n"
         "FfxHooks::Arcana::NativeUi::Stop();\n"
         "FfxHooks::Arcana::Combat::Stop();\n"
@@ -3109,8 +3122,8 @@ void TestSpeedHackNativeArbitrationAndTelemetry() {
     using FfxHooks::SpeedHackNativeAction;
     using FfxHooks::SpeedHackRuntimePhase;
 
-    Expect(RVA_FFX_NATIVE_SPEED_BOOSTER == 0x008E82A4u &&
-               RVA_FFX_NATIVE_SPEED_BOOSTER_AVAILABILITY == 0x008E82ACu,
+    Expect(RVA_FFX_NATIVE_SPEED_BOOSTER == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x008E82B4u : 0x008E82A4u) &&
+               RVA_FFX_NATIVE_SPEED_BOOSTER_AVAILABILITY == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x008E82BCu : 0x008E82ACu),
            "native Speed arbitration must retain the exact DWORD and read-only availability RVAs");
 
     SpeedHackArbitrationInput input{};
@@ -4036,7 +4049,7 @@ void TestSpeedHackGlobalTargetValidation() {
                detoured, sizeof(detoured), 0x002F0000u).status ==
                SpeedHackTargetStatus::DetourLikePrefix,
            "an externally detoured global tick must be rejected instead of chained implicitly");
-    Expect(RVA_FFX_SCENE_FIELD_SERVICE_TICK == 0x00420C00u,
+    Expect(RVA_FFX_SCENE_FIELD_SERVICE_TICK == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x00420AE0u : 0x00420C00u),
            "the composed 8x backend must retain the exact supported service-tick RVA");
 
     std::string speedHackSource;
@@ -4103,7 +4116,7 @@ void TestDialogSkipCorrectedTargetAndOwnership() {
     Expect(ValidateDialogSkipTargetSignature(detoured, sizeof(detoured)).status ==
                DialogSkipTargetStatus::DetourLikePrefix,
            "an externally detoured voice-read entry must be rejected instead of double-owned");
-    Expect(RVA_FFX_FMODVOICE_READ_EVENT_DATA == 0x0030AEC0u,
+    Expect(RVA_FFX_FMODVOICE_READ_EVENT_DATA == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x0030ADD0u : 0x0030AEC0u),
            "Dialog Skip must target the real UnX voice-read entry, not stale RVA 0x30B040");
 
     std::string dialogSource;
@@ -4440,7 +4453,7 @@ void TestCatalogMetadataAndInvariants() {
                trackedIniSource.find("max_speed = 8.0") != std::string::npos,
            "Speed Hack defaults must document the fixed cycle, legacy keys, and 8x safety cap");
 
-    Expect(FfxHooks::F8FlagCount() == 90 && FfxHooks::Vanguard::FeatureCount == 31,
+    Expect(FfxHooks::F8FlagCount() == 91 && FfxHooks::Vanguard::FeatureCount == 31,
            "catalog preserves established rows and appends independent weapon VFX and Nul spell gates");
     Expect(sizeof(expected) / sizeof(expected[0]) == 50,
            "the hand-derived legacy fixture still covers every established row");
@@ -4544,6 +4557,28 @@ void TestCatalogMetadataAndInvariants() {
                !strikes.gate.defaultValue&&strikes.activation==F8Activation::RestartRequired&&
                strikes.applyMode==F8ApplyMode::None&&FfxHooks::FindF8Flag("weapon_strike_vfx.enabled")==&strikes,
            "Holy/Shadow VFX is a separate default-OFF gate, appended after existing reward identity");
+    const auto* originalRng=FfxHooks::FindF8Flag("rng.original_ps2");
+    Expect(originalRng && !originalRng->gate.defaultValue &&
+               originalRng->activation==F8Activation::RestartRequired &&
+               originalRng->applyMode==F8ApplyMode::None &&
+               !originalRng->gate.legacyKey && !originalRng->gate.envName &&
+               FfxHooks::FindF8Flag("rng.original_ps2")==&FfxHooks::F8FlagAt(90),
+           "PS2 RNG appends a canonical default-OFF restart-only gate without a legacy activation path");
+    std::string rngRuntime;
+    Expect(ReadWholeFile(RuntimeSourcePath("hooks/OriginalPs2RngRuntime.cpp"),rngRuntime),
+           "RNG runtime source is present in the integrated build");
+    const auto rngStop=SourceFunctionBody(rngRuntime,"void RequestStop() noexcept");
+    Expect(rngStop.Valid()&&rngStop.body.find("g_stopRequested.store")!=std::string::npos&&
+               rngStop.body.find("g_accepting.store")!=std::string::npos&&
+               rngStop.body.find("g_revision.fetch_add")!=std::string::npos&&
+               rngStop.body.find("Acquire")==std::string::npos&&rngStop.body.find("Service(")==std::string::npos&&
+               rngStop.body.find("Neutralize")==std::string::npos&&rngStop.body.find("while")==std::string::npos&&
+               rngRuntime.find("std::atomic<Code>::is_always_lock_free")!=std::string::npos,
+           "RNG loader-lock stop only closes proven lock-free admission/status atomics");
+    const auto rngWorker=SourceFunctionBody(dllmainSource,"static DWORD WINAPI HooksWorkerThread(LPVOID)");
+    Expect(rngWorker.Valid()&&SourceTokensInOrder(rngWorker.body,{"CaptureF8StartupGates();",
+               "OriginalPs2Rng::Runtime::Start", "StartFastloadEarlyIfRequested();", "InstallHooks();"}),
+           "RNG observes native reset before heavy and delayed startup work");
 
     const FfxHooks::F8FlagSpec* seymour = FfxHooks::FindF8Flag("boosters.playable_seymour");
     const FfxHooks::F8FlagSpec* compose = FfxHooks::FindF8Flag("arena_plus.compose_f7");
@@ -5675,7 +5710,7 @@ void TestLabCatalogAndRestartControls() {
         {"labs.item_stack_cap","f8_authority.lab_item_stack_cap","FFXHOOKS_ENABLE_ITEM_STACK_CAP","item_stack_cap_255.flag","ItemStackCapFlagEnabled"},
         {"labs.double_triple_drop","f8_authority.lab_double_triple_drop","FFXHOOKS_ENABLE_DOUBLE_TRIPLE_DROP","double_triple_drop.flag","DoubleTripleDropEnabled"},
     };
-    Expect(FfxHooks::F8FlagCount()==90&&FfxHooks::F8TabCount()==7&&
+    Expect(FfxHooks::F8FlagCount()==91&&FfxHooks::F8TabCount()==7&&
                strcmp(FfxHooks::F8TabName(6),"Reforge")==0,"Reforge retains existing rows and adds both optional drawing gates");
     std::string source;
     Expect(ReadWholeFile(RuntimeSourcePath("dllmain.cpp"),source),"Lab install source readable");
@@ -5834,7 +5869,7 @@ void TestMultiplierCatalogAndTransactions() {
     const FfxHooks::F8FlagSpec* ap = FfxHooks::FindF8Flag("cheats.ap_100x");
     const FfxHooks::F8FlagSpec* gil = FfxHooks::FindF8Flag("cheats.gil_100x");
     Expect(ap && gil, "AP and Gil legacy boolean rows must remain in the catalog");
-    Expect(FfxHooks::F8FlagCount() == 90,
+    Expect(FfxHooks::F8FlagCount() == 91,
            "general scalar metadata adds no boolean rows beyond the explicit independent monster gate");
     Expect(ap && ap->scalar && strcmp(ap->scalar->canonicalKey, "cheats.ap_multiplier") == 0 &&
                ap->scalar->defaultValue == 100 && ap->scalar->minimum == 1 &&
@@ -6292,7 +6327,7 @@ std::array<uint8_t, 512> MakeSupportedPeHeader() {
     image[peOffset] = 'P';
     image[peOffset + 1] = 'E';
     PutU16(image, peOffset + 4, 0x014C);
-    PutU32(image, peOffset + 8, 0x55D2F3CC);
+    PutU32(image, peOffset + 8, (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x6AA2219Cu : 0x55D2F3CCu));
     PutU16(image, peOffset + 20, 0x00E0);
     PutU16(image, peOffset + 24, 0x010B);
     PutU32(image, peOffset + 24 + 56, 0x0237D000);
@@ -6307,7 +6342,7 @@ void TestRuntimeCorePeProfileAndRanges() {
                ProfileResult::Supported,
            "supported PE32/I386 profile must parse");
     Expect(identity.machine == 0x014C && identity.optionalMagic == 0x010B &&
-               identity.timestamp == 0x55D2F3CC && identity.sizeOfImage == 0x0237D000,
+               identity.timestamp == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x6AA2219Cu : 0x55D2F3CCu) && identity.sizeOfImage == 0x0237D000,
            "PE parser must expose the exact supported executable identity");
     Expect(IsSupportedExecutable(identity), "exact executable identity must be supported");
 
@@ -6388,15 +6423,15 @@ void TestRewardMultiplierEvidenceAndEncoding() {
     const std::array<uint8_t, 8> gilSignature = {
         0x74u, 0x06u, 0x6Bu, 0xC0u, 0x64u, 0x89u, 0x45u, 0xF8u};
 
-    Expect(RVA_FFX_AP_MULTIPLIER_SIGNATURE == 0x00399121u &&
-               RVA_FFX_AP_MULTIPLIER_SITE == 0x00399123u &&
-               RVA_FFX_AP_MULTIPLIER_IMMEDIATE == 0x00399125u &&
-               RVA_FFX_AP_MULTIPLIER_RESUME == 0x00399129u,
+    Expect(RVA_FFX_AP_MULTIPLIER_SIGNATURE == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x00399111u : 0x00399121u) &&
+               RVA_FFX_AP_MULTIPLIER_SITE == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x00399113u : 0x00399123u) &&
+               RVA_FFX_AP_MULTIPLIER_IMMEDIATE == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x00399115u : 0x00399125u) &&
+               RVA_FFX_AP_MULTIPLIER_RESUME == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x00399119u : 0x00399129u),
            "AP reward ledger must retain the exact signature/site/immediate/resume RVAs");
-    Expect(RVA_FFX_GIL_MULTIPLIER_SIGNATURE == 0x0039913Cu &&
-               RVA_FFX_GIL_MULTIPLIER_SITE == 0x0039913Eu &&
-               RVA_FFX_GIL_MULTIPLIER_IMMEDIATE == 0x00399140u &&
-               RVA_FFX_GIL_MULTIPLIER_RESUME == 0x00399144u,
+    Expect(RVA_FFX_GIL_MULTIPLIER_SIGNATURE == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x0039912Cu : 0x0039913Cu) &&
+               RVA_FFX_GIL_MULTIPLIER_SITE == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x0039912Eu : 0x0039913Eu) &&
+               RVA_FFX_GIL_MULTIPLIER_IMMEDIATE == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x00399130u : 0x00399140u) &&
+               RVA_FFX_GIL_MULTIPLIER_RESUME == (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x00399134u : 0x00399144u),
            "Gil reward ledger must retain the exact signature/site/immediate/resume RVAs");
     Expect(ap.signatureRva == RVA_FFX_AP_MULTIPLIER_SIGNATURE &&
                ap.siteRva == RVA_FFX_AP_MULTIPLIER_SITE &&
@@ -7671,8 +7706,8 @@ void TestRuntimeCoreOwnedByteChangedDesiredAndStickyConflict() {
            "address A must remain safely restorable after a mismatched B request");
 }
 
-constexpr uintptr_t kRt0SeymourSite1 = 0x004A8F47u;
-constexpr uintptr_t kRt0SeymourSite2 = 0x004A8F9Au;
+constexpr uintptr_t kRt0SeymourSite1 = (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x004A8F97u : 0x004A8F47u);
+constexpr uintptr_t kRt0SeymourSite2 = (::FfxHooks::ExecutableProfile::Steam20261001 ? 0x004A8FEAu : 0x004A8F9Au);
 constexpr uintptr_t kRt0SeymourPage = 0x004A8000u;
 constexpr uintptr_t kRt0SeymourParty = 0x00D32494u;
 constexpr size_t kRt0SeymourSpanLength = 0x57u;
@@ -12565,10 +12600,10 @@ void TestF7UnsafePrototypePolicyAndSourceContainment() {
            "legacy S.I.N. installation must fail closed before any detour or process setup");
     Expect(nativeMenu.find("S.I.N. Curses") != std::string::npos &&
                nativeMenu.find("S.I.N. - Unavailable") == std::string::npos &&
-               dllmain.find("SIN_RAM_ROW_COUNT         8") != std::string::npos &&
-               dllmain.find("Seeded encounters in Macalania") !=
+               dllmain.find("SIN_RAM_ROW_COUNT         9") != std::string::npos &&
+               dllmain.find("Seeded encounters from Macalania to Zanarkand") !=
                    std::string::npos,
-            "the F7 S.I.N. row and submenu must publish the seeded eight-row prototype scope");
+            "the F7 S.I.N. submenu exposes the expanded seeded scope and its bounded preview-page control");
     const SourceBlock sinInput = SourceFunctionBody(
         dllmain, "static int __cdecl SinCurse_InputCb(int obj)");
     const SourceBlock sinLabels = SourceFunctionBody(
@@ -13103,7 +13138,7 @@ void TestNativeMenuFunctionKeySafetyContracts() {
                "F7CloseTransition("}),
            "the Present producer must publish only after pump-hook success and revoke before stop work");
     Expect(titleGuardStart.Valid() &&
-               titleGuardStart.body.find("base + 0x4FAE40u") != std::string::npos &&
+               titleGuardStart.body.find("ExecutableProfile::Rva<0x4FAE40u>()") != std::string::npos &&
                titleGuardStart.body.find("(0x4FAE40u - 0x400000u)") == std::string::npos &&
                titleGuardStart.body.find("catch (const std::exception& ex)") != std::string::npos &&
                titleGuardStart.body.find("catch (...)") != std::string::npos &&
@@ -13231,9 +13266,9 @@ void TestNativeMenuKeepAliveContract() {
     const SourceBlock ultraClose = SourceFunctionBody(
         dllmain, "static void ArenaPlus_Ultra_CloseAfterLaunch()");
 
-    Expect(dllmain.find("kNativeMenuRequestRva = 0x18408ACu") != std::string::npos &&
+    Expect(dllmain.find("kNativeMenuRequestRva = (::FfxHooks::ExecutableProfile::Va<0x18408ACu>())") != std::string::npos &&
                dllmain.find("kNativeMenuKeepAliveBit = 0x80000000u") != std::string::npos &&
-               dllmain.find("kNativeMenuGateRva = 0x13407E4u") != std::string::npos,
+               dllmain.find("kNativeMenuGateRva = (::FfxHooks::ExecutableProfile::Va<0x13407E4u>())") != std::string::npos,
            "the keep-alive contract must name the vanilla request bitmask, system bit, and gate RVAs");
     Expect(dllmain.find("static void NativeMenuForceGatePublish()") <
                dllmain.find("static void NativeMenuAbortHubCloseDrainForStop()"),
@@ -13297,21 +13332,21 @@ void TestNativeMenuBoundaryTraceContract() {
     /* The sampled tuple must cover the whole vanilla bootstrap boundary:
      * dispatcher gate/transition, request path, mode machine, kill switches,
      * and the UI manager inner state that gates the reward spawn. */
-    Expect(dllmain.find("{0x13407E4u") != std::string::npos &&
-               dllmain.find("{0x13407E8u") != std::string::npos &&
-               dllmain.find("{0x1340804u") != std::string::npos &&
-               dllmain.find("{0x1340810u") != std::string::npos &&
-               dllmain.find("{0x18408ACu") != std::string::npos &&
-               dllmain.find("{0x12FBBF0u") != std::string::npos &&
-               dllmain.find("{0x1840834u") != std::string::npos &&
-               dllmain.find("{0x12FB790u") != std::string::npos &&
-               dllmain.find("{0x12FB798u") != std::string::npos &&
-               dllmain.find("{0xCCB994u") != std::string::npos &&
-               dllmain.find("{0xCCB998u") != std::string::npos &&
-               dllmain.find("{0x12FB878u") != std::string::npos &&
-               dllmain.find("{0x1597F34u") != std::string::npos &&
-               dllmain.find("{0x1841C28u") != std::string::npos &&
-               dllmain.find("{0xCE81E4u") != std::string::npos,
+    Expect(dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x13407E4u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x13407E8u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x1340804u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x1340810u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x18408ACu>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x12FBBF0u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x1840834u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x12FB790u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x12FB798u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0xCCB994u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0xCCB998u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x12FB878u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x1597F34u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0x1841C28u>()") != std::string::npos &&
+               dllmain.find("{::FfxHooks::ExecutableProfile::Va<0xCE81E4u>()") != std::string::npos,
            "the trace field table must cover gate, transition, request, mode, kill, and uiMgr fields");
     /* Sampling is read-only on the Present thread: SEH-wrapped, reentrancy
      * guarded, and it logs only on change plus a one-time baseline. */

@@ -38,7 +38,7 @@ int main(){
 static void DeveloperCases(){
  auto s=Make(0,true);s.pieces[0].mode=2;s.pieces[0].ranks[0]=9;for(auto& n:s.items)n=1;
  auto e=Rich();e.gil=0;e.policy.devFreeMaterials=1;e.policy.devFreeGil=1;Plan p{};
- Check(Preview(s,Req(s,Op::Refine),p,e)==Error::Ok&&p.gilCost==10000&&p.gilDebit==0&&p.requirements[70]==11,"Dev quotes full price but waives Gil and material amounts");
+ Check(Preview(s,Req(s,Op::Refine),p,e)==Error::Ok&&p.gilCost==10000&&p.gilDebit==0&&p.requirements[70]==2,"Dev quotes the reduced real price but waives Gil and material amounts");
  Check(std::memcmp(s.items,p.after.items,sizeof(s.items))==0&&p.after.rolls==s.rolls+1,"Dev improves once without consuming held ingredients");
  s.items[70]=0;Check(Preview(s,Req(s,Op::Refine),p,e)==Error::Materials,"Dev still requires one of every roulette ingredient");
  s=Make();s.items[77]=7;s.items[80]=0;

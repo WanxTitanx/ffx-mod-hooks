@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 #include "ElementAffinity.h"
 #include "ElementPackJson.h"
@@ -7,7 +8,11 @@
 
 namespace FfxHooks::ElementalDominion {
 
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+inline constexpr char SupportedExecutable[]="0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d";
+#else
 inline constexpr char SupportedExecutable[]="78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced";
+#endif
 enum Capability : unsigned { RegistryCapability=1,AffinityCapability=2,ContextCapability=4,
     SpellCapCapability=8,TacticsCapability=16,GravityCapability=32,EquipmentCapability=64,PresentationCapability=128 };
 // This is the schema vocabulary, not the set of implemented runtime consumers.

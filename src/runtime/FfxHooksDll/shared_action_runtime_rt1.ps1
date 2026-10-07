@@ -1,3 +1,4 @@
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 # Jarvis-HOOK: one native action owner, both subscription orders and exceptions.
 $ErrorActionPreference='Stop'
 $here=$PSScriptRoot
@@ -16,7 +17,7 @@ $sources=@('tests\SharedActionRuntimeRt1.cpp','hooks\F8RuntimeCore.cpp','hooks\M
 $exe=Join-Path $obj 'SharedActionRuntimeRt1.exe'
 $compile='call "{0}" x86 >nul && cl /nologo /EHsc /std:c++17 /W4 /WX /utf-8 /MT /DFFXHOOKS_TESTING /DFFXHOOKS_HAVE_POLYHOOK /I"{1}\include" {2} hook.obj buffer.obj trampoline.obj hde32.obj /Fe"{3}" user32.lib' -f $vcvars,$mh,($sources -join ' '),$exe
 $fixture=Join-Path $repo 'native-fixtures\FFX.exe'
-if((Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Wrong private PE'}
+if((Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash -ne (Get-FfxTestExecutableHash)){throw 'Wrong private PE'}
 Push-Location $obj
 try {
     & $env:ComSpec /d /s /c $compileC

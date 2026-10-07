@@ -1,7 +1,7 @@
 // Actual accuracy producer and one controlled native RNG stream; no game process.
 static void VanguardAccuracyCases(unsigned char* source,unsigned char* target,unsigned char* gear){
     using Accuracy=int(__cdecl*)(const unsigned char*,const unsigned char*,const unsigned char*,const unsigned char*,int);
-    const auto accuracy=reinterpret_cast<Accuracy>(base+0x38A950);
+    const auto accuracy=reinterpret_cast<Accuracy>(base+(::FfxHooks::ExecutableProfile::Rva<0x38A950>()));
     const auto savedSource=std::vector<unsigned char>(source,source+0xF90);
     const auto savedTarget=std::vector<unsigned char>(target,target+0xF90);
     const auto savedGear=std::vector<unsigned char>(gear,gear+44);

@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -15,7 +16,7 @@
 
 namespace FfxHooks::MonsterRewards {
 namespace {
-constexpr std::uint32_t seam=0x399144;
+constexpr std::uint32_t seam=::FfxHooks::ExecutableProfile::Rva<0x399144>();
 struct NamedMonster {unsigned species;const char* name;};
 constexpr NamedMonster names[]={
 #include "MonsterRewardNames.inc"
@@ -58,7 +59,7 @@ bool General(Kind kind,unsigned& value){
 bool CanonicalActor(std::uintptr_t actor,unsigned& species) noexcept {
     std::uint32_t base=0;std::uint16_t slot=0,raw=0;
     if(!module||actor<0x10000||actor>UINT32_MAX-0xF90u||
-       !Copy(&base,reinterpret_cast<void*>(module+0xD334CC),4)||base<0x10000||base>UINT32_MAX-31u*0xF90u||
+       !Copy(&base,reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>())),4)||base<0x10000||base>UINT32_MAX-31u*0xF90u||
        !Copy(&slot,reinterpret_cast<void*>(actor+0xC),2)||slot<18||slot>=26||actor!=std::uintptr_t(base)+slot*0xF90u||
        !Copy(&raw,reinterpret_cast<void*>(actor+0xE),2)||!Species(raw,species))return false;
     return true;
@@ -144,7 +145,7 @@ void TickMainThread() noexcept {
     DWORD empty=0;owner.compare_exchange_strong(empty,GetCurrentThreadId());if(owner.load()!=GetCurrentThreadId())return;
     try{
         admission=installed.load()&&ratesValid&&Master();
-        std::uint32_t actors=0;if(!Copy(&actors,reinterpret_cast<void*>(module+0xD334CC),4)||actors<0x10000||actors>UINT32_MAX-31u*0xF90u)return;
+        std::uint32_t actors=0;if(!Copy(&actors,reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>())),4)||actors<0x10000||actors>UINT32_MAX-31u*0xF90u)return;
         for(unsigned slot=18;slot<26;++slot){const auto address=std::uintptr_t(actors)+slot*0xF90u;unsigned id=0;unsigned char exists=0;std::uint32_t loot=0;
             if(!Copy(&exists,reinterpret_cast<void*>(address+0xDC8),1)||!exists||!CanonicalActor(address,id)||
                !Copy(&loot,reinterpret_cast<void*>(address+0xF88),4)||loot<0x10000||loot>UINT32_MAX-6u)continue;

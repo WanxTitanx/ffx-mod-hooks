@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "SinRamScalingCore.h"
 #include "SinSpreadCore.h"
 
@@ -10,16 +11,15 @@ namespace {
 // 78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED.
 // The complete encounter-token high word is the field-row key: mcfr=0x0136
 // (310) and mcyt=0x0154 (340). Keeping the full word rejects masked aliases.
-constexpr std::uint16_t kMacalaniaForestFieldKey = 310u;
-constexpr std::uint16_t kMacalaniaOpenFieldKey = 340u;
 // Random walking encounters call MsBattleEncountExe from VA 0x00871CEA.
 // The former 0x381D8C observation belongs to a label/script path and misses
 // random encounters entirely. Retained label observations confer no authority.
-constexpr std::uint32_t kNaturalTransitionCallerRva = 0x00471CEFu;
+constexpr std::uint32_t kNaturalTransitionCallerRva = (::FfxHooks::ExecutableProfile::Rva<0x00471CEFu>());
 constexpr std::uint32_t kSignedDwordMax = 0x7FFFFFFFu;
 
-bool IsThreatLevelValid(int threatLevel) {
-    return threatLevel >= 0 && threatLevel <= 2;
+bool IsThreatLevelValid(int threatLevel,std::uint16_t field) {
+    const auto maximum=(std::max)(2u,SinSpread::MaximumThreatForField(field));
+    return threatLevel >= 0 && static_cast<unsigned>(threatLevel) <= maximum;
 }
 
 std::uint16_t ExactFieldKey(std::uint32_t encounterToken) {
@@ -29,38 +29,9 @@ std::uint16_t ExactFieldKey(std::uint32_t encounterToken) {
 }
 
 bool IsSupportedMonster(std::uint16_t fieldKey, std::uint16_t monsterId) {
-    fieldKey=SinSpread::AreaForField(fieldKey);
-    // Closed natural encounter pairs. Raw actor IDs carry the exact 0x1000
-    // monster family tag; only that family decodes to these file/model IDs:
-    // mcyt/340 x {4,12,19,37} and mcfr/310 x {3,26,33,81,87,217}.
-    // Names and low-byte aliases confer no authority; every other pair fails closed.
-    if (fieldKey == kMacalaniaOpenFieldKey) {
-        switch (SinSpread::ModelFromNative(monsterId)) {
-            case 4u:
-            case 12u:
-            case 19u:
-            case 37u:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    if (fieldKey == kMacalaniaForestFieldKey) {
-        switch (SinSpread::ModelFromNative(monsterId)) {
-            case 3u:
-            case 26u:
-            case 33u:
-            case 81u:
-            case 87u:
-            case 217u:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    return false;
+    // Membership is finer than a regional seed roster: an aquatic field cannot
+    // admit a land monster merely because both share the Gagazet catalog.
+    return SinSpread::NaturalMonsterPair(fieldKey,SinSpread::ModelFromNative(monsterId));
 }
 
 bool RequestIdentityMatches(const RequestCorrelation& correlation) {
@@ -123,7 +94,7 @@ StructuralScalePlan BuildStructuralScalePlan(const ScaleRequest& request) {
         plan.reason = AdmissionReason::Disabled;
         return plan;
     }
-    if (!IsThreatLevelValid(request.config.threatLevel)) {
+    if (!IsThreatLevelValid(request.config.threatLevel,plan.fieldKey)) {
         plan.reason = AdmissionReason::InvalidThreatLevel;
         return plan;
     }

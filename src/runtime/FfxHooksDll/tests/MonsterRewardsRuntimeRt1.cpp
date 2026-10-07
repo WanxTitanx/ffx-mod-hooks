@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "../hooks/MonsterRewardsRuntime.h"
 #include "../hooks/MonsterRewardSettings.h"
@@ -79,9 +80,9 @@ int main(int argc,char** argv){
     Put16(loot.data(),60000);Put16(loot.data()+2,65000);Put16(loot.data()+4,65535);
     auto* actor=actors.data()+18*0xF90;Put16(actor+0xC,18);Put16(actor+0xE,0x1001);actor[0xDC8]=1;
     Put32(actor+0xF88,static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(loot.data())));
-    Put32(reinterpret_cast<void*>(base+0xD334CC),static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(actors.data())));
+    Put32(reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD334CC>())),static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(actors.data())));
     const auto originalActors=actors;const auto originalLoot=loot;
-    auto* seam=reinterpret_cast<unsigned char*>(base+0x399144);std::array<unsigned char,6> before{};std::memcpy(before.data(),seam,before.size());
+    auto* seam=reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x399144>()));std::array<unsigned char,6> before{};std::memcpy(before.data(),seam,before.size());
     if(invalid){seam[2]^=1;Check(!R::Prepare(base,false,nullptr)&&!R::Installed(),"a changed native seam cannot install");Check(seam[2]==(before[2]^1),"rejected installation does not replace foreign bytes");}
     else {
         Check(R::Prepare(base,false,nullptr),"supported profile prepares the selected mode");R::TickMainThread();
@@ -92,7 +93,7 @@ int main(int argc,char** argv){
             Check(R::Installed(),"explicit per-monster opt-in installs one profile-gated seam");
             // Only the isolated continuation is replaced: the real detour and
             // MinHook gateway execute the native six-byte instruction span.
-            auto* resume=seam+6;resume[0]=0xE9;Put32(resume+1,static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(&Resume)-(base+0x39914A+5)));
+            auto* resume=seam+6;resume[0]=0xE9;Put32(resume+1,static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(&Resume)-(base+(::FfxHooks::ExecutableProfile::Rva<0x39914A>())+5)));
             FlushInstructionCache(GetCurrentProcess(),seam,32);entry=seam;
             Check(R::SaveMultiplier(1,R::Kind::Ap,3)&&R::SaveMultiplier(1,R::Kind::Gil,4),"independent rates persist under the chosen monster ID");
             Invoke(18,actor,loot.data(),0,65000*25,60000*7);

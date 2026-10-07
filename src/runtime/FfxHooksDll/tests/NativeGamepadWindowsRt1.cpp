@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include <cstdio>
 #include "../hooks/NativeGamepadHook.h"
@@ -29,7 +30,7 @@ int main(){
     auto* pe=reinterpret_cast<IMAGE_NT_HEADERS32*>(image+0x80);pe->Signature=IMAGE_NT_SIGNATURE;
     pe->FileHeader.Machine=IMAGE_FILE_MACHINE_I386;pe->OptionalHeader.Magic=0x10B;
     pe->FileHeader.TimeDateStamp=0x55D2F3CC;pe->OptionalHeader.SizeOfImage=0x0237D000;
-    auto* slot=reinterpret_cast<void**>(image+0x70C718);*slot=reinterpret_cast<void*>(original);
+    auto* slot=reinterpret_cast<void**>(image+::FfxHooks::ExecutableProfile::Rva<0x70C718>());*slot=reinterpret_cast<void*>(original);
     Check(!G::Start(0),"wrong executable profile cannot install");
     Check(G::Start(reinterpret_cast<uintptr_t>(image)),"supported import identity is admitted");
     Check(*slot==reinterpret_cast<void*>(original) && !G::MappingApplied(),"default identity installs no writer");

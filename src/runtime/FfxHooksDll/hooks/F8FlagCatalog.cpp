@@ -282,6 +282,7 @@ const F8FlagSpec kFlags[] = {
     // Append the new identity; existing catalog row numbers remain stable.
     MOD_FEATURE(6),
     MOD_FEATURE(7),
+    MOD_FEATURE(8),
 #undef MOD_FEATURE
 };
 #undef VANGUARD_GATE

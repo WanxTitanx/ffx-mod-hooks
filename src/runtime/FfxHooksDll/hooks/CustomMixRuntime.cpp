@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "CustomMixRuntime.h"
 #include "ArenaBattleProgram.h"
 
@@ -39,7 +40,7 @@ ActiveBattlefield g_activeBattlefield{};
 
 // Native InitScene and its caller both consume the low uint16 at this address.
 // The high uint16 is the native field-table index (71 for the exact dome carrier).
-constexpr std::uint32_t kBattlefieldRva = 0x00D2C254u;
+constexpr std::uint32_t kBattlefieldRva = (::FfxHooks::ExecutableProfile::Rva<0x00D2C254u>());
 static std::uint16_t* ProbeBattlefield(std::uintptr_t image, std::uint32_t carrier) noexcept {
     if (!image || !carrier || image > UINT32_MAX - kBattlefieldRva - 6u) return nullptr;
     const auto address = image + kBattlefieldRva;
@@ -310,11 +311,11 @@ static bool NativeReferencesMatch(const NormalViewContext& c) noexcept {
         const auto expectedMap=start+*reinterpret_cast<const std::uint32_t*>(b+8);
         const auto expectedFormation=start+*reinterpret_cast<const std::uint32_t*>(b+12);
         const auto expectedArea=start+*reinterpret_cast<const std::uint32_t*>(b+16);
-        return *reinterpret_cast<const std::uint32_t*>(c.image+0x00D2A9ACu)==expectedScript&&
-            *reinterpret_cast<const std::uint32_t*>(c.image+0x00D2A9B4u)==expectedMap&&
-            *reinterpret_cast<const std::uint32_t*>(c.image+0x00D2A9C0u)==expectedFormation&&
-            *reinterpret_cast<const std::uint32_t*>(c.image+0x00D2A9B0u)==expectedArea&&
-            *reinterpret_cast<const std::uint8_t*>(c.image+0x00D2A9A4u)==2u;
+        return *reinterpret_cast<const std::uint32_t*>(c.image+::FfxHooks::ExecutableProfile::Rva<0x00D2A9ACu>())==expectedScript&&
+            *reinterpret_cast<const std::uint32_t*>(c.image+::FfxHooks::ExecutableProfile::Rva<0x00D2A9B4u>())==expectedMap&&
+            *reinterpret_cast<const std::uint32_t*>(c.image+::FfxHooks::ExecutableProfile::Rva<0x00D2A9C0u>())==expectedFormation&&
+            *reinterpret_cast<const std::uint32_t*>(c.image+::FfxHooks::ExecutableProfile::Rva<0x00D2A9B0u>())==expectedArea&&
+            *reinterpret_cast<const std::uint8_t*>(c.image+::FfxHooks::ExecutableProfile::Rva<0x00D2A9A4u>())==2u;
     } __except(EXCEPTION_EXECUTE_HANDLER){return false;}
 }
 static bool InvokeNormalView(void* raw, int* result) {
@@ -676,7 +677,7 @@ void ProductionLeaveBattle() noexcept {
 static bool PositionReadFactsMatch(std::uintptr_t image, std::uint32_t carrier,
                                   std::uintptr_t actor, std::uint16_t expectedId) noexcept {
     __try {
-        if (*reinterpret_cast<volatile const std::uint32_t*>(image + 0x00D2A9B0u) !=
+        if (*reinterpret_cast<volatile const std::uint32_t*>(image + ::FfxHooks::ExecutableProfile::Rva<0x00D2A9B0u>()) !=
             carrier + kCarrierChunk3Offset) return false;
         if (actor && (*reinterpret_cast<volatile const std::uint8_t*>(actor + 0x6D4u) != 0xFFu ||
                       *reinterpret_cast<volatile const std::uint16_t*>(actor + 0x0Eu) != expectedId))

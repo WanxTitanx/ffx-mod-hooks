@@ -34,40 +34,33 @@ consolidated **FFX** build; it does not claim equivalent FFX-2 support.
 
 ## Beta status
 
-**v0.6.0-beta.3** adds nine selectable interface languages, the optional Fahrenheit V2 integration and corrected F7/F8 action sounds. The merged runtime source is `c18fb5602a688dd0de5e7e85677c5d5102402788`.
+**v0.6.0-beta.4** restores support for the supported October 2026 Steam executable and expands the language-pack framework. It also includes the default-OFF experimental PS2-style RNG initialization option. Read the [complete English/PT-BR release notes](docs/release-notes/hooks/v0.6.0-beta.4.md).
 
-- **Interface:** English, Portuguese (Brazil), Spanish, French, Italian, German, Japanese, Korean and Simplified Chinese. Select **F8 > System > Interface language**. This preference is independent of game text and audio; non-FLAGS F7 pages retain native English.
-- **Fahrenheit:** shared hook ownership, frame/input coordination, managed save transactions and paired text/font resources with the matching V2 provider and bridge. Read the [optional V2 installation guide](docs/FAHRENHEIT_V2.md). Stock Fahrenheit/V1 retains documented restrictions.
-- **Corrections:** sound feedback follows successful, rejected and canceled actions; failed language persistence retains the previous choice; focus-loss and renderer ownership are preserved; provider read failures have one cleanup owner; upstream source verification now covers 501 files.
+The PT-BR game translation is still being tested and is **not included**. The existing nine-language Hooks interface remains available through **F8 > System > Interface language** and is independent of game text/audio.
 
-This is a public beta with RT0/isolated RT1 evidence. Live auditory, visual, gameplay and save-lifecycle RT2 acceptance remains pending. Compatibility with arbitrary mod combinations is not established.
-
-All editable F8 gameplay booleans default OFF; the dashboard itself defaults ON. Existing feature content from beta.2 remains included. See [known issues](docs/KNOWN_BUGS.md) and the [roadmap](docs/ROADMAP.md).
+This is a public beta. In-game visual, gameplay and save-lifecycle acceptance remains incomplete. Keep existing settings and saves; editable gameplay options default OFF. No new Fahrenheit provider/bridge bundle is shipped, and the older beta.3 add-on is not certified for the updated executable.
 
 ## Current DLL
 
-[Download v0.6.0-beta.3](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.3) — Jarvis-HOOK, 2026-09-29.
+[Download v0.6.0-beta.4](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.4).
 
 | Identity | Value |
 |---|---|
-| Runtime source | `c18fb5602a688dd0de5e7e85677c5d5102402788` |
-| DLL | Windows x86 / PE32, 4,683,264 bytes |
-| DLL SHA-256 | `4e7dfe943e9496729b69c9c3af24dfef465ec4efddfb93dba5b6fdcd77af8a6e` |
-| Source binding | 383 public code/resource inputs; all 750 original captured inputs verified against the merged source |
-| PE resource version | `0.2.0.0`; package version `v0.6.0-beta.3` |
-| Live validation | RT2 pending; this publication does not install or promote the DLL |
+| Runtime source | `df532011907b94c348ecb498714ca268c7217ddc` |
+| DLL | Windows x86 / PE32; exact size/hash in [release inputs](docs/releases/v0.6.0-beta.4-inputs.json) |
+| Supported executable | Steam FFX.exe, 10,687,744 bytes; SHA-256 `0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d` |
+| PE resource version | `0.2.0.0`; package version `v0.6.0-beta.4` |
+| Validation | [Build/source evidence](docs/releases/v0.6.0-beta.4-validation.json); live acceptance remains separate |
 
-The release includes the main binary package, exact tagged public source, an optional paired Fahrenheit V2 add-on, corresponding modified provider source and SHA-256 checksums. The main ZIP retains Arcana art, English/PT-BR guides and configuration examples.
-
-See [installation](docs/INSTALL.md) and [Fahrenheit V2](docs/FAHRENHEIT_V2.md). Previous release assets remain unchanged.
+The main package includes Hooks, Arcana's existing original artwork, EN/PT-BR guides, OFF-by-default configuration examples and checksums. Exact public source is supplied separately. It contains no game translation, native game/font/texture payloads or new Fahrenheit add-on. See [installation](docs/INSTALL.md) and the [language-pack contract](docs/TEXT_LANGUAGE_PACKS.md).
 
 ## What this is
 
 | Component | What it does | Status |
 |---|---|---|
-| `ffx-hooks.dll` (FfxHooksDll) | Engine hooks, native UI, shared combat/save consumers and the optional systems below | Consolidated beta candidate, deployed |
+| `ffx-hooks.dll` (FfxHooksDll) | Engine hooks, native UI, shared combat/save consumers and the optional systems below | Public beta; live acceptance pending |
 | F7 In-Live menu | Difficulty, S.I.N. RAM, Force Last Battle, music, Monster AI observer and Arena+ CustomMix | Offline candidate: source/RT0/build and isolated runtime/policy RT1 pass; live machine-callback RT1 and user-run RT2 pending for the Difficulty acceptance matrix |
-| F8 Dashboard | Seven tabs, nested settings and 90 canonical boolean controls | 25 LIVE, 61 RESTART REQUIRED, 4 READ ONLY; counts describe activation, not gameplay acceptance |
+| F8 Dashboard | Seven tabs, nested settings and optional runtime controls | LIVE / RESTART REQUIRED / READ ONLY describe activation, not gameplay acceptance |
 | F9 Maechen | Native question/answer UI and bounded service client | Earlier transport/UI observations; current-build acceptance and service grounding remain separate |
 | `ffx-probe.dll` (FfxDinput8Probe) | Separate main-thread READ / WRITE / CALL probe through the DINPUT8 seam | Optional, default OFF; not included by enabling a Hooks gameplay feature |
 | `SinScaleInject` + `SinCoreLib` | Offline S.I.N. research/materialization tools | Legacy disk-writing runtime route remains quarantined; the current S.I.N. RAM route is separate |
@@ -80,15 +73,15 @@ Submenus preserve their parent selection; staged edits support confirm/cancel.
 Bulk actions retain each control's authority and report unavailable, externally
 overridden or failed changes instead of silently claiming success.
 
-| Tab | Boolean identities | Included controls and submenus |
-|---|---:|---|
-| System | 10 | Borderless window, cursor confinement/idle hiding, performance display, free battle camera, field freeze; four informational module rows; Audio languages and Text languages |
-| Boosters | 5 | Permanent Sensor, experimental Playable Seymour, Speed Hack, optional FMV acceleration, Entire Party Earns AP |
-| Cheats | 9 | Invincible Party/Enemies, Always Overdrive/Critical, Damage 99999, Always Rare Drop; AP/Gil Multipliers submenu |
-| Extras | 38 | Additional mods: Elemental Core/Tactics/Gravity/Magic BDL, Spira Reforge, Aeon Ascension and optional Holy/Shadow weapon effects; separate Vanguard Combat Engine hierarchy with 31 controls |
-| Input | 4 | Windows-key blocking, background-input fix, IME filter, Dialog Skip; keyboard/gamepad shortcuts and controller/button mapping |
-| Dev | 6 | FieldScout submenu (Master/Heavy/Max/Ultra), Fastload Autosave, Arcana full-deck development option; Equipment Workshop development settings |
-| Reforge | 17 | Arcana, Nova Super Damage, Ronso Mana, Equipment Workshop/native equipment details, Scan settings, Grid Teach, Lancet Dual Grant, item-stack cap, Double/Triple Drop, Arena+ submenu |
+| Tab | Included controls and submenus |
+|---|---|
+| System | Borderless window, cursor confinement/idle hiding, performance display, free battle camera, field freeze; four informational module rows; Audio languages and Text languages |
+| Boosters | Permanent Sensor, experimental Playable Seymour, Speed Hack, optional FMV acceleration, Entire Party Earns AP |
+| Cheats | Invincible Party/Enemies, Always Overdrive/Critical, Damage 99999, Always Rare Drop; AP/Gil Multipliers submenu |
+| Extras | Additional mods: Elemental Core/Tactics/Gravity/Magic BDL, Spira Reforge, Aeon Ascension, optional Holy/Shadow weapon effects, Elemental Nul spells and experimental PS2 RNG; separate Vanguard Combat Engine hierarchy with 31 controls |
+| Input | Windows-key blocking, background-input fix, IME filter, Dialog Skip; keyboard/gamepad shortcuts and controller/button mapping |
+| Dev | FieldScout submenu (Master/Heavy/Max/Ultra), Fastload Autosave, Arcana full-deck development option; Equipment Workshop development settings |
+| Reforge | Arcana, Nova Super Damage, Ronso Mana, Equipment Workshop/native equipment details, Scan settings, Grid Teach, Lancet Dual Grant, item-stack cap, Double/Triple Drop, Arena+ submenu |
 
 The counts include controls moved into submenus. Navigation rows, colors,
 language selectors, mappings and numeric editors are additional settings, not
@@ -293,16 +286,9 @@ These source additions are separate from the older deployment identity above.
 
 ### Text languages — MOD-006
 
-`F8 > System > Text languages` selects native text or a separate compatible PT-BR
-pack, with restart required. The runtime supports admitted menu/battle/event/
-scene-subtitle resources, font metrics/atlas/shadows, exact source hashes,
-capacity/line-width validation and native fallback. API/schema 2 retain the
-documented older-version compatibility.
+**F8 > System > Text languages** selects native text or a compatible separately installed language pack, with restart required. API 4 supports bounded longer text, the optional extended Western font and examined translated UI textures. Existing API 1–3 contracts remain supported for their admitted resources. The native base must remain English for the PT-BR virtual locale; game audio and native save identity are separate.
 
-The DLL does not itself contain a complete translation or a new dub. Independent
-voice, battle-sound and movie-audio selectors are under **Audio languages**.
-See the [MOD-006 Editor handoff](docs/ai/MOD006_EDITOR_HANDOFF.md) for exporting a
-usable text-and-font package rather than just a language toggle.
+**No PT-BR game translation pack is included in this release.** Without a compatible pack, keep native text selected. Flash, mixed lockit and alternate inpc resources remain unsupported. See the [public contract](docs/TEXT_LANGUAGE_PACKS.md).
 
 ## F7 In-Live status
 

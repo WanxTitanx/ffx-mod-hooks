@@ -2,6 +2,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include <intrin.h>
 #endif
@@ -798,7 +799,7 @@ void TestNativeEarlyLoadBranch() {
     const uint32_t activeTitle=23;const uint16_t readyChoice=2;
     std::memcpy(image.bytes+RVA_FFX_FASTLOAD_ACTIVE_SCENE,&activeTitle,4);
     std::memcpy(image.bytes+RVA_FFX_FASTLOAD_TITLE_CHOICE_STATE,&readyChoice,2);
-    const uint32_t answerPointer=static_cast<uint32_t>(base+0x01467940),windowPointer=static_cast<uint32_t>(base+0x01466610);
+    const uint32_t answerPointer=static_cast<uint32_t>(base+::FfxHooks::ExecutableProfile::Rva<0x01467940>()),windowPointer=static_cast<uint32_t>(base+::FfxHooks::ExecutableProfile::Rva<0x01466610>());
     std::memcpy(image.bytes+0x01468A58,&answerPointer,4);std::memcpy(image.bytes+0x014676B8,&windowPointer,4);
     const uint8_t answerHeader[]={0,1,0,0xFF,0,3,1,0};std::memcpy(image.bytes+0x01467940,answerHeader,8);
     const uint16_t openWindow=3;std::memcpy(image.bytes+0x0146663E,&openWindow,2);

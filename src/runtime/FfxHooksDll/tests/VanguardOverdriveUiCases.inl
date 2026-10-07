@@ -9,22 +9,22 @@ static int __cdecl GaugeNativeGradient(int,int,int,int,unsigned,unsigned,int){++
 static int __cdecl GaugeCostRect(float x,float y,float w,float h,unsigned a,unsigned b){odRects.push_back({x,y,w,h,a,b});return 0;}
 static bool OdClose(float a,float b){return a>b-.001f&&a<b+.001f;}
 static void OverdriveUiCases(unsigned char* actor,unsigned char* command){
-    using Gauge=void(__cdecl*)(unsigned,int,int);const auto draw=reinterpret_cast<Gauge>(base+0x4953F0);
-    Check(Jump(0x4FB150,reinterpret_cast<void*>(&GaugeNativeRect))&&
-          Jump(0x4F3EB0,reinterpret_cast<void*>(&GaugeNativeGradient))&&
-          Jump(0x4F4B20,reinterpret_cast<void*>(&GaugeCostRect)),"only terminal GPU primitives are intercepted in the isolated gauge fixture");
-    auto* windows=reinterpret_cast<unsigned char*>(base+0xF3C910);std::memset(windows,0,8*0xF0);
+    using Gauge=void(__cdecl*)(unsigned,int,int);const auto draw=reinterpret_cast<Gauge>(base+(::FfxHooks::ExecutableProfile::Rva<0x4953F0>()));
+    Check(Jump((::FfxHooks::ExecutableProfile::Rva<0x4FB150>()),reinterpret_cast<void*>(&GaugeNativeRect))&&
+          Jump((::FfxHooks::ExecutableProfile::Rva<0x4F3EB0>()),reinterpret_cast<void*>(&GaugeNativeGradient))&&
+          Jump((::FfxHooks::ExecutableProfile::Rva<0x4F4B20>()),reinterpret_cast<void*>(&GaugeCostRect)),"only terminal GPU primitives are intercepted in the isolated gauge fixture");
+    auto* windows=reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0xF3C910>()));std::memset(windows,0,8*0xF0);
     auto* window=windows+0xF0;window[1]=3;window[8]=0;W16(window+0x1E,0x3040);
     std::uint16_t list[]={0x3040};const auto lp=reinterpret_cast<std::uintptr_t>(list);
     std::memcpy(window+0x20,&lp,4);W32(window+0x24,1);W16(window+0x42,0);
-    *reinterpret_cast<unsigned char*>(base+0x1FCC092)=1;
-    W32(reinterpret_cast<unsigned char*>(base+0x1FCC08C),1);
-    W16(reinterpret_cast<unsigned char*>(base+0x21D0AA2),4);
-    W16(reinterpret_cast<unsigned char*>(base+0x21D0AA4),40);
-    W16(reinterpret_cast<unsigned char*>(base+0x21D0AA6),5);
-    W16(reinterpret_cast<unsigned char*>(base+0x21D0AA8),3);
-    W16(reinterpret_cast<unsigned char*>(base+0x21D0AB0),6);
-    W16(reinterpret_cast<unsigned char*>(base+0x21D0AB2),42);
+    *reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x1FCC092>()))=1;
+    W32(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x1FCC08C>())),1);
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x21D0AA2>())),4);
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x21D0AA4>())),40);
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x21D0AA6>())),5);
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x21D0AA8>())),3);
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x21D0AB0>())),6);
+    W16(reinterpret_cast<unsigned char*>(base+(::FfxHooks::ExecutableProfile::Rva<0x21D0AB2>())),42);
     actor[0x5BC]=70;actor[0x5BD]=100;command[0x26]=40;
     const auto before=std::vector<unsigned char>(actor,actor+0xF90);
     const auto beforeCommand=std::vector<unsigned char>(command,command+96);

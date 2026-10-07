@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "SeymourSessionRuntime.h"
 #include "SeymourActiveLoadCore.h"
 #include "NativeSaveEvents.h"
@@ -67,7 +68,7 @@ void PrimeSaveIo(std::uintptr_t base,bool validateOnly){
     struct Unlock {~Unlock(){admin.clear(std::memory_order_release);}} unlock;
     if(subscribed.load(std::memory_order_acquire))return;
     if(!RecoveryNative::Profile(base)||!RecoveryNative::Pin(reinterpret_cast<const void*>(&PrimeSaveIo)))return;
-    {std::lock_guard<std::recursive_mutex> lock(mutex);state.Configure(base+0xd2ca90u);}
+    {std::lock_guard<std::recursive_mutex> lock(mutex);state.Configure(base + (::FfxHooks::ExecutableProfile::Rva<0xd2ca90u>()));}
     if(!NativeSaveEvents::SubscribeAdditional(&observer))return;
     if(!StartNativeSaveLoadEvents(base)||stopping.load(std::memory_order_acquire)){
         NativeSaveEvents::UnsubscribeAdditional(&observer);return;

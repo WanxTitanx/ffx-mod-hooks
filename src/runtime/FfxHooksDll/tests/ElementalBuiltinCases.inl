@@ -51,7 +51,7 @@ static void BuiltinCases(std::uintptr_t base,std::vector<unsigned char>& actors,
           "the native numerical Scan resolves the same aliases and preserves F7's affinity value");
     E::ElementalView canonical{};Check(E::ReadElement(18,4,canonical)&&!std::strcmp(canonical.label,"Holy"),
           "canonical package labels remain intact for non-UI data consumers");
-    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+0x38E680);
+    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
     std::array<unsigned char,44> info{};amount=450000;ceiling=99999;
     Check(producer(0,actors.data(),18,actors.data()+18*0xF90,bank.data()+20+96*64,0x3040,info.data(),0,0,0,0)==99999,
           "creating unused elements never assigns them or new caps to an unbound native command");

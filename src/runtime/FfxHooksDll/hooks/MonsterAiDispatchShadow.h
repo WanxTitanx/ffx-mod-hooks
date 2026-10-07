@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 
 #include <cstdint>
@@ -7,16 +8,16 @@ namespace FfxHooks::MonsterAiShadow {
 // These preferred-image addresses describe the supported FFX.exe evidence. A future
 // ASLR-aware adapter must normalize the live return address before calling this core.
 constexpr uint32_t kPreferredImageBase = 0x00400000u;
-constexpr uint32_t kDispatcherPreferredVa = 0x007AC9E0u;
-constexpr uint32_t kDispatcherRva = 0x003AC9E0u;
+constexpr uint32_t kDispatcherPreferredVa = (::FfxHooks::ExecutableProfile::Va<0x007AC9E0u>());
+constexpr uint32_t kDispatcherRva = (::FfxHooks::ExecutableProfile::Rva<0x003AC9E0u>());
 // Read-only IDA disassembly confirms each five-byte E8 call and the immediately
 // following return address. Keeping both sides makes an off-by-five hook filter visible.
-constexpr uint32_t kNormalPerformCallPreferredVa = 0x007A4549u;
-constexpr uint32_t kNormalPerformReturnPreferredVa = 0x007A454Eu;
-constexpr uint32_t kForceDispatchCallPreferredVa = 0x007A4A5Bu;
-constexpr uint32_t kForceDispatchReturnPreferredVa = 0x007A4A60u;
-constexpr uint32_t kDeathOverrideCallPreferredVa = 0x007A4B87u;
-constexpr uint32_t kDeathOverrideReturnPreferredVa = 0x007A4B8Cu;
+constexpr uint32_t kNormalPerformCallPreferredVa = (::FfxHooks::ExecutableProfile::Va<0x007A4549u>());
+constexpr uint32_t kNormalPerformReturnPreferredVa = (::FfxHooks::ExecutableProfile::Va<0x007A454Eu>());
+constexpr uint32_t kForceDispatchCallPreferredVa = (::FfxHooks::ExecutableProfile::Va<0x007A4A5Bu>());
+constexpr uint32_t kForceDispatchReturnPreferredVa = (::FfxHooks::ExecutableProfile::Va<0x007A4A60u>());
+constexpr uint32_t kDeathOverrideCallPreferredVa = (::FfxHooks::ExecutableProfile::Va<0x007A4B87u>());
+constexpr uint32_t kDeathOverrideReturnPreferredVa = (::FfxHooks::ExecutableProfile::Va<0x007A4B8Cu>());
 
 constexpr int32_t kFirstMonsterActorIndex = 20;
 constexpr int32_t kLastMonsterActorIndex = 27;

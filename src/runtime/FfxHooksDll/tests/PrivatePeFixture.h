@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <cstdint>
 #include <cstring>
+#include "../shared/ffx_addresses.h"
 
 namespace PrivatePeFixture {
 // Wine maps an EXE with DONT_RESOLVE_DLL_REFERENCES without applying HIGHLOW
@@ -22,9 +23,9 @@ inline bool NormalizeRelocations(HMODULE module) {
     constexpr std::uint32_t preferred=0x400000;
     if(address==preferred)return true;
     std::uint32_t anchor=0;
-    std::memcpy(&anchor,base+0x394030+24,4);
-    if(anchor==address+0xD334CC)return true;
-    if(anchor!=preferred+0xD334CC)return false;
+    std::memcpy(&anchor,base+RVA_FFX_BATTLE_GET_ACTOR_BY_INDEX+24,4);
+    if(anchor==address+RVA_FFX_BATTLE_PLAYER_LIST)return true;
+    if(anchor!=preferred+RVA_FFX_BATTLE_PLAYER_LIST)return false;
     const auto imageSize=nt->OptionalHeader.SizeOfImage;
     const auto directory=nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
     if(!directory.Size||directory.VirtualAddress>=imageSize||directory.Size>imageSize-directory.VirtualAddress)return false;
@@ -47,7 +48,7 @@ inline bool NormalizeRelocations(HMODULE module) {
         }
         at+=block->SizeOfBlock;
     }
-    std::memcpy(&anchor,base+0x394030+24,4);
-    return anchor==address+0xD334CC&&FlushInstructionCache(GetCurrentProcess(),base,imageSize)!=FALSE;
+    std::memcpy(&anchor,base+RVA_FFX_BATTLE_GET_ACTOR_BY_INDEX+24,4);
+    return anchor==address+RVA_FFX_BATTLE_PLAYER_LIST&&FlushInstructionCache(GetCurrentProcess(),base,imageSize)!=FALSE;
 }
 }

@@ -4,7 +4,7 @@
 #include <array>
 
 namespace FfxHooks::ModFeatures {
-enum class Feature : unsigned { Core,Tactics,Gravity,MagicBdl,Spira,Ascension,WeaponStrikes,NulSpells,Count };
+enum class Feature : unsigned { Core,Tactics,Gravity,MagicBdl,Spira,Ascension,WeaponStrikes,NulSpells,OriginalPs2Rng,Count };
 struct Entry {const char* label;Config::BoolGateSpec gate;const char* help;};
 inline constexpr std::array<Entry,static_cast<unsigned>(Feature::Count)> Entries{{
     {"Elemental Dominion: Core",{"elemental.core","f8_authority.elemental_core",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
@@ -22,7 +22,9 @@ inline constexpr std::array<Entry,static_cast<unsigned>(Feature::Count)> Entries
     {"Holy / Shadow weapon effects",{"weapon_strike_vfx.enabled","f8_authority.weapon_strike_vfx",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
      "RESTART REQUIRED - Holy/Shadow VFX; no element granted."},
     {"Elemental Nul spells",{"elemental.nul_spells","f8_authority.elemental_nul_spells",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
-     "RESTART REQUIRED - Six Nuls; learn through Sphere Grid."}
+     "RESTART REQUIRED - Six Nuls; learn through Sphere Grid."},
+    {"Original PS2 RNG (Experimental)",{"rng.original_ps2",nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,false},
+     "RESTART REQUIRED - Experimental PS2 RNG; NTSC clock model."}
 }};
 inline bool Enabled(Feature feature){
     const auto index=static_cast<unsigned>(feature);

@@ -1,7 +1,8 @@
 param([Parameter(Mandatory=$true)][string]$ExecutablePath, [Parameter(Mandatory=$true)][string]$CarrierPath, [Parameter(Mandatory=$true)][string]$ProfilesPath)
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 # CustomMix Ultra production-runtime RT0/RT1 harness (x86, no game process).
 $ErrorActionPreference = 'Stop'
-if ((Get-FileHash -Algorithm SHA256 -LiteralPath $ExecutablePath).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED' -or
+if ((Get-FileHash -Algorithm SHA256 -LiteralPath $ExecutablePath).Hash -ne (Get-FfxTestExecutableHash) -or
     (Get-FileHash -Algorithm SHA256 -LiteralPath $CarrierPath).Hash -ne 'DDF8D89343195D3D014630C296A9583EE556EFA839918435802249FE148594D0') {
     throw 'Exact reviewed PE/carrier fixtures required; do not launch the game'
 }

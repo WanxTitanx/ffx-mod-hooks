@@ -3,6 +3,7 @@
 // body is replaced AFTER its evidenced entry prefix by a controlled endpoint.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include "../shared/ExecutableProfile.h"
 #include <windows.h>
 #include "PrivatePeFixture.h"
 #include "../hooks/VanguardRuntime.h"
@@ -19,6 +20,7 @@ namespace D=FfxHooks::SharedDamage;
 namespace B=FfxHooks::SharedBattleRuntime;
 static std::uintptr_t base;
 static unsigned checks=0,failures=0,aftermathCalls=0,damageCalls=0;
+static unsigned wakkaBegins=0,wakkaSettlements=0,wakkaAssists=0;
 static LONG CALLBACK ExceptionTrace(EXCEPTION_POINTERS* value){
     if(value&&value->ExceptionRecord&&value->ContextRecord){
         std::printf("ACTION_EXCEPTION code=%08lX ip=%08lX imageRva=%08lX eax=%08lX ecx=%08lX edx=%08lX esp=%08lX\n",
@@ -31,7 +33,14 @@ static LONG CALLBACK ExceptionTrace(EXCEPTION_POINTERS* value){
 static std::array<unsigned char,31*0xF90> actors{};
 static int requestedDamage[31]{};
 static void Check(bool ok,const char* text){++checks;if(!ok){++failures;std::printf("FAIL %s\n",text);}}
-static void Log(const char* text){std::fputs(text,stdout);}
+static void Log(const char* text){
+    std::fputs(text,stdout);
+    if(std::strstr(text,"owner=4 ")){
+        if(std::strstr(text,"event=begin "))++wakkaBegins;
+        if(std::strstr(text,"event=settle "))++wakkaSettlements;
+        if(std::strstr(text,"event=follow-enqueued "))++wakkaAssists;
+    }
+}
 static void W16(unsigned char* p,unsigned n){p[0]=static_cast<unsigned char>(n);p[1]=static_cast<unsigned char>(n>>8);}
 static unsigned Word(const unsigned char* p){return p[0]|(unsigned(p[1])<<8);}
 static void W32(unsigned char* p,int n){std::memcpy(p,&n,4);}
@@ -44,7 +53,7 @@ static int __cdecl Aftermath(unsigned source,unsigned sub,unsigned target,int*,v
     ++aftermathCalls;auto* actor=Actor(target);auto* group=actor+0x774;
     if(group[2]!=source||group[3]!=sub||group[0]>=group[1])return 0;
     using Apply=int(__cdecl*)(unsigned,unsigned char*,int,int,int,int,int);
-    reinterpret_cast<Apply>(base+0x38E2F0)(target,actor,requestedDamage[target],0,0,0,0);
+    reinterpret_cast<Apply>(base+::FfxHooks::ExecutableProfile::Rva<0x38E2F0>())(target,actor,requestedDamage[target],0,0,0,0);
     actor[0x640]|=group[24+6];W16(actor+0x606,Word(actor+0x606)|Word(group+24+20));++group[0];return 2;
 }
 // The first 16 native bytes establish this exact frame and push sourceId once.
@@ -74,29 +83,29 @@ static std::vector<unsigned char> Kernel(){
 }
 static unsigned char* NewAction(unsigned count=1){
     B::RunInitScene(B::kBattleStateInitSceneReturnRva,{nullptr,Scene},{},{});
-    auto* queue=reinterpret_cast<unsigned char*>(base+0xD2AC70);std::memset(queue,0,72*2);
-    *reinterpret_cast<unsigned char*>(base+0xD2BDE1)=1;queue[0]=0;queue[3]=static_cast<unsigned char>(count);
+    auto* queue=reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2AC70>());std::memset(queue,0,72*2);
+    *reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>())=1;queue[0]=0;queue[3]=static_cast<unsigned char>(count);
     for(unsigned i=0;i<count;++i){W16(queue+8+16*i,0x3000+i);W16(queue+10+16*i,255);W32(queue+16+16*i,1<<18);}
     Actor(0)[0xDE5]=0;Actor(0)[0xDE7]=1;W32(Actor(0)+0x5D0,1000);W16(Actor(0)+0x606,0);return queue;
 }
-static void Hit(unsigned sub,unsigned target,int damage,unsigned grant=0,bool canCrit=true,unsigned mpCost=10){
-    auto* queue=reinterpret_cast<unsigned char*>(base+0xD2AC70);queue[2]=static_cast<unsigned char>(sub);
+static void Hit(unsigned sub,unsigned target,int damage,unsigned grant=0,bool canCrit=true,unsigned mpCost=10,unsigned source=0,unsigned rootCommand=0x3000){
+    auto* queue=reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2AC70>());queue[2]=static_cast<unsigned char>(sub);
     std::array<unsigned char,96> command{};command[0x20]=canCrit?4:0;command[0x23]=1;command[0x25]=static_cast<unsigned char>(mpCost);W16(command.data()+0x5A,grant);
     std::array<unsigned char,44> info{};
-    const auto compute=reinterpret_cast<D::DamageFn>(base+0x38E680);
-    compute(0,Actor(0),target,Actor(target),command.data(),0x3000+sub,info.data(),0,0,0,0);
-    auto* group=Actor(target)+0x774;std::memset(group,0,68);group[1]=1;group[2]=0;group[3]=static_cast<unsigned char>(sub);
+    const auto compute=reinterpret_cast<D::DamageFn>(base+::FfxHooks::ExecutableProfile::Rva<0x38E680>());
+    compute(source,Actor(source),target,Actor(target),command.data(),rootCommand+sub,info.data(),0,0,0,0);
+    auto* group=Actor(target)+0x774;std::memset(group,0,68);group[1]=1;group[2]=static_cast<unsigned char>(source);group[3]=static_cast<unsigned char>(sub);
     group[24+6]=static_cast<unsigned char>(grant);
     requestedDamage[target]=damage;
     using Apply=int(__cdecl*)(unsigned,unsigned,unsigned,int*,void*);int out=-1;
-    const auto apply=reinterpret_cast<Apply>(base+0x38F0B0);
-    apply(0,sub,target,&out,nullptr);const int after=R32(Actor(target)+0x5D0);
-    apply(0,sub,target,&out,nullptr);
+    const auto apply=reinterpret_cast<Apply>(base+::FfxHooks::ExecutableProfile::Rva<0x38F0B0>());
+    apply(source,sub,target,&out,nullptr);const int after=R32(Actor(target)+0x5D0);
+    apply(source,sub,target,&out,nullptr);
     Check(R32(Actor(target)+0x5D0)==after,"duplicate aftermath observation does not apply a second HP loss");
 }
 static int Complete(unsigned cursor){
-    reinterpret_cast<unsigned char*>(base+0xD2AC70)[2]=static_cast<unsigned char>(cursor);
-    return reinterpret_cast<int(__cdecl*)(unsigned,unsigned,unsigned)>(base+0x3B0870)(0,0,0);
+    reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2AC70>())[2]=static_cast<unsigned char>(cursor);
+    return reinterpret_cast<int(__cdecl*)(unsigned,unsigned,unsigned)>(base+::FfxHooks::ExecutableProfile::Rva<0x3B0870>())(0,0,0);
 }
 static void BuffCases(){
     NewAction(2);Actor(0)[0x640]=0x14;W32(Actor(18)+0x5D0,1000);W32(Actor(19)+0x5D0,1000);
@@ -109,17 +118,18 @@ static void BuffCases(){
     Check(Actor(0)[0x640]==0x10,"Auto-Crit reapplied by an actual consumed result survives the old action settlement");
     NewAction();Actor(0)[0x640]=0x14;Hit(0,0,0,4,true,10);Complete(1);
     Check(Actor(0)[0x640]==4,"a fresh MP-0 instance survives while the old used Auto-Crit is consumed");
-    NewAction();Actor(0)[0x640]=0;*reinterpret_cast<unsigned char*>(base+0xD2A90D)=1;
+    NewAction();Actor(0)[0x640]=0;*reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A90D>())=1;
     Hit(0,18,0);Complete(1);
-    Check(*reinterpret_cast<unsigned char*>(base+0xD2A90D)==1,"consumption never clears the permanent F8 critical producer");
-    *reinterpret_cast<unsigned char*>(base+0xD2A90D)=0;
+    Check(*reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A90D>())==1,"consumption never clears the permanent F8 critical producer");
+    *reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A90D>())=0;
 }
 #include "VanguardFollowUpCases.inl"
 #include "VanguardThreatenCases.inl"
 #include "VanguardEnergyCases.inl"
 int main(int argc,char** argv){
     if(argc<2||argc>3)return 2;const bool buffs=argc==3&&std::strcmp(argv[2],"buffs")==0;
-    const bool follow=argc==3&&std::strcmp(argv[2],"follow")==0;
+    const bool combined=argc==3&&std::strcmp(argv[2],"follow-vampirism")==0;
+    const bool follow=combined||(argc==3&&std::strcmp(argv[2],"follow")==0);
     const bool threaten=argc==3&&std::strcmp(argv[2],"threaten")==0;
     const bool energy=argc==3&&std::strcmp(argv[2],"energy")==0;
     const bool shared=argc==3&&std::strcmp(argv[2],"shared-first")==0;
@@ -128,24 +138,25 @@ int main(int argc,char** argv){
     const HMODULE image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES);if(!image)return 2;
     base=reinterpret_cast<std::uintptr_t>(image);Check(PrivatePeFixture::NormalizeRelocations(image),"private action image relocates");
     auto kernel=Kernel();const auto ap=reinterpret_cast<std::uintptr_t>(actors.data()),kp=reinterpret_cast<std::uintptr_t>(kernel.data());
-    std::memcpy(reinterpret_cast<void*>(base+0xD334CC),&ap,4);std::memcpy(reinterpret_cast<void*>(base+0xD2A944),&kp,4);
-    const auto size=static_cast<unsigned short>(kernel.size());std::memcpy(reinterpret_cast<void*>(base+0xD2A970),&size,2);
-    *reinterpret_cast<unsigned char*>(base+0xD2A8E0)=1;
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&ap,4);std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&kp,4);
+    const auto size=static_cast<unsigned short>(kernel.size());std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),&size,2);
+    *reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())=1;
     // ApplyHpDamage asks the real scene-key reader for scenario/variant metadata.
     // Supply its bounded data, rather than bypassing the native special-boss rules.
     std::array<unsigned char,14> scenario{};unsigned char variant=0;
     const auto sp=reinterpret_cast<std::uintptr_t>(scenario.data()),vp=reinterpret_cast<std::uintptr_t>(&variant);
-    std::memcpy(reinterpret_cast<void*>(base+0xD2A9C8),&sp,4);std::memcpy(reinterpret_cast<void*>(base+0xD2A9FC),&vp,4);
-    W16(reinterpret_cast<unsigned char*>(base+0xD2C256),0);
+    std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A9C8>()),&sp,4);std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A9FC>()),&vp,4);
+    W16(reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2C256>()),0);
     for(unsigned i=0;i<31;++i){auto* a=Actor(i);a[0xC]=static_cast<unsigned char>(i);W16(a+0xE,i<18?i:0x1000+i);a[0xDC8]=a[0xDC9]=1;
         a[0xDE5]=a[0x592]=a[0x593]=255;W32(a+0x594,10000);W32(a+0x5D0,1000);}
-    auto* gear=reinterpret_cast<unsigned char*>(base+0xD30F2C);std::memset(gear,0,4400);gear[2]=1;gear[11]=4;
+    auto* gear=reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD30F2C>());std::memset(gear,0,4400);gear[2]=1;gear[11]=4;
     for(unsigned i=0;i<4;++i)W16(gear+14+2*i,255);W16(gear+14,0x808B);Actor(0)[0x592]=0;
     FfxHooks::Config::ResetForTests();
     const char* settings=energy?"[vanguard]\nenergy_boost=1\nenergy_burst=1\nenergy_wall=1\nenergy_barrier=1\n[f8_authority]\nvanguard_energy_boost=1\nvanguard_energy_burst=1\nvanguard_energy_wall=1\nvanguard_energy_barrier=1\n":threaten?"[vanguard]\nthreaten_single_use=1\n[f8_authority]\nvanguard_threaten_single_use=1\n":follow?"[vanguard]\nfollow_up=1\n[f8_authority]\nvanguard_follow_up=1\n":buffs?"[vanguard]\nauto_crit_mp0_turn_end=1\n[f8_authority]\nvanguard_auto_crit_mp0_turn_end=1\n":
         "[vanguard]\nvampirism=1\n[f8_authority]\nvanguard_vampirism=1\n";
-    Check(FfxHooks::Config::LoadTextForTests(settings,"C:\\private-vampirism.ini"),"the selected action feature is enabled independently");
-    Check(PatchJump(base+0x38F0C0,reinterpret_cast<void*>(&AftermathEndpoint)),"graphics-only aftermath endpoint is isolated after the verified native prefix");
+    if(combined)settings="[vanguard]\nfollow_up=1\nvampirism=1\n[f8_authority]\nvanguard_follow_up=1\nvanguard_vampirism=1\n";
+    Check(FfxHooks::Config::LoadTextForTests(settings,"C:\\private-vampirism.ini"),"the selected action feature configuration is explicit");
+    Check(PatchJump(base+::FfxHooks::ExecutableProfile::Rva<0x38F0C0>(),reinterpret_cast<void*>(&AftermathEndpoint)),"graphics-only aftermath endpoint is isolated after the verified native prefix");
     Check(D::Start(base),"shared damage dispatcher is installed once");
     static const D::WorkshopCallbacks host{Guard,Guard,Damage};Check(D::RegisterWorkshop(&host),"controlled formula endpoint is independent of action settlement");
     if(shared)Check(FfxHooks::SharedAction::Start(base),"an independent action owner is installed before Vanguard");
@@ -159,7 +170,10 @@ int main(int argc,char** argv){
         std::printf("VANGUARD_ENERGY_RUNTIME %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     if(threaten){ThreatenCases();V::RequestStop();D::UnregisterWorkshop(&host);
         std::printf("VANGUARD_THREATEN_RUNTIME %u/%u passed\n",checks-failures,checks);return failures?1:0;}
-    if(follow){FollowUpCases(gear,kernel);V::RequestStop();D::UnregisterWorkshop(&host);
+    if(follow){FollowUpCases(gear,kernel,combined);
+        if(combined)Check(wakkaAssists==1&&wakkaBegins==3&&wakkaSettlements==2,
+            "bounded evidence distinguishes Wakka's settled normal/reaction pair and the next ordinary begin");
+        V::RequestStop();D::UnregisterWorkshop(&host);
         std::printf("VANGUARD_FOLLOW_RUNTIME %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     if(buffs){BuffCases();V::RequestStop();D::UnregisterWorkshop(&host);
         std::printf("VANGUARD_BUFF_RUNTIME %u/%u passed\n",checks-failures,checks);return failures?1:0;}

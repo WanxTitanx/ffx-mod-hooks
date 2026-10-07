@@ -1,3 +1,4 @@
+. (Join-Path $PSScriptRoot 'tests/executable_profile.ps1')
 # Jarvis-HOOK: private x86 native-frame replay; never launches FFX.exe.
 $ErrorActionPreference='Stop'
 $here=$PSScriptRoot
@@ -17,7 +18,7 @@ $sources=@('tests\MonsterRewardsRuntimeRt1.cpp','hooks\MonsterRewardsRuntime.cpp
 $exe=Join-Path $obj 'MonsterRewardsRuntimeRt1.exe'
 $compile='call "{0}" x86 >nul && cl /nologo /EHsc /std:c++17 /WX /utf-8 /MT /DFFXHOOKS_TESTING /DFFXHOOKS_HAVE_POLYHOOK /I"{1}\include" {2} hook.obj buffer.obj trampoline.obj hde32.obj /Fe"{3}" user32.lib' -f $vcvars,$mh,($sources -join ' '),$exe
 $fixture=Join-Path $repo 'native-fixtures\FFX.exe'
-if((Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash -ne '78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED'){throw 'Unsupported private executable fixture'}
+if((Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash -ne (Get-FfxTestExecutableHash)){throw 'Unsupported private executable fixture'}
 Push-Location $obj
 try{
     & $env:ComSpec /c $compileC;if($LASTEXITCODE -ne 0){throw 'MinHook compilation failed'}

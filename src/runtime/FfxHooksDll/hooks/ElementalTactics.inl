@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK: one battle-thread ledger owns external status instances. Native
 // queue/result entries, not frame counts or UI callbacks, commit and age them.
 BattleState statusState;
@@ -18,7 +19,7 @@ bool SyncingStatusActors=false;
 void SyncStatusActors() noexcept {
     if(!options.tactics||!statusState.Generation()||SyncingStatusActors)return;
     SyncingStatusActors=true;std::uint32_t pointer=0;
-    if(!Read(module+0xD334CC,pointer)||pointer<0x10000||pointer>UINT32_MAX-ActorCount*0xF90u){
+    if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),pointer)||pointer<0x10000||pointer>UINT32_MAX-ActorCount*0xF90u){
         SyncingStatusActors=false;return;
     }
     for(unsigned slot=0;slot<ActorCount;++slot){
@@ -64,9 +65,9 @@ TimedAffinity Timed(unsigned target,unsigned element,const ActionToken* action,b
 bool QueueRow(unsigned owner,std::array<Byte,72>& row,unsigned& index,unsigned& count) noexcept {
     if(owner>=ActorCount||!statusActors[owner].token.Valid())return false;
     std::int8_t length=0;Byte slot=255;
-    if(!Read(module+0xD2BDE1,length)||length<1||length>62||
+    if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>()),length)||length<1||length>62||
        !Read(statusActors[owner].address+0xDE5,slot)||slot>=static_cast<unsigned>(length)||
-       !Copy(row.data(),reinterpret_cast<const void*>(module+0xD2AC70+72u*slot),row.size())||
+       !Copy(row.data(),reinterpret_cast<const void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD2AC70>())+72u*slot),row.size())||
        row[0]!=owner||!row[3]||row[3]>4||row[2]>row[3])return false;
     index=slot;count=static_cast<unsigned>(length);return true;
 }
@@ -135,8 +136,8 @@ unsigned StatusRoll(unsigned source,const CommandBinding& binding,ActorToken tar
     }
     if(!uncertain)return 0;
     __try {
-        const auto stream=reinterpret_cast<unsigned(__cdecl*)(unsigned,unsigned)>(module+0x38D2D0)(source,0);
-        return reinterpret_cast<unsigned(__cdecl*)(unsigned)>(module+0x398900)(stream)%10000;
+        const auto stream=reinterpret_cast<unsigned(__cdecl*)(unsigned,unsigned)>(module + (::FfxHooks::ExecutableProfile::Rva<0x38D2D0>()))(source,0);
+        return reinterpret_cast<unsigned(__cdecl*)(unsigned)>(module + (::FfxHooks::ExecutableProfile::Rva<0x398900>()))(stream)%10000;
     }__except(EXCEPTION_EXECUTE_HANDLER){return UINT_MAX;}
 }
 void AfterStatusResult(void* token,const SharedAction::ResultCall& call,int,bool completed) noexcept {
@@ -178,7 +179,7 @@ void AfterStatusFinish(void* token,const SharedAction::FinishCall& call,int resu
     const auto* context=static_cast<const FinishStatusContext*>(token);
     if(!context||context->generation!=generation.load()||!CurrentData()||call.owner>=ActorCount)return;
     std::int8_t count=0;
-    if(!completed||result!=1||!Read(module+0xD2BDE1,count)||count<0||static_cast<unsigned>(count)+1!=context->count)return;
+    if(!completed||result!=1||!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>()),count)||count<0||static_cast<unsigned>(count)+1!=context->count)return;
     auto& action=nativeActions[call.owner];
     if(action.token.sequence!=context->action.sequence||action.token.generation!=context->action.generation)return;
     ReleaseNulReservations(context->action);

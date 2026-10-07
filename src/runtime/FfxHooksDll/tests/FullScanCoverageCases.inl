@@ -31,37 +31,37 @@ static bool MpValues(int current,int maximum){return numberDraws.size()==4&&numb
 static void Run(bool elements,bool expanded){
     // Decode the addresses the unmodified native dispatcher/content actually read.
     // The old fixture copied the hook's wrong RVA and bypassed the dispatcher.
-    auto* state=reinterpret_cast<short*>(NativeOperand(0x495303));
-    auto* target=reinterpret_cast<short*>(NativeOperand(0x49BEF5));
-    auto* animation=reinterpret_cast<short*>(NativeOperand(0x49BC01));
+    auto* state=reinterpret_cast<short*>(NativeOperand(::FfxHooks::ExecutableProfile::Rva<0x495303>()));
+    auto* target=reinterpret_cast<short*>(NativeOperand(::FfxHooks::ExecutableProfile::Rva<0x49BEF5>()));
+    auto* animation=reinterpret_cast<short*>(NativeOperand(::FfxHooks::ExecutableProfile::Rva<0x49BC01>()));
     // Full Scan uses its own 410-pixel bands; Sensor uses 365-pixel bands.
-    const float nativeBandWidth=*reinterpret_cast<const float*>(NativeOperand(0x49BFD2));
-    const float nativeStatX=*reinterpret_cast<const float*>(NativeOperand(0x49C419));
-    const float mpUv[]={*reinterpret_cast<const float*>(NativeOperand(0x4F16C7)),
-                        *reinterpret_cast<const float*>(NativeOperand(0x4F16BD)),
-                        *reinterpret_cast<const float*>(NativeOperand(0x4F16B3)),
-                        *reinterpret_cast<const float*>(NativeOperand(0x4F16A6))};
-    Check(reinterpret_cast<std::uintptr_t>(state)==imageBase+0xF3F668&&
-          reinterpret_cast<std::uintptr_t>(target)==imageBase+0xF3F66A&&
-          reinterpret_cast<std::uintptr_t>(animation)==imageBase+0xF3F6C2,
+    const float nativeBandWidth=*reinterpret_cast<const float*>(NativeOperand(::FfxHooks::ExecutableProfile::Rva<0x49BFD2>()));
+    const float nativeStatX=*reinterpret_cast<const float*>(NativeOperand(::FfxHooks::ExecutableProfile::Rva<0x49C419>()));
+    const float mpUv[]={*reinterpret_cast<const float*>(NativeOperand(::FfxHooks::ExecutableProfile::Rva<0x4F16C7>())),
+                        *reinterpret_cast<const float*>(NativeOperand(::FfxHooks::ExecutableProfile::Rva<0x4F16BD>())),
+                        *reinterpret_cast<const float*>(NativeOperand(::FfxHooks::ExecutableProfile::Rva<0x4F16B3>())),
+                        *reinterpret_cast<const float*>(NativeOperand(::FfxHooks::ExecutableProfile::Rva<0x4F16A6>()))};
+    Check(reinterpret_cast<std::uintptr_t>(state)==imageBase+(::FfxHooks::ExecutableProfile::Rva<0xF3F668>())&&
+          reinterpret_cast<std::uintptr_t>(target)==imageBase+(::FfxHooks::ExecutableProfile::Rva<0xF3F66A>())&&
+          reinterpret_cast<std::uintptr_t>(animation)==imageBase+(::FfxHooks::ExecutableProfile::Rva<0xF3F6C2>()),
           "native Scan state/target/animation operands resolve from the pinned PE base");
     if(failures)return;
     const short savedState=*state,savedTarget=*target,savedAnimation=*animation;
-    auto* actorRoot=reinterpret_cast<std::uintptr_t*>(imageBase+0xD334CC);
+    auto* actorRoot=reinterpret_cast<std::uintptr_t*>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0xD334CC>()));
     const auto savedRoot=*actorRoot;*actorRoot=reinterpret_cast<std::uintptr_t>(actors);
     // Keep the real actor resolver and affinity accessors. Substitute only an
     // unloaded description table, language, measurement and graphics endpoints.
-    auto maskPatch=std::find_if(patches.begin(),patches.end(),[](const Patch& p){return p.at==imageBase+0x4975C0;});
+    auto maskPatch=std::find_if(patches.begin(),patches.end(),[](const Patch& p){return p.at==imageBase+(::FfxHooks::ExecutableProfile::Rva<0x4975C0>());});
     Check(maskPatch!=patches.end()&&Write(maskPatch->at,maskPatch->before,5),"full Scan restores the actual native affinity reader");
     if(maskPatch!=patches.end())patches.erase(maskPatch);
-    Redirect(0x38F810,reinterpret_cast<const void*>(&EmptyText));
-    Redirect(0x4AC2A0,reinterpret_cast<const void*>(&Language));
-    Redirect(0x2415C0,reinterpret_cast<const void*>(&Angle));Redirect(0x4B9600,reinterpret_cast<const void*>(&MeasureBlock));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x38F810>()),reinterpret_cast<const void*>(&EmptyText));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x4AC2A0>()),reinterpret_cast<const void*>(&Language));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x2415C0>()),reinterpret_cast<const void*>(&Angle));Redirect((::FfxHooks::ExecutableProfile::Rva<0x4B9600>()),reinterpret_cast<const void*>(&MeasureBlock));
     FfxHooks::ElementScanFullEnvironmentForTests(reinterpret_cast<void*>(&Rotated),reinterpret_cast<void*>(&TextDispatch),reinterpret_cast<void*>(&NumberRight),reinterpret_cast<void*>(&NumberLeft),reinterpret_cast<void*>(&Glyph));
     SeedActor(3,21,80);SeedActor(5,41,0);
     *animation=0;
-    const auto dispatch=reinterpret_cast<void(__cdecl*)()>(imageBase+0x495300);
-    const auto frame=reinterpret_cast<int(__cdecl*)()>(imageBase+0x49BBF0);
+    const auto dispatch=reinterpret_cast<void(__cdecl*)()>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x495300>()));
+    const auto frame=reinterpret_cast<int(__cdecl*)()>(imageBase+(::FfxHooks::ExecutableProfile::Rva<0x49BBF0>()));
     const float savedWidth=viewportWidth,savedHeight=viewportHeight;
     std::puts("CASE full Scan through native state dispatcher and actor resolver");
     for(const auto viewport:{std::array<float,2>{512.f,416.f},std::array<float,2>{1024.f,576.f},std::array<float,2>{1920.f,1080.f}}){
@@ -140,6 +140,6 @@ static void Run(bool elements,bool expanded){
     *state=3;*target=-1;ResetDraw();frame();
     Check(std::fabs(lastWidth-ScaleX(1000.f))<.01f&&!Has("MP"),"an invalid native Scan target retains the original frame");
     *state=savedState;*target=savedTarget;*animation=savedAnimation;*actorRoot=savedRoot;
-    Redirect(0x4975C0,reinterpret_cast<const void*>(&Mask));
+    Redirect((::FfxHooks::ExecutableProfile::Rva<0x4975C0>()),reinterpret_cast<const void*>(&Mask));
 }
 }

@@ -29,7 +29,7 @@ static void CatalogAndRanks(){
         Check(native?(item==CustomizeRecipes[id].item&&quantity==CustomizeRecipes[id].quantity):(item==73&&quantity==30),"native recipe or clearly separate mod-only fallback");
         unsigned last=0;
         for(unsigned rank=1;rank<=10;++rank){unsigned actualItem=0,amount=0;
-            Check(RefinementCost(static_cast<std::uint16_t>(0x8000+id),rank,p,actualItem,amount)&&actualItem==item&&amount==rank*((quantity+9)/10)&&amount>last,"each rank progressively charges the same Customize material");last=amount;}
+            Check(RefinementCost(static_cast<std::uint16_t>(0x8000+id),rank,p,actualItem,amount)&&actualItem==item&&amount==(quantity*rank+59)/60&&amount>=last,"the reduced rank price rounds once and keeps the same Customize material");last=amount;}
     }
     Check(nativeCount==125&&modCount==6,"125 native recipes and six explicitly non-native entries");
     const unsigned ids[]={0,1,19,85,86,98,100,117,128};
@@ -48,22 +48,23 @@ static void AlternativeRequirements(){
     SetWord(piece,0,0x8062);SetWord(piece,2,0x806A);
     piece.ranks[0]=4;piece.ranks[1]=10;piece.ranks[2]=2;piece.ranks[3]=10;
     s.items[70]=6;s.items[77]=s.items[67]=0;
+    Economy pricing=Funding();pricing.policy.refinementDivisor=3;
     auto r=RequestFor(s,Op::Refine);Plan p{};
-    Check(Quote(s,r,p)==Error::Ok&&p.requirements[70]==6,"same-item alternatives require max(5,3)+base1, not sum");
+    Check(Quote(s,r,p,pricing)==Error::Ok&&p.requirements[70]==6,"same-item alternatives require max(5,3)+base1, not sum");
     Check(p.requirements[77]==0&&p.requirements[67]==0,"maxed abilities require no ingredients and leave roulette");
     auto poor=s;poor.items[70]=5;
-    Check(Quote(poor,r,p)==Error::Materials&&p.requirements[70]==6&&!p.chosenAbility&&std::memcmp(&p.after,&poor,sizeof(poor))==0,"overlapping base and specific material cannot underflow or bias the pool");
+    Check(Quote(poor,r,p,pricing)==Error::Materials&&p.requirements[70]==6&&!p.chosenAbility&&std::memcmp(&p.after,&poor,sizeof(poor))==0,"overlapping base and specific material cannot underflow or bias the pool");
     unsigned selected[2]={};
     for(unsigned seed=0;seed<256;++seed){s.rng=seed;Plan a{},b{};
-        Check(Quote(s,r,a)==Error::Ok,"sufficient prerequisites admit every roulette seed");
+        Check(Quote(s,r,a,pricing)==Error::Ok,"sufficient prerequisites admit every roulette seed");
         const bool first=a.chosenAbility==piece.abilities[0];++selected[first?0:1];
         Check((first||a.chosenAbility==piece.abilities[2])&&a.costs[70]==(first?6:4)&&a.after.items[70]==(first?0:2),"only winner plus base is charged, including same-item overlap");
         auto rich=s;rich.items[70]=255;
-        Check(Quote(rich,r,b)==Error::Ok&&a.chosenAbility==b.chosenAbility,"extra inventory never changes candidate probabilities or result");
+        Check(Quote(rich,r,b,pricing)==Error::Ok&&a.chosenAbility==b.chosenAbility,"extra inventory never changes candidate probabilities or result");
         Check(a.after.rolls==s.rolls+1&&std::memcmp(&s,&b.after,sizeof(s))!=0,"one paid draw advances the generator once");
     }
     Check(selected[0]>0&&selected[1]>0,"both eligible instances remain reachable");
-    Economy e=Funding();e.policy.mode=1;s.items[70]=10;
+    Economy e=pricing;e.policy.mode=1;s.items[70]=10;
     Check(Quote(s,r,p,e)==Error::Ok&&p.costs[70]==10&&p.requirements[70]==10&&p.after.pieces[0].ranks[0]==5&&p.after.pieces[0].ranks[2]==3&&p.after.rolls==s.rolls,"whole-equipment mode sums simultaneous costs and does not roll RNG");
 }
 static void PrepareArmorFusion(State& s){
@@ -108,7 +109,7 @@ int main(){
     Check(Quote(poor,request,plan)==Error::Materials,"roulette needs its base Power Sphere");
     Check(Quote(state,request,plan)==Error::Ok&&plan.costs[70]==1,"one base Power Sphere is charged for accepted roulette");
     unsigned winner=5;for(unsigned i=0;i<4;++i)if(plan.after.pieces[0].ranks[i]!=state.pieces[0].ranks[i])winner=i;
-    const unsigned materials[]={73,77,57,67},costs[]={1,1,7,1};
+    const unsigned materials[]={73,77,57,67},costs[]={1,1,2,1};
     Check(winner<4&&plan.costs[materials[winner]]==costs[winner],"only the winning ability pays its next-rank Customize ingredient");
     if(winner<4)for(unsigned i=0;i<4;++i)if(i!=winner)Check(plan.costs[materials[i]]==0,"unselected outcome ingredients are prerequisites, not charges");
     std::printf("WORKSHOP_ECONOMY %u/%u passed\n",checks-failures,checks);return failures?1:0;

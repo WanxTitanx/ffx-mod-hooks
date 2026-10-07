@@ -323,6 +323,7 @@
     <ClCompile Include="hooks\NativeGamepadHook.cpp" />
     <ClCompile Include="hooks\NativeLanguageHook.cpp" />
     <ClCompile Include="hooks\TextLanguageCore.cpp" />
+    <ClCompile Include="hooks\UiNativeFont.cpp" />
     <ClCompile Include="hooks\TextLanguagePayload.cpp" />
     <ClCompile Include="hooks\TextLanguagePack.cpp" />
     <ClCompile Include="hooks\TextLanguageFiles.cpp" />

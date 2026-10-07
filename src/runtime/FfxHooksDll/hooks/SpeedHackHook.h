@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 
 #include <cstddef>
@@ -521,19 +522,27 @@ inline SpeedHackTransition AdvanceSpeedHackControlAfterForegroundEvent(
 
 inline constexpr size_t kSpeedHackTargetLength = 12;
 inline constexpr size_t kSpeedHackOperandOffset = 2;
-inline constexpr uint32_t kSpeedHackOperandRva = 0x008C9CF5u;
+inline constexpr uint32_t kSpeedHackOperandRva = (::FfxHooks::ExecutableProfile::Rva<0x008C9CF5u>());
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+inline constexpr uint8_t kSpeedHackTargetSignature[kSpeedHackTargetLength] = {0x80,0x3D,0xF5,0x9C,0xCC,0x00,0x00,0x56,0x8B,0xF1,0x74,0x06};
+#else
 inline constexpr uint8_t kSpeedHackTargetSignature[kSpeedHackTargetLength] = {
     0x80, 0x3D, 0xF5, 0x9C, 0xCC, 0x00,
     0x00, 0x56, 0x8B, 0xF1, 0x74, 0x06,
 };
+#endif
 
 inline constexpr size_t kSpeedHackGlobalTargetLength = 16;
 inline constexpr size_t kSpeedHackGlobalOperandOffset = 10;
-inline constexpr uint32_t kSpeedHackGlobalOperandRva = 0x008613D8u;
+inline constexpr uint32_t kSpeedHackGlobalOperandRva = (::FfxHooks::ExecutableProfile::Rva<0x008613D8u>());
+#ifdef FFXHOOKS_TARGET_STEAM_20261001
+inline constexpr uint8_t kSpeedHackGlobalTargetSignature[kSpeedHackGlobalTargetLength] = {0x55,0x8B,0xEC,0x81,0xEC,0xA4,0x00,0x00,0x00,0xA1,0xD8,0x13,0xC6,0x00,0x33,0xC5};
+#else
 inline constexpr uint8_t kSpeedHackGlobalTargetSignature[kSpeedHackGlobalTargetLength] = {
     0x55, 0x8B, 0xEC, 0x81, 0xEC, 0xA4, 0x00, 0x00,
     0x00, 0xA1, 0xD8, 0x13, 0xC6, 0x00, 0x33, 0xC5,
 };
+#endif
 
 enum class SpeedHackTargetStatus : uint8_t {
     Match = 0,

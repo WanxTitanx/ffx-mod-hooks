@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK: render a value snapshot; never recompute gameplay or write actors.
 bool CaptureNumerical(ScanScope& current){
     if(!numericScanEnabled)return false;
@@ -19,38 +20,33 @@ void NumericalText(const char* plain,float x,float y,float sx,float sy){
         const char* found=std::strchr(alphabet,*p);encoded[n++]=static_cast<unsigned char>(found?0x30+found-alphabet:0x3A);
     }
     using Draw=int(__cdecl*)(unsigned,const unsigned char*,float,float,unsigned,float,float);
-    reinterpret_cast<Draw>(originals[Text])(0,encoded,x,y,0,sx,sy);
+    NativeText::DrawPlain(reinterpret_cast<Draw>(originals[Text]),0,encoded,x,y,0,sx,sy);
 }
 void DrawNumerical(ScanScope& current,float x,float y,float height){
     if(!current.numeric||!current.numerical.count)return;
-    reinterpret_cast<PanelFn>(originals[Panel])(x,y,X(750.f),Y(height),3);
+    using Fill=void(__cdecl*)(float,float,float,float,unsigned,unsigned);
+    const auto fill=reinterpret_cast<Fill>(module+::FfxHooks::ExecutableProfile::Rva<0x4F4B20>());
+    const unsigned surface=ElementScan::NativeColor(0x162737u);
+    const unsigned cardTop=ElementScan::NativeColor(0x253B50u),cardBottom=ElementScan::NativeColor(0x1C2E40u);
+    const unsigned divider=ElementScan::NativeColor(0x526A7Eu);
+    fill(x,y,X(750.f),Y(height),surface,surface);
     char header[80]{};
     std::snprintf(header,sizeof(header),"Elemental Dominion  %u/%u",current.numerical.page+1,
         (current.numerical.total+ElementalScanView::PageSize-1)/ElementalScanView::PageSize);
-    NumericalText(header,x+X(14),y+Y(8),.52f,.82f);
+    NumericalText(header,x+X(14),y+Y(7),.52f,.82f);
+    fill(x+X(12),y+Y(31),X(726),Y(1),divider,divider);
     for(unsigned i=0;i<current.numerical.count;++i){
         ElementalScanView::Lines lines{};if(!ElementalScanView::Format(current.numerical.rows[i],lines))continue;
-        const float left=x+X(14.f+365.f*static_cast<float>(i&1));
+        const float left=x+X(10.f+365.f*static_cast<float>(i&1));
         const float top=y+Y(35.f+58.f*static_cast<float>(i/2));
         const auto uv=ElementScan::SilverSphere;
         const auto color=ElementScan::NativeColor(current.numerical.rows[i].rgb);
-        reinterpret_cast<TintFn>(module+0x503EE0)(0x1AF,left,top+Y(3),X(12),Y(12),uv.u0,uv.v0,uv.u1,uv.v1,color,color);
-        NumericalText(lines.title,left+X(17),top,.42f,.72f);
-        NumericalText(lines.effects,left,top+Y(19),.34f,.58f);
-        NumericalText(lines.restriction,left,top+Y(36),.34f,.58f);
+        fill(left,top,X(354),Y(54),cardTop,cardBottom);
+        fill(left,top,X(3),Y(54),color,color);
+        reinterpret_cast<TintFn>(module + (::FfxHooks::ExecutableProfile::Rva<0x503EE0>()))(0x1AF,left+X(9),top+Y(3),X(18),Y(18),uv.u0,uv.v0,uv.u1,uv.v1,color,color);
+        NumericalText(lines.title,left+X(32),top+Y(2),.42f,.72f);
+        NumericalText(lines.effects,left+X(9),top+Y(21),.32f,.57f);
+        NumericalText(lines.restriction,left+X(9),top+Y(38),.32f,.55f);
     }
-    NumericalText("I Imperil   W Ward   N Nul   stacks/actions",x+X(14),y+Y(height-20),.36f,.62f);
-}
-void DrawSensorNumerical(ScanScope& current){
-    if(!current.sensorPanel||!CaptureNumerical(current))return;
-    const float width=X(750.f),height=NumericalBodyHeight(current);
-    const float minimumX=X(20),maximumX=X(1900)-width;
-    float left=current.panelX+current.panelW+X(12);
-    if(left>maximumX)left=current.panelX-width-X(12);
-    if(left<minimumX)left=minimumX;
-    if(left>maximumX)left=maximumX;
-    float top=current.panelY;
-    if(top+Y(height)>Y(1060))top=Y(1060-height);
-    if(top<Y(20))top=Y(20);
-    DrawNumerical(current,left,top,height);
+    NumericalText("I Imperil   W Ward   N Nul   stacks/actions",x+X(14),y+Y(height-18),.34f,.59f);
 }

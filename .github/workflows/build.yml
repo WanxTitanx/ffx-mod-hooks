@@ -53,7 +53,11 @@ jobs:
         with:
           persist-credentials: false
       - name: MSVC x86 adapters, bounded file IO and F8 regressions
-        run: ./src/runtime/FfxHooksDll/text_languages_rt1.ps1
+        run: |
+          $env:CL = (($env:CL + ' /DFFXHOOKS_TARGET_STEAM_20261001').Trim())
+          ./src/runtime/FfxHooksDll/text_languages_rt1.ps1
+      - name: Reject unsupported executable startup before native features
+        run: ./src/runtime/FfxHooksDll/executable_startup_rt0.ps1
       - name: F7 and F8 input audio outcomes
         run: ./src/runtime/FfxHooksDll/f7_audio_rt1.ps1
       - name: Validate authored interface catalogs

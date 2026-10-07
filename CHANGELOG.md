@@ -1,3 +1,44 @@
+# FFX Hooks v0.6.0-beta.4
+
+## English
+
+**Steam compatibility and improved language-pack support**
+
+This beta updates Hooks for the supported Steam executable and improves support for separately installed language packs. The Brazilian Portuguese game translation is still being tested and is not included in this release.
+
+### Improvements
+
+- Restores compatibility with the supported October 2026 Steam executable, including native menu and equipment consumers.
+- Supports more complete custom language packs, including longer translated text, additional font characters and compatible translated interface images. Packs remain separate downloads and require a restart to activate.
+- Adds an optional experimental PS2-style RNG initialization setting. It is OFF by default and requires a restart; it is not a claim of exact physical PlayStation 2 timing.
+
+### Known issues
+
+- This is a beta. In-game visual, gameplay and save-lifecycle validation remains incomplete, and arbitrary combinations of mods are not certified.
+- No PT-BR game translation, translated font/image pack, game files or companion SIN content is included. Selecting Portuguese game text without a compatible language pack does not install a translation. The existing nine-language Hooks interface is a separate feature.
+- This binary targets the supported updated Steam executable. Older executable builds require their matching Hooks release. This release does not include a new Fahrenheit provider/bridge bundle; do not assume the older beta.3 add-on is compatible with an updated executable.
+
+## Português (Brasil)
+
+**Compatibilidade com o Steam e melhorias no suporte a pacotes de idioma**
+
+Esta beta atualiza o Hooks para o executável Steam suportado e melhora o suporte a pacotes de idioma instalados separadamente. A tradução do jogo para português do Brasil ainda está em testes e não está incluída nesta versão.
+
+### Melhorias
+
+- Restaura a compatibilidade com o executável Steam suportado de outubro de 2026, incluindo os menus nativos e o processamento de equipamentos.
+- Suporta pacotes de idioma personalizados mais completos, incluindo textos traduzidos mais longos, caracteres adicionais na fonte e imagens de interface traduzidas compatíveis. Os pacotes continuam sendo downloads separados e exigem reiniciar o jogo para ativação.
+- Adiciona uma opção experimental de inicialização do RNG inspirada no PS2. Ela fica DESLIGADA por padrão e exige reinício; não representa uma garantia de temporização idêntica à de um PlayStation 2 físico.
+
+### Problemas conhecidos
+
+- Esta é uma beta. A validação visual, de gameplay e do ciclo de saves dentro do jogo ainda está incompleta, e combinações arbitrárias de mods não são certificadas.
+- Não inclui a tradução PT-BR do jogo, pacote de fontes/imagens traduzidas, arquivos do jogo ou conteúdo complementar do SIN. Selecionar texto em português sem um pacote de idioma compatível não instala uma tradução. A interface do Hooks em nove idiomas já existente é um recurso separado.
+- Esta DLL se destina ao executável Steam atualizado suportado. Executáveis anteriores exigem sua versão correspondente do Hooks. Esta versão não inclui um novo pacote de provider/bridge do Fahrenheit; não presuma que o complemento antigo da beta.3 seja compatível com um executável atualizado.
+
+
+---
+
 # v0.6.0-beta.3 — 2026-09-29
 
 - Add nine selectable F8 interface languages with Unicode captions and independent persistence. Failed saves preserve the prior locale. Non-FLAGS F7 pages remain native English.

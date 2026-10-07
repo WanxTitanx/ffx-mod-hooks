@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 /* Arena+ Custom Mix Phase 2 â€” F7 boss checklist + subprocess --compose before launch. */
 #define WIN32_LEAN_AND_MEAN
 #include "ArenaPlusComposePick.h"
@@ -1249,8 +1250,8 @@ static bool SavePositions() {
 /* Local bind helpers (this file cannot see the dllmain.cpp ones - closed scope).
 Same RVA/offsets as the Aurora W2S scan: live actor table + X/Y/Z at +0x00C/+0x010/+0x014. */
 
-static const uint32_t RVA_ACTIVE_CHR_TABLE_LOCAL = 0x01FC44E4u; /* VA 0x23C44E4 - 0x400000 */
-static const uint32_t RVA_ACTIVE_CHR_COUNT_LOCAL = 0x01FC44E0u; /* VA 0x23C44E0 - 0x400000 */
+static const uint32_t RVA_ACTIVE_CHR_TABLE_LOCAL = (::FfxHooks::ExecutableProfile::Rva<0x01FC44E4u>()); /* VA 0x23C44E4 - 0x400000 */
+static const uint32_t RVA_ACTIVE_CHR_COUNT_LOCAL = (::FfxHooks::ExecutableProfile::Rva<0x01FC44E0u>()); /* VA 0x23C44E0 - 0x400000 */
 static const uint32_t ACTIVE_CHR_STRIDE_LOCAL = 0x880u;
 
 static inline uintptr_t HookRva(uintptr_t offset) {

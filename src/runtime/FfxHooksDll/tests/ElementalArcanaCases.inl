@@ -18,7 +18,7 @@ static unsigned __cdecl CardEndpoint(unsigned user,void* source,unsigned target,
     if(mode==3)++cardSnapshots[0].revision;
     if(mode==4){
         std::array<unsigned char,44> nestedInfo{};
-        const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(coreImage+0x38E680);
+        const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(coreImage+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
         cardNestedResult=static_cast<int>(producer(user,source,target,actor,cardOriginalRow,commandId,nestedInfo.data(),a8,a9,a10,a11));
     }
     return CoreEndpoint(user,source,target,actor,command,commandId,info,a8,a9,a10,a11);
@@ -52,7 +52,7 @@ static void ArcanaCases(std::uintptr_t base,std::vector<unsigned char>& actors,s
     cardInterference=0;cardOriginalRow=bank.data()+20;
     W::DamageProducerForTests(reinterpret_cast<void*>(&CardEndpoint));
     std::array<unsigned char,44> info{};
-    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+0x38E680);
+    const auto producer=reinterpret_cast<FfxHooks::SharedDamage::DamageFn>(base+(::FfxHooks::ExecutableProfile::Rva<0x38E680>()));
     const auto hit=[&](unsigned target,unsigned id=0,const void* row=nullptr){return static_cast<int>(producer(0,actors.data(),target,
         actors.data()+target*0xF90,row?row:bank.data()+20+96*id,0x3000+id,info.data(),0,0,0,0));};
     const auto savedBank=bank;

@@ -25,13 +25,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dll', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--version', default='v0.6.0-beta.3')
+    parser.add_argument('--version', default='v0.6.0-beta.4')
     args = parser.parse_args()
     if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+-beta(?:\.[0-9]+)?', args.version):
         parser.error('Use an explicit supported beta version')
     evidence = json.loads((ROOT / f'docs/releases/{args.version}-inputs.json').read_text())
     if args.version != evidence['release']:
         parser.error('This release recipe is bound to its recorded version')
+    if evidence.get('translation_pack_included', False):
+        parser.error('This Hooks release must not distribute a game translation pack')
     dll = args.dll.read_bytes()
     if len(dll) != evidence['dll_bytes'] or sha(dll) != evidence['dll_sha256']:
         parser.error('DLL does not match the validated release candidate')
@@ -69,6 +71,9 @@ def main() -> None:
     for name in ('LICENSE', 'NOTICE', 'README.md', 'README.pt-BR.md', 'docs/INSTALL.md',
                  'docs/INSTALACAO_PT-BR.md', 'docs/ROADMAP.md', 'docs/FAHRENHEIT_V2.md'):
         files[name] = (ROOT / name).read_bytes()
+    note = f'docs/release-notes/hooks/{args.version}.md'
+    if (ROOT / note).is_file():
+        files[note] = (ROOT / note).read_bytes()
     files['examples/ffx-hooks.ini.example'] = (ROOT / 'src/runtime/FfxHooksDll/ffx-hooks.ini').read_bytes()
     files['examples/monster-rewards-v1.tsv.example'] = b'ffx.monster-rewards.v1\n'
     files['examples/Arcana-settings.ini.example'] = b'[arcana]\nenabled=0\ndefault_mode=0\n\n[development]\narcana_full_deck=0\n'
@@ -76,6 +81,8 @@ def main() -> None:
         files['Arcana-reference/' + name] = (arcana / name).read_bytes()
     for name in ('polyhook2', 'zydis', 'zycore', 'asmjit', 'asmtk', 'minhook'):
         files['third-party-licenses/' + name + '.txt'] = (arcana / 'distribution-licenses' / (name + '.txt')).read_bytes()
+    puff = (ROOT / 'src/runtime/FfxHooksDll/third_party/puff/puff.h').read_bytes()
+    files['third-party-licenses/puff.txt'] = puff[:puff.index(b' */') + 3] + b'\n'
     # The binary package links to the exact public source for documents/assets
     # shipped only in the source archive, rather than leaving broken local links.
     for name in list(files):
@@ -112,6 +119,7 @@ Public-copy checks are recorded in docs/releases/{args.version}-validation.json.
 This beta release does not assert complete live RT2 or Production acceptance.
 Game executable, native save/PE fixtures, loaders and game-derived mod/translation
 packs are not redistributed. Arcana's original selected runtime artwork is included.
+The PT-BR game translation and its native font/image payloads are not included.
 Close the game before installation; follow docs/INSTALL.md. Preserve settings and
 save sidecars. All editable F8 boolean options default OFF.
 '''.encode()
@@ -122,6 +130,10 @@ save sidecars. All editable F8 boolean options default OFF.
                    files={name: dict(bytes=len(data), sha256=sha(data)) for name, data in sorted(files.items())})
     files['release-manifest.json'] = (json.dumps(receipt, indent=2) + '\n').encode()
     files['CHECKSUMS.sha256'] = ''.join(f'{sha(data)}  {name}\n' for name, data in sorted(files.items())).encode()
+    if any(name.lower().startswith(('languages/', '_isolated/languages/'))
+           or name.lower().endswith(('.ftc', '.dds', '.dds.phyre', '.vbf', '.rar', '.exe'))
+           for name in files):
+        parser.error('Unexpected native game or translation payload in public package')
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(args.output, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
         for name, data in sorted(files.items()):

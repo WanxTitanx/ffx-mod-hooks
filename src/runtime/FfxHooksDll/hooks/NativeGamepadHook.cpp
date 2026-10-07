@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK. Native XInput actions/remapping; no external controller plugin.
 #include "NativeGamepadHook.h"
 #include "NativeBindingsCore.h"
@@ -9,7 +10,7 @@
 namespace FfxHooks::NativeGamepad {
 namespace {
 using GetStateFn=DWORD(WINAPI*)(DWORD,XINPUT_STATE*);
-constexpr std::uintptr_t kStateImportRva=0x0070C718u;
+constexpr std::uintptr_t kStateImportRva=(::FfxHooks::ExecutableProfile::Rva<0x0070C718u>());
 std::atomic<bool> g_stop{true},g_owned{false},g_conflict{false};
 GetStateFn g_original=nullptr;
 void* volatile* g_import=nullptr;

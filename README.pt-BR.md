@@ -9,7 +9,7 @@
 **Hooks de runtime para FINAL FANTASY X HD Remaster (Steam, PC)**
 
 [![Status](https://img.shields.io/badge/status-BETA-red)](#status-beta)
-[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.6.0--beta.3-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.3)
+[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.6.0--beta.4-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.4)
 [![Licença](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Plataforma](https://img.shields.io/badge/platform-Windows%20x86-lightgrey)](#compatibilidade)
 [![Doar](https://img.shields.io/badge/Doar-PayPal-blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wandersonwpires%40hotmail.com&currency_code=USD)
@@ -35,13 +35,13 @@ equivalente ao FFX-2.
 - [Dossiê completo de integração com o Editor](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
 - [Apoie o projeto](#apoie-o-projeto)
 
-## Novidades da v0.6.0-beta.3
+## Novidades da v0.6.0-beta.4
 
-- **Nove idiomas da interface:** inglês, português (Brasil), espanhol, francês, italiano, alemão, japonês, coreano e chinês simplificado. Selecione em **F8 > System > Interface language**. A escolha é independente do texto e do áudio do jogo. As páginas F7 fora de FLAGS continuam no inglês nativo.
-- **Integração Fahrenheit V2:** coordenação dos hooks, renderização e input, transações de save gerenciadas e recursos de texto/fontes com provider e bridge correspondentes. O Fahrenheit original/V1 mantém restrições; consulte o [guia do complemento](docs/FAHRENHEIT_V2.md).
-- **Correções:** sons conforme o resultado real das ações F7/F8; preservação do idioma anterior se a gravação falhar; limpeza ao perder foco sem violar o controle de renderização do Fahrenheit; encerramento único das leituras com falha e verificação dos 501 arquivos do provider.
+Esta beta restaura o suporte ao executável Steam suportado de outubro de 2026 e amplia a estrutura para pacotes de idioma. Inclui também a opção experimental de inicialização do RNG inspirada no PS2, DESLIGADA por padrão. Leia as [notas completas em inglês e português](docs/release-notes/hooks/v0.6.0-beta.4.md).
 
-A publicação usa o código consolidado da `main`. Os testes comprovam RT0/RT1 isolado; áudio, imagem, gameplay e ciclo de saves em jogo ainda precisam de RT2. Não há garantia para qualquer combinação de mods.
+A tradução PT-BR do jogo ainda está em testes e **não está incluída**. A interface do Hooks em nove idiomas continua disponível em **F8 > System > Interface language**, separadamente do texto e áudio do jogo.
+
+A validação visual, de gameplay e do ciclo de saves dentro do jogo continua incompleta. Preserve configurações e saves. Não há novo pacote de provider/bridge do Fahrenheit; o complemento antigo da beta.3 não está certificado para o executável atualizado.
 
 ## Nuls elementais e integração anterior de 29/09/2026
 
@@ -89,34 +89,27 @@ Os problemas conhecidos estão em [KNOWN_BUGS](docs/KNOWN_BUGS.md) e no
 
 ## Download e instalação
 
-Baixe a [release v0.6.0-beta.3](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.3): DLL consolidada, arte do Arcana, guias EN/PT-BR, exemplos com opções OFF, código-fonte e checksums. O complemento Fahrenheit V2 e o código-fonte completo do provider modificado são downloads separados e opcionais.
+Baixe a [release v0.6.0-beta.4](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.4): DLL, arte original do Arcana já existente, guias EN/PT-BR, exemplos OFF, código-fonte e checksums. Não inclui tradução do jogo, fontes/texturas nativas do jogo ou novo complemento Fahrenheit.
 
-Siga o [guia em português](docs/INSTALACAO_PT-BR.md) ou o [guia em inglês](docs/INSTALL.md). Com o FFX fechado, copie a DLL e `mods/` do pacote principal para `modules/`, preservando suas configurações, saves e sidecars. A instalação legal do jogo e seu carregador de módulos não são distribuídos aqui.
-
-Para Fahrenheit, use o [conjunto V2 correspondente](docs/FAHRENHEIT_V2.md). Não misture bridge V2 com provider V1. Pacotes de tradução do jogo, tabelas proprietárias e recursos particulares continuam separados.
+Siga o [guia em português](docs/INSTALACAO_PT-BR.md). Com o jogo fechado, preserve sua DLL e configurações anteriores e copie a DLL e `mods/` do pacote para `modules/`. O jogo e o carregador de módulos não são distribuídos aqui.
 
 ## DLL atual
 
-Jarvis-HOOK — publicação pública de 2026-09-29.
-
 | Identidade | Valor |
 |---|---|
-| Código de runtime | `c18fb5602a688dd0de5e7e85677c5d5102402788` |
-| DLL | Windows x86 / PE32, 4.683.264 bytes |
-| SHA-256 | `4e7dfe943e9496729b69c9c3af24dfef465ec4efddfb93dba5b6fdcd77af8a6e` |
-| Correspondência | 383 arquivos públicos de código/recursos; todos os 750 insumos originais conferidos com o commit consolidado |
-| Versão interna do PE | `0.2.0.0`; versão do pacote `v0.6.0-beta.3` |
-| Validação em jogo | RT2 pendente; publicação não equivale a instalação ou promoção para Production |
-
-O pacote contém a DLL validada junto ao fonte público correspondente. Releases anteriores permanecem intactas.
+| Código de runtime | `df532011907b94c348ecb498714ca268c7217ddc` |
+| DLL | Windows x86 / PE32; tamanho/hash exatos nos [insumos da release](docs/releases/v0.6.0-beta.4-inputs.json) |
+| Executável suportado | FFX.exe Steam, 10.687.744 bytes; SHA-256 `0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d` |
+| Versão interna do PE | `0.2.0.0`; versão do pacote `v0.6.0-beta.4` |
+| Validação | [Evidências de build e fonte](docs/releases/v0.6.0-beta.4-validation.json); aceitação em jogo permanece separada |
 
 ## O que compõe o projeto
 
 | Componente | Função | Estado |
 |---|---|---|
-| `ffx-hooks.dll` (FfxHooksDll) | Hooks de engine, UI nativa, consumidores compartilhados de combate/save e sistemas opcionais descritos abaixo | Candidata beta consolidada, com deploy realizado |
+| `ffx-hooks.dll` (FfxHooksDll) | Hooks de engine, UI nativa, consumidores compartilhados de combate/save e sistemas opcionais descritos abaixo | Beta pública; aceitação em jogo pendente |
 | Menu F7 In-Live | Difficulty, S.I.N. RAM, Force Last Battle, música, observador de AI e Arena+ CustomMix | Candidata com fonte/RT0/build e RT1 isolado de runtime/política aprovados; RT1 do callback real e RT2 pelo jogador ainda pendentes na matriz de Difficulty |
-| Painel F8 | Sete abas, submenus e 90 controles booleanos canônicos | 25 LIVE, 61 RESTART REQUIRED e 4 READ ONLY; são classes de ativação, não provas de gameplay |
+| Painel F8 | Sete abas, submenus e controles opcionais canônicos | LIVE, RESTART REQUIRED e READ ONLY; são classes de ativação, não provas de gameplay |
 | Maechen F9 | UI nativa de perguntas/respostas e cliente de serviço com limites | Há observações anteriores de UI/transporte; aceitação da versão atual e qualidade das respostas do serviço são questões separadas |
 | `ffx-probe.dll` (FfxDinput8Probe) | Probe separado de READ / WRITE / CALL na thread principal pelo ponto DINPUT8 | Opcional, OFF por padrão; habilitar uma função de gameplay do Hooks não o habilita |
 | `SinScaleInject` + `SinCoreLib` | Ferramentas offline de pesquisa/materialização do S.I.N. | O caminho legado que escreve em disco continua em quarentena; o S.I.N. RAM atual é outro caminho |
@@ -131,19 +124,19 @@ e informam indisponibilidade, sobreposição externa ou falha de aplicação.
 
 Os nomes abaixo são mantidos como aparecem na interface do jogo.
 
-| Aba | Controles booleanos | Opções e submenus incluídos |
-|---|---:|---|
-| System | 10 | Janela sem bordas, restrição/ocultação do cursor, desempenho, câmera livre de batalha e congelamento de cenário; quatro linhas informativas de módulos; Audio languages e Text languages |
-| Boosters | 5 | Permanent Sensor, Playable Seymour experimental, Speed Hack, aceleração opcional de FMV e Entire Party Earns AP |
-| Cheats | 9 | Invincible Party/Enemies, Always Overdrive/Critical, Damage 99999 e Always Rare Drop; submenu AP/Gil Multipliers |
-| Extras | 38 | Additional mods: Elemental Core/Tactics/Gravity/Magic BDL, Spira Reforge, Aeon Ascension e efeitos Holy/Shadow opcionais; Vanguard Combat Engine separado com 31 controles |
-| Input | 4 | Bloqueio da tecla Windows, correção de input em segundo plano, filtro IME e Dialog Skip; atalhos de teclado/controle e mapeamento de botões |
-| Dev | 6 | FieldScout (Master/Heavy/Max/Ultra), Fastload Autosave e opção de desenvolvimento para o baralho completo do Arcana; configurações de desenvolvimento do Equipment Workshop |
-| Reforge | 17 | Arcana, Nova Super Damage, Ronso Mana, Equipment Workshop/detalhes nativos, Scan settings, Grid Teach, Lancet Dual Grant, limite de pilha de itens, Double/Triple Drop e Arena+ |
+| Aba | Opções e submenus incluídos |
+|---|---|
+| System | Janela sem bordas, restrição/ocultação do cursor, desempenho, câmera livre de batalha e congelamento de cenário; quatro linhas informativas de módulos; Audio languages e Text languages |
+| Boosters | Permanent Sensor, Playable Seymour experimental, Speed Hack, aceleração opcional de FMV e Entire Party Earns AP |
+| Cheats | Invincible Party/Enemies, Always Overdrive/Critical, Damage 99999 e Always Rare Drop; submenu AP/Gil Multipliers |
+| Extras | Additional mods: Elemental Core/Tactics/Gravity/Magic BDL, Spira Reforge, Aeon Ascension, efeitos Holy/Shadow opcionais, Elemental Nul spells e RNG experimental do PS2; Vanguard Combat Engine separado com 31 controles |
+| Input | Bloqueio da tecla Windows, correção de input em segundo plano, filtro IME e Dialog Skip; atalhos de teclado/controle e mapeamento de botões |
+| Dev | FieldScout (Master/Heavy/Max/Ultra), Fastload Autosave e opção de desenvolvimento para o baralho completo do Arcana; configurações de desenvolvimento do Equipment Workshop |
+| Reforge | Arcana, Nova Super Damage, Ronso Mana, Equipment Workshop/detalhes nativos, Scan settings, Grid Teach, Lancet Dual Grant, limite de pilha de itens, Double/Triple Drop e Arena+ |
 
 As contagens incluem controles movidos para submenus. Linhas de navegação,
 cores, seletores de idioma, mapeamentos e editores numéricos são configurações
-adicionais, não novos flags booleanos. O [catálogo completo de 90 entradas](docs/ROADMAP.md#complete-f8-control-inventory)
+adicionais, não novos flags booleanos. O [inventário anterior de controles](docs/ROADMAP.md#complete-f8-control-inventory)
 registra rótulos, chaves, valores padrão e classes de ativação.
 
 ### Multiplicadores de AP/Gil
@@ -391,7 +384,7 @@ entregue em fonte/deploy do que ainda depende de RT2, authoring no Editor e rele
 As prioridades são aceitação em jogo da DLL exata, exportadores e validação de
 dependências no Editor, definições restantes do Spira e pendências F7/probe.
 O [dossiê completo do Editor](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
-reúne 40 identidades custom de autoabilities, 31 regras Vanguard, 90 controles F8,
+reúne 40 identidades custom de autoabilities, 31 regras Vanguard, controles F8,
 78 cartas Arcana, formatos/dependências e 62 tarefas concretas do Editor.
 É um handoff, não uma declaração de que essas tarefas do Editor já foram feitas.
 

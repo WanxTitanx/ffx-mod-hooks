@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 #include "GridLearnedStore.h"
 #include "NativeSaveEvents.h"
@@ -141,7 +142,7 @@ struct LoadAttempt {
 inline LoadAttempt BeforeLoad(void* destination,const void* source) noexcept {
     LoadAttempt result{};
     try {
-        if(!PublisherReady()||reinterpret_cast<std::uintptr_t>(destination)!=base+0xD2CA90u)return result;
+        if(!PublisherReady()||reinterpret_cast<std::uintptr_t>(destination)!=base + (::FfxHooks::ExecutableProfile::Rva<0xD2CA90u>()))return result;
         std::lock_guard<std::recursive_mutex> lock(mutex);
         if(!PublisherReady())return result;
         result.tracked=true;result.serial=++loadSerial;result.thread=GetCurrentThreadId();++loadDepth;
@@ -196,7 +197,7 @@ inline int __cdecl LoadShim(void* destination,const void* source){
         NativeSaveEvents::BeginLoad(destination,source):NativeSaveEvents::LoadDispatch{};
     int result=0;bool completed=false;
     SetLastError(incoming);
-    __try {result=reinterpret_cast<LoadFn>(base+0x4B5450u)(destination,source);completed=true;}
+    __try {result=reinterpret_cast<LoadFn>(base + (::FfxHooks::ExecutableProfile::Rva<0x4B5450u>()))(destination,source);completed=true;}
     __finally {
         const DWORD nativeError=GetLastError();
         AfterLoad(attempt,completed);

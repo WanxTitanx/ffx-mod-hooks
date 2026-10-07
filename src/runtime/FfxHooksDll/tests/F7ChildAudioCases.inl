@@ -24,11 +24,12 @@ static void ArenaPlus_HandleMenuConfirm(int){++actionCalls;if(actionFeedback)Nat
 static bool g_sinSeedEditing=false,validSeed=true;
 static FfxHooks::SinRam::Config g_sinDraft{};
 static int g_sinConfirmTimer=0,g_sinLastEdge=0,g_sinPreviewField=310,g_sinLastRow=0,g_sinMenuResult=0;
+static unsigned g_sinPreviewPage=0;
 static bool g_sinMenuClosed=false;
 static float g_sinEasedRowY=0;
 static char g_sinNotice[128]{};
-enum {SIN_RAM_ROW_ENABLED,SIN_RAM_ROW_DISTRIBUTION,SIN_RAM_ROW_SEED,SIN_RAM_ROW_SHUFFLE,SIN_RAM_ROW_AREA,SIN_RAM_ROW_GUIDE,SIN_RAM_ROW_SAVE,SIN_RAM_ROW_BACK};
-namespace FfxHooks::SinSpread {bool ParseSeed(const char*,std::uint32_t* value){*value=42;return validSeed;}}
+enum {SIN_RAM_ROW_ENABLED,SIN_RAM_ROW_DISTRIBUTION,SIN_RAM_ROW_SEED,SIN_RAM_ROW_SHUFFLE,SIN_RAM_ROW_AREA,SIN_RAM_ROW_PAGE,SIN_RAM_ROW_SAVE,SIN_RAM_ROW_GUIDE,SIN_RAM_ROW_BACK};
+static bool SinSeedForTests(const char*,std::uint32_t* value){*value=42;return validSeed;}
 static void ArenaMixRenameAbort(){g_arenaRenameConfirm=g_arenaRenameCancel=0;}
 static void SinCurse_BuildLabels(){}static void SinRam_ClearSaveFeedback(){}
 #include "SinInputAudio.inc"
@@ -61,6 +62,6 @@ static void ChildAudioCases(){
         SinCurse_InputCb(1);Check(sounds==std::vector<int>{outcome==2?4:outcome==1?1:3},"SIN seed distinguishes valid confirmation, error and cancel");
     }
     Reset(F7_MENU_FORCE);g_sinSeedEditing=false;g_sinConfirmTimer=g_sinLastEdge=0;g_sinMenuClosed=false;
-    hostRowCount=8;hostEdge=0x20;SinCurse_InputCb(1);
+    hostRowCount=9;hostEdge=0x20;SinCurse_InputCb(1);
     Check(g_sinMenuClosed&&sounds.empty(),"SIN confirmation waits for its eventual handler and allocation");
 }

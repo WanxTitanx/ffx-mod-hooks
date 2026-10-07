@@ -41,6 +41,16 @@ int main(int argc,char** argv){
     Check(!A::CommandsReady({&kernel,ReadKernel},0x400000),"missing indices never use the game's silent row-zero fallback");
     kernel.bytes=saved;kernel.bytes[20+268*92+20]^=1;
     Check(!A::CommandsReady({&kernel,ReadKernel},0x400000),"a modified command dependency disables script admission");
+    for(const auto& proof:A::kProofs)Check(A::CommandsReady({&kernel,ReadKernel},0x400000,proof.commands)==((proof.commands&1u)==0),
+        "a changed Frost-Flood dependency does not block independently hashed Counter March or expanded commands");
+    kernel.bytes=saved;
+    for(std::size_t dependency=0;dependency<A::kCommands.size();++dependency){
+        const auto& command=A::kCommands[dependency];
+        Check(A::CommandsReady({&kernel,ReadKernel},0x400000,std::uint64_t(1)<<dependency),"every declared new command record is present with its exact hash");
+        kernel.bytes[20+command.index*92+20]^=1;
+        Check(!A::CommandsReady({&kernel,ReadKernel},0x400000,std::uint64_t(1)<<dependency),"a changed expanded command cannot fall through to row zero or another spell");
+        kernel.bytes=saved;
+    }
     kernel.bytes.resize(20);
     Check(!A::CommandsReady({&kernel,ReadKernel},0x400000),"short/unreadable command records fail closed");
     std::printf("SinAiRt0: %d/%d passed; failures=%d\n",checks-failures,checks,failures);return failures?1:0;

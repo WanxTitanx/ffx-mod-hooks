@@ -20,6 +20,15 @@ def generate(manifest_path, pack_path, command_path):
     if hashlib.sha256(pack).hexdigest().upper() != manifest['packSha256']:
         raise ValueError('Pack does not match the export manifest')
     profiles = manifest['profiles']
+    indices=sorted({index for profile in profiles for index in profile.get('requiredCommands',(268,269,270,271))})
+    if len(indices)>64:raise ValueError('Dependency mask capacity exceeded')
+    positions={index:n for n,index in enumerate(indices)}
+    legacy_mask=sum(1<<positions[index] for index in (268,269,270,271))
+    if any(profile['curse']>8 for profile in profiles):
+        catalog=json.loads((Path(__file__).parent/'catalog.json').read_text())
+        expected={(entry['monster'],curse) for entry in catalog['monsters'] for curse in entry['allowed']}
+        if len(profiles)!=len(expected) or {(p['monster'],p['curse']) for p in profiles}!=expected:
+            raise ValueError('Expanded profiles must exactly implement the reviewed per-monster matrix')
     if pack[:8] != b'SINAI001' or struct.unpack_from('<I', pack, 8)[0] != len(profiles):
         raise ValueError('Invalid profile pack header')
     cursor = 12
@@ -38,7 +47,8 @@ def generate(manifest_path, pack_path, command_path):
                 or original != int(profile['originalAiHash'], 16)):
             raise ValueError('Invalid or mismatched profile record')
         seen.add(key)
-        rows.append(f"    {{{monster}, {curse}, {profile['originalAiLength']}, {size}, 0x{original:016X}ULL, 0x{digest:016X}ULL}},")
+        mask=sum(1<<positions[index] for index in set(profile.get('requiredCommands',(268,269,270,271))))
+        rows.append(f"    {{{monster}, {curse}, {profile['originalAiLength']}, {size}, 0x{original:016X}ULL, 0x{digest:016X}ULL, 0x{mask:X}ULL}},")
     if cursor != len(pack):
         raise ValueError('Unexpected trailing pack data')
 
@@ -47,7 +57,7 @@ def generate(manifest_path, pack_path, command_path):
     if not 0 < segments <= 16 or len(commands) < 8 + 12 * segments:
         raise ValueError('Invalid command table header')
     command_rows = []
-    for index in range(268, 272):
+    for index in indices:
         matches = []
         for segment in range(segments):
             first, last, size, _, offset = struct.unpack_from('<HHHHI', commands, 8 + segment * 12)
@@ -68,10 +78,11 @@ def generate(manifest_path, pack_path, command_path):
         '// Jarvis-HOOK. Hash-only identities for privately generated Editor profiles.',
         '// No monster data or bytecode is embedded in this source file.',
         'namespace FfxHooks::SinAi {',
-        'struct Proof {std::uint16_t monster;std::uint8_t curse;std::uint32_t originalSize,size;std::uint64_t originalHash,hash;};',
+        'struct Proof {std::uint16_t monster;std::uint8_t curse;std::uint32_t originalSize,size;std::uint64_t originalHash,hash,commands;};',
         f'inline constexpr std::array<Proof,{len(rows)}> kProofs={{{{', *rows, '}};',
         'struct CommandProof {std::uint16_t index;std::uint16_t size;std::uint64_t hash;};',
-        'inline constexpr std::array<CommandProof,4> kCommands={{', *command_rows, '}};',
+        f'inline constexpr std::array<CommandProof,{len(command_rows)}> kCommands={{{{', *command_rows, '}};',
+        f'inline constexpr std::uint64_t kLegacyCommandMask=0x{legacy_mask:X}ULL;',
         '} // namespace FfxHooks::SinAi', '',
     ])
 

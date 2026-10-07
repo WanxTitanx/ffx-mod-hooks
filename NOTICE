@@ -18,6 +18,10 @@ presented as our own.
 - **asmjit / asmtk** — kobalicek / asmtk contributors — https://github.com/asmjit/asmjit
   - License: zlib
   - Static dependency of PolyHook2.
+- **puff** — Mark Adler — https://github.com/madler/zlib/tree/v1.3.1/contrib/puff
+  - License: zlib-style permissive notice retained in `puff.h`.
+  - Unmodified bounded DEFLATE decoder used for user-owned game resources.
+  - Import identity and date: `src/runtime/FfxHooksDll/third_party/puff/PROVENANCE.md`.
 
 ## Libraries (SIN tooling, .NET)
 
@@ -55,10 +59,3 @@ presented as our own.
 
 FINAL FANTASY X/X-2 HD Remaster is a trademark/copyright of Square Enix. This project is
 fan-made tooling; it does not distribute game assets or executable code.
-
-## Optional Fahrenheit V2 integration
-
-- Fahrenheit — The Fahrenheit contributors — https://github.com/fahrenheit-crew/fahrenheit
-- LGPL-3.0-or-later; pinned alpha12 source `cdb145d93295c1c6e2bf4766fda5a12877369f54`.
-- Jarvis-HOOK, 2026-09-29: optional cooperative bootstrap, save/load and read-only resource services, supplied as a reversible source overlay. This is not an upstream release or upstream endorsement.
-- The optional add-on ships provider binaries with COPYING, COPYING.LESSER, NOTICE and complete corresponding modified source. See integrations/fahrenheit/provider/NOTICE.md.

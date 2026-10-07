@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // Jarvis-HOOK: complete-file validation occurs on the owner pump. Hits read
 // bounded header/stat copies and never allocate or hash a monster file.
 struct MonsterProfileSlot {
@@ -34,7 +35,7 @@ const ActorProfile* ProfileForActor(unsigned slot,const void* actor,bool* reject
 void RefreshMonsterProfiles() noexcept {
     if(!options.core&&!options.tactics&&!options.gravity)return;
     std::uint32_t actors=0;
-    if(!Read(module+0xD334CC,actors)||actors<0x10000||actors>UINT32_MAX-ActorCount*0xF90u)return;
+    if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),actors)||actors<0x10000||actors>UINT32_MAX-ActorCount*0xF90u)return;
     const auto epoch=generation.load();
     for(unsigned slot=18;slot<ActorCount;++slot){
         const auto address=std::uintptr_t(actors)+slot*0xF90u;

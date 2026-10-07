@@ -18,7 +18,7 @@ enum class Error : int {
 };
 // Transient economy settings, never added to the persisted v1 equipment state.
 struct Policy {
-    std::uint32_t mode=2, baseItem=70, baseAmount=1, refinementDivisor=10;
+    std::uint32_t mode=2, baseItem=70, baseAmount=1, refinementDivisor=60;
     std::uint32_t fusionDivisor=3, fusionGilPerAbility=10000, modRecipeQuantity=30;
     std::uint32_t devFreeMaterials=0, devFreeGil=0, devIgnoreProgression=0;
 };

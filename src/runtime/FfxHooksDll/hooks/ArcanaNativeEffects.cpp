@@ -1,12 +1,13 @@
 #include "ArcanaNativeEffects.h"
+#include "../shared/ExecutableProfile.h"
 #include <algorithm>
 #include <cstring>
 #include <limits>
 
 namespace FfxHooks::Arcana::NativeEffects {
 namespace {
-constexpr std::uint32_t callers[]={0x3868A7,0x3868CF,0x3868E1,0x3868F3,0x386905,0x386917,
-    0x38692C,0x38693E,0x386950,0x386962,0x386972,0x386982};
+constexpr std::uint32_t callers[]={::FfxHooks::ExecutableProfile::Rva<0x3868A7>(),::FfxHooks::ExecutableProfile::Rva<0x3868CF>(),::FfxHooks::ExecutableProfile::Rva<0x3868E1>(),::FfxHooks::ExecutableProfile::Rva<0x3868F3>(),::FfxHooks::ExecutableProfile::Rva<0x386905>(),::FfxHooks::ExecutableProfile::Rva<0x386917>(),
+    ::FfxHooks::ExecutableProfile::Rva<0x38692C>(),::FfxHooks::ExecutableProfile::Rva<0x38693E>(),::FfxHooks::ExecutableProfile::Rva<0x386950>(),::FfxHooks::ExecutableProfile::Rva<0x386962>(),::FfxHooks::ExecutableProfile::Rva<0x386972>(),::FfxHooks::ExecutableProfile::Rva<0x386982>()};
 constexpr unsigned offsets[]={0x24,0x28,0x2F,0x30,0x31,0x32,0x33,0x34,0x35,0x36};
 constexpr EffectKind percents[]={EffectKind::HpPercent,EffectKind::MpPercent,EffectKind::StrengthPercent,
     EffectKind::DefensePercent,EffectKind::MagicPercent,EffectKind::MagicDefensePercent,

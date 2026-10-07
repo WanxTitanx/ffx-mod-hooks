@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 // F7InLive.cpp - "FFX Editor - In-Live" (F7): Difficulty (RAM), Force Last Battle, Music.
 // Lane Jarvis-HOOK. Gate: f7_inlive.flag / FFXHOOKS_ENABLE_F7=1.
 //
@@ -44,7 +45,7 @@ namespace FfxHooks {
 
 #ifdef FFXHOOKS_HAVE_POLYHOOK
 
-static const uint32_t RVA_MS_BATTLE_ENCOUNT   = 0x00380DE0u; // MsBattleEncountExe (field, group, walkedDelta)
+static const uint32_t RVA_MS_BATTLE_ENCOUNT   = (::FfxHooks::ExecutableProfile::Rva<0x00380DE0u>()); // MsBattleEncountExe (field, group, walkedDelta)
 
 static const char* const F7_STATUS_NAMES[F7_STATUS_COUNT] = {
     "Death", "Zombie", "Petrify", "Poison", "PowerBreak", "MagicBreak", "ArmorBreak", "MentalBreak",
@@ -784,7 +785,7 @@ static void DifficultyArmRetry() {
 // RAII, so the unsafe reads must be isolated here without changing their fail-closed values.
 static bool DifficultyReadSceneInitState(uint8_t* state) {
     __try {
-        *state = *reinterpret_cast<volatile uint8_t*>(g_base + 0x00D2A8E0u);
+        *state = *reinterpret_cast<volatile uint8_t*>(g_base + (::FfxHooks::ExecutableProfile::Rva<0x00D2A8E0u>()));
         return true;
     } __except (EXCEPTION_EXECUTE_HANDLER) {
         return false;
@@ -794,7 +795,7 @@ static bool DifficultyReadSceneInitState(uint8_t* state) {
 static uintptr_t DifficultyReadActorTableBase() {
     uintptr_t tableBase = 0;
     __try {
-        tableBase = *reinterpret_cast<volatile uintptr_t*>(g_base + 0x00D34460u);
+        tableBase = *reinterpret_cast<volatile uintptr_t*>(g_base + (::FfxHooks::ExecutableProfile::Rva<0x00D34460u>()));
     } __except (EXCEPTION_EXECUTE_HANDLER) {
         tableBase = 0;
     }
@@ -1544,7 +1545,7 @@ static bool InstallPositionReadHook() {
         return false;
     }
     if (!PositionReadSignatureMatches()) {
-        F7_Log("[ffx-hooks] CustomMix position reader install=FAILED stage=signature rva=0x003AC000\n");
+        F7_Log("[ffx-hooks] CustomMix position reader install=FAILED stage=signature rva=(::FfxHooks::ExecutableProfile::Rva<0x003AC000>())\n");
         return false;
     }
     HMODULE pinned = nullptr;
@@ -1556,7 +1557,7 @@ static bool InstallPositionReadHook() {
     const uintptr_t target = g_base + ArenaPositions::kAccessorRva;
     if (!DifficultyHookCreate(nullptr, target,
         reinterpret_cast<void*>(&PositionRead_Shim), &g_trampPositionRead)) {
-        F7_Log("[ffx-hooks] CustomMix position reader install=FAILED stage=create rva=0x003AC000\n");
+        F7_Log("[ffx-hooks] CustomMix position reader install=FAILED stage=create rva=(::FfxHooks::ExecutableProfile::Rva<0x003AC000>())\n");
         return false;
     }
     g_positionHookCreated = true;
@@ -1569,7 +1570,7 @@ static bool InstallPositionReadHook() {
         return false;
     }
     InterlockedExchange(&g_positionHookAccepting,1);
-    F7_Log("[ffx-hooks] CustomMix position reader install=READY rva=0x003AC000 owner=ArenaPositions\n");
+    F7_Log("[ffx-hooks] CustomMix position reader install=READY rva=(::FfxHooks::ExecutableProfile::Rva<0x003AC000>()) owner=ArenaPositions\n");
     return true;
 }
 
@@ -2065,7 +2066,7 @@ bool F7_InstallHooks(uintptr_t base, FFXHooksBlock* block, void (*log)(const cha
     const bool programReady=positionReaderReady&&PrepareNormalBattlePrograms();
     CustomMixUltra::Runtime::StartProduction(
         g_base, programReady && g_difficultyGate == AdapterGateCode::Installed, false);
-    F7_Log("[ffx-hooks] CustomMix position reader ready=%d rva=0x003AC000\n", positionReaderReady ? 1 : 0);
+    F7_Log("[ffx-hooks] CustomMix position reader ready=%d rva=(::FfxHooks::ExecutableProfile::Rva<0x003AC000>())\n", positionReaderReady ? 1 : 0);
     if (F7_IsEnabled() && configSnapshot.config.music.fadeFrames > 0)
         FfxHooks::SetMusicHookMinFadeFrames(configSnapshot.config.music.fadeFrames);
     if (F7_IsEnabled() && configSnapshot.config.music.lockTrack >= 0)

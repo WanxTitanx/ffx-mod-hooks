@@ -1,4 +1,5 @@
 #pragma once
+#include "../shared/ExecutableProfile.h"
 #include "../hooks/RonsoPoolSave.h"
 #include "../shared/Config.h"
 #include <cstdint>
@@ -14,7 +15,7 @@ inline void Seed(FfxHooks::RonsoPool::SaveImage& image,std::uint32_t gil=1000000
     const std::uint16_t story=0x448;std::memcpy(image.data()+0xC2C,&story,2);
     FfxHooks::RonsoPool::SealSave(image);
 }
-inline std::uint32_t Gil(std::uintptr_t base){std::uint32_t value=0;std::memcpy(&value,reinterpret_cast<void*>(base+0xD307D8),4);return value;}
+inline std::uint32_t Gil(std::uintptr_t base){std::uint32_t value=0;std::memcpy(&value,reinterpret_cast<void*>(base+(::FfxHooks::ExecutableProfile::Rva<0xD307D8>())),4);return value;}
 inline void Mode(unsigned mode){
     FfxHooks::Config::LoadTextForTests(mode==1?"[equipment_workshop]\nrefinement_mode=1\n":"[equipment_workshop]\nrefinement_mode=2\n","C:\\private-workshop-economy.ini");
 }

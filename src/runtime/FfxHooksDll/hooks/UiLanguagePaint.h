@@ -1,6 +1,7 @@
 #pragma once
 // Jarvis-HOOK: called only by the existing Present owner, outside DllMain.
 #include "UiLanguageOverlay.h"
+#include "UiTypography.h"
 #include <vector>
 #include <algorithm>
 #include <cwchar>
@@ -10,6 +11,7 @@ inline HFONT Fonts[7]{};
 inline int FontHeight=-1,FontLocale=-1;
 inline bool FontsAvailable=false;
 inline unsigned LastPaintedLines=0,LastClippedLines=0;
+inline unsigned LastNativeGlyphs=0,LastFallbackGlyphs=0;
 inline std::uint32_t LastPaintedRevision=0;
 inline std::uint32_t LastPaintedEpoch=0;
 inline UiLanguage::Locale LastPaintedLocale=UiLanguage::Locale::English;
@@ -17,6 +19,7 @@ inline bool LastPaintedActive=false;
 
 inline void ReleaseFonts() noexcept {
     LastPaintedActive=false;
+    UiTypography::Clear();
     ReadyLocale.store(-1,std::memory_order_release);
     for(auto& font:Fonts){if(font)DeleteObject(font);font=nullptr;}
     FontsAvailable=false;FontHeight=-1;FontLocale=-1;
@@ -77,16 +80,25 @@ inline void PaintCore(HDC dc,const RECT& surface) {
     // Present already serializes this renderer. Large snapshots stay off the x86 stack.
     static UiCaption::Frame frame{};
     LastPaintedLines=0;LastClippedLines=0;
+    LastNativeGlyphs=LastFallbackGlyphs=0;
     LastPaintedActive=false;
     const bool current=Copy(frame,GetTickCount(),&LastPaintedRevision);
     if(!dc||!current){
         ReadyLocale.store(-1,std::memory_order_release);return;
     }
     const int width=surface.right-surface.left,height=surface.bottom-surface.top;
+    UiNativeFont::Request(frame.locale);
+    if(UiNativeFont::Loading(frame.locale)){Unavailable();return;}
     if(width<=0||height<=0||!EnsureFonts(dc,height,frame.locale)){
         ReadyLocale.store(-1,std::memory_order_release);return;
     }
     LastPaintedEpoch=frame.epoch;LastPaintedLocale=frame.locale;
+    if(const auto* native=UiNativeFont::Current(frame.locale)){
+        UiTypography::Counts counts;LastPaintedActive=UiTypography::Paint(dc,surface,frame,*native,Fonts[2],counts);
+        LastPaintedLines=counts.lines;LastClippedLines=counts.clipped;
+        LastNativeGlyphs=counts.nativeGlyphs;LastFallbackGlyphs=counts.fallbackGlyphs;
+        if(!LastPaintedActive)Unavailable();return;
+    }
     bool success=true;
     for(unsigned i=0;i<frame.count;++i){
         const auto& line=frame.lines[i];

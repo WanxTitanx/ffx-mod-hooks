@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #pragma once
 // Jarvis-HOOK: one owner for the three native damage/protection entries already
 // used by Workshop. Registered callbacks have process lifetime; stop only disarms.
@@ -17,7 +18,7 @@ namespace FfxHooks::SharedDamage {
 using ProtectionFn=int(__cdecl*)(const void*,unsigned*,int*,const void*,int);
 using DamageFn=unsigned(__cdecl*)(unsigned,void*,unsigned,void*,const void*,unsigned,void*,unsigned,unsigned,unsigned,unsigned);
 enum Entry : unsigned {Protect,Shell,Damage,Count};
-inline constexpr std::uint32_t rvas[Count]={0x38AE00,0x38AE80,0x38E680};
+inline constexpr std::uint32_t rvas[Count]={(::FfxHooks::ExecutableProfile::Rva<0x38AE00>()),(::FfxHooks::ExecutableProfile::Rva<0x38AE80>()),(::FfxHooks::ExecutableProfile::Rva<0x38E680>())};
 struct WorkshopCallbacks {ProtectionFn protect,shell;DamageFn damage;};
 struct CombatCallbacks {
     bool (*ignoreProtection)(const void*,const void*,int) noexcept;

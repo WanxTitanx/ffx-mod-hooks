@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "../hooks/CustomMixRuntime.h"
 #include "../hooks/MinHookBatchCoordinator.h"
 #ifndef NOMINMAX
@@ -150,7 +151,7 @@ static bool ReadSceneDuringInit(void* raw, int* result) {
 static void CheckSceneryConsumers(unsigned char* image, unsigned char* carrier) {
     namespace S = FfxHooks::ArenaScenery;
     const auto base = reinterpret_cast<uintptr_t>(image);
-    auto* field = reinterpret_cast<uint32_t*>(image + 0xD2C254u);
+    auto* field = reinterpret_cast<uint32_t*>(image + (::FfxHooks::ExecutableProfile::Rva<0xD2C254u>()));
     image[0xD2C258u] = image[0xD2C259u] = 0;
     auto* code = static_cast<unsigned char*>(VirtualAlloc(nullptr, 64u,
         MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE));
@@ -162,14 +163,14 @@ static void CheckSceneryConsumers(unsigned char* image, unsigned char* carrier) 
           image[0x383FC7u]==0x50 && image[0x383FC8u]==0xE8 &&
           image[0x383236u]==0x8B && image[0x38323Fu]==0x81,
           "native InitScene and caller consumer opcodes match the reviewed evidence");
-    std::memcpy(code, image + 0x383FC0u, 13u);
+    std::memcpy(code, image + (::FfxHooks::ExecutableProfile::Rva<0x383FC0u>()), 13u);
     const uint32_t call = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&CaptureSceneArgument) -
         reinterpret_cast<uintptr_t>(code + 13u));
     std::memcpy(code + 9u, &call, 4u);
     const unsigned char tail[] = {0x83,0xC4,0x04,0xC3};
     std::memcpy(code + 13u, tail, sizeof(tail));
-    std::memcpy(code + 32u, image + 0x383236u, 6u); // mov ecx,[native battlefield word]
-    std::memcpy(code + 38u, image + 0x38323Fu, 6u); // and ecx,0x3ff
+    std::memcpy(code + 32u, image + (::FfxHooks::ExecutableProfile::Rva<0x383236u>()), 6u); // mov ecx,[native battlefield word]
+    std::memcpy(code + 38u, image + (::FfxHooks::ExecutableProfile::Rva<0x38323Fu>()), 6u); // and ecx,0x3ff
     code[44]=0x8B;code[45]=0xC1;code[46]=0xC3;     // return the native resource selector
     FlushInstructionCache(GetCurrentProcess(), code, 64u);
     const auto first = reinterpret_cast<SceneConsumer>(code);
@@ -211,7 +212,7 @@ static void CheckSceneryConsumers(unsigned char* image, unsigned char* carrier) 
     R::StartProduction(base,true,false);selection.scenery=static_cast<S::Choice>(0xFFu);
     Check(!R::ProductionArmSelection(selection,50),"unknown scenery rejects before native queue/write");
     R::ProductionRequestStop();R::ProductionResetAfterDrain();
-    Check(*reinterpret_cast<uint32_t*>(image+0xD2A9A8u)==reinterpret_cast<uintptr_t>(carrier),
+    Check(*reinterpret_cast<uint32_t*>(image+(::FfxHooks::ExecutableProfile::Rva<0xD2A9A8u>()))==reinterpret_cast<uintptr_t>(carrier),
           "scenery selection never replaces the borrowed carrier allocation");
     VirtualFree(code,0,MEM_RELEASE);
 }
@@ -230,23 +231,23 @@ int main(int argc, char **argv)
         return 2;
     std::memcpy(carrier, bytes.data(), bytes.size());
     const auto base = reinterpret_cast<uintptr_t>(image);
-    *reinterpret_cast<uint16_t *>(image + 0xD2A9A6u) = 0x4428u;
-    *reinterpret_cast<uint32_t *>(image + 0xD2A9A8u) =
+    *reinterpret_cast<uint16_t *>(image + (::FfxHooks::ExecutableProfile::Rva<0xD2A9A6u>())) = 0x4428u;
+    *reinterpret_cast<uint32_t *>(image + (::FfxHooks::ExecutableProfile::Rva<0xD2A9A8u>())) =
         static_cast<uint32_t>(reinterpret_cast<uintptr_t>(carrier));
-    *reinterpret_cast<uint32_t *>(image + 0xD2A9B0u) =
+    *reinterpret_cast<uint32_t *>(image + (::FfxHooks::ExecutableProfile::Rva<0xD2A9B0u>())) =
         static_cast<uint32_t>(reinterpret_cast<uintptr_t>(carrier + 0x3F88u));
-    std::memcpy(image + 0xD2C25Au, "dome02_00", 10u);
-    Check(P::AccessorSignatureMatches(image + 0x3AC000u, 26u, base),
+    std::memcpy(image + (::FfxHooks::ExecutableProfile::Rva<0xD2C25Au>()), "dome02_00", 10u);
+    Check(P::AccessorSignatureMatches(image + (::FfxHooks::ExecutableProfile::Rva<0x3AC000u>()), 26u, base),
           "native accessor signature accepts relocation");
     for (unsigned i = 0; i < 26; ++i)
     {
         image[0x3AC000u + i] ^= 1u;
-        Check(!P::AccessorSignatureMatches(image + 0x3AC000u, 26u, base),
+        Check(!P::AccessorSignatureMatches(image + (::FfxHooks::ExecutableProfile::Rva<0x3AC000u>()), 26u, base),
               "every signature byte is significant");
         image[0x3AC000u + i] ^= 1u;
     }
     CheckNativeHookActivation(base);
-    const auto getter = reinterpret_cast<Getter>(image + 0x3AC000u);
+    const auto getter = reinterpret_cast<Getter>(image + (::FfxHooks::ExecutableProfile::Rva<0x3AC000u>()));
     R::StartProduction(base, true, false);
     SelectionInput selection{};
     selection.activationCount = 8;

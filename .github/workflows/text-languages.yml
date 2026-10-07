@@ -23,15 +23,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Install offline authoring test dependencies
+        run: python3 -m pip install -r tools/text_languages/requirements.txt
       - name: Portable contracts and memory sanitizers
-        run: python3 tools/text_languages/run_checks.py --output work/mod006-ci --sanitizers
+        run: |
+          python3 tools/text_languages/run_checks.py --output work/mod006-ci/legacy --profile legacy --sanitizers
+          python3 tools/text_languages/run_checks.py --output work/mod006-ci/steam --profile steam-20261001 --sanitizers
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: mod006-portable-${{ github.sha }}
           path: |
-            work/mod006-ci/*.log
-            work/mod006-ci/*.json
+            work/mod006-ci/**/*.log
+            work/mod006-ci/**/*.json
           if-no-files-found: error
           retention-days: 3
 

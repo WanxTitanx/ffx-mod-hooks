@@ -81,23 +81,6 @@ bool FromGrid(const void* direct) noexcept {
         if(InRange(frames[i],RVA_FFX_SPHERE_GRID_NODE_ACTIVATE_LO,RVA_FFX_SPHERE_GRID_NODE_ACTIVATE_HI))return true;
     return false;
 }
-void RonsoGridBit(unsigned character,unsigned id,bool on) noexcept {
-    if(character!=FFX_CHARACTER_KIMAHRI||id<FFX_CMD_RONSO_RAGE_ID_MIN||id>FFX_CMD_RONSO_RAGE_ID_MAX)return;
-    const auto address=module+RVA_FFX_KIMAHRI_RONSO_UNLOCK;
-    if(!RecoveryNative::Range(address,2,module,false,true))return;
-    const auto mask=static_cast<std::uint16_t>(1u<<(id-FFX_CMD_RONSO_RAGE_ID_MIN));
-    __try {
-        auto* location=reinterpret_cast<volatile SHORT*>(address);
-        SHORT previous=*location;
-        for(unsigned attempt=0;attempt<4;++attempt){
-            const auto next=static_cast<SHORT>(on?static_cast<std::uint16_t>(previous)|mask:
-                static_cast<std::uint16_t>(previous)&~mask);
-            const SHORT actual=_InterlockedCompareExchange16(location,next,previous);
-            if(actual==previous)return;previous=actual;
-        }
-    } __except(EXCEPTION_EXECUTE_HANDLER) {}
-}
-
 int __cdecl GrantShim(int character,int command,int on){
     const auto original=reinterpret_cast<GrantFn>(grantOriginal);
     if(!Admitted()||command==0)return original(character,command,on);
@@ -117,7 +100,9 @@ int __cdecl GrantShim(int character,int command,int on){
     const int result=original(character,fromGrid?normalized:command,on);
     if(encoded&&result&&fromGrid&&character>=0&&id>=96&&Learning::Ready()){
         Learning::Set(static_cast<unsigned>(character),static_cast<unsigned>(id),on!=0);
-        RonsoGridBit(static_cast<unsigned>(character),static_cast<unsigned>(id),on!=0);
+        // The native grant already updates party-bank bits for IDs >=96.
+        // A second unaligned word writer used a renderer address and is unsafe;
+        // retain the learned sidecar update without duplicating the vanilla write.
     }
     if(encoded&&on&&result&&!fromGrid&&character==FFX_CHARACTER_KIMAHRI&&
        id>=FFX_CMD_RONSO_RAGE_ID_MIN&&id<=FFX_CMD_RONSO_RAGE_ID_MAX&&

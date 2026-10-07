@@ -19,6 +19,10 @@ Extract 'enum class ArenaPlusMenuKind : int' 'ArenaKindAudio.inc'
 Extract 'static int __cdecl ArenaPlus_InputCb(int obj)' 'ArenaInputAudio.inc'
 Extract 'static void ArenaPlus_DispatchMenuConfirm(int row)' 'ArenaDispatchAudio.inc'
 Extract 'static int __cdecl SinCurse_InputCb(int obj)' 'SinInputAudio.inc'
+$sinInput=Join-Path $out 'SinInputAudio.inc'
+# Keep the source input callback and real catalog helpers; only seed-validation
+# outcomes are injected by the existing isolated audio fixture.
+[IO.File]::WriteAllText($sinInput,([IO.File]::ReadAllText($sinInput)).Replace('FfxHooks::SinSpread::ParseSeed','SinSeedForTests'))
 $source=Get-Content -Raw -LiteralPath (Join-Path $here '../NativeMenuShell/NativeMenuShell.h')
 Extract 'static int __cdecl OurListInputCb(int obj)' 'HubInputAudio.inc'
 Extract 'static inline bool ConfirmationAwaitsAllocation(ActionId action)' 'HubAllocationPolicy.inc'

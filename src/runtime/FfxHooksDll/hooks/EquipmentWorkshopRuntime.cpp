@@ -1,3 +1,4 @@
+#include "../shared/ExecutableProfile.h"
 #include "EquipmentWorkshopRuntime.h"
 #include "NativeSaveEvents.h"
 #include "NativeGameplayEvents.h"
@@ -31,9 +32,9 @@
 
 namespace FfxHooks::EquipmentWorkshop {
 namespace {
-constexpr std::uintptr_t kSaveRam=0xD2CA90,kGearRam=0xD30F2C,kGilRam=0xD307D8;
+constexpr std::uintptr_t kSaveRam=::FfxHooks::ExecutableProfile::Rva<0xD2CA90>(),kGearRam=::FfxHooks::ExecutableProfile::Rva<0xD30F2C>(),kGilRam=::FfxHooks::ExecutableProfile::Rva<0xD307D8>();
 enum Hook {Load,Create,Swap,Free,Equip,Field,Aggregate,Protect,Shell,Gear,Row,Contains,Damage,Legend,HookCount};
-constexpr std::uint32_t rvas[HookCount]={0x4B5450,0x3AB930,0x3ABA10,0x3ABCC0,0x3AB990,0x3861B0,0x39C610,0x38AE00,0x38AE80,0x3ABBF0,0x3AB890,0x3A0C40,0x38E680,0x4C3150};
+constexpr std::uint32_t rvas[HookCount]={(::FfxHooks::ExecutableProfile::Rva<0x4B5450>()),(::FfxHooks::ExecutableProfile::Rva<0x3AB930>()),(::FfxHooks::ExecutableProfile::Rva<0x3ABA10>()),(::FfxHooks::ExecutableProfile::Rva<0x3ABCC0>()),(::FfxHooks::ExecutableProfile::Rva<0x3AB990>()),(::FfxHooks::ExecutableProfile::Rva<0x3861B0>()),(::FfxHooks::ExecutableProfile::Rva<0x39C610>()),(::FfxHooks::ExecutableProfile::Rva<0x38AE00>()),(::FfxHooks::ExecutableProfile::Rva<0x38AE80>()),(::FfxHooks::ExecutableProfile::Rva<0x3ABBF0>()),(::FfxHooks::ExecutableProfile::Rva<0x3AB890>()),(::FfxHooks::ExecutableProfile::Rva<0x3A0C40>()),(::FfxHooks::ExecutableProfile::Rva<0x38E680>()),(::FfxHooks::ExecutableProfile::Rva<0x4C3150>())};
 void* originals[HookCount]{};
 std::uintptr_t module=0;
 std::atomic<bool> accepting{false},enabled{false},started{false};
@@ -55,6 +56,8 @@ std::array<unsigned char,64> loadedHeader{};
 int failBeforeWrite=-1;
 #endif
 LogFn logFn=nullptr;
+bool traceGear=false;
+std::atomic<unsigned> tracedGearCalls{0};
 struct Pending {Hash disk{},payload{},checkpointProof{};std::wstring path;std::uintptr_t buffer=0;bool checkpoint=false;};
 std::vector<Pending> pending;
 struct GearView {unsigned char bytes[24]{};workshop::Piece piece{};unsigned slot=200;bool managed=false;};
@@ -297,7 +300,7 @@ int __cdecl SwapShim(unsigned a,unsigned b){const auto before=Before();const aut
 int __cdecl FreeShim(unsigned a){const auto before=Before();const auto result=reinterpret_cast<int(__cdecl*)(unsigned)>(originals[Free])(a);After(before,workshop::InventoryEvent::Removed,(a&0xF000)==0x7000||(a&0xF000)==0xB000?200:a&0xFFF);return result;}
 int __cdecl EquipShim(unsigned owner,unsigned kind,unsigned a){
     const auto before=Before();unsigned char previous=255;
-    if(owner<18&&kind<2)Copy(&previous,reinterpret_cast<void*>(module+0xD3205C+owner*0x94+0x2D+kind),1);
+    if(owner<18&&kind<2)Copy(&previous,reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD3205C>())+owner*0x94+0x2D+kind),1);
     const int result=reinterpret_cast<int(__cdecl*)(unsigned,unsigned,unsigned)>(originals[Equip])(owner,kind,a);
     if(a==255)After(before,workshop::InventoryEvent::Unequipped,previous<200?previous:200,200,owner);
     else After(before,workshop::InventoryEvent::Equipped,a&0xFFF,previous<200?previous:200,owner);
@@ -341,13 +344,19 @@ const unsigned char* __cdecl GearShim(unsigned id,void* unknown){
     const auto* native=reinterpret_cast<const unsigned char*(__cdecl*)(unsigned,void*)>(originals[Gear])(id,unknown);
     // TkGetLegendWeapon supplies the exact record selected by the native altar.
     // Record that identity before presentation adapters can substitute a copy.
-    if(legendScope&&caller==0x4C30F2&&native){
+    if(legendScope&&caller==(::FfxHooks::ExecutableProfile::Rva<0x4C30F2>())&&native){
         unsigned char record[22]{};const unsigned slot=GearSlot(native);
         if(slot<200&&Copy(record,native,sizeof(record))&&record[2]&&record[4]==legendScope->owner&&
            !record[5]&&(record[3]&4))legendScope->slot=slot;
     }
-    if(const auto adapter=presentationAdapter.load()){const auto* shown=adapter(caller,native);if(shown!=native)return shown;}
-    if(caller!=0x38677B && caller!=0x39C782)return native;
+    if(const auto adapter=presentationAdapter.load()){
+        const auto* shown=adapter(caller,native);
+        if(traceGear&&tracedGearCalls.fetch_add(1)<32){
+            char line[192]{};std::snprintf(line,sizeof(line),"[workshop-gear] id=%u caller=%08X native=%p shown=%p\n",id,static_cast<unsigned>(caller),native,shown);Log(line);
+        }
+        if(shown!=native)return shown;
+    }
+    if(caller!=(::FfxHooks::ExecutableProfile::Rva<0x38677B>()) && caller!=(::FfxHooks::ExecutableProfile::Rva<0x39C782>()))return native;
     GearView* entry=nullptr;
     if(view && view->count<2)entry=&view->gear[view->count++];
     if(!native)return nullptr;
@@ -371,7 +380,7 @@ const unsigned char* __cdecl GearShim(unsigned id,void* unknown){
 const unsigned char* __cdecl RowShim(unsigned id,const void* table,void* unknown){
     const auto caller=reinterpret_cast<std::uintptr_t>(_ReturnAddress())-module;
     const auto* native=reinterpret_cast<const unsigned char*(__cdecl*)(unsigned,const void*,void*)>(originals[Row])(id,table,unknown);
-    if(!view || (caller!=0x3867B5 && caller!=0x39C8D9))return native;
+    if(!view || (caller!=(::FfxHooks::ExecutableProfile::Rva<0x3867B5>()) && caller!=(::FfxHooks::ExecutableProfile::Rva<0x39C8D9>())))return native;
     while(view->nextGear<view->count){
         if(view->nextAbility==5){++view->nextGear;view->nextAbility=0;continue;}
         auto& entry=view->gear[view->nextGear];const unsigned index=view->nextAbility++;
@@ -404,7 +413,7 @@ unsigned __cdecl DamageShim(unsigned user,void* userPtr,unsigned target,void* ta
     // status pointer. Carry argument3's actor identity through this exact frame.
     DamageScope scope{};scope.info=info;
     std::uint32_t actors=0;std::uint16_t id=0xFFFF;
-    if(target<18&&target!=7 && Copy(&actors,reinterpret_cast<void*>(module+0xD334CC),4) && actors &&
+    if(target<18&&target!=7 && Copy(&actors,reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>())),4) && actors &&
        Copy(&id,reinterpret_cast<void*>(actors+target*0xF90+0xE),2) && id==target)scope.owner=target;
     auto* previous=damageScope;damageScope=&scope;unsigned result=0;bool completed=false;
     CombatExtensions::DamageScope extension{};
@@ -441,7 +450,7 @@ bool Profile(std::uintptr_t base,bool inventory=true){
         if(!Copy(bytes,reinterpret_cast<void*>(base+span.rva),32)||
            (!Evidence::Matches(span,bytes,base)&&!SharedDamage::MatchesOwned(base,span.rva,bytes)))return false;
     }
-    if(inventory)for(auto rva:{0x386786u,0x39C8A3u}){unsigned char bytes[5]{};const unsigned char expected[]={0xB9,4,0,0,0};if(!Copy(bytes,reinterpret_cast<void*>(base+rva),5)||std::memcmp(bytes,expected,5)!=0)return false;}
+    if(inventory)for(auto rva:{(::FfxHooks::ExecutableProfile::Rva<0x386786u>()),(::FfxHooks::ExecutableProfile::Rva<0x39C8A3u>())}){unsigned char bytes[5]{};const unsigned char expected[]={0xB9,4,0,0,0};if(!Copy(bytes,reinterpret_cast<void*>(base+rva),5)||std::memcmp(bytes,expected,5)!=0)return false;}
     return true;
 }
 std::wstring Directory(){
@@ -461,6 +470,7 @@ bool Begin(std::uintptr_t base,bool on,bool validateOnly,LogFn logger,const wcha
     if(!equipment&&!CombatExtensions::Required()){code=RuntimeCode::Disabled;return false;}
     if(validateOnly){code=RuntimeCode::Disabled;return false;}
     started=true;module=base;enabled=on&&inventory;logFn=logger;sharedOnly=!inventory;
+    char trace[2]{};traceGear=GetEnvironmentVariableA("FFXHOOKS_TRACE_WORKSHOP_GEAR",trace,sizeof(trace))==1&&trace[0]=='1';
     if(!Profile(base,equipment)){code=RuntimeCode::Unsupported;return false;}
     if(inventory&&!store.Initialize(directory,true)){code=RuntimeCode::StorageError;return false;}
 #ifdef FFXHOOKS_HAVE_POLYHOOK
@@ -484,7 +494,7 @@ bool Begin(std::uintptr_t base,bool on,bool validateOnly,LogFn logger,const wcha
     if(result.result!=MinHookBatch::BatchResult::Applied){code=RuntimeCode::Conflict;return false;}
     // Helpers are installed before either loop can read its fifth word. Every
     // helper path supplies24 bytes, including OFF, unknown gear and stop paths.
-    if(equipment&&(!PatchByte(base+0x386787,4,5)||!PatchByte(base+0x39C8A4,4,5))){code=RuntimeCode::Conflict;return false;}
+    if(equipment&&(!PatchByte(base + (::FfxHooks::ExecutableProfile::Rva<0x386787>()),4,5)||!PatchByte(base + (::FfxHooks::ExecutableProfile::Rva<0x39C8A4>()),4,5))){code=RuntimeCode::Conflict;return false;}
     if(!SharedDamage::RegisterWorkshop(&sharedDamageCallbacks)){code=RuntimeCode::Conflict;return false;}
     NativeGameplayEvents::provider=NativeGameplayEvents::Provider::Workshop;
     accepting=true;code=inventory?RuntimeCode::WaitingForSave:RuntimeCode::Disabled;
@@ -514,7 +524,7 @@ bool Capture(workshop::State& out){
     std::lock_guard<std::recursive_mutex> lock(mutex);
     // 78CE... VA7816F1/782744 clear only this BYTE on battle exit.
     // Adjacent state is independent and may remain nonzero in the field.
-    std::uint8_t battle=1;if(!OnOwner()||!enabled.load()||saveInFlight||!Copy(&battle,reinterpret_cast<void*>(module+0xD2A8E0),sizeof(battle))||battle||!Refresh())return false;
+    std::uint8_t battle=1;if(!OnOwner()||!enabled.load()||saveInFlight||!Copy(&battle,reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD2A8E0>())),sizeof(battle))||battle||!Refresh())return false;
     out=state;return true;
 }
 void SetPresentationAdapter(PresentationAdapter adapter){presentationAdapter.store(adapter);}
