@@ -14,6 +14,45 @@
       "command": "python3 tools/text_languages/run_checks.py --output work/beta4-portable --sanitizers --profile steam-20261001",
       "exit": 0,
       "log_sha256": "9efe3870cf16066f82cbf5dc95cec379693ec0272b1c0414e1dc952231ca8983"
+    },
+    {
+      "name": "ui-catalog",
+      "command": [
+        "python3",
+        "tools/ui_languages/catalog.py",
+        "--check"
+      ],
+      "exit": 0,
+      "log_sha256": "ed4fcca6a761e6c347edd7d57ae4c6dae9f2694ba1ae0b624fd251c074bb50b2"
+    },
+    {
+      "name": "ui-tests",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/ui_languages",
+        "-v"
+      ],
+      "exit": 0,
+      "log_sha256": "d8d1998853b59760a2294d5ee18b3e81e50b1d5d18d3765efe317377591846c8"
+    },
+    {
+      "name": "profile-bindings",
+      "command": [
+        "python3",
+        "tools/test_native_menu_profile_bindings.py"
+      ],
+      "exit": 0,
+      "log_sha256": "c5bf9c9018e222e4324e759889996ced1090a20925bdd09fb6426e8b12581d11"
+    },
+    {
+      "name": "text-languages-legacy",
+      "command": "python3 tools/text_languages/run_checks.py --output work/beta4-legacy --sanitizers --profile legacy",
+      "exit": 0,
+      "log_sha256": "dcfb33eb90b20a1cc41eb3067109de2de091489c4c453a8d45c204d1e015c6e7"
     }
   ],
   "portable_stages": [
@@ -231,7 +270,24 @@
       "bytes": 4901888,
       "sha256": "10d7a7614ac1e970fe07852e22dedf1094c62bb5322cd4de30ee862ac0d7d208"
     },
-    "source_input_matches": 844
+    "source_input_matches": 844,
+    "public_workflow_supplement": [
+      {
+        "name": "executable_startup_rt0",
+        "exit": 0,
+        "log_sha256": "f4adae064c3467fa2b823039b1be8ca89c8c39847e88acade583e8156bfb8038"
+      },
+      {
+        "name": "f7_audio_rt1",
+        "exit": 0,
+        "log_sha256": "4968a14c27623476b8d83ec553a8f722d6435b14e2d05281b0afa4a0e0b2d819"
+      },
+      {
+        "name": "ui_language_rt1",
+        "exit": 0,
+        "log_sha256": "2040b2703db1f6a7389945ac97986c557df49002afc08ec76f4bbdefe5ad6ac2"
+      }
+    ]
   },
   "additional_public_checks": {
     "ui_catalog": "PASS: 487 rows across 9 locales",
@@ -243,9 +299,140 @@
     "Public portable checks use no private translation package.",
     "The isolated Windows host checked private user-owned resources; those fixtures and raw private logs are not public release members."
   ],
-  "hosted_source_checks": "Required before publishing; see the release commit checks in GitHub Actions.",
+  "hosted_source_checks": {
+    "status": "BLOCKED_BEFORE_EXECUTION",
+    "runs": [
+      {
+        "workflow": "build",
+        "id": 37658253406,
+        "url": "https://github.com/WanxTitanx/ffx-mod-hooks/actions/runs/37658253406",
+        "head_sha": "d4c0f1fae29e0b4165671e6ebf028caf76d8da9b",
+        "status": "blocked-before-execution",
+        "reason": "The job was not started because your account is locked due to a billing issue."
+      },
+      {
+        "workflow": "text-languages",
+        "id": 37658253390,
+        "url": "https://github.com/WanxTitanx/ffx-mod-hooks/actions/runs/37658253390",
+        "head_sha": "d4c0f1fae29e0b4165671e6ebf028caf76d8da9b",
+        "status": "blocked-before-execution",
+        "reason": "The job was not started because your account is locked due to a billing issue."
+      }
+    ],
+    "interpretation": "No hosted job ran; these runs are not passing CI evidence. Release verification uses the required native and portable suites executed on the local Linux host and isolated Windows x86 VM against byte-bound public source inputs. GitHub runner-environment compatibility remains unverified. No account billing or protection settings were changed."
+  },
   "translation_pack_included": false,
   "game_started": false,
   "deployed": false,
-  "rt2": false
+  "rt2": false,
+  "legacy_portable_stages": [
+    {
+      "name": "python",
+      "exit": 0
+    },
+    {
+      "name": "Core-release-build",
+      "exit": 0
+    },
+    {
+      "name": "Core-release",
+      "exit": 0
+    },
+    {
+      "name": "Core-sanitized-build",
+      "exit": 0
+    },
+    {
+      "name": "Core-sanitized",
+      "exit": 0
+    },
+    {
+      "name": "Payload-release-build",
+      "exit": 0
+    },
+    {
+      "name": "Payload-release",
+      "exit": 0
+    },
+    {
+      "name": "Payload-sanitized-build",
+      "exit": 0
+    },
+    {
+      "name": "Payload-sanitized",
+      "exit": 0
+    },
+    {
+      "name": "Field-release-build",
+      "exit": 0
+    },
+    {
+      "name": "Field-release",
+      "exit": 0
+    },
+    {
+      "name": "Field-sanitized-build",
+      "exit": 0
+    },
+    {
+      "name": "Field-sanitized",
+      "exit": 0
+    },
+    {
+      "name": "Extended-release-build",
+      "exit": 0
+    },
+    {
+      "name": "Extended-release",
+      "exit": 0
+    },
+    {
+      "name": "Extended-sanitized-build",
+      "exit": 0
+    },
+    {
+      "name": "Extended-sanitized",
+      "exit": 0
+    },
+    {
+      "name": "Validate-build",
+      "exit": 0
+    },
+    {
+      "name": "Pack-build",
+      "exit": 0
+    }
+  ],
+  "independent_release_delta_review": {
+    "verdict": "approved_scoped_delta",
+    "scope": [
+      "nested menu test correction",
+      "puff attribution",
+      "public package recipe and translation exclusion"
+    ],
+    "findings": 0,
+    "packager_sha256": "8709b16eff83649672a3bb1d6601e7d8df84e841d47de2b24c6a073437d8ab61",
+    "report_sha256": "1a1085e79052188375de21d2c64df3fba2174a45b2b71c050a1462f622997b7a",
+    "limits": "Scoped review does not assert live gameplay, hosted CI or publication."
+  },
+  "package_negative_checks": [
+    {
+      "test": "wrong-dll",
+      "exit": 2,
+      "expected_rejection": "DLL does not match",
+      "output_created": false
+    },
+    {
+      "test": "dirty-source",
+      "exit": 2,
+      "expected_rejection": "Commit the complete reviewed source",
+      "output_created": false
+    },
+    {
+      "test": "translation-prohibited",
+      "exit": 2,
+      "expected_rejection": "must not distribute a game translation pack",
+      "output_created": false
+    }
+  ]
 }
