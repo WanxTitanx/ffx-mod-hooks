@@ -84,10 +84,25 @@ Error ChangeMode(State& s,std::uint64_t expected,Mode mode,const Slots* resolved
 }
 Error Award(State& s,unsigned id) noexcept {
     if(const auto error=Validate(s);error!=Error::None)return error;
-    if(!FindCard(id))return Error::InvalidCard;
+    if(id>=kStandardCardCount||!FindCard(id))return Error::InvalidCard;
     if(s.acquired[id])return Error::None;
     if(const auto error=Revision(s,s.revision);error!=Error::None)return error;
     s.acquired[id]=1;++s.revision;return Error::None;
+}
+Error AwardOmegaWeapons(State& s,std::uint64_t expected) noexcept {
+    if(const auto error=Validate(s);error!=Error::None)return error;
+    if(const auto error=Revision(s,expected);error!=Error::None)return error;
+    if(s.acquired[kOmegaWeaponCard]&&s.acquired[kUltimaWeaponCard])return Error::None;
+    auto candidate=s;
+    candidate.acquired[kOmegaWeaponCard]=candidate.acquired[kUltimaWeaponCard]=1;
+    ++candidate.revision;s=candidate;return Error::None;
+}
+Error AwardDarkAeon(State& s,std::uint64_t expected,unsigned card) noexcept {
+    if(const auto error=Validate(s);error!=Error::None)return error;
+    if(const auto error=Revision(s,expected);error!=Error::None)return error;
+    if(card<kDarkAeonFirstCard||card>=kCardCount)return Error::InvalidCard;
+    if(s.acquired[card])return Error::None;
+    s.acquired[card]=1;++s.revision;return Error::None;
 }
 int Owner(const State& s,unsigned id) noexcept {
     if(!FindCard(id)||Validate(s)!=Error::None)return -1;
@@ -98,8 +113,8 @@ int Owner(const State& s,unsigned id) noexcept {
 Error AwardAll(State& s,std::uint64_t expected) noexcept {
     if(const auto error=Validate(s);error!=Error::None)return error;
     if(const auto error=Revision(s,expected);error!=Error::None)return error;
-    if(std::all_of(s.acquired.begin(),s.acquired.end(),[](auto value){return value==1;}))return Error::None;
-    s.acquired.fill(1);++s.revision;return Error::None;
+    if(std::all_of(s.acquired.begin(),s.acquired.begin()+kStandardCardCount,[](auto value){return value==1;}))return Error::None;
+    std::fill_n(s.acquired.begin(),kStandardCardCount,std::uint8_t(1));++s.revision;return Error::None;
 }
 Effects Aggregate(const State& s,unsigned actor) noexcept {
     Effects result;

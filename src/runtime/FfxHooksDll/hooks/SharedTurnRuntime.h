@@ -14,7 +14,7 @@
 #endif
 namespace FfxHooks::SharedTurn {
 struct Observer {void (*after)(unsigned,void*,std::uint32_t) noexcept;};
-enum class Consumer : unsigned {PhaseRotation,Vanguard,Spira,Count};
+enum class Consumer : unsigned {PhaseRotation,Vanguard,Spira,OmegaT7,Elemental,Count};
 inline constexpr unsigned ConsumerCount=static_cast<unsigned>(Consumer::Count);
 inline std::atomic<const Observer*> observers[ConsumerCount]{};
 inline std::atomic<bool> installed{false};
@@ -47,7 +47,7 @@ inline void __cdecl Shim(unsigned slot,void* actor){
     dispatching=true;
     __try {
         // Gameplay runs before the optional legacy sidecar can enqueue a command.
-        for(unsigned index:{1u,2u,0u}){const auto* value=observers[index].load();if(value)value->after(slot,actor,next);}
+        for(unsigned index:{1u,2u,3u,4u,0u}){const auto* value=observers[index].load();if(value)value->after(slot,actor,next);}
     }__finally{dispatching=false;}
 }
 inline bool Start(std::uintptr_t base){

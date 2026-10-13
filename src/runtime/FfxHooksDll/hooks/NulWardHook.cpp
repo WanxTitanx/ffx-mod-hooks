@@ -1,6 +1,7 @@
 #include "NulWardHook.h"
 #include "../shared/ExecutableProfile.h"
 #include "NulElementCommands.h"
+#include "AeroEquipmentBridge.h"
 #include "SharedNulRuntime.h"
 #include "SharedActionRuntime.h"
 #include "SharedActorRuntime.h"
@@ -20,6 +21,7 @@ std::atomic<DWORD> ownerThread{0};
 std::atomic<std::uint64_t> resetEpoch{1};
 std::uintptr_t image=0;
 bool applying=false;
+bool aeroEquipment=false,equipmentOnly=false;
 std::atomic<bool> expanded{false};
 std::uint64_t observedEpoch=0,nextSerial=0;
 struct ActorState {
@@ -33,7 +35,7 @@ struct ActionState {
 };
 struct Reservation {
     std::uint64_t target=0,action=0;
-    unsigned source=ActorCount,sub=4,command=0,mask=0;
+    unsigned source=ActorCount,sub=4,command=0,mask=0,equipmentMask=0;
 };
 std::array<ActorState,ActorCount> actors{};
 std::array<ActionState,ActorCount> actions{};
@@ -124,12 +126,13 @@ unsigned Available(const Bus::DamageCall& call) noexcept {
            reservation.action!=actions[reservation.source].serial){reservation={};continue;}
         if(i!=index)mask&=~reservation.mask;
     }
-    return mask;
+    return mask|(aeroEquipment?AeroEquipmentBridge::Sos(call.target,target.pointer):0);
 }
 bool Reserve(const Bus::DamageCall& call,unsigned mask) noexcept {
     if(!mask)return true;if(mask&~Available(call))return false;
     unsigned sub=4;const auto index=ResultIndex(call,sub);if(index>=reservations.size())return false;
-    reservations[index]={actors[call.target].serial,actions[call.user].serial,call.user,sub,call.commandId,mask};return true;
+    const unsigned equipment=aeroEquipment?AeroEquipmentBridge::Sos(call.target,actors[call.target].pointer):0;
+    reservations[index]={actors[call.target].serial,actions[call.user].serial,call.user,sub,call.commandId,mask,mask&equipment};return true;
 }
 bool Reserved(const Bus::DamageCall& call) noexcept {
     const auto available=Available(call);unsigned sub=4;
@@ -140,7 +143,8 @@ bool Reserved(const Bus::DamageCall& call) noexcept {
         reservation.source==call.user&&reservation.sub==sub&&reservation.command==call.commandId;
 }
 bool ResolveNative(unsigned argument,unsigned mask,void* info,int& output) noexcept {
-    if(!(mask&(expanded.load()?NulElements::Native:0x90u))||mask>255||!Context())return false;
+    const unsigned supported=(expanded.load()?NulElements::Native:equipmentOnly?0u:0x90u)|(aeroEquipment?0x40u:0u);
+    if(!(mask&supported)||mask>255||!Context())return false;
     std::uint32_t pool=0;if(!Read(image+::FfxHooks::ExecutableProfile::Rva<0xD334CC>(),pool))return false;
     const auto pointer=reinterpret_cast<std::uintptr_t>(info);
     if(pointer<pool||pointer>=std::uintptr_t(pool)+ActorCount*0xF90u)return false;
@@ -154,7 +158,7 @@ bool ResolveNative(unsigned argument,unsigned mask,void* info,int& output) noexc
     Byte flags[2]{};if(!Copy(flags,row+0x20,1)||!Copy(flags+1,row+0x23,1)||!(flags[1]&1)||(flags[0]&0x10))return false;
     Bus::DamageCall call{header[2],actors[header[2]].pointer,target,actor->pointer,row,command,info};
     if(Reserved(call)){output=-1;return true;}
-    const unsigned wardMask=mask&(expanded?NulElements::Native:0x90u);output=0;
+    const unsigned wardMask=mask&supported;output=0;
     if((Available(call)&wardMask)!=wardMask)return true;
     unsigned nativeMask=0;
     for(unsigned bit=1;bit<=128;bit<<=1)if((mask&bit)&&!(wardMask&bit)){
@@ -195,12 +199,12 @@ void AfterResult(void* token,const SharedAction::ResultCall& call,int,bool compl
             if(!Copy(&code,target->pointer+0x774+728*group+24+44*hit+1,1))continue;
             auto& reservation=reservations[call.target*ResultsPerActor+16*group+hit];
             if(reservation.target==target->serial&&reservation.action==action->serial&&reservation.source==call.source&&
-               reservation.sub==call.sub){if(code==2)target->charges&=~reservation.mask;reservation={};}
+               reservation.sub==call.sub){if(code==2)target->charges&=~(reservation.mask&~reservation.equipmentMask);reservation={};}
             landed=landed||code==0;
         }
     }
     const Byte* row=nullptr;std::array<Byte,96> bytes{};
-    if(!applying||!landed||!CommandRow(frame->command,row)||!Copy(bytes.data(),row,bytes.size()))return;
+    if(!applying||equipmentOnly||!landed||!CommandRow(frame->command,row)||!Copy(bytes.data(),row,bytes.size()))return;
     const unsigned grant=NulElements::Grant(frame->command,bytes.data(),bytes.size(),expanded);
     if(!grant||(action->granted[call.target]&grant))return;
     target->charges|=grant;action->granted[call.target]|=grant;
@@ -241,7 +245,9 @@ NulWardInstallResult InstallNulWardHook(std::uintptr_t base,bool apply,bool logE
     if(options&&(options->nativeSlots||options->experimentP16||options->p16Apply)&&log)
         log("[ffx-hooks] NulWard legacy options use shared external charge ownership\n");
     if(!SharedNul::Start(base)||!SharedAction::Start(base)||!SharedActor::Start(base))return result;
-    image=base;applying=apply;expanded=options&&options->allElements;resetEpoch.fetch_add(1);ownerThread=0;
+    image=base;applying=apply;expanded=options&&options->allElements;
+    aeroEquipment=options&&options->aeroEquipment;equipmentOnly=options&&options->equipmentOnly;
+    resetEpoch.fetch_add(1);ownerThread=0;
     if(!SharedAction::Subscribe(SharedAction::Slot::NulWard,&actionObserver)||
        !SharedActor::Subscribe(SharedActor::Slot::NulWard,&actorObserver)||!SharedNul::RegisterWards(&wardProvider)||
        !Bus::Subscribe(Bus::Slot::NulWard,&combatObserver)||

@@ -106,7 +106,10 @@ inline bool CommandsReady(const ReadIo& io,std::uintptr_t base,std::uint64_t req
             if(command.index<first || command.index>last)continue;
             const std::size_t entryOffset=offset+std::size_t(command.index-first)*size;
             if(entryOffset>kMaxPack-size || root+entryOffset<root || !io.read(io.context,root+entryOffset,record.data(),size))return false;
-            if(Hash(record.data(),size)!=command.hash)return false;
+            const auto hash=Hash(record.data(),size);
+            bool known=hash==command.hash;
+            for(const auto& variant:kCommandVariants)if(variant.index==command.index&&variant.size==size&&variant.hash==hash)known=true;
+            if(!known)return false;
             matched=true;break;
         }
         // The game's entry lookup silently returns row zero on a missing index.

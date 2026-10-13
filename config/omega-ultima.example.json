@@ -1,0 +1,173 @@
+{
+  "schema": "ffx.spira.omega-ultima.v1",
+  "enabled": false,
+  "clone": {
+    "id": 910,
+    "size": 134896,
+    "hash": "efe1afbac0e3b253"
+  },
+  "formations": [
+    {
+      "field": 1076,
+      "index": 0,
+      "size": 24084,
+      "hash": "3b011c7badd81623"
+    },
+    {
+      "field": 1076,
+      "index": 1,
+      "size": 24084,
+      "hash": "1c9bae3e5c8065b1"
+    },
+    {
+      "field": 1076,
+      "index": 2,
+      "size": 24148,
+      "hash": "8939f7b50fec7ba1"
+    },
+    {
+      "field": 1076,
+      "index": 3,
+      "size": 24148,
+      "hash": "e6e573259cb29054"
+    },
+    {
+      "field": 1076,
+      "index": 4,
+      "size": 24436,
+      "hash": "f66c67c3004ad1a5"
+    },
+    {
+      "field": 1076,
+      "index": 5,
+      "size": 24196,
+      "hash": "391462aac9adad2e"
+    },
+    {
+      "field": 1076,
+      "index": 6,
+      "size": 24212,
+      "hash": "673dbcbf641de029"
+    },
+    {
+      "field": 1076,
+      "index": 7,
+      "size": 24084,
+      "hash": "b56d878abed1f969"
+    },
+    {
+      "field": 1076,
+      "index": 8,
+      "size": 24148,
+      "hash": "71cbf257e2b4049f"
+    },
+    {
+      "field": 1076,
+      "index": 9,
+      "size": 24148,
+      "hash": "bcc527767531b986"
+    },
+    {
+      "field": 1076,
+      "index": 11,
+      "size": 24148,
+      "hash": "7c662f3dd0b8a214"
+    },
+    {
+      "field": 1076,
+      "index": 12,
+      "size": 24148,
+      "hash": "16f08875b21754d5"
+    },
+    {
+      "field": 1076,
+      "index": 13,
+      "size": 24296,
+      "hash": "a92b5fcb05a459bb"
+    },
+    {
+      "field": 1076,
+      "index": 14,
+      "size": 24296,
+      "hash": "ca48d6fb52ba07b0"
+    },
+    {
+      "field": 1076,
+      "index": 15,
+      "size": 25144,
+      "hash": "032128aa03b31ce2"
+    },
+    {
+      "field": 1076,
+      "index": 16,
+      "size": 24296,
+      "hash": "fc7b60b8a1b4c4bf"
+    },
+    {
+      "field": 1076,
+      "index": 17,
+      "size": 24148,
+      "hash": "1fdedccd5ffb8cb2"
+    },
+    {
+      "field": 1076,
+      "index": 18,
+      "size": 24012,
+      "hash": "21312ff656cc1caf"
+    },
+    {
+      "field": 1077,
+      "index": 0,
+      "size": 24148,
+      "hash": "68cb3209dd4c7362"
+    },
+    {
+      "field": 1077,
+      "index": 1,
+      "size": 24436,
+      "hash": "91dba33443df0a8c"
+    },
+    {
+      "field": 1077,
+      "index": 2,
+      "size": 24148,
+      "hash": "92a6177a85e84e83"
+    },
+    {
+      "field": 1077,
+      "index": 3,
+      "size": 24260,
+      "hash": "1674d9d72de5f0a2"
+    },
+    {
+      "field": 1077,
+      "index": 4,
+      "size": 24132,
+      "hash": "c2807d42b581ee4d"
+    },
+    {
+      "field": 1077,
+      "index": 5,
+      "size": 24148,
+      "hash": "3d70989457284728"
+    },
+    {
+      "field": 1077,
+      "index": 6,
+      "size": 24084,
+      "hash": "35323da2b1e27fb4"
+    },
+    {
+      "field": 1077,
+      "index": 7,
+      "size": 24148,
+      "hash": "4d520adbeed0b21a"
+    },
+    {
+      "field": 1077,
+      "index": 8,
+      "size": 24148,
+      "hash": "a4a22754f2cd4fc4"
+    }
+  ]
+}

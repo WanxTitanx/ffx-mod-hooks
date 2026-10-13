@@ -11,7 +11,7 @@ namespace FfxHooks::ArenaMonsters {
 using Choice=CustomMixUltra::MonsterChoice;
 enum class Category : std::uint8_t { Fiends, Bosses, Creations, Aeons, DarkAeons, Special };
 inline constexpr const char* kCategoryNames[]={"Fiends of Spira","Story Bosses","Arena Creations","Aeons","Dark Aeons","Special Actors"};
-struct Entry { Choice choice; const char* key; const char* name; Category category; int unlockIndex; int captureIndex; std::uint8_t count; std::array<std::uint16_t,3> monsterIds; };
+struct Entry { Choice choice; const char* key; const char* name; Category category; int unlockIndex; int captureIndex; std::uint8_t count; std::array<std::uint16_t,3> monsterIds; const char* selectionName=nullptr; };
 inline constexpr Entry kEntries[]={
     {static_cast<Choice>(257), "monster_001", "Raldo", Category::Fiends, -1, 0, 1, {{0x1001u, 0u, 0u}}},
     {static_cast<Choice>(258), "monster_002", "Bunyip", Category::Fiends, -1, 1, 1, {{0x1002u, 0u, 0u}}},
@@ -138,7 +138,7 @@ inline constexpr Entry kEntries[]={
     {static_cast<Choice>(379), "monster_123", "Negator", Category::Special, -1, -1, 0, {{0x107Bu, 0u, 0u}}},
     {static_cast<Choice>(380), "monster_124", "Seymour (Macalania)", Category::Bosses, -1, -1, 1, {{0x107Cu, 0u, 0u}}},
     {static_cast<Choice>(381), "monster_125", "Anima (Macalania)", Category::Aeons, -1, -1, 1, {{0x107Du, 0u, 0u}}},
-    {static_cast<Choice>(382), "monster_126", "Seymour Natus", Category::Bosses, -1, -1, 1, {{0x107Eu, 0u, 0u}}},
+    {static_cast<Choice>(382), "monster_126", "Seymour Natus", Category::Bosses, -1, -1, 2, {{0x107Eu, 0x107Fu, 0u}}, "Seymour Natus + Mortibody"},
     {static_cast<Choice>(383), "monster_127", "Mortibody", Category::Special, -1, -1, 0, {{0x107Fu, 0u, 0u}}},
     {static_cast<Choice>(384), "monster_128", "Sanctuary Keeper", Category::Bosses, -1, -1, 1, {{0x1080u, 0u, 0u}}},
     {static_cast<Choice>(385), "monster_129", "Spectral Keeper", Category::Bosses, -1, -1, 1, {{0x1081u, 0u, 0u}}},
@@ -154,7 +154,7 @@ inline constexpr Entry kEntries[]={
     {static_cast<Choice>(395), "monster_139", "Sinspawn Genais", Category::Bosses, -1, -1, 1, {{0x108Bu, 0u, 0u}}},
     {static_cast<Choice>(396), "monster_140", "Sin (Front)", Category::Bosses, -1, -1, 1, {{0x108Cu, 0u, 0u}}},
     {static_cast<Choice>(397), "monster_141", "Guado Guardian", Category::Bosses, -1, -1, 1, {{0x108Du, 0u, 0u}}},
-    {static_cast<Choice>(398), "monster_142", "Seymour Flux", Category::Bosses, -1, -1, 1, {{0x108Eu, 0u, 0u}}},
+    {static_cast<Choice>(398), "monster_142", "Seymour Flux", Category::Bosses, -1, -1, 2, {{0x108Eu, 0x108Fu, 0u}}, "Seymour Flux + Mortiorchis"},
     {static_cast<Choice>(399), "monster_143", "Mortiorchis", Category::Special, -1, -1, 0, {{0x108Fu, 0u, 0u}}},
     {static_cast<Choice>(400), "monster_144", "Kimahri's Spear (in Boss fight) (uncertain)", Category::Special, -1, -1, 0, {{0x1090u, 0u, 0u}}},
     {static_cast<Choice>(401), "monster_145", "Sinscale (Winged) 3", Category::Fiends, -1, -1, 1, {{0x1091u, 0u, 0u}}},

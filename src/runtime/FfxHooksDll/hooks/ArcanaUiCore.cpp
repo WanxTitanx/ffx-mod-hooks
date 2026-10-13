@@ -1,5 +1,6 @@
 #include "../shared/ExecutableProfile.h"
 #include "ArcanaUiCore.h"
+#include "ArcanaPresentation.h"
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
@@ -210,6 +211,15 @@ void Observe(View& view,const State& state,std::uintptr_t context,std::uint64_t 
 Command Input(View& view,const State& state,Key key) noexcept {
     if(view.page==Page::Closed||view.actor>=kActorCount||Validate(state)!=Error::None)return {};
     if(key==Key::None)return {};
+    if(view.page==Page::Guide){
+        if(key==Key::Cancel){view.page=Page::Picker;view.revision=state.revision;return {};}
+        if(key==Key::PageUp||key==Key::Up){if(view.guidePage)--view.guidePage;return {};}
+        if(key==Key::Confirm||key==Key::PageDown||key==Key::Down){
+            if(view.guidePage+1<Presentation::kGuidePageCount)++view.guidePage;
+            else {view.page=Page::Picker;view.revision=state.revision;}
+        }
+        return {};
+    }
     if(key==Key::Cancel){
         if(view.page==Page::Root)return Make(view,Action::NativeBack);
         view.page=view.page==Page::Transfer?Page::Picker:Page::Root;
@@ -252,6 +262,7 @@ Command Input(View& view,const State& state,Key key) noexcept {
     if(view.cursor==kModeRow){
         view.page=Page::ModeReview;view.proposed=state.mode==Mode::Twin?Mode::Constellation:Mode::Twin;return {};
     }
+    if(view.cursor==kGuideRow){view.page=Page::Guide;view.guidePage=0;view.pending=kEmpty;return {};}
     view.pending=PickerCard(view.cursor);
     if(view.pending!=kEmpty&&!state.acquired[static_cast<unsigned>(view.pending)]){view.error=Error::NotAcquired;return {};}
     if(view.pending!=kEmpty&&Owner(state,static_cast<unsigned>(view.pending))>=0&&state.slots[view.actor][view.slot]!=view.pending){
@@ -269,11 +280,11 @@ Sound Feedback(const View& before,const View& after,Key key,const Command& comma
        command.action==Action::NativeArmor||command.action==Action::NativeBack)return Sound::None;
     if(key==Key::Confirm){
         if(result!=Error::None||after.error!=Error::None)return Sound::Error;
-        if(before.page!=after.page||command.action==Action::Equip||command.action==Action::Mode)return Sound::MoveConfirm;
+        if(before.page!=after.page||before.guidePage!=after.guidePage||command.action==Action::Equip||command.action==Action::Mode)return Sound::MoveConfirm;
         return Sound::None;
     }
     if(key==Key::Cancel)return before.page!=after.page?Sound::Cancel:Sound::None;
-    return before.category!=after.category||before.cursor!=after.cursor||before.top!=after.top?Sound::MoveConfirm:Sound::None;
+    return before.category!=after.category||before.cursor!=after.cursor||before.top!=after.top||before.guidePage!=after.guidePage?Sound::MoveConfirm:Sound::None;
 }
 std::int16_t Preview(const View& view,const State& state) noexcept {
     if(view.actor>=kActorCount)return kEmpty;

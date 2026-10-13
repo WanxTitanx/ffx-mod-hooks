@@ -22,6 +22,16 @@
 #include "MusicHook.h"   // SetArenaBattleMusicPending / SetMusicHookMinFadeFrames (battle-entry pending)
 #include "SharedBattleRuntime.h"
 #include "SinAiHook.h"
+#include "SinNaturalFormation.h"
+#include "InsideSinCore.h"
+#include "InsideSinSettings.h"
+#include "OmegaUltimaCore.h"
+#include "OmegaUltimaSettings.h"
+#include "OmegaUltimaBridge.h"
+#include "OmegaT7Settings.h"
+#include "OmegaT7Bridge.h"
+#include "OmegaLastSealBridge.h"
+#include "CaptureCascadeBridge.h"
 #include "SinRamConfigCore.h"
 #include "../shared/ffx_addresses.h"
 #include "SinTransitionPublication.h"
@@ -89,6 +99,8 @@ static SinRam::SinTransitionPublication g_sinTransitionPublication{};
 static thread_local EncounterCaptureSuppression g_explicitCaptureSuppression{};
 static BattleFieldTicket g_difficultyCurrentBattleField{};
 static SinRam::RuntimeRequest g_sinCurrentRequest{};
+static bool g_omegaBaseStats=false; // Native battle generation owns this exclusion.
+static bool g_omegaT7Stats=false; // Keep T7 separate from authored T9 and global Difficulty.
 static uint64_t g_sinLastAcceptedGeneration = 0;
 static uint32_t g_sinAreaVisit = 1;
 static uint16_t g_sinSceneId = 0xFFFFu,g_sinAreaField = 0;
@@ -619,6 +631,19 @@ static bool DifficultyReadElements(unsigned slot,uintptr_t actor,F7Elements::Sel
     return g_difficultyElements.Read(g_difficultyGeneration,slot,actor,formation,output);
 }
 static const F7Elements::Provider difficultyElementProvider{DifficultyReadElements};
+static bool DifficultyOwnsOmegaMiniHp(unsigned id,uintptr_t actor,uint32_t resource,uint32_t hp) noexcept {
+    if(id<20||id>=28||!DifficultyAutoStatusThreadAdmitted())return false;
+    if(!TryAcquireSRWLockShared(&g_difficultyRuntimeLock))return false;
+    struct Release {~Release(){ReleaseSRWLockShared(&g_difficultyRuntimeLock);}} release;
+    if(!g_omegaT7Stats||g_omegaBaseStats||!DifficultyAutoStatusThreadAdmitted()||
+       DifficultyGetActorBySlot(nullptr,static_cast<uint8_t>(id-20))!=actor)return false;
+    uint32_t currentResource=0,currentHp=0;uint16_t model=0;
+    if(!DifficultyReadMemory(nullptr,actor+0x48,&currentResource,sizeof(currentResource))||currentResource!=resource||
+       !DifficultyReadMemory(nullptr,actor+kFormationIdOffset,&model,sizeof(model))||model!=0x138E||
+       !DifficultyReadMemory(nullptr,actor+kMaxHpOffset,&currentHp,sizeof(currentHp))||currentHp!=hp)return false;
+    return g_difficultyRuntime.OwnsOmegaMiniHp(g_difficultyGeneration,{actor,static_cast<uint8_t>(id-20)},resource,hp);
+}
+static const OmegaT7::Bridge::ScaleProvider omegaScaleProvider{DifficultyOwnsOmegaMiniHp};
 
 static void DifficultyPublishResult(const RuntimeResult& result, size_t pointersRejected) {
     g_difficultyLast = result;
@@ -648,6 +673,14 @@ static RuntimeResult DifficultyUpdateCurrentActorsLocked(
         actors[actorCount++] = {address, static_cast<uint8_t>(slot)};
     }
     if (pointersRejectedOut) *pointersRejectedOut = rejected;
+    if(!g_omegaBaseStats)g_omegaBaseStats=OmegaLastSeal::Bridge::UsesAuthoredStats(g_base);
+    if(g_omegaBaseStats){
+        // The exact Last Seal encounter retains its final authored T9
+        // boss/helper stats; normal Omega T7 uses the writer below instead.
+        // Retain this generation's exclusion even if its consumer closes later;
+        // a mid-battle data fault must not suddenly apply an unrelated scaler.
+        g_difficultyElements.Clear();RuntimeResult native{};native.code=ResultCode::Applied;native.actorsSeen=actorCount;return native;
+    }
     SinRam::RuntimeRequest sinRequest{};
     if (g_sinCurrentRequest.origin == SinRam::EncounterOrigin::Natural &&
         g_sinCurrentRequest.transitionCallerRva == SinNatural::kCallerRva &&
@@ -664,6 +697,15 @@ static RuntimeResult DifficultyUpdateCurrentActorsLocked(
             sinRequest.config = configSnapshot.sinRamValid
                 ? configSnapshot.sinRam : SinRam::Config{};
         }
+    }
+    if(g_omegaT7Stats){
+        // This generation keeps the independent Omega policy even if its
+        // source closes: restore our T7 fields, never fall into another scaler.
+        sinRequest.omegaT7=true;sinRequest.scriptManaged=false;
+        sinRequest.config.enabled=OmegaT7::Bridge::Available(sinRequest.encounterToken>>16,sinRequest.encounterToken&0xFFFFu);
+        const auto result=g_difficultyRuntime.UpdateComposed(DifficultyMemoryIo(),MakeNeutralConfig(),true,
+            g_difficultyCurrentBattleField.fieldRow,sinRequest,actorCount?actors.data():nullptr,actorCount);
+        g_difficultyElements.Clear();return result;
     }
     const auto result=g_difficultyRuntime.UpdateComposed(
         DifficultyMemoryIo(), configSnapshot.difficulty, configSnapshot.difficultyValid,
@@ -970,6 +1012,10 @@ F7DifficultyRuntimeStatus F7_DifficultyStatus() {
     ReleaseSRWLockShared(&g_difficultyRuntimeLock);
     return status;
 }
+bool F7_DifficultyOnOwnerThread() noexcept {
+    const auto owner=static_cast<DWORD>(InterlockedCompareExchange(&g_difficultyOwnerThread,0,0));
+    return owner!=0&&owner==GetCurrentThreadId();
+}
 
 void F7_SinObserveLocation() {
     if (!g_base || InterlockedCompareExchange(&g_difficultyAccepting,0,0)==0) return;
@@ -989,7 +1035,7 @@ void F7_SinObserveLocation() {
     ReleaseSRWLockExclusive(&g_difficultyRuntimeLock);
 }
 
-bool F7_SinAiContext(bool commandsReady,SinAi::Context* out) {
+static bool NaturalSinContext(bool allowDisabled,bool commandsReady,SinAi::Context* out) {
     (void)commandsReady;
     if(!out || InterlockedCompareExchange(&g_difficultyAccepting,0,0)==0 ||
        static_cast<DWORD>(InterlockedCompareExchange(&g_difficultyOwnerThread,0,0))!=GetCurrentThreadId())return false;
@@ -1000,11 +1046,15 @@ bool F7_SinAiContext(bool commandsReady,SinAi::Context* out) {
     const bool admitted=request.origin==SinRam::EncounterOrigin::Natural && request.transitionCallerRva==SinNatural::kCallerRva &&
         request.transitionRequestId!=0 && request.transitionRequestId==request.actorRequestId &&
         request.transitionRequestId==g_difficultyCurrentBattleField.request && request.transitionGeneration==g_difficultyGeneration &&
-        request.config.enabled && request.config.seeded && InterlockedCompareExchange(&g_inBattle,0,0)!=0;
-    if(admitted)*out={true,static_cast<std::uint16_t>(request.encounterToken>>16),request.config.seed,request.areaVisit,
-        static_cast<SinSpread::Distribution>(request.config.distribution),request.transitionGeneration};
+        (allowDisabled||(request.config.enabled && request.config.seeded)) && InterlockedCompareExchange(&g_inBattle,0,0)!=0;
+    if(admitted)*out={request.config.enabled&&request.config.seeded,static_cast<std::uint16_t>(request.encounterToken>>16),request.config.seed,request.areaVisit,
+        static_cast<SinSpread::Distribution>(request.config.distribution),request.transitionGeneration,request.config.minimumThreat};
+    if(admitted)out->formation=request.encounterToken&0xFFFFu;
     ReleaseSRWLockShared(&g_difficultyRuntimeLock);return admitted;
 }
+bool F7_SinAiContext(bool commandsReady,SinAi::Context* out) {return NaturalSinContext(false,commandsReady,out);}
+bool F7_InsideSinContext(bool commandsReady,SinAi::Context* out) {return NaturalSinContext(true,commandsReady,out);}
+bool F7_OmegaT7Context(bool commandsReady,SinAi::Context* out) {return NaturalSinContext(true,commandsReady,out);}
 void F7_SinAiRegistered(unsigned slot,std::uint64_t generation) {
     if(slot>=8 || static_cast<DWORD>(InterlockedCompareExchange(&g_difficultyOwnerThread,0,0))!=GetCurrentThreadId())return;
     AcquireSRWLockExclusive(&g_difficultyRuntimeLock);
@@ -1615,19 +1665,35 @@ static uint64_t NextDifficultyGeneration(uint64_t current) {
     return current == UINT64_MAX ? 1u : current + 1u;
 }
 
+static bool CascadeNaturalRequestCurrent(std::uint32_t request,std::int32_t fieldRow) noexcept {
+    return !g_explicitCaptureSuppression.Active()&&
+        g_difficultyPendingBattleField.Matches(request,fieldRow,BattleFieldSource::Natural);
+}
 bool F7_SinObserveNaturalEncounter(const SinNatural::Evidence& evidence) {
     if(!SinNatural::Admitted(evidence) || g_explicitCaptureSuppression.Active() ||
         InterlockedCompareExchange(&g_difficultyAccepting,0,0)==0)return false;
+    auto regionalEvidence=evidence;
+    if(evidence.field==590||evidence.field==591){
+        // The native selector stores a group slot, while Omega's exclusions,
+        // seeds and resource witnesses identify the selected BTL asset. Keep
+        // the original slot for F7's native replay/capture below.
+        std::uint32_t table=0;regionalEvidence.formation=0xFF;
+        if(DifficultyReadMemory(nullptr,g_base+SinNatural::kTablePointerRva,&table,sizeof(table)))
+            SinNatural::ResolveFormation({nullptr,DifficultyReadMemory},table,evidence,regionalEvidence.formation);
+    }
     const auto config=F7_GetConfigSnapshot();
-    const bool wanted=config.sinRamValid&&config.sinRam.enabled;
+    const auto effective=CaptureCascade::Bridge::Effective(static_cast<unsigned>(evidence.field),config.sinRamValid?config.sinRam:SinRam::Config{});
+    const bool wanted=effective.enabled;
+    const bool regional=(InsideSin::Settings::Requested()&&InsideSin::EligibleField(evidence.field,evidence.formation))||
+        ((OmegaUltima::Settings::Requested()||OmegaT7::Settings::Requested())&&OmegaUltima::EligibleFormation(regionalEvidence.field,regionalEvidence.formation));
     const bool master=F7_IsEnabled();
-    if(!wanted && !master && !DifficultyConfigEnablesBehavior(config.difficulty,config.difficultyValid))return false;
+    if(!wanted && !regional && !master && !DifficultyConfigEnablesBehavior(config.difficulty,config.difficultyValid))return false;
     AcquireSRWLockExclusive(&g_difficultyRuntimeLock);
     const auto request=F7_BeginPendingBattleFieldRequest();
     const auto generation=NextDifficultyGeneration(g_difficultyGeneration);
-    const std::uint32_t token=(static_cast<std::uint32_t>(evidence.field)<<16)|evidence.formation;
+    const std::uint32_t token=(static_cast<std::uint32_t>(regionalEvidence.field)<<16)|regionalEvidence.formation;
     SinRam::StageCode stage=SinRam::StageCode::InvalidTicket;
-    if(wanted && generation!=0){
+    if((wanted||regional) && generation!=0){
         SinRam::TransitionTicket ticket{};ticket.request=request;ticket.encounterToken=token;
         ticket.callerRva=SinNatural::kCallerRva;ticket.transitionGeneration=generation;
         stage=g_sinTransitionPublication.Stage(ticket);
@@ -1635,10 +1701,12 @@ bool F7_SinObserveNaturalEncounter(const SinNatural::Evidence& evidence) {
     const bool committed=F7_CommitPendingBattleFieldRequest(request,evidence.nativeFieldRow,BattleFieldSource::Natural);
     if(!committed){g_sinTransitionPublication.Cancel(request);F7_CancelPendingBattleFieldRequest(request);}
     ReleaseSRWLockExclusive(&g_difficultyRuntimeLock);
+    if(committed)CaptureCascade::Bridge::Natural(evidence,request,CascadeNaturalRequestCurrent);
+    if(committed)OmegaUltima::Bridge::Natural(regionalEvidence,request,CascadeNaturalRequestCurrent);
     if(master && committed){ConfigEdit edit{};edit.kind=ConfigEditKind::NaturalCapture;edit.first=evidence.nativeFieldRow;
         edit.second=evidence.group;edit.third=evidence.formation;F7_UpdateConfigSnapshot(&ApplyConfigEdit,&edit);}
-    F7_Log("[ffx-hooks] S.I.N. random encounter field=%d row=%u group=%d formation=%u request=%u generation=%llu stage=%u committed=%d\n",
-        evidence.field,evidence.nativeFieldRow,evidence.group,evidence.formation,request,
+    F7_Log("[ffx-hooks] S.I.N. random encounter field=%d row=%u group=%d formation=%u asset=%u request=%u generation=%llu stage=%u committed=%d\n",
+        evidence.field,evidence.nativeFieldRow,evidence.group,evidence.formation,regionalEvidence.formation,request,
         static_cast<unsigned long long>(generation),static_cast<unsigned>(stage),committed?1:0);
     return committed;
 }
@@ -1646,7 +1714,6 @@ bool F7_SinObserveNaturalEncounter(const SinNatural::Evidence& evidence) {
 static void DifficultyArmBattleGeneration() {
     const F7ConfigStateSnapshot configSnapshot = F7_GetConfigSnapshot();
     const bool f7Master = F7_IsEnabled();
-    const bool sinWanted = configSnapshot.sinRamValid && configSnapshot.sinRam.enabled;
     AcquireSRWLockExclusive(&g_difficultyRuntimeLock);
     if(InterlockedCompareExchange(&g_difficultyAccepting,0,0)==0) {
         ReleaseSRWLockExclusive(&g_difficultyRuntimeLock);return;
@@ -1654,14 +1721,23 @@ static void DifficultyArmBattleGeneration() {
     // WHY: a prior battle must become unusable before either one-shot publication is consumed.
     // Every mismatch, corrupt ticket, or stale generation therefore fails closed to neutral.
     g_sinCurrentRequest = {};
+    g_omegaBaseStats=false;
+    g_omegaT7Stats=false;
     const BattleFieldTicket battleField = g_difficultyPendingBattleField.Consume();
     const SinRam::ConsumeResult sinPublication =
         g_sinTransitionPublication.Consume(battleField.request);
+    const auto effectiveSin=CaptureCascade::Bridge::Effective(sinPublication.ticket.encounterToken>>16,
+        configSnapshot.sinRamValid?configSnapshot.sinRam:SinRam::Config{});
+    const bool sinWanted=effectiveSin.enabled;
+    const bool regional=(InsideSin::Settings::Requested()&&InsideSin::EligibleField(
+        sinPublication.ticket.encounterToken>>16,sinPublication.ticket.encounterToken&0xFFFFu))||
+        (OmegaT7::Settings::Requested()&&OmegaUltima::EligibleFormation(
+            sinPublication.ticket.encounterToken>>16,sinPublication.ticket.encounterToken&0xFFFFu));
     g_difficultyCurrentBattleField = battleField;
     const uint64_t generation = NextDifficultyGeneration(g_difficultyGeneration);
     g_difficultyGeneration = generation;
     InterlockedExchange(&g_difficultyOwnerThread, static_cast<LONG>(GetCurrentThreadId()));
-    if ((f7Master || sinWanted) && sinPublication.code == SinRam::ConsumeCode::Matched &&
+    if ((f7Master || sinWanted || regional) && sinPublication.code == SinRam::ConsumeCode::Matched &&
         battleField.source == BattleFieldSource::Natural &&
         battleField.request != 0u && generation != 0u &&
         sinPublication.ticket.callerRva == SinNatural::kCallerRva &&
@@ -1669,9 +1745,7 @@ static void DifficultyArmBattleGeneration() {
         sinPublication.ticket.transitionGeneration > g_sinLastAcceptedGeneration) {
         SinRam::RuntimeRequest request{};
         request.scriptManaged=true;request.scriptActorMask=0;
-        request.config = configSnapshot.sinRamValid
-            ? configSnapshot.sinRam
-            : SinRam::Config{};
+        request.config = effectiveSin;
         request.encounterToken = sinPublication.ticket.encounterToken;
         request.nativeFieldRow = battleField.fieldRow;
         request.areaVisit = g_sinAreaVisit;
@@ -1682,6 +1756,7 @@ static void DifficultyArmBattleGeneration() {
         request.actorRequestId = battleField.request;
         request.transitionGeneration = sinPublication.ticket.transitionGeneration;
         g_sinCurrentRequest = request;
+        g_omegaT7Stats=OmegaT7::Settings::Requested()&&OmegaUltima::EligibleFormation(request.encounterToken>>16,request.encounterToken&0xFFFFu);
         g_sinLastAcceptedGeneration = sinPublication.ticket.transitionGeneration;
     }
     // Vanilla InitScene has already returned 8/10 on the admitted battle caller.
@@ -1707,7 +1782,12 @@ static bool DifficultyPopulateAdmitted(void*) {
             GetCurrentThreadId(),InterlockedCompareExchange(&g_difficultyInShim,0,0)!=0);
 }
 static bool DifficultyPopulateReadPhase(void*,uint8_t* phase) {return DifficultyReadSceneInitState(phase);}
-static void DifficultyPopulateService(void*) {DifficultyRetryTick();}
+static void DifficultyPopulateService(void*) {
+    // Phase0x13 is immediately after all native actors populate, before the
+    // first player target selection. Reserve/hide Last Seal Echoes here.
+    OmegaLastSeal::Bridge::Populated();
+    DifficultyRetryTick();OmegaT7::Bridge::Populated();
+}
 static int DifficultyPopulateOriginalAndLeave(void*) {
     const int result=DifficultyCallPopulateOriginal(nullptr);
     InterlockedExchange(&g_difficultyInShim,0);
@@ -1818,6 +1898,11 @@ static bool InstallDifficultyHook() {
         F7_Log("[ffx-hooks] F7: element affinity provider ownership conflict; admission remains closed\n");
         return false;
     }
+    if(!OmegaT7::Bridge::RegisterScale(&omegaScaleProvider)){
+        F7Elements::Unregister(&difficultyElementProvider);
+        F7_Log("[ffx-hooks] F7: Omega stat proof ownership conflict; admission remains closed\n");
+        return false;
+    }
     InterlockedExchange(&g_difficultyAccepting, 1);
     return true;
 }
@@ -1834,7 +1919,7 @@ static unsigned __int8* __cdecl ResolveEncounter_Shim(uint32_t a1, int* a2, int*
         configSnapshot.difficulty, configSnapshot.difficultyValid);
     const bool accepting =
         InterlockedCompareExchange(&g_difficultyAccepting, 0, 0) != 0 &&
-        (f7Master || difficultyActive || sinWanted);
+        (f7Master || difficultyActive || sinWanted || SharedBattleRuntime::OriginalChallengeEvidenceRequested());
     const uintptr_t returnAddress = reinterpret_cast<uintptr_t>(_ReturnAddress());
     const uintptr_t rawReturnRva = g_base && returnAddress >= g_base
         ? returnAddress - g_base
@@ -1908,7 +1993,7 @@ struct CustomMixSharedBattleContext {
     SharedBattleRuntime::InitSceneRunResult run{};
 };
 
-static bool RunSharedBattleInsideCustomMix(void* rawContext, int* originalResultOut) {
+static bool RunSharedBattleInsideCustomMixOriginal(void* rawContext, int* originalResultOut) {
     if (!rawContext || !originalResultOut) return false;
     CustomMixSharedBattleContext& context =
         *static_cast<CustomMixSharedBattleContext*>(rawContext);
@@ -1918,6 +2003,16 @@ static bool RunSharedBattleInsideCustomMix(void* rawContext, int* originalResult
     // WHY: the transaction callback reports invocation success independently of
     // the game's int return value. A legitimate zero result must remain accepted.
     return true;
+}
+
+static bool RunSharedBattleInsideCustomMix(void* context,int* result) {
+    const auto omega=[](void* raw,int* out)->bool {
+        const auto* call=static_cast<const CustomMixSharedBattleContext*>(raw);
+        if(call&&SharedBattleRuntime::ClassifyInitSceneCaller(call->returnRva)==SharedBattleRuntime::InitSceneCaller::BattleState)
+            return OmegaUltima::Bridge::Battle(g_base,raw,RunSharedBattleInsideCustomMixOriginal,out);
+        return RunSharedBattleInsideCustomMixOriginal(raw,out);
+    };
+    return CaptureCascade::Bridge::Battle(g_base,context,omega,result);
 }
 
 static int __cdecl InitScene_Shim() {
@@ -2107,6 +2202,7 @@ void F7_RequestStop() {
     // state belong to the explicit normal-context owner.
     InterlockedExchange(&g_difficultyAccepting, 0);
     F7Elements::Unregister(&difficultyElementProvider);
+    OmegaT7::Bridge::UnregisterScale(&omegaScaleProvider);
     InterlockedExchange(&g_difficultyRetryArmed, 0);
     InterlockedExchange(&g_positionHookAccepting,0);
     CustomMixUltra::Runtime::ProductionRequestStop();

@@ -75,6 +75,17 @@ static bool PatchJump(std::uintptr_t address,void* destination){
     std::memcpy(reinterpret_cast<void*>(address),jump,5);FlushInstructionCache(GetCurrentProcess(),reinterpret_cast<void*>(address),5);
     return VirtualProtect(reinterpret_cast<void*>(address),5,old,&ignored)!=FALSE;
 }
+static void RejectChangedFollowSites(){
+    const unsigned sites[]={FfxHooks::ExecutableProfile::Steam20261001?0x3B0A10u:0x3B0A20u,
+                            FfxHooks::ExecutableProfile::Steam20261001?0x3B0A30u:0x3B0A40u,
+                            FfxHooks::ExecutableProfile::Steam20261001?0x392A90u:0x392AB0u};
+    for(const auto rva:sites){auto* entry=reinterpret_cast<unsigned char*>(base+rva);DWORD prior=0,ignored=0;
+        if(!VirtualProtect(entry,1,PAGE_EXECUTE_READWRITE,&prior)){Check(false,"private follow-up signature witness is writable");return;}
+        const auto byte=*entry;*entry=0xCC;FlushInstructionCache(GetCurrentProcess(),entry,1);
+        Check(!V::Start(base,false,Log),"a changed queue entry rejects Vanguard before installing either follow-up hook");
+        *entry=byte;FlushInstructionCache(GetCurrentProcess(),entry,1);VirtualProtect(entry,1,prior,&ignored);
+    }
+}
 static std::vector<unsigned char> Kernel(){
     std::vector<unsigned char> out(20+148*108+1);W16(out.data(),1);W16(out.data()+10,147);W16(out.data()+12,108);W16(out.data()+14,148*108);W32(out.data()+16,20);
     for(const auto& row:V::Abilities){W16(out.data()+20+row.id*108,static_cast<unsigned>(out.size())-(20+148*108));
@@ -160,6 +171,7 @@ int main(int argc,char** argv){
     Check(D::Start(base),"shared damage dispatcher is installed once");
     static const D::WorkshopCallbacks host{Guard,Guard,Damage};Check(D::RegisterWorkshop(&host),"controlled formula endpoint is independent of action settlement");
     if(shared)Check(FfxHooks::SharedAction::Start(base),"an independent action owner is installed before Vanguard");
+    if(follow)RejectChangedFollowSites();
     Check(V::Start(base,false,Log),"Vanguard action adapters start from actual native signatures");
     V::MappingState mapping{};
     Check(V::ReadMapping(mapping)&&mapping.codes[4]==V::MappingCode::Valid,"real-format loaded ability header admits the expected effect");

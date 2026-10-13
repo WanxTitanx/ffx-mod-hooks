@@ -1,0 +1,450 @@
+# English	Portuguese	Spanish	French	Italian	German	Japanese	Korean	Chinese
+ DEV	 DESENV.	 DEV	 DEV	 DEV	 DEV	 DEV	 DEV	 DEV
+ DEV - no debit	 DESENV. - sem cobrança	 DEV - no debit	 DEV - no debit	 DEV - no debit	 DEV - no debit	 DEV - no debit	 DEV - no debit	 DEV - no debit
+ MISSING	 FALTA	 MISSING	 MISSING	 MISSING	 MISSING	 MISSING	 MISSING	 MISSING
+ [Bound]	 [Vinculado]	 [Bound]	 [Bound]	 [Bound]	 [Bound]	 [Bound]	 [Bound]	 [Bound]
+ [Equipped]	 [Em uso]	 [Equipped]	 [Equipped]	 [Equipped]	 [Equipped]	 [Equipped]	 [Equipped]	 [Equipped]
+ [Mod recipe]	 [Receita do mod]	 [Mod recipe]	 [Mod recipe]	 [Mod recipe]	 [Mod recipe]	 [Mod recipe]	 [Mod recipe]	 [Mod recipe]
+%d-%d of %d	%d-%d de %d	%d-%d of %d	%d-%d of %d	%d-%d of %d	%d-%d of %d	%d-%d of %d	%d-%d of %d	%d-%d of %d
+%s %s #%llu +%u%s%s	%s %s #%llu +%u%s%s	%s %s #%llu +%u%s%s	%s %s #%llu +%u%s%s	%s %s #%llu +%u%s%s	%s %s #%llu +%u%s%s	%s %s #%llu +%u%s%s	%s %s #%llu +%u%s%s	%s %s #%llu +%u%s%s
+%s %s - look %u	%s %s - aparência %u	%s %s - look %u	%s %s - look %u	%s %s - look %u	%s %s - look %u	%s %s - look %u	%s %s - look %u	%s %s - look %u
+%s +%u: %s x%u	%s +%u: %s x%u	%s +%u: %s x%u	%s +%u: %s x%u	%s +%u: %s x%u	%s +%u: %s x%u	%s +%u: %s x%u	%s +%u: %s x%u	%s +%u: %s x%u
+%s%s	%s%s	%s%s	%s%s	%s%s	%s%s	%s%s	%s%s	%s%s
+%s%u: %s +%u	%s%u: %s +%u	%s%u: %s +%u	%s%u: %s +%u	%s%u: %s +%u	%s%u: %s +%u	%s%u: %s +%u	%s%u: %s +%u	%s%u: %s +%u
+%s%u: %s +%u%% STR/MAG	%s%u: %s +%u%% FOR/MAG	%s%u: %s +%u%% STR/MAG	%s%u: %s +%u%% STR/MAG	%s%u: %s +%u%% STR/MAG	%s%u: %s +%u%% STR/MAG	%s%u: %s +%u%% STR/MAG	%s%u: %s +%u%% STR/MAG	%s%u: %s +%u%% STR/MAG
+%s: %s	%s: %s	%s: %s	%s: %s	%s: %s	%s: %s	%s: %s	%s: %s	%s: %s
+%s: %s | %s	%s: %s | %s	%s: %s | %s	%s: %s | %s	%s: %s | %s	%s: %s | %s	%s: %s | %s	%s: %s | %s	%s: %s | %s
+%s: %u / %u%s	%s: %u / %u%s	%s: %u / %u%s	%s: %u / %u%s	%s: %u / %u%s	%s: %u / %u%s	%s: %u / %u%s	%s: %u / %u%s	%s: %u / %u%s
+%u slots - %s Key Sphere recipe	%u espaços - receita de esferas-chave: %s	%u slots - %s Key Sphere recipe	%u slots - %s Key Sphere recipe	%u slots - %s Key Sphere recipe	%u slots - %s Key Sphere recipe	%u slots - %s Key Sphere recipe	%u slots - %s Key Sphere recipe	%u slots - %s Key Sphere recipe
+%u: %s	%u: %s	%u: %s	%u: %s	%u: %s	%u: %s	%u: %s	%u: %s	%u: %s
+%u: %s [Cap]	%u: %s [Limite]	%u: %s [Cap]	%u: %s [Cap]	%u: %s [Cap]	%u: %s [Cap]	%u: %s [Cap]	%u: %s [Cap]	%u: %s [Cap]
+%u: Aeon Immunity [Permanent]	%u: Imunidade do Aeon [Permanente]	%u: Aeon Immunity [Permanent]	%u: Aeon Immunity [Permanent]	%u: Aeon Immunity [Permanent]	%u: Aeon Immunity [Permanent]	%u: Aeon Immunity [Permanent]	%u: Aeon Immunity [Permanent]	%u: Aeon Immunity [Permanent]
+1/2/3/4 Key Spheres by level	1/2/3/4 esferas-chave por nível	1/2/3/4 Key Spheres by level	1/2/3/4 Key Spheres by level	1/2/3/4 Key Spheres by level	1/2/3/4 Key Spheres by level	1/2/3/4 Key Spheres by level	1/2/3/4 Key Spheres by level	1/2/3/4 Key Spheres by level
+A - whole equipment	A - equipamento inteiro	A - whole equipment	A - whole equipment	A - whole equipment	A - whole equipment	A - whole equipment	A - whole equipment	A - whole equipment
+Ability Distiller	Destilador de habilidade	Ability Distiller	Ability Distiller	Ability Distiller	Ability Distiller	Ability Distiller	Ability Distiller	Ability Distiller
+Ability Sphere	Esfera de habilidade	Ability Sphere	Ability Sphere	Ability Sphere	Ability Sphere	Ability Sphere	Ability Sphere	Ability Sphere
+Accuracy Sphere	Esfera de precisão	Accuracy Sphere	Accuracy Sphere	Accuracy Sphere	Accuracy Sphere	Accuracy Sphere	Accuracy Sphere	Accuracy Sphere
+Activation changes require a restart.	Alterar a ativação exige reiniciar o jogo.	Activation changes require a restart.	Activation changes require a restart.	Activation changes require a restart.	Activation changes require a restart.	Activation changes require a restart.	Activation changes require a restart.	Activation changes require a restart.
+Aeon Break Damage Limit	Superar limite de dano do Aeon	Aeon Break Damage Limit	Aeon Break Damage Limit	Aeon Break Damage Limit	Aeon Break Damage Limit	Aeon Break Damage Limit	Aeon Break Damage Limit	Aeon Break Damage Limit
+Aeon Break HP/MP Limit	Superar limites de HP/MP do Aeon	Aeon Break HP/MP Limit	Aeon Break HP/MP Limit	Aeon Break HP/MP Limit	Aeon Break HP/MP Limit	Aeon Break HP/MP Limit	Aeon Break HP/MP Limit	Aeon Break HP/MP Limit
+Aeon Immunities	Imunidades do Aeon	Aeon Immunities	Aeon Immunities	Aeon Immunities	Aeon Immunities	Aeon Immunities	Aeon Immunities	Aeon Immunities
+Aeon equipment: Gil x2. Save normally.	Equipamento de Aeon: Gil x2. Salve o jogo normalmente.	Aeon equipment: Gil x2. Save normally.	Aeon equipment: Gil x2. Save normally.	Aeon equipment: Gil x2. Save normally.	Aeon equipment: Gil x2. Save normally.	Aeon equipment: Gil x2. Save normally.	Aeon equipment: Gil x2. Save normally.	Aeon equipment: Gil x2. Save normally.
+Aeon upgrades	Melhorias do Aeon	Aeon upgrades	Aeon upgrades	Aeon upgrades	Aeon upgrades	Aeon upgrades	Aeon upgrades	Aeon upgrades
+After confirmation	Após confirmar	After confirmation	After confirmation	After confirmation	After confirmation	After confirmation	After confirmation	After confirmation
+Agility Sphere	Esfera de agilidade	Agility Sphere	Agility Sphere	Agility Sphere	Agility Sphere	Agility Sphere	Agility Sphere	Agility Sphere
+Al Bhed Potion	Poção Al Bhed	Al Bhed Potion	Al Bhed Potion	Al Bhed Potion	Al Bhed Potion	Al Bhed Potion	Al Bhed Potion	Al Bhed Potion
+Alchemy	Alquimia	Alchemy	Alchemy	Alchemy	Alchemy	Alchemy	Alchemy	Alchemy
+All	Todos	All	All	All	All	All	All	All
+All eligible abilities are at maximum rank	Todas as habilidades elegíveis já estão no nível máximo	All eligible abilities are at maximum rank	All eligible abilities are at maximum rank	All eligible abilities are at maximum rank	All eligible abilities are at maximum rank	All eligible abilities are at maximum rank	All eligible abilities are at maximum rank	All eligible abilities are at maximum rank
+Amulet	Amuleto	Amulet	Amulet	Amulet	Amulet	Amulet	Amulet	Amulet
+An ability is outside the supported refinement or fifth-slot catalog	Uma habilidade está fora do catálogo de refinamento ou do quinto espaço	An ability is outside the supported refinement or fifth-slot catalog	An ability is outside the supported refinement or fifth-slot catalog	An ability is outside the supported refinement or fifth-slot catalog	An ability is outside the supported refinement or fifth-slot catalog	An ability is outside the supported refinement or fifth-slot catalog	An ability is outside the supported refinement or fifth-slot catalog	An ability is outside the supported refinement or fifth-slot catalog
+Antartic Wind	Vento antártico	Antartic Wind	Antartic Wind	Antartic Wind	Antartic Wind	Antartic Wind	Antartic Wind	Antartic Wind
+Antidote	Antídoto	Antidote	Antidote	Antidote	Antidote	Antidote	Antidote	Antidote
+Applied. Save the game normally to keep the change.	Aplicado. Salve o jogo normalmente para manter a alteração.	Applied. Save the game normally to keep the change.	Applied. Save the game normally to keep the change.	Applied. Save the game normally to keep the change.	Applied. Save the game normally to keep the change.	Applied. Save the game normally to keep the change.	Applied. Save the game normally to keep the change.	Applied. Save the game normally to keep the change.
+Apply %s	Aplicar %s	Apply %s	Apply %s	Apply %s	Apply %s	Apply %s	Apply %s	Apply %s
+Apply to	Aplicar em	Apply to	Apply to	Apply to	Apply to	Apply to	Apply to	Apply to
+Armor	Armadura	Armor	Armor	Armor	Armor	Armor	Armor	Armor
+Arrows / scroll: navigate    Confirm: select    Back: return	Setas / rolagem: navegar    Confirmar: selecionar    Voltar: retornar	Arrows / scroll: navigate    Confirm: select    Back: return	Arrows / scroll: navigate    Confirm: select    Back: return	Arrows / scroll: navigate    Confirm: select    Back: return	Arrows / scroll: navigate    Confirm: select    Back: return	Arrows / scroll: navigate    Confirm: select    Back: return	Arrows / scroll: navigate    Confirm: select    Back: return	Arrows / scroll: navigate    Confirm: select    Back: return
+Artic Wind	Vento ártico	Artic Wind	Artic Wind	Artic Wind	Artic Wind	Artic Wind	Artic Wind	Artic Wind
+Attribute Sphere	Esfera de atributo	Attribute Sphere	Attribute Sphere	Attribute Sphere	Attribute Sphere	Attribute Sphere	Attribute Sphere	Attribute Sphere
+Auto-Haste	Aceleração automática	Auto-Haste	Auto-Haste	Auto-Haste	Auto-Haste	Auto-Haste	Auto-Haste	Auto-Haste
+Auto-Med	Medicação automática	Auto-Med	Auto-Med	Auto-Med	Auto-Med	Auto-Med	Auto-Med	Auto-Med
+Auto-Phoenix	Auto-Fênix	Auto-Phoenix	Auto-Phoenix	Auto-Phoenix	Auto-Phoenix	Auto-Phoenix	Auto-Phoenix	Auto-Phoenix
+Auto-Potion	Poção automática	Auto-Potion	Auto-Potion	Auto-Potion	Auto-Potion	Auto-Potion	Auto-Potion	Auto-Potion
+Auto-Protect	Proteção automática	Auto-Protect	Auto-Protect	Auto-Protect	Auto-Protect	Auto-Protect	Auto-Protect	Auto-Protect
+Auto-Reflect	Reflexo automático	Auto-Reflect	Auto-Reflect	Auto-Reflect	Auto-Reflect	Auto-Reflect	Auto-Reflect	Auto-Reflect
+Auto-Regen	Regeneração automática	Auto-Regen	Auto-Regen	Auto-Regen	Auto-Regen	Auto-Regen	Auto-Regen	Auto-Regen
+Auto-Shell	Proteção mágica automática	Auto-Shell	Auto-Shell	Auto-Shell	Auto-Shell	Auto-Shell	Auto-Shell	Auto-Shell
+B - random ability	B - habilidade aleatória	B - random ability	B - random ability	B - random ability	B - random ability	B - random ability	B - random ability	B - random ability
+Back - requirements not met	Voltar - requisitos não atendidos	Back - requirements not met	Back - requirements not met	Back - requirements not met	Back - requirements not met	Back - requirements not met	Back - requirements not met	Back - requirements not met
+Back to destination	Voltar ao destino	Back to destination	Back to destination	Back to destination	Back to destination	Back to destination	Back to destination	Back to destination
+Beserk Ward	Resistência à fúria	Beserk Ward	Beserk Ward	Beserk Ward	Beserk Ward	Beserk Ward	Beserk Ward	Beserk Ward
+Beserkproof	Imunidade à fúria	Beserkproof	Beserkproof	Beserkproof	Beserkproof	Beserkproof	Beserkproof	Beserkproof
+Blessed Gem	Gema abençoada	Blessed Gem	Blessed Gem	Blessed Gem	Blessed Gem	Blessed Gem	Blessed Gem	Blessed Gem
+Blk Magic Sphere	Esfera de magia negra	Blk Magic Sphere	Blk Magic Sphere	Blk Magic Sphere	Blk Magic Sphere	Blk Magic Sphere	Blk Magic Sphere	Blk Magic Sphere
+Bomb Core	Núcleo de Bomba	Bomb Core	Bomb Core	Bomb Core	Bomb Core	Bomb Core	Bomb Core	Bomb Core
+Bomb Fragment	Fragmento de Bomba	Bomb Fragment	Bomb Fragment	Bomb Fragment	Bomb Fragment	Bomb Fragment	Bomb Fragment	Bomb Fragment
+Break Damage Limit	Superar limite de dano	Break Damage Limit	Break Damage Limit	Break Damage Limit	Break Damage Limit	Break Damage Limit	Break Damage Limit	Break Damage Limit
+Break HP Limit	Superar limite de HP	Break HP Limit	Break HP Limit	Break HP Limit	Break HP Limit	Break HP Limit	Break HP Limit	Break HP Limit
+Break MP Limit	Superar limite de MP	Break MP Limit	Break MP Limit	Break MP Limit	Break MP Limit	Break MP Limit	Break MP Limit	Break MP Limit
+Candidate equipment	Equipamento para comparação	Candidate equipment	Candidate equipment	Candidate equipment	Candidate equipment	Candidate equipment	Candidate equipment	Candidate equipment
+Candle of Life	Vela da vida	Candle of Life	Candle of Life	Candle of Life	Candle of Life	Candle of Life	Candle of Life	Candle of Life
+Capture	Captura	Capture	Capture	Capture	Capture	Capture	Capture	Capture
+Change committed; inventory unavailable. Close Workshop.	Alteração registrada; inventário indisponível. Feche a Oficina.	Change committed; inventory unavailable. Close Workshop.	Change committed; inventory unavailable. Close Workshop.	Change committed; inventory unavailable. Close Workshop.	Change committed; inventory unavailable. Close Workshop.	Change committed; inventory unavailable. Close Workshop.	Change committed; inventory unavailable. Close Workshop.	Change committed; inventory unavailable. Close Workshop.
+Character: %s	Personagem: %s	Character: %s	Character: %s	Character: %s	Character: %s	Character: %s	Character: %s	Character: %s
+Chocobo Feather	Pena de Chocobo	Chocobo Feather	Chocobo Feather	Chocobo Feather	Chocobo Feather	Chocobo Feather	Chocobo Feather	Chocobo Feather
+Chocobo Wing	Asa de Chocobo	Chocobo Wing	Chocobo Wing	Chocobo Wing	Chocobo Wing	Chocobo Wing	Chocobo Wing	Chocobo Wing
+Choose A / B in Workshop settings.	Escolha A / B nas configurações da Oficina.	Choose A / B in Workshop settings.	Choose A / B in Workshop settings.	Choose A / B in Workshop settings.	Choose A / B in Workshop settings.	Choose A / B in Workshop settings.	Choose A / B in Workshop settings.	Choose A / B in Workshop settings.
+Choose fifth ability	Escolher quinta habilidade	Choose fifth ability	Choose fifth ability	Choose fifth ability	Choose fifth ability	Choose fifth ability	Choose fifth ability	Choose fifth ability
+Clear Sphere	Esfera de remoção	Clear Sphere	Clear Sphere	Clear Sphere	Clear Sphere	Clear Sphere	Clear Sphere	Clear Sphere
+Confirm this change	Confirmar alteração	Confirm this change	Confirm this change	Confirm this change	Confirm this change	Confirm this change	Confirm this change	Confirm this change
+Confirm with DEV exemption	Confirmar com isenção de desenvolvimento	Confirm with DEV exemption	Confirm with DEV exemption	Confirm with DEV exemption	Confirm with DEV exemption	Confirm with DEV exemption	Confirm with DEV exemption	Confirm with DEV exemption
+Confuse Ward	Resistência à confusão	Confuse Ward	Confuse Ward	Confuse Ward	Confuse Ward	Confuse Ward	Confuse Ward	Confuse Ward
+Confuseproof	Imunidade à confusão	Confuseproof	Confuseproof	Confuseproof	Confuseproof	Confuseproof	Confuseproof	Confuseproof
+Counterattack	Contra-ataque	Counterattack	Counterattack	Counterattack	Counterattack	Counterattack	Counterattack	Counterattack
+Curse Ward	Resistência à maldição	Curse Ward	Curse Ward	Curse Ward	Curse Ward	Curse Ward	Curse Ward	Curse Ward
+Curseproof	Imunidade à maldição	Curseproof	Curseproof	Curseproof	Curseproof	Curseproof	Curseproof	Curseproof
+DEV exemption: listed resource waivers apply. The donor WILL be destroyed. Confirm to proceed.	Isenção de desenvolvimento: aplicam-se as dispensas indicadas. O doador SERÁ destruído. Confirme para continuar.	DEV exemption: listed resource waivers apply. The donor WILL be destroyed. Confirm to proceed.	DEV exemption: listed resource waivers apply. The donor WILL be destroyed. Confirm to proceed.	DEV exemption: listed resource waivers apply. The donor WILL be destroyed. Confirm to proceed.	DEV exemption: listed resource waivers apply. The donor WILL be destroyed. Confirm to proceed.	DEV exemption: listed resource waivers apply. The donor WILL be destroyed. Confirm to proceed.	DEV exemption: listed resource waivers apply. The donor WILL be destroyed. Confirm to proceed.	DEV exemption: listed resource waivers apply. The donor WILL be destroyed. Confirm to proceed.
+DEV exemption: nominal prices remain visible. Waived resources are not consumed. Confirm to proceed.	Isenção de desenvolvimento: preços exibidos como referência. Recursos dispensados não serão gastos. Confirme para continuar.	DEV exemption: nominal prices remain visible. Waived resources are not consumed. Confirm to proceed.	DEV exemption: nominal prices remain visible. Waived resources are not consumed. Confirm to proceed.	DEV exemption: nominal prices remain visible. Waived resources are not consumed. Confirm to proceed.	DEV exemption: nominal prices remain visible. Waived resources are not consumed. Confirm to proceed.	DEV exemption: nominal prices remain visible. Waived resources are not consumed. Confirm to proceed.	DEV exemption: nominal prices remain visible. Waived resources are not consumed. Confirm to proceed.	DEV exemption: nominal prices remain visible. Waived resources are not consumed. Confirm to proceed.
+DEV options waive costs or progression.	Opções DEV dispensam custos ou progressão.	DEV options waive costs or progression.	DEV options waive costs or progression.	DEV options waive costs or progression.	DEV options waive costs or progression.	DEV options waive costs or progression.	DEV options waive costs or progression.	DEV options waive costs or progression.
+Dark Matter	Matéria negra	Dark Matter	Dark Matter	Dark Matter	Dark Matter	Dark Matter	Dark Matter	Dark Matter
+Dark Ward	Resistência à cegueira	Dark Ward	Dark Ward	Dark Ward	Dark Ward	Dark Ward	Dark Ward	Dark Ward
+Darkproof	Imunidade à cegueira	Darkproof	Darkproof	Darkproof	Darkproof	Darkproof	Darkproof	Darkproof
+Darkstrike	Golpe cegante	Darkstrike	Darkstrike	Darkstrike	Darkstrike	Darkstrike	Darkstrike	Darkstrike
+Darktouch	Toque cegante	Darktouch	Darktouch	Darktouch	Darktouch	Darktouch	Darktouch	Darktouch
+Death Ward	Resistência à morte	Death Ward	Death Ward	Death Ward	Death Ward	Death Ward	Death Ward	Death Ward
+Deathproof	Imunidade à morte	Deathproof	Deathproof	Deathproof	Deathproof	Deathproof	Deathproof	Deathproof
+Deathstrike	Golpe mortal	Deathstrike	Deathstrike	Deathstrike	Deathstrike	Deathstrike	Deathstrike	Deathstrike
+Deathtouch	Toque mortal	Deathtouch	Deathtouch	Deathtouch	Deathtouch	Deathtouch	Deathtouch	Deathtouch
+Defense +10%	Defesa +10%	Defense +10%	Defense +10%	Defense +10%	Defense +10%	Defense +10%	Defense +10%	Defense +10%
+Defense +20%	Defesa +20%	Defense +20%	Defense +20%	Defense +20%	Defense +20%	Defense +20%	Defense +20%	Defense +20%
+Defense +3%	Defesa +3%	Defense +3%	Defense +3%	Defense +3%	Defense +3%	Defense +3%	Defense +3%	Defense +3%
+Defense +5%	Defesa +5%	Defense +5%	Defense +5%	Defense +5%	Defense +5%	Defense +5%	Defense +5%	Defense +5%
+Defense Sphere	Esfera de defesa	Defense Sphere	Defense Sphere	Defense Sphere	Defense Sphere	Defense Sphere	Defense Sphere	Defense Sphere
+Designer Waller	Carteira de grife	Designer Waller	Designer Waller	Designer Waller	Designer Waller	Designer Waller	Designer Waller	Designer Waller
+Development options	Opções de desenvolvimento	Development options	Development options	Development options	Development options	Development options	Development options	Development options
+Distill Ability	Extrair habilidade	Distill Ability	Distill Ability	Distill Ability	Distill Ability	Distill Ability	Distill Ability	Distill Ability
+Distill Mana	Extrair mana	Distill Mana	Distill Mana	Distill Mana	Distill Mana	Distill Mana	Distill Mana	Distill Mana
+Distill Power	Extrair poder	Distill Power	Distill Power	Distill Power	Distill Power	Distill Power	Distill Power	Distill Power
+Distill Speed	Extrair velocidade	Distill Speed	Distill Speed	Distill Speed	Distill Speed	Distill Speed	Distill Speed	Distill Speed
+Donor - consumed on fusion	Doador - consumido na fusão	Donor - consumed on fusion	Donor - consumed on fusion	Donor - consumed on fusion	Donor - consumed on fusion	Donor - consumed on fusion	Donor - consumed on fusion	Donor - consumed on fusion
+Donor - destroyed after confirmation	Doador - destruído após confirmar	Donor - destroyed after confirmation	Donor - destroyed after confirmation	Donor - destroyed after confirmation	Donor - destroyed after confirmation	Donor - destroyed after confirmation	Donor - destroyed after confirmation	Donor - destroyed after confirmation
+Donor - selected abilities transfer	Doador - transfere as habilidades escolhidas	Donor - selected abilities transfer	Donor - selected abilities transfer	Donor - selected abilities transfer	Donor - selected abilities transfer	Donor - selected abilities transfer	Donor - selected abilities transfer	Donor - selected abilities transfer
+Door to Tomorrow	Porta para o amanhã	Door to Tomorrow	Door to Tomorrow	Door to Tomorrow	Door to Tomorrow	Door to Tomorrow	Door to Tomorrow	Door to Tomorrow
+Double AP	AP em dobro	Double AP	Double AP	Double AP	Double AP	Double AP	Double AP	Double AP
+Double Drop	Itens em dobro	Double Drop	Double Drop	Double Drop	Double Drop	Double Drop	Double Drop	Double Drop
+Double Overdrive	Overdrive em dobro	Double Overdrive	Double Overdrive	Double Overdrive	Double Overdrive	Double Overdrive	Double Overdrive	Double Overdrive
+Dragon Scale	Escama de dragão	Dragon Scale	Dragon Scale	Dragon Scale	Dragon Scale	Dragon Scale	Dragon Scale	Dragon Scale
+Dream Powder	Pó dos sonhos	Dream Powder	Dream Powder	Dream Powder	Dream Powder	Dream Powder	Dream Powder	Dream Powder
+Duplicate ability or repeated transfer slot	Habilidade duplicada ou espaço de transferência repetido	Duplicate ability or repeated transfer slot	Duplicate ability or repeated transfer slot	Duplicate ability or repeated transfer slot	Duplicate ability or repeated transfer slot	Duplicate ability or repeated transfer slot	Duplicate ability or repeated transfer slot	Duplicate ability or repeated transfer slot
+Echo Screen	Erva do eco	Echo Screen	Echo Screen	Echo Screen	Echo Screen	Echo Screen	Echo Screen	Echo Screen
+Electro Marble	Bola elétrica	Electro Marble	Electro Marble	Electro Marble	Electro Marble	Electro Marble	Electro Marble	Electro Marble
+Eligible outcomes - not rolled yet	Resultados possíveis - sorteio pendente	Eligible outcomes - not rolled yet	Eligible outcomes - not rolled yet	Eligible outcomes - not rolled yet	Eligible outcomes - not rolled yet	Eligible outcomes - not rolled yet	Eligible outcomes - not rolled yet	Eligible outcomes - not rolled yet
+Elixir	Elixir	Elixir	Elixir	Elixir	Elixir	Elixir	Elixir	Elixir
+Empty	Vazio	Empty	Empty	Empty	Empty	Empty	Empty	Empty
+Enable Aeon Ascension and load its valid data	Ative Aeon Ascension e carregue dados válidos	Enable Aeon Ascension and load its valid data	Enable Aeon Ascension and load its valid data	Enable Aeon Ascension and load its valid data	Enable Aeon Ascension and load its valid data	Enable Aeon Ascension and load its valid data	Enable Aeon Ascension and load its valid data	Enable Aeon Ascension and load its valid data
+Equipment editing	Edição de equipamentos	Equipment editing	Equipment editing	Equipment editing	Equipment editing	Equipment editing	Equipment editing	Equipment editing
+Equipment list	Lista de equipamentos	Equipment list	Equipment list	Equipment list	Equipment list	Equipment list	Equipment list	Equipment list
+Equipment options	Opções do equipamento	Equipment options	Equipment options	Equipment options	Equipment options	Equipment options	Equipment options	Equipment options
+Ether	Éter	Ether	Ether	Ether	Ether	Ether	Ether	Ether
+Evade & Counter	Esquiva e contra-ataque	Evade & Counter	Evade & Counter	Evade & Counter	Evade & Counter	Evade & Counter	Evade & Counter	Evade & Counter
+Evasion Sphere	Esfera de evasão	Evasion Sphere	Evasion Sphere	Evasion Sphere	Evasion Sphere	Evasion Sphere	Evasion Sphere	Evasion Sphere
+Evolve an ability	Aprimorar habilidade	Evolve an ability	Evolve an ability	Evolve an ability	Evolve an ability	Evolve an ability	Evolve an ability	Evolve an ability
+Existing equipment and ranks are preserved.	Equipamentos e refinamentos atuais são preservados.	Existing equipment and ranks are preserved.	Existing equipment and ranks are preserved.	Existing equipment and ranks are preserved.	Existing equipment and ranks are preserved.	Existing equipment and ranks are preserved.	Existing equipment and ranks are preserved.	Existing equipment and ranks are preserved.
+Expand original slots	Ampliar espaços originais	Expand original slots	Expand original slots	Expand original slots	Expand original slots	Expand original slots	Expand original slots	Expand original slots
+Eye Drops	Colírio	Eye Drops	Eye Drops	Eye Drops	Eye Drops	Eye Drops	Eye Drops	Eye Drops
+Farplane Shadow	Sombra do Farplane	Farplane Shadow	Farplane Shadow	Farplane Shadow	Farplane Shadow	Farplane Shadow	Farplane Shadow	Farplane Shadow
+Farplane Wind	Vento do Farplane	Farplane Wind	Farplane Wind	Farplane Wind	Farplane Wind	Farplane Wind	Farplane Wind	Farplane Wind
+Fill the four native abilities before customizing the fifth slot.	Preencha os quatro espaços originais antes de personalizar o quinto.	Fill the four native abilities before customizing the fifth slot.	Fill the four native abilities before customizing the fifth slot.	Fill the four native abilities before customizing the fifth slot.	Fill the four native abilities before customizing the fifth slot.	Fill the four native abilities before customizing the fifth slot.	Fill the four native abilities before customizing the fifth slot.	Fill the four native abilities before customizing the fifth slot.
+Fill the four native abilities first	Preencha primeiro os quatro espaços originais de habilidades	Fill the four native abilities first	Fill the four native abilities first	Fill the four native abilities first	Fill the four native abilities first	Fill the four native abilities first	Fill the four native abilities first	Fill the four native abilities first
+Fire Eater	Absorção de fogo	Fire Eater	Fire Eater	Fire Eater	Fire Eater	Fire Eater	Fire Eater	Fire Eater
+Fire Gem	Gema de fogo	Fire Gem	Fire Gem	Fire Gem	Fire Gem	Fire Gem	Fire Gem	Fire Gem
+Fire Ward	Proteção contra fogo	Fire Ward	Fire Ward	Fire Ward	Fire Ward	Fire Ward	Fire Ward	Fire Ward
+Fireproof	Imunidade a fogo	Fireproof	Fireproof	Fireproof	Fireproof	Fireproof	Fireproof	Fireproof
+Firestrike	Golpe de fogo	Firestrike	Firestrike	Firestrike	Firestrike	Firestrike	Firestrike	Firestrike
+First Strike	Primeiro ataque	First Strike	First Strike	First Strike	First Strike	First Strike	First Strike	First Strike
+Fish Scale	Escama de peixe	Fish Scale	Fish Scale	Fish Scale	Fish Scale	Fish Scale	Fish Scale	Fish Scale
+Fixed recipe; Aeon pricing is already included. This changes the cap, not current HP/MP. Confirm to pay once.	Receita fixa; o custo do Aeon está incluído. Altera o limite e mantém o HP/MP atual. Confirme para pagar uma vez.	Fixed recipe; Aeon pricing is already included. This changes the cap, not current HP/MP. Confirm to pay once.	Fixed recipe; Aeon pricing is already included. This changes the cap, not current HP/MP. Confirm to pay once.	Fixed recipe; Aeon pricing is already included. This changes the cap, not current HP/MP. Confirm to pay once.	Fixed recipe; Aeon pricing is already included. This changes the cap, not current HP/MP. Confirm to pay once.	Fixed recipe; Aeon pricing is already included. This changes the cap, not current HP/MP. Confirm to pay once.	Fixed recipe; Aeon pricing is already included. This changes the cap, not current HP/MP. Confirm to pay once.	Fixed recipe; Aeon pricing is already included. This changes the cap, not current HP/MP. Confirm to pay once.
+Fortune Sphere	Esfera da fortuna	Fortune Sphere	Fortune Sphere	Fortune Sphere	Fortune Sphere	Fortune Sphere	Fortune Sphere	Fortune Sphere
+Four each: Attribute, Special, Skill, Wht Magic, Blk Magic. Master substitutes missing units 1:1.	4 de cada: Atributo, Especial, Técnica, Magia Branca e Negra. Esfera Mestra substitui cada unidade que faltar (1:1).	Four each: Attribute, Special, Skill, Wht Magic, Blk Magic. Master substitutes missing units 1:1.	Four each: Attribute, Special, Skill, Wht Magic, Blk Magic. Master substitutes missing units 1:1.	Four each: Attribute, Special, Skill, Wht Magic, Blk Magic. Master substitutes missing units 1:1.	Four each: Attribute, Special, Skill, Wht Magic, Blk Magic. Master substitutes missing units 1:1.	Four each: Attribute, Special, Skill, Wht Magic, Blk Magic. Master substitutes missing units 1:1.	Four each: Attribute, Special, Skill, Wht Magic, Blk Magic. Master substitutes missing units 1:1.	Four each: Attribute, Special, Skill, Wht Magic, Blk Magic. Master substitutes missing units 1:1.
+Frag Grenade	Granada de fragmentação	Frag Grenade	Frag Grenade	Frag Grenade	Frag Grenade	Frag Grenade	Frag Grenade	Frag Grenade
+Free Gil (DEV)	Gil gratuito (DEV)	Free Gil (DEV)	Free Gil (DEV)	Free Gil (DEV)	Free Gil (DEV)	Free Gil (DEV)	Free Gil (DEV)	Free Gil (DEV)
+Free materials (DEV)	Materiais gratuitos (DEV)	Free materials (DEV)	Free materials (DEV)	Free materials (DEV)	Free materials (DEV)	Free materials (DEV)	Free materials (DEV)	Free materials (DEV)
+Friend Sphere	Esfera da amizade	Friend Sphere	Friend Sphere	Friend Sphere	Friend Sphere	Friend Sphere	Friend Sphere	Friend Sphere
+Fuse equipment	Fundir equipamentos	Fuse equipment	Fuse equipment	Fuse equipment	Fuse equipment	Fuse equipment	Fuse equipment	Fuse equipment
+Fusion applied. Donor #%llu consumed. Save normally.	Fusão aplicada. Doador #%llu consumido. Salve o jogo normalmente.	Fusion applied. Donor #%llu consumed. Save normally.	Fusion applied. Donor #%llu consumed. Save normally.	Fusion applied. Donor #%llu consumed. Save normally.	Fusion applied. Donor #%llu consumed. Save normally.	Fusion applied. Donor #%llu consumed. Save normally.	Fusion applied. Donor #%llu consumed. Save normally.	Fusion applied. Donor #%llu consumed. Save normally.
+Fusion committed; donor removal could not be verified. Close Workshop.	Fusão registrada; não foi possível confirmar a remoção do doador. Feche a Oficina.	Fusion committed; donor removal could not be verified. Close Workshop.	Fusion committed; donor removal could not be verified. Close Workshop.	Fusion committed; donor removal could not be verified. Close Workshop.	Fusion committed; donor removal could not be verified. Close Workshop.	Fusion committed; donor removal could not be verified. Close Workshop.	Fusion committed; donor removal could not be verified. Close Workshop.	Fusion committed; donor removal could not be verified. Close Workshop.
+Gambler's Spirit	Espírito do apostador	Gambler's Spirit	Gambler's Spirit	Gambler's Spirit	Gambler's Spirit	Gambler's Spirit	Gambler's Spirit	Gambler's Spirit
+Gil required: %u	Gil necessário: %u	Gil required: %u	Gil required: %u	Gil required: %u	Gil required: %u	Gil required: %u	Gil required: %u	Gil required: %u
+Gil: %u / %u%s	Gil: %u / %u%s	Gil: %u / %u%s	Gil: %u / %u%s	Gil: %u / %u%s	Gil: %u / %u%s	Gil: %u / %u%s	Gil: %u / %u%s	Gil: %u / %u%s
+Gillionaire	Gil em dobro	Gillionaire	Gillionaire	Gillionaire	Gillionaire	Gillionaire	Gillionaire	Gillionaire
+Gold Hourglass	Ampulheta de ouro	Gold Hourglass	Gold Hourglass	Gold Hourglass	Gold Hourglass	Gold Hourglass	Gold Hourglass	Gold Hourglass
+Grenade	Granada	Grenade	Grenade	Grenade	Grenade	Grenade	Grenade	Grenade
+HP +10%	HP +10%	HP +10%	HP +10%	HP +10%	HP +10%	HP +10%	HP +10%	HP +10%
+HP +20%	HP +20%	HP +20%	HP +20%	HP +20%	HP +20%	HP +20%	HP +20%	HP +20%
+HP +30%	HP +30%	HP +30%	HP +30%	HP +30%	HP +30%	HP +30%	HP +30%	HP +30%
+HP +5%	HP +5%	HP +5%	HP +5%	HP +5%	HP +5%	HP +5%	HP +5%	HP +5%
+HP Sphere	Esfera de HP	HP Sphere	HP Sphere	HP Sphere	HP Sphere	HP Sphere	HP Sphere	HP Sphere
+HP Stroll	HP ao caminhar	HP Stroll	HP Stroll	HP Stroll	HP Stroll	HP Stroll	HP Stroll	HP Stroll
+Half MP Cost	Custo de MP pela metade	Half MP Cost	Half MP Cost	Half MP Cost	Half MP Cost	Half MP Cost	Half MP Cost	Half MP Cost
+Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.	Metade da receita de destino de Personalizar (arredondada para cima) + 25.000 Gil. A habilidade aprimorada começa em +0.	Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.	Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.	Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.	Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.	Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.	Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.	Half the destination Customize recipe (rounded up) plus 25,000 Gil. The evolved ability starts at +0.
+Half the destination recipe plus 50,000 Gil (Aeon x2). The evolved ability starts at +0.	Metade da receita de destino + 50.000 Gil (Aeon x2). A habilidade aprimorada começa em +0.	Half the destination recipe plus 50,000 Gil (Aeon x2). The evolved ability starts at +0.	Half the destination recipe plus 50,000 Gil (Aeon x2). The evolved ability starts at +0.	Half the destination recipe plus 50,000 Gil (Aeon x2). The evolved ability starts at +0.	Half the destination recipe plus 50,000 Gil (Aeon x2). The evolved ability starts at +0.	Half the destination recipe plus 50,000 Gil (Aeon x2). The evolved ability starts at +0.	Half the destination recipe plus 50,000 Gil (Aeon x2). The evolved ability starts at +0.	Half the destination recipe plus 50,000 Gil (Aeon x2). The evolved ability starts at +0.
+Healing Spring	Fonte de cura	Healing Spring	Healing Spring	Healing Spring	Healing Spring	Healing Spring	Healing Spring	Healing Spring
+Healing Water	Água curativa	Healing Water	Healing Water	Healing Water	Healing Water	Healing Water	Healing Water	Healing Water
+Hi-Potion	Superpoção	Hi-Potion	Hi-Potion	Hi-Potion	Hi-Potion	Hi-Potion	Hi-Potion	Hi-Potion
+Highlight a candidate to compare it.	Selecione um equipamento para comparar.	Highlight a candidate to compare it.	Highlight a candidate to compare it.	Highlight a candidate to compare it.	Highlight a candidate to compare it.	Highlight a candidate to compare it.	Highlight a candidate to compare it.	Highlight a candidate to compare it.
+Holy Water	Água benta	Holy Water	Holy Water	Holy Water	Holy Water	Holy Water	Holy Water	Holy Water
+Hypello Potion	Poção Hypello	Hypello Potion	Hypello Potion	Hypello Potion	Hypello Potion	Hypello Potion	Hypello Potion	Hypello Potion
+Ice Eater	Absorção de gelo	Ice Eater	Ice Eater	Ice Eater	Ice Eater	Ice Eater	Ice Eater	Ice Eater
+Ice Gem	Gema de gelo	Ice Gem	Ice Gem	Ice Gem	Ice Gem	Ice Gem	Ice Gem	Ice Gem
+Ice Ward	Proteção contra gelo	Ice Ward	Ice Ward	Ice Ward	Ice Ward	Ice Ward	Ice Ward	Ice Ward
+Iceproof	Imunidade a gelo	Iceproof	Iceproof	Iceproof	Iceproof	Iceproof	Iceproof	Iceproof
+Icestrike	Golpe de gelo	Icestrike	Icestrike	Icestrike	Icestrike	Icestrike	Icestrike	Icestrike
+Ignore Customize progression (DEV)	Ignorar acesso a Personalizar (DEV)	Ignore Customize progression (DEV)	Ignore Customize progression (DEV)	Ignore Customize progression (DEV)	Ignore Customize progression (DEV)	Ignore Customize progression (DEV)	Ignore Customize progression (DEV)	Ignore Customize progression (DEV)
+Includes a mod-only recipe.	Inclui uma receita exclusiva do mod.	Includes a mod-only recipe.	Includes a mod-only recipe.	Includes a mod-only recipe.	Includes a mod-only recipe.	Includes a mod-only recipe.	Includes a mod-only recipe.	Includes a mod-only recipe.
+Initiative	Iniciativa	Initiative	Initiative	Initiative	Initiative	Initiative	Initiative	Initiative
+Invalid Workshop settings	Configurações da Oficina inválidas	Invalid Workshop settings	Invalid Workshop settings	Invalid Workshop settings	Invalid Workshop settings	Invalid Workshop settings	Invalid Workshop settings	Invalid Workshop settings
+Invalid mode	Modo inválido	Invalid mode	Invalid mode	Invalid mode	Invalid mode	Invalid mode	Invalid mode	Invalid mode
+Inventory changed. Select the piece again.	O inventário mudou. Selecione o equipamento novamente.	Inventory changed. Select the piece again.	Inventory changed. Select the piece again.	Inventory changed. Select the piece again.	Inventory changed. Select the piece again.	Inventory changed. Select the piece again.	Inventory changed. Select the piece again.	Inventory changed. Select the piece again.
+Inventory or extension is inconsistent	O inventário ou os dados adicionais estão inconsistentes	Inventory or extension is inconsistent	Inventory or extension is inconsistent	Inventory or extension is inconsistent	Inventory or extension is inconsistent	Inventory or extension is inconsistent	Inventory or extension is inconsistent	Inventory or extension is inconsistent
+Inventory or mapping changed. Review a new preview.	O inventário ou a correspondência mudou. Revise uma nova prévia.	Inventory or mapping changed. Review a new preview.	Inventory or mapping changed. Review a new preview.	Inventory or mapping changed. Review a new preview.	Inventory or mapping changed. Review a new preview.	Inventory or mapping changed. Review a new preview.	Inventory or mapping changed. Review a new preview.	Inventory or mapping changed. Review a new preview.
+Keep as is	Manter como está	Keep as is	Keep as is	Keep as is	Keep as is	Keep as is	Keep as is	Keep as is
+Light Curtain	Cortina de luz	Light Curtain	Light Curtain	Light Curtain	Light Curtain	Light Curtain	Light Curtain	Light Curtain
+Lightning Eater	Absorção de raio	Lightning Eater	Lightning Eater	Lightning Eater	Lightning Eater	Lightning Eater	Lightning Eater	Lightning Eater
+Lightning Gem	Gema de raio	Lightning Gem	Lightning Gem	Lightning Gem	Lightning Gem	Lightning Gem	Lightning Gem	Lightning Gem
+Lightning Marble	Bola de raio	Lightning Marble	Lightning Marble	Lightning Marble	Lightning Marble	Lightning Marble	Lightning Marble	Lightning Marble
+Lightning Ward	Proteção contra raio	Lightning Ward	Lightning Ward	Lightning Ward	Lightning Ward	Lightning Ward	Lightning Ward	Lightning Ward
+Lightningproof	Imunidade a raio	Lightningproof	Lightningproof	Lightningproof	Lightningproof	Lightningproof	Lightningproof	Lightningproof
+Lightningstrike	Golpe de raio	Lightningstrike	Lightningstrike	Lightningstrike	Lightningstrike	Lightningstrike	Lightningstrike	Lightningstrike
+Load a save to activate Equipment Workshop	Carregue um salvamento para usar a Oficina.	Load a save to activate Equipment Workshop	Load a save to activate Equipment Workshop	Load a save to activate Equipment Workshop	Load a save to activate Equipment Workshop	Load a save to activate Equipment Workshop	Load a save to activate Equipment Workshop	Load a save to activate Equipment Workshop
+Locked	Bloqueado	Locked	Locked	Locked	Locked	Locked	Locked	Locked
+Luck Sphere	Esfera da sorte	Luck Sphere	Luck Sphere	Luck Sphere	Luck Sphere	Luck Sphere	Luck Sphere	Luck Sphere
+Lunar Curtain	Cortina lunar	Lunar Curtain	Lunar Curtain	Lunar Curtain	Lunar Curtain	Lunar Curtain	Lunar Curtain	Lunar Curtain
+Lv.1 Key Sphere	Esfera-chave de nível 1	Lv.1 Key Sphere	Lv.1 Key Sphere	Lv.1 Key Sphere	Lv.1 Key Sphere	Lv.1 Key Sphere	Lv.1 Key Sphere	Lv.1 Key Sphere
+Lv.2 Key Sphere	Esfera-chave de nível 2	Lv.2 Key Sphere	Lv.2 Key Sphere	Lv.2 Key Sphere	Lv.2 Key Sphere	Lv.2 Key Sphere	Lv.2 Key Sphere	Lv.2 Key Sphere
+Lv.3 Key Sphere	Esfera-chave de nível 3	Lv.3 Key Sphere	Lv.3 Key Sphere	Lv.3 Key Sphere	Lv.3 Key Sphere	Lv.3 Key Sphere	Lv.3 Key Sphere	Lv.3 Key Sphere
+Lv.4 Key Sphere	Esfera-chave de nível 4	Lv.4 Key Sphere	Lv.4 Key Sphere	Lv.4 Key Sphere	Lv.4 Key Sphere	Lv.4 Key Sphere	Lv.4 Key Sphere	Lv.4 Key Sphere
+MP +10%	MP +10%	MP +10%	MP +10%	MP +10%	MP +10%	MP +10%	MP +10%	MP +10%
+MP +20%	MP +20%	MP +20%	MP +20%	MP +20%	MP +20%	MP +20%	MP +20%	MP +20%
+MP +30%	MP +30%	MP +30%	MP +30%	MP +30%	MP +30%	MP +30%	MP +30%	MP +30%
+MP +5%	MP +5%	MP +5%	MP +5%	MP +5%	MP +5%	MP +5%	MP +5%	MP +5%
+MP Sphere	Esfera de MP	MP Sphere	MP Sphere	MP Sphere	MP Sphere	MP Sphere	MP Sphere	MP Sphere
+MP Stroll	MP ao caminhar	MP Stroll	MP Stroll	MP Stroll	MP Stroll	MP Stroll	MP Stroll	MP Stroll
+Magic +10%	Magia +10%	Magic +10%	Magic +10%	Magic +10%	Magic +10%	Magic +10%	Magic +10%	Magic +10%
+Magic +20%	Magia +20%	Magic +20%	Magic +20%	Magic +20%	Magic +20%	Magic +20%	Magic +20%	Magic +20%
+Magic +3%	Magia +3%	Magic +3%	Magic +3%	Magic +3%	Magic +3%	Magic +3%	Magic +3%	Magic +3%
+Magic +5%	Magia +5%	Magic +5%	Magic +5%	Magic +5%	Magic +5%	Magic +5%	Magic +5%	Magic +5%
+Magic Booster	Magia potencializada	Magic Booster	Magic Booster	Magic Booster	Magic Booster	Magic Booster	Magic Booster	Magic Booster
+Magic Counter	Contra-ataque a magia	Magic Counter	Magic Counter	Magic Counter	Magic Counter	Magic Counter	Magic Counter	Magic Counter
+Magic Def +10%	Defesa mágica +10%	Magic Def +10%	Magic Def +10%	Magic Def +10%	Magic Def +10%	Magic Def +10%	Magic Def +10%	Magic Def +10%
+Magic Def +20%	Defesa mágica +20%	Magic Def +20%	Magic Def +20%	Magic Def +20%	Magic Def +20%	Magic Def +20%	Magic Def +20%	Magic Def +20%
+Magic Def +3%	Defesa mágica +3%	Magic Def +3%	Magic Def +3%	Magic Def +3%	Magic Def +3%	Magic Def +3%	Magic Def +3%	Magic Def +3%
+Magic Def +5%	Defesa mágica +5%	Magic Def +5%	Magic Def +5%	Magic Def +5%	Magic Def +5%	Magic Def +5%	Magic Def +5%	Magic Def +5%
+Magic Def Sphere	Esfera de defesa mágica	Magic Def Sphere	Magic Def Sphere	Magic Def Sphere	Magic Def Sphere	Magic Def Sphere	Magic Def Sphere	Magic Def Sphere
+Magic Sphere	Esfera de magia	Magic Sphere	Magic Sphere	Magic Sphere	Magic Sphere	Magic Sphere	Magic Sphere	Magic Sphere
+Mana Distiller	Destilador de mana	Mana Distiller	Mana Distiller	Mana Distiller	Mana Distiller	Mana Distiller	Mana Distiller	Mana Distiller
+Mana Sphere	Esfera de mana	Mana Sphere	Mana Sphere	Mana Sphere	Mana Sphere	Mana Sphere	Mana Sphere	Mana Sphere
+Mana Spring	Fonte de mana	Mana Spring	Mana Spring	Mana Spring	Mana Spring	Mana Spring	Mana Spring	Mana Spring
+Mana Tablet	Tablete de mana	Mana Tablet	Mana Tablet	Mana Tablet	Mana Tablet	Mana Tablet	Mana Tablet	Mana Tablet
+Mana Tonic	Tônico de mana	Mana Tonic	Mana Tonic	Mana Tonic	Mana Tonic	Mana Tonic	Mana Tonic	Mana Tonic
+Map	Mapa	Map	Map	Map	Map	Map	Map	Map
+Mapping unavailable	Correspondência indisponível	Mapping unavailable	Mapping unavailable	Mapping unavailable	Mapping unavailable	Mapping unavailable	Mapping unavailable	Mapping unavailable
+Master Sphere	Esfera mestra	Master Sphere	Master Sphere	Master Sphere	Master Sphere	Master Sphere	Master Sphere	Master Sphere
+Master Thief	Mestre do furto	Master Thief	Master Thief	Master Thief	Master Thief	Master Thief	Master Thief	Master Thief
+Materials charged on confirmation	Materiais cobrados ao confirmar	Materials charged on confirmation	Materials charged on confirmation	Materials charged on confirmation	Materials charged on confirmation	Materials charged on confirmation	Materials charged on confirmation	Materials charged on confirmation
+Mega Elixir	Megalixir	Mega Elixir	Mega Elixir	Mega Elixir	Mega Elixir	Mega Elixir	Mega Elixir	Mega Elixir
+Mega Phoneix	Mega Fênix	Mega Phoneix	Mega Phoneix	Mega Phoneix	Mega Phoneix	Mega Phoneix	Mega Phoneix	Mega Phoneix
+Mega-Potion	Megapoção	Mega-Potion	Mega-Potion	Mega-Potion	Mega-Potion	Mega-Potion	Mega-Potion	Mega-Potion
+Model reference - appearance only	Modelo - somente aparência	Model reference - appearance only	Model reference - appearance only	Model reference - appearance only	Model reference - appearance only	Model reference - appearance only	Model reference - appearance only	Model reference - appearance only
+Musk	Almíscar	Musk	Musk	Musk	Musk	Musk	Musk	Musk
+Native Customize rejects this ability combination	Personalizar não permite combinar essas habilidades	Native Customize rejects this ability combination	Native Customize rejects this ability combination	Native Customize rejects this ability combination	Native Customize rejects this ability combination	Native Customize rejects this ability combination	Native Customize rejects this ability combination	Native Customize rejects this ability combination
+Native detail hook: OFF - enable in Workshop settings; restart.	Detalhes nativos: DESLIGADOS - ative na Oficina e reinicie.	Native detail hook: OFF - enable in Workshop settings; restart.	Native detail hook: OFF - enable in Workshop settings; restart.	Native detail hook: OFF - enable in Workshop settings; restart.	Native detail hook: OFF - enable in Workshop settings; restart.	Native detail hook: OFF - enable in Workshop settings; restart.	Native detail hook: OFF - enable in Workshop settings; restart.	Native detail hook: OFF - enable in Workshop settings; restart.
+Native detail hook: ON - requires a loaded Workshop save.	Detalhes nativos de equipamento: ATIVADOS - exige um salvamento da Oficina carregado.	Native detail hook: ON - requires a loaded Workshop save.	Native detail hook: ON - requires a loaded Workshop save.	Native detail hook: ON - requires a loaded Workshop save.	Native detail hook: ON - requires a loaded Workshop save.	Native detail hook: ON - requires a loaded Workshop save.	Native detail hook: ON - requires a loaded Workshop save.	Native detail hook: ON - requires a loaded Workshop save.
+No AP	Sem AP	No AP	No AP	No AP	No AP	No AP	No AP	No AP
+No Encounters	Sem encontros	No Encounters	No Encounters	No Encounters	No Encounters	No Encounters	No Encounters	No Encounters
+No materials required	Não exige materiais	No materials required	No materials required	No materials required	No materials required	No materials required	No materials required	No materials required
+Not enough Gil	Gil insuficiente	Not enough Gil	Not enough Gil	Not enough Gil	Not enough Gil	Not enough Gil	Not enough Gil	Not enough Gil
+Not enough materials	Materiais insuficientes	Not enough materials	Not enough materials	Not enough materials	Not enough materials	Not enough materials	Not enough materials	Not enough materials
+Nothing would change	Nenhuma alteração seria feita	Nothing would change	Nothing would change	Nothing would change	Nothing would change	Nothing would change	Nothing would change	Nothing would change
+One Key Sphere of each required level	Uma esfera-chave de cada nível exigido	One Key Sphere of each required level	One Key Sphere of each required level	One Key Sphere of each required level	One Key Sphere of each required level	One Key Sphere of each required level	One Key Sphere of each required level	One Key Sphere of each required level
+One MP Cost	Custo de 1 MP	One MP Cost	One MP Cost	One MP Cost	One MP Cost	One MP Cost	One MP Cost	One MP Cost
+Opening the fifth slot requires four OPEN native slots, filled or empty.	Libere os quatro espaços originais antes do quinto; eles podem estar preenchidos ou vazios.	Opening the fifth slot requires four OPEN native slots, filled or empty.	Opening the fifth slot requires four OPEN native slots, filled or empty.	Opening the fifth slot requires four OPEN native slots, filled or empty.	Opening the fifth slot requires four OPEN native slots, filled or empty.	Opening the fifth slot requires four OPEN native slots, filled or empty.	Opening the fifth slot requires four OPEN native slots, filled or empty.	Opening the fifth slot requires four OPEN native slots, filled or empty.
+Overdrive to AP	Overdrive em AP	Overdrive to AP	Overdrive to AP	Overdrive to AP	Overdrive to AP	Overdrive to AP	Overdrive to AP	Overdrive to AP
+Owned / required	Disponível / necessário	Owned / required	Owned / required	Owned / required	Owned / required	Owned / required	Owned / required	Owned / required
+Owned / required (not all are consumed)	Disponível / necessário (nem tudo será gasto)	Owned / required (not all are consumed)	Owned / required (not all are consumed)	Owned / required (not all are consumed)	Owned / required (not all are consumed)	Owned / required (not all are consumed)	Owned / required (not all are consumed)	Owned / required (not all are consumed)
+Paid cap applied. Current HP and MP were not restored.	Limite pago aplicado. O HP e MP atuais não foram restaurados.	Paid cap applied. Current HP and MP were not restored.	Paid cap applied. Current HP and MP were not restored.	Paid cap applied. Current HP and MP were not restored.	Paid cap applied. Current HP and MP were not restored.	Paid cap applied. Current HP and MP were not restored.	Paid cap applied. Current HP and MP were not restored.	Paid cap applied. Current HP and MP were not restored.
+Paid cap removed. No materials or Gil were refunded.	Limite pago removido. Nenhum material ou Gil foi reembolsado.	Paid cap removed. No materials or Gil were refunded.	Paid cap removed. No materials or Gil were refunded.	Paid cap removed. No materials or Gil were refunded.	Paid cap removed. No materials or Gil were refunded.	Paid cap removed. No materials or Gil were refunded.	Paid cap removed. No materials or Gil were refunded.	Paid cap removed. No materials or Gil were refunded.
+Paid change committed; close Workshop and reload.	Alteração paga registrada; feche a Oficina e recarregue o salvamento.	Paid change committed; close Workshop and reload.	Paid change committed; close Workshop and reload.	Paid change committed; close Workshop and reload.	Paid change committed; close Workshop and reload.	Paid change committed; close Workshop and reload.	Paid change committed; close Workshop and reload.	Paid change committed; close Workshop and reload.
+Pendulum	Pêndulo	Pendulum	Pendulum	Pendulum	Pendulum	Pendulum	Pendulum	Pendulum
+Petrify Grenade	Granada de petrificação	Petrify Grenade	Petrify Grenade	Petrify Grenade	Petrify Grenade	Petrify Grenade	Petrify Grenade	Petrify Grenade
+Phoenix Down	Pena da Fênix	Phoenix Down	Phoenix Down	Phoenix Down	Phoenix Down	Phoenix Down	Phoenix Down	Phoenix Down
+Pickpocket	Furto	Pickpocket	Pickpocket	Pickpocket	Pickpocket	Pickpocket	Pickpocket	Pickpocket
+Piercing	Perfuração	Piercing	Piercing	Piercing	Piercing	Piercing	Piercing	Piercing
+Poison Fang	Presa venenosa	Poison Fang	Poison Fang	Poison Fang	Poison Fang	Poison Fang	Poison Fang	Poison Fang
+Poison Ward	Resistência a veneno	Poison Ward	Poison Ward	Poison Ward	Poison Ward	Poison Ward	Poison Ward	Poison Ward
+Poisonproof	Imunidade a veneno	Poisonproof	Poisonproof	Poisonproof	Poisonproof	Poisonproof	Poisonproof	Poisonproof
+Poisonstrike	Golpe venenoso	Poisonstrike	Poisonstrike	Poisonstrike	Poisonstrike	Poisonstrike	Poisonstrike	Poisonstrike
+Poisontouch	Toque venenoso	Poisontouch	Poisontouch	Poisontouch	Poisontouch	Poisontouch	Poisontouch	Poisontouch
+Potion	Poção	Potion	Potion	Potion	Potion	Potion	Potion	Potion
+Power Distiller	Destilador de poder	Power Distiller	Power Distiller	Power Distiller	Power Distiller	Power Distiller	Power Distiller	Power Distiller
+Power Sphere	Esfera de Força	Power Sphere	Power Sphere	Power Sphere	Power Sphere	Power Sphere	Power Sphere	Power Sphere
+Prerequisites - all outcomes covered	Requisitos - todos os resultados possíveis	Prerequisites - all outcomes covered	Prerequisites - all outcomes covered	Prerequisites - all outcomes covered	Prerequisites - all outcomes covered	Prerequisites - all outcomes covered	Prerequisites - all outcomes covered	Prerequisites - all outcomes covered
+Prices remain visible before confirmation.	Os custos aparecem antes da confirmação.	Prices remain visible before confirmation.	Prices remain visible before confirmation.	Prices remain visible before confirmation.	Prices remain visible before confirmation.	Prices remain visible before confirmation.	Prices remain visible before confirmation.	Prices remain visible before confirmation.
+Purifying Salt	Sal purificador	Purifying Salt	Purifying Salt	Purifying Salt	Purifying Salt	Purifying Salt	Purifying Salt	Purifying Salt
+Ready	Pronto	Ready	Ready	Ready	Ready	Ready	Ready	Ready
+Refine, compare and fuse your equipment.	Refine, compare e funda seus equipamentos.	Refine, compare and fuse your equipment.	Refine, compare and fuse your equipment.	Refine, compare and fuse your equipment.	Refine, compare and fuse your equipment.	Refine, compare and fuse your equipment.	Refine, compare and fuse your equipment.	Refine, compare and fuse your equipment.
+Refine: %s	Refinar: %s	Refine: %s	Refine: %s	Refine: %s	Refine: %s	Refine: %s	Refine: %s	Refine: %s
+Refined %s to +%u. Save normally.	Refinamento de %s: +%u. Salve o jogo normalmente.	Refined %s to +%u. Save normally.	Refined %s to +%u. Save normally.	Refined %s to +%u. Save normally.	Refined %s to +%u. Save normally.	Refined %s to +%u. Save normally.	Refined %s to +%u. Save normally.	Refined %s to +%u. Save normally.
+Refinement and recipes apply to new changes.	Refinamento e receitas valem para novas alterações.	Refinement and recipes apply to new changes.	Refinement and recipes apply to new changes.	Refinement and recipes apply to new changes.	Refinement and recipes apply to new changes.	Refinement and recipes apply to new changes.	Refinement and recipes apply to new changes.	Refinement and recipes apply to new changes.
+Refinement method	Método de refinamento	Refinement method	Refinement method	Refinement method	Refinement method	Refinement method	Refinement method	Refinement method
+Reforge owner / type	Reforjar personagem / tipo	Reforge owner / type	Reforge owner / type	Reforge owner / type	Reforge owner / type	Reforge owner / type	Reforge owner / type	Reforge owner / type
+Remedy	Remédio	Remedy	Remedy	Remedy	Remedy	Remedy	Remedy	Remedy
+Remove	Remover	Remove	Remove	Remove	Remove	Remove	Remove	Remove
+Remove %s	Remover %s	Remove %s	Remove %s	Remove %s	Remove %s	Remove %s	Remove %s	Remove %s
+Remove an ability	Remover habilidade	Remove an ability	Remove an ability	Remove an ability	Remove an ability	Remove an ability	Remove an ability	Remove an ability
+Remove this paid cap without refund. Current HP/MP can only decrease to the remaining maximum.	Remova este limite sem reembolso. O HP/MP atual só será reduzido se exceder o limite restante.	Remove this paid cap without refund. Current HP/MP can only decrease to the remaining maximum.	Remove this paid cap without refund. Current HP/MP can only decrease to the remaining maximum.	Remove this paid cap without refund. Current HP/MP can only decrease to the remaining maximum.	Remove this paid cap without refund. Current HP/MP can only decrease to the remaining maximum.	Remove this paid cap without refund. Current HP/MP can only decrease to the remaining maximum.	Remove this paid cap without refund. Current HP/MP can only decrease to the remaining maximum.	Remove this paid cap without refund. Current HP/MP can only decrease to the remaining maximum.
+Rename Card	Cartão de renomeação	Rename Card	Rename Card	Rename Card	Rename Card	Rename Card	Rename Card	Rename Card
+Replace	Substituir	Replace	Replace	Replace	Replace	Replace	Replace	Replace
+Replace slot %u: %s	Substituir espaço %u: %s	Replace slot %u: %s	Replace slot %u: %s	Replace slot %u: %s	Replace slot %u: %s	Replace slot %u: %s	Replace slot %u: %s	Replace slot %u: %s
+Require every possible ingredient; pay only base + rolled result.	Exige todos os materiais possíveis; cobra apenas a base e o resultado sorteado.	Require every possible ingredient; pay only base + rolled result.	Require every possible ingredient; pay only base + rolled result.	Require every possible ingredient; pay only base + rolled result.	Require every possible ingredient; pay only base + rolled result.	Require every possible ingredient; pay only base + rolled result.	Require every possible ingredient; pay only base + rolled result.	Require every possible ingredient; pay only base + rolled result.
+Requires %s and this Aeon obtained.	Exige %s e que você já tenha obtido este Aeon.	Requires %s and this Aeon obtained.	Requires %s and this Aeon obtained.	Requires %s and this Aeon obtained.	Requires %s and this Aeon obtained.	Requires %s and this Aeon obtained.	Requires %s and this Aeon obtained.	Requires %s and this Aeon obtained.
+Return Sphere	Esfera de retorno	Return Sphere	Return Sphere	Return Sphere	Return Sphere	Return Sphere	Return Sphere	Return Sphere
+Return to game	Voltar ao jogo	Return to game	Return to game	Return to game	Return to game	Return to game	Return to game	Return to game
+Return to main menu	Voltar ao menu principal	Return to main menu	Return to main menu	Return to main menu	Return to main menu	Return to main menu	Return to main menu	Return to main menu
+Review fusion with one ability	Revisar fusão com uma habilidade	Review fusion with one ability	Review fusion with one ability	Review fusion with one ability	Review fusion with one ability	Review fusion with one ability	Review fusion with one ability	Review fusion with one ability
+Review the materials before confirming.	Revise os materiais antes de confirmar.	Review the materials before confirming.	Review the materials before confirming.	Review the materials before confirming.	Review the materials before confirming.	Review the materials before confirming.	Review the materials before confirming.	Review the materials before confirming.
+Ribbon	Fita	Ribbon	Ribbon	Ribbon	Ribbon	Ribbon	Ribbon	Ribbon
+Running	Em execução	Running	Running	Running	Running	Running	Running	Running
+SOS Haste	Aceleração de emergência	SOS Haste	SOS Haste	SOS Haste	SOS Haste	SOS Haste	SOS Haste	SOS Haste
+SOS NulBlaze	NulFogo de emergência	SOS NulBlaze	SOS NulBlaze	SOS NulBlaze	SOS NulBlaze	SOS NulBlaze	SOS NulBlaze	SOS NulBlaze
+SOS NulFrost	NulGelo de emergência	SOS NulFrost	SOS NulFrost	SOS NulFrost	SOS NulFrost	SOS NulFrost	SOS NulFrost	SOS NulFrost
+SOS NulShock	NulRaio de emergência	SOS NulShock	SOS NulShock	SOS NulShock	SOS NulShock	SOS NulShock	SOS NulShock	SOS NulShock
+SOS NulTide	NulÁgua de emergência	SOS NulTide	SOS NulTide	SOS NulTide	SOS NulTide	SOS NulTide	SOS NulTide	SOS NulTide
+SOS Overdrive	Overdrive de emergência	SOS Overdrive	SOS Overdrive	SOS Overdrive	SOS Overdrive	SOS Overdrive	SOS Overdrive	SOS Overdrive
+SOS Protect	Proteção de emergência	SOS Protect	SOS Protect	SOS Protect	SOS Protect	SOS Protect	SOS Protect	SOS Protect
+SOS Reflect	Reflexo de emergência	SOS Reflect	SOS Reflect	SOS Reflect	SOS Reflect	SOS Reflect	SOS Reflect	SOS Reflect
+SOS Regen	Regeneração de emergência	SOS Regen	SOS Regen	SOS Regen	SOS Regen	SOS Regen	SOS Regen	SOS Regen
+SOS Shell	Proteção mágica de emergência	SOS Shell	SOS Shell	SOS Shell	SOS Shell	SOS Shell	SOS Shell	SOS Shell
+Saved. Existing equipment is unchanged.	Salvo. Os equipamentos existentes foram preservados.	Saved. Existing equipment is unchanged.	Saved. Existing equipment is unchanged.	Saved. Existing equipment is unchanged.	Saved. Existing equipment is unchanged.	Saved. Existing equipment is unchanged.	Saved. Existing equipment is unchanged.	Saved. Existing equipment is unchanged.
+Saved. Restart the game to apply.	Salvo. Reinicie o jogo para aplicar.	Saved. Restart the game to apply.	Saved. Restart the game to apply.	Saved. Restart the game to apply.	Saved. Restart the game to apply.	Saved. Restart the game to apply.	Saved. Restart the game to apply.	Saved. Restart the game to apply.
+Select an equipment to compare.	Selecione um equipamento para comparar.	Select an equipment to compare.	Select an equipment to compare.	Select an equipment to compare.	Select an equipment to compare.	Select an equipment to compare.	Select an equipment to compare.	Select an equipment to compare.
+Select an existing piece	Selecione um equipamento do inventário	Select an existing piece	Select an existing piece	Select an existing piece	Select an existing piece	Select an existing piece	Select an existing piece	Select an existing piece
+Selected equipment	Equipamento selecionado	Selected equipment	Selected equipment	Selected equipment	Selected equipment	Selected equipment	Selected equipment	Selected equipment
+Sensor	Sensor	Sensor	Sensor	Sensor	Sensor	Sensor	Sensor	Sensor
+Shadow Gem	Gema das sombras	Shadow Gem	Shadow Gem	Shadow Gem	Shadow Gem	Shadow Gem	Shadow Gem	Shadow Gem
+Shining Gem	Gema brilhante	Shining Gem	Shining Gem	Shining Gem	Shining Gem	Shining Gem	Shining Gem	Shining Gem
+Shining Thorn	Espinho brilhante	Shining Thorn	Shining Thorn	Shining Thorn	Shining Thorn	Shining Thorn	Shining Thorn	Shining Thorn
+Silence Grenade	Granada do silêncio	Silence Grenade	Silence Grenade	Silence Grenade	Silence Grenade	Silence Grenade	Silence Grenade	Silence Grenade
+Silence Ward	Resistência ao silêncio	Silence Ward	Silence Ward	Silence Ward	Silence Ward	Silence Ward	Silence Ward	Silence Ward
+Silenceproof	Imunidade ao silêncio	Silenceproof	Silenceproof	Silenceproof	Silenceproof	Silenceproof	Silenceproof	Silenceproof
+Silencestrike	Golpe silenciador	Silencestrike	Silencestrike	Silencestrike	Silencestrike	Silencestrike	Silencestrike	Silencestrike
+Silencetouch	Toque silenciador	Silencetouch	Silencetouch	Silencetouch	Silencetouch	Silencetouch	Silencetouch	Silencetouch
+Silver Hourglass	Ampulheta de prata	Silver Hourglass	Silver Hourglass	Silver Hourglass	Silver Hourglass	Silver Hourglass	Silver Hourglass	Silver Hourglass
+Skill Sphere	Esfera de técnica	Skill Sphere	Skill Sphere	Skill Sphere	Skill Sphere	Skill Sphere	Skill Sphere	Skill Sphere
+Sleep Ward	Resistência ao sono	Sleep Ward	Sleep Ward	Sleep Ward	Sleep Ward	Sleep Ward	Sleep Ward	Sleep Ward
+Sleeping Powder	Pó sonífero	Sleeping Powder	Sleeping Powder	Sleeping Powder	Sleeping Powder	Sleeping Powder	Sleeping Powder	Sleeping Powder
+Sleepproof	Imunidade ao sono	Sleepproof	Sleepproof	Sleepproof	Sleepproof	Sleepproof	Sleepproof	Sleepproof
+Sleepstrike	Golpe sonífero	Sleepstrike	Sleepstrike	Sleepstrike	Sleepstrike	Sleepstrike	Sleepstrike	Sleepstrike
+Sleeptouch	Toque sonífero	Sleeptouch	Sleeptouch	Sleeptouch	Sleeptouch	Sleeptouch	Sleeptouch	Sleeptouch
+Slot %u: %s	Espaço %u: %s	Slot %u: %s	Slot %u: %s	Slot %u: %s	Slot %u: %s	Slot %u: %s	Slot %u: %s	Slot %u: %s
+Slot %u: %s %s	Espaço %u: %s %s	Slot %u: %s %s	Slot %u: %s %s	Slot %u: %s %s	Slot %u: %s %s	Slot %u: %s %s	Slot %u: %s %s	Slot %u: %s %s
+Slot expansion recipe	Receita de ampliação de espaços	Slot expansion recipe	Slot expansion recipe	Slot expansion recipe	Slot expansion recipe	Slot expansion recipe	Slot expansion recipe	Slot expansion recipe
+Slow Ward	Resistência à lentidão	Slow Ward	Slow Ward	Slow Ward	Slow Ward	Slow Ward	Slow Ward	Slow Ward
+Slowproof	Imunidade à lentidão	Slowproof	Slowproof	Slowproof	Slowproof	Slowproof	Slowproof	Slowproof
+Slowstrike	Golpe de lentidão	Slowstrike	Slowstrike	Slowstrike	Slowstrike	Slowstrike	Slowstrike	Slowstrike
+Slowtouch	Toque de lentidão	Slowtouch	Slowtouch	Slowtouch	Slowtouch	Slowtouch	Slowtouch	Slowtouch
+Smoke Bomb	Bomba de fumaça	Smoke Bomb	Smoke Bomb	Smoke Bomb	Smoke Bomb	Smoke Bomb	Smoke Bomb	Smoke Bomb
+Soft	Antipetrificação	Soft	Soft	Soft	Soft	Soft	Soft	Soft
+Soul Spring	Fonte de alma	Soul Spring	Soul Spring	Soul Spring	Soul Spring	Soul Spring	Soul Spring	Soul Spring
+Special	Especial	Special	Special	Special	Special	Special	Special	Special
+Special Sphere	Esfera especial	Special Sphere	Special Sphere	Special Sphere	Special Sphere	Special Sphere	Special Sphere	Special Sphere
+Speed Distiller	Destilador de velocidade	Speed Distiller	Speed Distiller	Speed Distiller	Speed Distiller	Speed Distiller	Speed Distiller	Speed Distiller
+Speed Sphere	Esfera de velocidade	Speed Sphere	Speed Sphere	Speed Sphere	Speed Sphere	Speed Sphere	Speed Sphere	Speed Sphere
+Stamina Spring	Fonte de vigor	Stamina Spring	Stamina Spring	Stamina Spring	Stamina Spring	Stamina Spring	Stamina Spring	Stamina Spring
+Stamina Tablet	Tablete de vigor	Stamina Tablet	Stamina Tablet	Stamina Tablet	Stamina Tablet	Stamina Tablet	Stamina Tablet	Stamina Tablet
+Stamina Tonic	Tônico de vigor	Stamina Tonic	Stamina Tonic	Stamina Tonic	Stamina Tonic	Stamina Tonic	Stamina Tonic	Stamina Tonic
+Star Curtain	Cortina estelar	Star Curtain	Star Curtain	Star Curtain	Star Curtain	Star Curtain	Star Curtain	Star Curtain
+Stone Ward	Resistência à petrificação	Stone Ward	Stone Ward	Stone Ward	Stone Ward	Stone Ward	Stone Ward	Stone Ward
+Stoneproof	Imunidade à petrificação	Stoneproof	Stoneproof	Stoneproof	Stoneproof	Stoneproof	Stoneproof	Stoneproof
+Stonestrike	Golpe petrificante	Stonestrike	Stonestrike	Stonestrike	Stonestrike	Stonestrike	Stonestrike	Stonestrike
+Stonetouch	Toque petrificante	Stonetouch	Stonetouch	Stonetouch	Stonetouch	Stonetouch	Stonetouch	Stonetouch
+Strength +10%	Força +10%	Strength +10%	Strength +10%	Strength +10%	Strength +10%	Strength +10%	Strength +10%	Strength +10%
+Strength +20%	Força +20%	Strength +20%	Strength +20%	Strength +20%	Strength +20%	Strength +20%	Strength +20%	Strength +20%
+Strength +3%	Força +3%	Strength +3%	Strength +3%	Strength +3%	Strength +3%	Strength +3%	Strength +3%	Strength +3%
+Strength +5%	Força +5%	Strength +5%	Strength +5%	Strength +5%	Strength +5%	Strength +5%	Strength +5%	Strength +5%
+Strength Sphere	Esfera de força	Strength Sphere	Strength Sphere	Strength Sphere	Strength Sphere	Strength Sphere	Strength Sphere	Strength Sphere
+Supreme Gem	Gema suprema	Supreme Gem	Supreme Gem	Supreme Gem	Supreme Gem	Supreme Gem	Supreme Gem	Supreme Gem
+Target before	Destino antes da alteração	Target before	Target before	Target before	Target before	Target before	Target before	Target before
+Target equipment	Equipamento de destino	Target equipment	Target equipment	Target equipment	Target equipment	Target equipment	Target equipment	Target equipment
+Teleport Sphere	Esfera de teletransporte	Teleport Sphere	Teleport Sphere	Teleport Sphere	Teleport Sphere	Teleport Sphere	Teleport Sphere	Teleport Sphere
+Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.	10 esferas do personagem; Esfera Mestra substitui 1:1. O equipamento fica vinculado ao personagem permanentemente.	Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.	Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.	Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.	Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.	Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.	Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.	Ten owner spheres; Master substitutes 1:1. Unlocking permanently binds this equipment to its owner.
+Tetra Elemental	Tetra Elemental	Tetra Elemental	Tetra Elemental	Tetra Elemental	Tetra Elemental	Tetra Elemental	Tetra Elemental	Tetra Elemental
+The donor is destroyed. Listed materials and Gil are consumed.	O doador será destruído. Os materiais e o Gil indicados serão gastos.	The donor is destroyed. Listed materials and Gil are consumed.	The donor is destroyed. Listed materials and Gil are consumed.	The donor is destroyed. Listed materials and Gil are consumed.	The donor is destroyed. Listed materials and Gil are consumed.	The donor is destroyed. Listed materials and Gil are consumed.	The donor is destroyed. Listed materials and Gil are consumed.	The donor is destroyed. Listed materials and Gil are consumed.
+The inventory changed. Review a new preview.	O inventário mudou. Revise uma nova prévia.	The inventory changed. Review a new preview.	The inventory changed. Review a new preview.	The inventory changed. Review a new preview.	The inventory changed. Review a new preview.	The inventory changed. Review a new preview.	The inventory changed. Review a new preview.	The inventory changed. Review a new preview.
+The inventory changed; review a new preview	O inventário mudou; revise uma nova prévia	The inventory changed; review a new preview	The inventory changed; review a new preview	The inventory changed; review a new preview	The inventory changed; review a new preview	The inventory changed; review a new preview	The inventory changed; review a new preview	The inventory changed; review a new preview
+The selected piece changed. Choose it again.	O equipamento selecionado mudou. Selecione-o novamente.	The selected piece changed. Choose it again.	The selected piece changed. Choose it again.	The selected piece changed. Choose it again.	The selected piece changed. Choose it again.	The selected piece changed. Choose it again.	The selected piece changed. Choose it again.	The selected piece changed. Choose it again.
+This cap has no admitted paid receipt	Este limite não tem pagamento confirmado	This cap has no admitted paid receipt	This cap has no admitted paid receipt	This cap has no admitted paid receipt	This cap has no admitted paid receipt	This cap has no admitted paid receipt	This cap has no admitted paid receipt	This cap has no admitted paid receipt
+This operation is not valid for the selected piece	Esta operação não está disponível para o equipamento selecionado	This operation is not valid for the selected piece	This operation is not valid for the selected piece	This operation is not valid for the selected piece	This operation is not valid for the selected piece	This operation is not valid for the selected piece	This operation is not valid for the selected piece	This operation is not valid for the selected piece
+This piece or refinement mode is protected	Este equipamento ou método de refinamento está protegido	This piece or refinement mode is protected	This piece or refinement mode is protected	This piece or refinement mode is protected	This piece or refinement mode is protected	This piece or refinement mode is protected	This piece or refinement mode is protected	This piece or refinement mode is protected
+Three Stars	Três estrelas	Three Stars	Three Stars	Three Stars	Three Stars	Three Stars	Three Stars	Three Stars
+Transfer a second ability	Transferir uma segunda habilidade	Transfer a second ability	Transfer a second ability	Transfer a second ability	Transfer a second ability	Transfer a second ability	Transfer a second ability	Transfer a second ability
+Triple AP	AP triplicado	Triple AP	Triple AP	Triple AP	Triple AP	Triple AP	Triple AP	Triple AP
+Triple Drop	Itens triplicados	Triple Drop	Triple Drop	Triple Drop	Triple Drop	Triple Drop	Triple Drop	Triple Drop
+Triple Overdrive	Overdrive triplicado	Triple Overdrive	Triple Overdrive	Triple Overdrive	Triple Overdrive	Triple Overdrive	Triple Overdrive	Triple Overdrive
+Turbo Ether	Éter turbo	Turbo Ether	Turbo Ether	Turbo Ether	Turbo Ether	Turbo Ether	Turbo Ether	Turbo Ether
+Twin Stars	Estrelas gêmeas	Twin Stars	Twin Stars	Twin Stars	Twin Stars	Twin Stars	Twin Stars	Twin Stars
+Unable to save Workshop settings.	Não foi possível salvar as configurações da Oficina.	Unable to save Workshop settings.	Unable to save Workshop settings.	Unable to save Workshop settings.	Unable to save Workshop settings.	Unable to save Workshop settings.	Unable to save Workshop settings.	Unable to save Workshop settings.
+Underdog's Secret	Segredo do azarão	Underdog's Secret	Underdog's Secret	Underdog's Secret	Underdog's Secret	Underdog's Secret	Underdog's Secret	Underdog's Secret
+Unequip before editing. Save normally.	Desequipe antes de alterar. Salve o jogo normalmente.	Unequip before editing. Save normally.	Unequip before editing. Save normally.	Unequip before editing. Save normally.	Unequip before editing. Save normally.	Unequip before editing. Save normally.	Unequip before editing. Save normally.	Unequip before editing. Save normally.
+Unequip this piece first	Desequipe este equipamento primeiro	Unequip this piece first	Unequip this piece first	Unequip this piece first	Unequip this piece first	Unequip this piece first	Unequip this piece first	Unequip this piece first
+Unknown error	Erro desconhecido	Unknown error	Unknown error	Unknown error	Unknown error	Unknown error	Unknown error	Unknown error
+Unknown material	Material desconhecido	Unknown material	Unknown material	Unknown material	Unknown material	Unknown material	Unknown material	Unknown material
+Unlock Customize in the story, or use the explicit Workshop development setting	Libere Personalizar na história ou ative a opção de desenvolvimento da Oficina	Unlock Customize in the story, or use the explicit Workshop development setting	Unlock Customize in the story, or use the explicit Workshop development setting	Unlock Customize in the story, or use the explicit Workshop development setting	Unlock Customize in the story, or use the explicit Workshop development setting	Unlock Customize in the story, or use the explicit Workshop development setting	Unlock Customize in the story, or use the explicit Workshop development setting	Unlock Customize in the story, or use the explicit Workshop development setting
+Unlock fifth slot (four native slots)	Liberar quinto espaço (quatro espaços originais)	Unlock fifth slot (four native slots)	Unlock fifth slot (four native slots)	Unlock fifth slot (four native slots)	Unlock fifth slot (four native slots)	Unlock fifth slot (four native slots)	Unlock fifth slot (four native slots)	Unlock fifth slot (four native slots)
+Warp Sphere	Esfera de transporte	Warp Sphere	Warp Sphere	Warp Sphere	Warp Sphere	Warp Sphere	Warp Sphere	Warp Sphere
+Water Eater	Absorção de água	Water Eater	Water Eater	Water Eater	Water Eater	Water Eater	Water Eater	Water Eater
+Water Gem	Gema de água	Water Gem	Water Gem	Water Gem	Water Gem	Water Gem	Water Gem	Water Gem
+Water Ward	Proteção contra água	Water Ward	Water Ward	Water Ward	Water Ward	Water Ward	Water Ward	Water Ward
+Waterproof	Imunidade à água	Waterproof	Waterproof	Waterproof	Waterproof	Waterproof	Waterproof	Waterproof
+Waterstrike	Golpe de água	Waterstrike	Waterstrike	Waterstrike	Waterstrike	Waterstrike	Waterstrike	Waterstrike
+Weapon	Arma	Weapon	Weapon	Weapon	Weapon	Weapon	Weapon	Weapon
+Wht Magic Sphere	Esfera de magia branca	Wht Magic Sphere	Wht Magic Sphere	Wht Magic Sphere	Wht Magic Sphere	Wht Magic Sphere	Wht Magic Sphere	Wht Magic Sphere
+Wings to Discovery	Asas da descoberta	Wings to Discovery	Wings to Discovery	Wings to Discovery	Wings to Discovery	Wings to Discovery	Wings to Discovery	Wings to Discovery
+Winning Formula	Fórmula da vitória	Winning Formula	Winning Formula	Winning Formula	Winning Formula	Winning Formula	Winning Formula	Winning Formula
+Workshop	Oficina	Workshop	Workshop	Workshop	Workshop	Workshop	Workshop	Workshop
+Workshop settings	Configurações da Oficina	Workshop settings	Workshop settings	Workshop settings	Workshop settings	Workshop settings	Workshop settings	Workshop settings
+X-Potion	Poção X	X-Potion	X-Potion	X-Potion	X-Potion	X-Potion	X-Potion	X-Potion
+Zombie Ward	Resistência a zumbi	Zombie Ward	Zombie Ward	Zombie Ward	Zombie Ward	Zombie Ward	Zombie Ward	Zombie Ward
+Zombieproof	Imunidade a zumbi	Zombieproof	Zombieproof	Zombieproof	Zombieproof	Zombieproof	Zombieproof	Zombieproof
+Zombiestrike	Golpe zumbi	Zombiestrike	Zombiestrike	Zombiestrike	Zombiestrike	Zombiestrike	Zombiestrike	Zombiestrike
+Zombietouch	Toque zumbi	Zombietouch	Zombietouch	Zombietouch	Zombietouch	Zombietouch	Zombietouch	Zombietouch
+empty slot	espaço vazio	empty slot	empty slot	empty slot	empty slot	empty slot	empty slot	empty slot
+invalid Workshop setting	configuração inválida da Oficina	invalid Workshop setting	invalid Workshop setting	invalid Workshop setting	invalid Workshop setting	invalid Workshop setting	invalid Workshop setting	invalid Workshop setting
+one each	uma de cada	one each	one each	one each	one each	one each	one each	one each
+Break Limits	Superar limites de HP/MP	Break Limits	Break Limits	Break Limits	Break Limits	Break Limits	Break Limits	Break Limits
+Break MP Limit (disabled)	Superar limite de MP (indisponível)	Break MP Limit (disabled)	Break MP Limit (disabled)	Break MP Limit (disabled)	Break MP Limit (disabled)	Break MP Limit (disabled)	Break MP Limit (disabled)	Break MP Limit (disabled)
+Invalid - select to reset	Inválido - selecione para redefinir	Invalid - select to reset	Invalid - select to reset	Invalid - select to reset	Invalid - select to reset	Invalid - select to reset	Invalid - select to reset	Invalid - select to reset
+Saved, but an external setting still overrides this choice.	Salvo, mas uma configuração externa tem prioridade.	Saved, but an external setting still overrides this choice.	Saved, but an external setting still overrides this choice.	Saved, but an external setting still overrides this choice.	Saved, but an external setting still overrides this choice.	Saved, but an external setting still overrides this choice.	Saved, but an external setting still overrides this choice.	Saved, but an external setting still overrides this choice.
+Enable Equipment Workshop and restart	Ative a Oficina nas configurações e reinicie o jogo.	Enable Equipment Workshop and restart	Enable Equipment Workshop and restart	Enable Equipment Workshop and restart	Enable Equipment Workshop and restart	Enable Equipment Workshop and restart	Enable Equipment Workshop and restart	Enable Equipment Workshop and restart
+Equipment Workshop ready	Oficina pronta	Equipment Workshop ready	Equipment Workshop ready	Equipment Workshop ready	Equipment Workshop ready	Equipment Workshop ready	Equipment Workshop ready	Equipment Workshop ready
+Inventory changed outside the supported path; reload your save	O inventário mudou externamente; recarregue o salvamento.	Inventory changed outside the supported path; reload your save	Inventory changed outside the supported path; reload your save	Inventory changed outside the supported path; reload your save	Inventory changed outside the supported path; reload your save	Inventory changed outside the supported path; reload your save	Inventory changed outside the supported path; reload your save	Inventory changed outside the supported path; reload your save
+Equipment extension storage unavailable	Armazenamento dos dados de equipamento indisponível	Equipment extension storage unavailable	Equipment extension storage unavailable	Equipment extension storage unavailable	Equipment extension storage unavailable	Equipment extension storage unavailable	Equipment extension storage unavailable	Equipment extension storage unavailable
+Equipment Workshop stopped	Oficina interrompida	Equipment Workshop stopped	Equipment Workshop stopped	Equipment Workshop stopped	Equipment Workshop stopped	Equipment Workshop stopped	Equipment Workshop stopped	Equipment Workshop stopped
+Unsupported game profile	Versão do jogo não compatível	Unsupported game profile	Unsupported game profile	Unsupported game profile	Unsupported game profile	Unsupported game profile	Unsupported game profile	Unsupported game profile
+Unavailable	Indisponível	Unavailable	Unavailable	Unavailable	Unavailable	Unavailable	Unavailable	Unavailable
+AIO +12%	Atributos +12%	AIO +12%	AIO +12%	AIO +12%	AIO +12%	AIO +12%	AIO +12%	AIO +12%
+AIO +3%	Atributos +3%	AIO +3%	AIO +3%	AIO +3%	AIO +3%	AIO +3%	AIO +3%	AIO +3%
+AIO +6%	Atributos +6%	AIO +6%	AIO +6%	AIO +6%	AIO +6%	AIO +6%	AIO +6%	AIO +6%
+AIO +9%	Atributos +9%	AIO +9%	AIO +9%	AIO +9%	AIO +9%	AIO +9%	AIO +9%	AIO +9%
+Aero Eater	Absorção de vento	Aero Eater	Aero Eater	Aero Eater	Aero Eater	Aero Eater	Aero Eater	Aero Eater
+Aero Strike	Golpe de vento	Aero Strike	Aero Strike	Aero Strike	Aero Strike	Aero Strike	Aero Strike	Aero Strike
+Aero Touch	Toque de vento	Aero Touch	Aero Touch	Aero Touch	Aero Touch	Aero Touch	Aero Touch	Aero Touch
+Aero Ward	Proteção contra vento	Aero Ward	Aero Ward	Aero Ward	Aero Ward	Aero Ward	Aero Ward	Aero Ward
+Aeroproof	Imunidade a vento	Aeroproof	Aeroproof	Aeroproof	Aeroproof	Aeroproof	Aeroproof	Aeroproof
+Arcane Focus	Foco arcano	Arcane Focus	Arcane Focus	Arcane Focus	Arcane Focus	Arcane Focus	Arcane Focus	Arcane Focus
+Cheer	Animar	Cheer	Cheer	Cheer	Cheer	Cheer	Cheer	Cheer
+DEF and MDEF +10%	Defesa e Defesa mágica +10%	DEF and MDEF +10%	DEF and MDEF +10%	DEF and MDEF +10%	DEF and MDEF +10%	DEF and MDEF +10%	DEF and MDEF +10%	DEF and MDEF +10%
+DEF and MDEF +20%	Defesa e Defesa mágica +20%	DEF and MDEF +20%	DEF and MDEF +20%	DEF and MDEF +20%	DEF and MDEF +20%	DEF and MDEF +20%	DEF and MDEF +20%	DEF and MDEF +20%
+Dark	Trevas	Dark	Dark	Dark	Dark	Dark	Dark	Dark
+Darkness	Cegueira	Darkness	Darkness	Darkness	Darkness	Darkness	Darkness	Darkness
+Devil's Bargain	Acordo diabólico	Devil's Bargain	Devil's Bargain	Devil's Bargain	Devil's Bargain	Devil's Bargain	Devil's Bargain	Devil's Bargain
+Element Eater	Absorção de fogo	Element Eater	Element Eater	Element Eater	Element Eater	Element Eater	Element Eater	Element Eater
+Foolstrike	Golpe insensato	Foolstrike	Foolstrike	Foolstrike	Foolstrike	Foolstrike	Foolstrike	Foolstrike
+Fooltouch	Toque insensato	Fooltouch	Fooltouch	Fooltouch	Fooltouch	Fooltouch	Fooltouch	Fooltouch
+Fourstrike	Golpe dos quatro elementos	Fourstrike	Fourstrike	Fourstrike	Fourstrike	Fourstrike	Fourstrike	Fourstrike
+Fourtouch	Toque dos quatro elementos	Fourtouch	Fourtouch	Fourtouch	Fourtouch	Fourtouch	Fourtouch	Fourtouch
+HPMP +10%	HP/MP +10%	HPMP +10%	HPMP +10%	HPMP +10%	HPMP +10%	HPMP +10%	HPMP +10%	HPMP +10%
+HPMP +20%	HP/MP +20%	HPMP +20%	HPMP +20%	HPMP +20%	HPMP +20%	HPMP +20%	HPMP +20%	HPMP +20%
+HPMP +40%	HP/MP +40%	HPMP +40%	HPMP +40%	HPMP +40%	HPMP +40%	HPMP +40%	HPMP +40%	HPMP +40%
+HPMP +60%	HP/MP +60%	HPMP +60%	HPMP +60%	HPMP +60%	HPMP +60%	HPMP +60%	HPMP +60%	HPMP +60%
+Holy	Sagrado	Holy	Holy	Holy	Holy	Holy	Holy	Holy
+Jinx	Má sorte	Jinx	Jinx	Jinx	Jinx	Jinx	Jinx	Jinx
+One MP Cost (disabled)	Custo de 1 MP (indisponível)	One MP Cost (disabled)	One MP Cost (disabled)	One MP Cost (disabled)	One MP Cost (disabled)	One MP Cost (disabled)	One MP Cost (disabled)	One MP Cost (disabled)
+Reflect	Reflexo	Reflect	Reflect	Reflect	Reflect	Reflect	Reflect	Reflect
+Reflex	Reflexos	Reflex	Reflex	Reflex	Reflex	Reflex	Reflex	Reflex
+SOS NulAero	NulVento de emergência	SOS NulAero	SOS NulAero	SOS NulAero	SOS NulAero	SOS NulAero	SOS NulAero	SOS NulAero
+STR and MAG +10%	Força e Magia +10%	STR and MAG +10%	STR and MAG +10%	STR and MAG +10%	STR and MAG +10%	STR and MAG +10%	STR and MAG +10%	STR and MAG +10%
+STR and MAG +20%	Força e Magia +20%	STR and MAG +20%	STR and MAG +20%	STR and MAG +20%	STR and MAG +20%	STR and MAG +20%	STR and MAG +20%	STR and MAG +20%
+Shell	Proteção mágica	Shell	Shell	Shell	Shell	Shell	Shell	Shell
+Spell Spring	Fonte de magia	Spell Spring	Spell Spring	Spell Spring	Spell Spring	Spell Spring	Spell Spring	Spell Spring
+Warden's Oath	Juramento do guardião	Warden's Oath	Warden's Oath	Warden's Oath	Warden's Oath	Warden's Oath	Warden's Oath	Warden's Oath

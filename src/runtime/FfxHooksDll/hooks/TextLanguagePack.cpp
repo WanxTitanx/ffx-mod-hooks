@@ -62,21 +62,54 @@ bool AdmitPack(std::string_view json,const PackIo& io,PreparedPack& output,std::
   std::uint64_t combined=0;
   for(const auto& r:candidate.manifest.resources){combined+=r.size;combined+=r.sourceSize;}
   Require(combined<=MaxPackBytes,"Source and output working set exceeds pack limit");
-  std::vector<Bytes> sources;std::string hash;
-  for(const auto& r:candidate.manifest.resources){
+  const auto count=candidate.manifest.resources.size();
+  std::vector<Bytes> sources(count);candidate.resources.resize(count);candidate.retained.assign(count,0);
+  std::string hash;
+  const auto retain=[&](std::size_t n,const char* reason){
+   candidate.retained[n]=1;++candidate.retainedCount;sources[n].clear();candidate.resources[n].clear();
+   if(io.retain)io.retain(io.context,candidate.manifest.resources[n],reason);
+  };
+  for(std::size_t n=0;n<count;++n){
+   const auto& r=candidate.manifest.resources[n];
    Bytes source,target;
-   Require(io.read(io.context,r,true,source)&&source.size()==r.sourceSize,"Native source is missing or has a different size");
-   Require(io.sha256(io.context,source,hash)&&hash==r.sourceSha256,"Native source fingerprint changed");
+   const bool matches=io.read(io.context,r,true,source)&&source.size()==r.sourceSize&&
+                      io.sha256(io.context,source,hash)&&hash==r.sourceSha256;
+   if(!matches){
+    // Every translated string depends on the paired font: never mix font pages.
+    Require(r.family!=Family::Metrics&&r.family!=Family::Atlas,"Native font source is missing or changed");
+    retain(n,"native source changed");continue;
+   }
    Require(io.read(io.context,r,false,target)&&target.size()==r.size,"Pack resource is missing or has a different size");
    Require(io.sha256(io.context,target,hash)&&hash==r.sha256,"Pack resource fingerprint changed");
-   sources.push_back(std::move(source));candidate.resources.push_back(std::move(target));
+   const auto limit=NativeKernelLimit(r.request,io.extendedKernelTables);
+   if(limit&&target.size()>limit){retain(n,"translation exceeds the native kernel table size");continue;}
+   sources[n]=std::move(source);candidate.resources[n]=std::move(target);
   }
   Advances advances{};ValidateFont(candidate,sources,advances);
-  for(std::size_t n=0;n<candidate.resources.size();++n){
+  std::size_t text=0;
+  for(std::size_t n=0;n<count;++n){
    const auto& r=candidate.manifest.resources[n];
-   if(r.family==Family::Menu||r.family==Family::Battle||r.family==Family::Event)
-    if(!ValidateTextReplacement(r.request,sources[n],candidate.resources[n],candidate.manifest.fonts[0],advances,error,candidate.manifest.hookApi))return false;
+   if(candidate.retained[n]||(r.family!=Family::Menu&&r.family!=Family::Battle&&r.family!=Family::Event))continue;
+   std::string problem;
+   if(!ValidateTextReplacement(r.request,sources[n],candidate.resources[n],candidate.manifest.fonts[0],advances,problem,candidate.manifest.hookApi)){
+    retain(n,"translation does not match the native text layout");continue;
+   }
+   ++text;
   }
+  Require(text>0,"No translated text matches the installed game data");
+  std::uint64_t growth=0;
+  const auto accounted=[](std::uint32_t bytes){
+   const auto aligned=(static_cast<std::uint64_t>(bytes)+15u)&~std::uint64_t{15};
+   return (aligned+79u)&~std::uint64_t{63};
+  };
+  for(std::size_t n=0;n<count;++n){
+   const auto& r=candidate.manifest.resources[n];
+   if(candidate.retained[n]||r.request.find("/battle/kernel/")==std::string::npos)continue;
+   const auto before=accounted(r.sourceSize),after=accounted(r.size);
+   if(after>before)growth+=after-before;
+  }
+  Require(growth<=MaxPackBytes,"Kernel text growth exceeds the package working-set bound");
+  candidate.kernelBudgetGrowth=static_cast<std::uint32_t>(growth);
   output=std::move(candidate);error.clear();return true;
  }catch(const std::exception& e){error=e.what();return false;}
 }

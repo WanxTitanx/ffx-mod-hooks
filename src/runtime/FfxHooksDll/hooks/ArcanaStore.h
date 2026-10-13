@@ -1,5 +1,7 @@
 #pragma once
 #include "ArcanaCore.h"
+#include "ArcanaPresentation.h"
+#include "ArcanaAcquisitionState.h"
 #include <array>
 #include <filesystem>
 
@@ -9,8 +11,8 @@ struct Resources {
     std::uint8_t valid=0;
     std::array<std::uint32_t,kActorCount> hp{},mp{};
 };
-struct Record {State state;Hash nativeHash{},packHash{};Resources resources;};
-inline constexpr std::size_t kRecordBytes=276;
+struct Record {State state;Hash nativeHash{},packHash{};Resources resources;Presentation::State presentation;Acquisition::Progress objectives{};};
+inline constexpr std::size_t kLegacyRecordBytes=276,kV2RecordBytes=372,kRecordBytes=216+2*kCardCount;
 using RecordBytes=std::array<unsigned char,kRecordBytes>;
 bool Encode(const Record&,RecordBytes&) noexcept;
 bool Decode(const unsigned char*,std::size_t,Record&) noexcept;

@@ -1,4 +1,6 @@
-# ffx-mod-hooks
+# ffx-hooks
+
+> Beta atual v0.6.0-beta.5: [English / Português (Brasil)](docs/release-notes/hooks/v0.6.0-beta.5.md). A Oficina abre pelo menu nativo do jogo, suas configurações ficam dentro dela e o atalho F10 foi retirado.
 
 [English](README.md) | **Português (Brasil)**
 
@@ -9,14 +11,14 @@
 **Hooks de runtime para FINAL FANTASY X HD Remaster (Steam, PC)**
 
 [![Status](https://img.shields.io/badge/status-BETA-red)](#status-beta)
-[![Versão](https://img.shields.io/badge/vers%C3%A3o-0.6.0--beta.4-informational)](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.4)
+[![Código](https://img.shields.io/badge/c%C3%B3digo-v0.6.0--beta.5-informational)](docs/release-notes/hooks/v0.6.0-beta.5.md)
 [![Licença](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Plataforma](https://img.shields.io/badge/platform-Windows%20x86-lightgrey)](#compatibilidade)
 [![Doar](https://img.shields.io/badge/Doar-PayPal-blue)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wandersonwpires%40hotmail.com&currency_code=USD)
 
 </div>
 
-`ffx-mod-hooks` é a camada pública de comportamento do FFX Mod Studio, desenvolvida pelo
+`ffx-hooks` é a camada de comportamento do FFX Mod Studio, desenvolvida pelo
 brasileiro **WanxTitanx**. O código-fonte público e as releases ficam em
 [ffx-mod-hooks](https://github.com/WanxTitanx/ffx-mod-hooks). Uma única `ffx-hooks.dll` reúne menus nativos, regras opcionais de
 combate, sistemas de equipamento, idiomas, diagnóstico e configuração em runtime.
@@ -35,15 +37,7 @@ equivalente ao FFX-2.
 - [Dossiê completo de integração com o Editor](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
 - [Apoie o projeto](#apoie-o-projeto)
 
-## Novidades da v0.6.0-beta.4
-
-Esta beta restaura o suporte ao executável Steam suportado de outubro de 2026 e amplia a estrutura para pacotes de idioma. Inclui também a opção experimental de inicialização do RNG inspirada no PS2, DESLIGADA por padrão. Leia as [notas completas em inglês e português](docs/release-notes/hooks/v0.6.0-beta.4.md).
-
-A tradução PT-BR do jogo ainda está em testes e **não está incluída**. A interface do Hooks em nove idiomas continua disponível em **F8 > System > Interface language**, separadamente do texto e áudio do jogo.
-
-A validação visual, de gameplay e do ciclo de saves dentro do jogo continua incompleta. Preserve configurações e saves. Não há novo pacote de provider/bridge do Fahrenheit; o complemento antigo da beta.3 não está certificado para o executável atualizado.
-
-## Nuls elementais e integração anterior de 29/09/2026
+## Nuls elementais e integração de 29/09/2026
 
 A integração reúne a branch publicada de recuperação/Seymour/Sphere Grid com os
 fixes atuais de elementos, Tarot, recompensas, idiomas e efeitos de armas da main.
@@ -89,27 +83,46 @@ Os problemas conhecidos estão em [KNOWN_BUGS](docs/KNOWN_BUGS.md) e no
 
 ## Download e instalação
 
-Baixe a [release v0.6.0-beta.4](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.4): DLL, arte original do Arcana já existente, guias EN/PT-BR, exemplos OFF, código-fonte e checksums. Não inclui tradução do jogo, fontes/texturas nativas do jogo ou novo complemento Fahrenheit.
+A **v0.6.0-beta.5** inclui a DLL x86, as 90 cartas selecionadas do Tarot, ícone e verso,
+licenças gratuitas dos componentes, exemplos de configuração OFF, instruções e
+checksums SHA-256. O arquivo de fonte contém a árvore pública da mesma tag,
+com código, testes, scripts de compilação e artes.
 
-Siga o [guia em português](docs/INSTALACAO_PT-BR.md). Com o jogo fechado, preserve sua DLL e configurações anteriores e copie a DLL e `mods/` do pacote para `modules/`. O jogo e o carregador de módulos não são distribuídos aqui.
+Baixe o [ZIP, fonte e checksums](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.5).
+Consulte o [guia em português](docs/INSTALACAO_PT-BR.md) ou o [guia em inglês](docs/INSTALL.md).
+Com o jogo fechado, copie `ffx-hooks.dll` e `mods/` para `modules/`.
+Preserve o INI, saves e seus arquivos de progresso; mescle apenas as opções desejadas.
+É necessário ter o jogo e um carregador de módulos FFX via DINPUT8 funcionando.
+Nenhum deles está incluído. Os novos recursos de gameplay exigem ativação.
+
+A tradução PT-BR, os dados de Spira Reforged e os pacotes de habilidades são
+produtos separados. O suporte da DLL não substitui seus arquivos compatíveis.
 
 ## DLL atual
 
-| Identidade | Valor |
+| Identidade | Valor registrado |
 |---|---|
-| Código de runtime | `df532011907b94c348ecb498714ca268c7217ddc` |
-| DLL | Windows x86 / PE32; tamanho/hash exatos nos [insumos da release](docs/releases/v0.6.0-beta.4-inputs.json) |
-| Executável suportado | FFX.exe Steam, 10.687.744 bytes; SHA-256 `0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d` |
-| Versão interna do PE | `0.2.0.0`; versão do pacote `v0.6.0-beta.4` |
-| Validação | [Evidências de build e fonte](docs/releases/v0.6.0-beta.4-validation.json); aceitação em jogo permanece separada |
+| Pacote / canal | v0.6.0-beta.5 / beta, pré-lançamento |
+| Caminho de instalação | `<jogo>/modules/ffx-hooks.dll` |
+| Tamanho da DLL | 5,619,712 bytes |
+| SHA-256 da DLL | `fbf9818b6a8153b6d3d966b8347f11679bd53e5969684e513b23a24c9d2a4ffa` |
+| Perfil do executável | Steam BuildID 25501027, Windows x86 |
+| SHA-256 do executável | `0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d` |
+| Pacote de textos | PT-BR API4 separado, vinculado aos dados ativos do jogo |
+
+As [identidades do fonte](docs/releases/v0.6.0-beta.5-inputs.json) e o
+[escopo da validação](docs/releases/v0.6.0-beta.5-validation.json) correspondem a este pacote.
+O recurso PE ainda informa `0.2.0.0`; use a versão do pacote e o hash da DLL.
+A aceitação visual e com controles em jogo continua incompleta. Esta versão não
+é estável nem declara paridade completa da migração Fahrenheit/P4.
 
 ## O que compõe o projeto
 
 | Componente | Função | Estado |
 |---|---|---|
-| `ffx-hooks.dll` (FfxHooksDll) | Hooks de engine, UI nativa, consumidores compartilhados de combate/save e sistemas opcionais descritos abaixo | Beta pública; aceitação em jogo pendente |
+| `ffx-hooks.dll` (FfxHooksDll) | Hooks de engine, UI nativa, consumidores compartilhados de combate/save e sistemas opcionais descritos abaixo | Beta pública; aceitação em jogo ainda incompleta por recurso |
 | Menu F7 In-Live | Difficulty, S.I.N. RAM, Force Last Battle, música, observador de AI e Arena+ CustomMix | Candidata com fonte/RT0/build e RT1 isolado de runtime/política aprovados; RT1 do callback real e RT2 pelo jogador ainda pendentes na matriz de Difficulty |
-| Painel F8 | Sete abas, submenus e controles opcionais canônicos | LIVE, RESTART REQUIRED e READ ONLY; são classes de ativação, não provas de gameplay |
+| Painel F8 | Sete abas com configurações agrupadas | Ativação e estado por recurso; configurações da Oficina ficam na Oficina nativa |
 | Maechen F9 | UI nativa de perguntas/respostas e cliente de serviço com limites | Há observações anteriores de UI/transporte; aceitação da versão atual e qualidade das respostas do serviço são questões separadas |
 | `ffx-probe.dll` (FfxDinput8Probe) | Probe separado de READ / WRITE / CALL na thread principal pelo ponto DINPUT8 | Opcional, OFF por padrão; habilitar uma função de gameplay do Hooks não o habilita |
 | `SinScaleInject` + `SinCoreLib` | Ferramentas offline de pesquisa/materialização do S.I.N. | O caminho legado que escreve em disco continua em quarentena; o S.I.N. RAM atual é outro caminho |
@@ -124,20 +137,20 @@ e informam indisponibilidade, sobreposição externa ou falha de aplicação.
 
 Os nomes abaixo são mantidos como aparecem na interface do jogo.
 
-| Aba | Opções e submenus incluídos |
+| Aba | Controles e submenus |
 |---|---|
-| System | Janela sem bordas, restrição/ocultação do cursor, desempenho, câmera livre de batalha e congelamento de cenário; quatro linhas informativas de módulos; Audio languages e Text languages |
-| Boosters | Permanent Sensor, Playable Seymour experimental, Speed Hack, aceleração opcional de FMV e Entire Party Earns AP |
-| Cheats | Invincible Party/Enemies, Always Overdrive/Critical, Damage 99999 e Always Rare Drop; submenu AP/Gil Multipliers |
-| Extras | Additional mods: Elemental Core/Tactics/Gravity/Magic BDL, Spira Reforge, Aeon Ascension, efeitos Holy/Shadow opcionais, Elemental Nul spells e RNG experimental do PS2; Vanguard Combat Engine separado com 31 controles |
-| Input | Bloqueio da tecla Windows, correção de input em segundo plano, filtro IME e Dialog Skip; atalhos de teclado/controle e mapeamento de botões |
-| Dev | FieldScout (Master/Heavy/Max/Ultra), Fastload Autosave e opção de desenvolvimento para o baralho completo do Arcana; configurações de desenvolvimento do Equipment Workshop |
-| Reforge | Arcana, Nova Super Damage, Ronso Mana, Equipment Workshop/detalhes nativos, Scan settings, Grid Teach, Lancet Dual Grant, limite de pilha de itens, Double/Triple Drop e Arena+ |
+| System | Janela/cursor, desempenho, idioma da interface e idiomas independentes de texto e áudio |
+| Boosters | Sensor, Seymour jogável experimental, ciclo de velocidade, aceleração opcional de filmes e AP do grupo |
+| Cheats | Invencibilidade, controles de Overdrive/críticos/recompensas e multiplicadores de AP/Gil |
+| Extras | Opções elementais, efeitos Sagrado/Sombras, seis Nuls, RNG PS2 experimental, assistências de minigames e Vanguard |
+| Input | Atalhos de teclado/controle, seleção e mapeamento do controle, entrada em segundo plano e Dialog Skip |
+| Dev | FieldScout, Fastload Autosave, baralho completo de desenvolvimento do Arcana e ferramentas de foto em batalha |
+| Reforge | Equipamentos e Aeons; Captura e regiões; Itens e recursos; Desafios de Omega; Scan settings e Arena+ |
 
-As contagens incluem controles movidos para submenus. Linhas de navegação,
-cores, seletores de idioma, mapeamentos e editores numéricos são configurações
-adicionais, não novos flags booleanos. O [inventário anterior de controles](docs/ROADMAP.md#complete-f8-control-inventory)
-registra rótulos, chaves, valores padrão e classes de ativação.
+As configurações da Oficina, incluindo isenções de desenvolvimento, ficam na
+própria Oficina nativa. Elas não aparecem no F8 e suas ações em lote não as
+alteram. Os estados distinguem recursos em execução, que exigem reinício ou
+indisponíveis; salvar ON não comprova que os dados e o runtime necessários funcionam.
 
 ### Multiplicadores de AP/Gil
 
@@ -271,7 +284,53 @@ até **999.999**. A autorização exige peça/dono corretos e recibo persistido 
 compra, não apenas um WORD de habilidade. A compra consome Gil/materiais,
 preserva a imunidade e não reabastece o HP/MP atual. A remoção não reembolsa a compra.
 
+### Capture Cascade, Omega e S.I.N. regional
+
+`F8 > Reforge` separa **Equipamentos e Aeons**, **Captura e regiões**,
+**Itens e recursos** e **Desafios de Omega**. Cada integração exige sua própria
+ativação e, quando aplicável, o pacote de dados compatível de Spira Reforged.
+
+- **Capture Cascade:** uma nova vitória terminal contra um Dark Aeon desperta
+  sua região. Capturá-lo com a habilidade Capture existente também registra a
+  conquista. Monstros comuns despertados recebem uma base mínima de Calm Lands/
+  Gagazet antes do T7; seus arquivos normais não mudam. Listas de patrulha por região
+  podem substituir espaços existentes do encontro, inclusive com mais de uma
+  família elegível. Patrulhas têm HP reduzido. Tutoriais na primeira chegada a
+  Macalania/no primeiro despertar e conquistas no F7 Arena+ explicam e registram
+  a progressão. Vitórias antigas são históricas, sem despertar retroativo.
+  Preserve o arquivo de progresso adicional junto com o salvamento nativo.
+- **Sétimo Selo de Omega:** encontros naturais elegíveis em Omega recebem marcas
+  T7, atributos temporários, nomes das maldições e prévia da área. Ataques extras
+  fazem parte da sequência nativa do monstro; o jogador não pode atacar entre eles.
+- **Eco de Ultima:** após derrotar Ultima Weapon, batalhas comuns elegíveis em
+  Omega têm 10% de chance de substituição. A vitória libera a chance, sem garantir um encontro.
+- **Último Selo de Omega:** encontro T9 opcional com Omega Weapon, Guardiões,
+  Ecos, janelas de exposição e fase final. Exige o pacote de encontro correspondente.
+- **Dentro de Sin:** formações naturais elegíveis têm comportamento T6/T7 próprio
+  e interação entre parceiros Gemini; encontros de história/chefes seguem regras separadas.
+- **Regeneração de MP por itens:** a opção independente substitui MP Cost 0
+  concedido por itens por 1% do MP máximo no turno de cada personagem afetado,
+  incluindo Twin Stars e Three Stars. OFF mantém o comportamento original.
+
+Grandes totais de AP terminam de contar mais rápido, sem alterar a quantidade.
+A inicialização do F7/F8 evita esperas desnecessárias da probe e do renderizador.
+Ataques complementares conferem novamente o alvo vivo e a ação em execução,
+evitando travamentos por alvo morto e na devolução do controle ao jogador.
+
+Touch/Imperil/Ward elementais progressivos, o bônus correspondente de Aurochs e a
+regra de status de Omega com MAG baixa estão **incompletos e bloqueados nas builds
+normais**. Seus núcleos offline/adaptadores são trabalho de código, não opções disponíveis de gameplay.
+
 ### Equipment Workshop — MOD-004/005
+
+Abra **Menu principal > Oficina**, abaixo de Ajuda. F10 e o binding de teclado/
+controle da Oficina foram removidos. **Configurações da Oficina** reúne ativação,
+detalhes nativos, refinamento A/B, receitas de expansão e isenções DEV. A opção
+somente de interface `equipment_workshop.native_menu=1` mantém as configurações
+acessíveis quando a edição está desligada; ela não ativa o escritor do inventário.
+Confirmar/cancelar e a seleção do menu pai seguem o fluxo nativo; nomes em português
+usam a tabela real das habilidades.
+
 
 O Workshop nativo oferece quinta habilidade lógica, refinamento A/B, bônus
 genéricos de refinamento, expansão/fusão, prévias de receitas/economia,
@@ -288,7 +347,7 @@ de equipamento. Veja a [economia do Workshop](docs/WORKSHOP_ECONOMY.md) e o
 
 ### Spira: Arcana Fayth — MOD-008
 
-Arcana oferece **78 cartas**, coleção/aquisição, loadouts de sete personagens,
+Arcana oferece **90 cartas: 78 padrão e 12 de chefes**, coleção/aquisição, loadouts de sete personagens,
 até três slots de cartas, modos Twin/Constellation, consumidores de combate,
 integração nativa em **Main Menu > Equip**, apresentação em Status/Auto-Abilities,
 artes, áudio de menu e persistência da coleção/loadouts. A projeção de stats
@@ -309,9 +368,9 @@ Poison/Gravity exigem **Core ON** no Elemental Dominion e Arcana ativo. Os strik
 mantêm o dano normal da arma: Gravitystrike não vira Demi. As Wards dos extras
 reduzem pela metade a exposição positiva e preservam imunidade, absorção e perfis
 travados. As partículas Holy/Shadow usam a opção separada Weapon Strike VFX.
-O limite passa a dez efeitos por carta, preservando IDs, coleção e nomes salvos.
+O limite passa a doze efeitos por carta, preservando IDs, coleção e nomes salvos.
 Veja o [contrato de integração](docs/ai/ARCANA_ELEMENTAL_STRIKES_2026_09_29.md).
-Essas adições de fonte são distintas da identidade do deploy anterior acima.
+As doze cartas de chefes cobrem Ultima Weapon, Omega Weapon e as dez entradas de Dark Aeons. Sua aquisição exige o encontro natural/progresso correspondente; composições forçadas não fabricam a recompensa. Tutoriais de coleção e cancelamento nativo orientam o jogador. Spira Reforged também solicita o Arcana; a ativação independente continua compatível.
 
 Aliases salvos têm prioridade sobre os quatro novos padrões. Se houver colisão,
 o slot padrão mantém seu antigo nome Custom numerado; nenhuma preferência é sobrescrita.
@@ -322,12 +381,17 @@ o slot padrão mantém seu antigo nome Custom numerado; nenhuma preferência é 
 compatível e separado, com reinício obrigatório. O runtime suporta os recursos
 admitidos de menu/batalha/evento/legendas de cena, métricas/atlas/sombras de fonte,
 hashes exatos de origem, validação de capacidade/largura de linha e fallback
-nativo. API/schema 2 preservam a compatibilidade documentada com versões anteriores.
+nativo. API4 acrescenta containers de texto ampliados e texturas de texto revisadas, preservando a compatibilidade documentada. Divergências de origem mantêm o recurso do mod em vez de sobrescrever seu conteúdo de combate.
 
 A DLL não contém, por si só, uma tradução completa ou uma nova dublagem.
 Seletores independentes de voz, efeitos de batalha e áudio de filmes ficam em
 **Audio languages**. Veja o [handoff MOD-006 para o Editor](docs/ai/MOD006_EDITOR_HANDOFF.md)
 para exportar um pacote utilizável de texto e fonte, além de selecionar um idioma.
+
+A revisão atual de compatibilidade PT-BR atualiza Oficina, habilidades de
+equipamentos, status e comandos do mod. Textos do jogo em inglês continuam sendo
+a base; idioma da interface da DLL, textos e vozes são independentes.
+Veja o [guia de terminologia](docs/localization/PT_BR_TERMINOLOGY.md).
 
 ## Estado do F7 In-Live
 
@@ -341,7 +405,8 @@ para exportar um pacote utilizável de texto e fonte, além de selecionar um idi
   nativo ainda está no roadmap. Resistências a status também são editadas por JSON.
 - **S.I.N. RAM:** seleção de encontros naturais por seed/visita, scripts de
   maldições admitidos, nomes limitados, escala de stats pelo writer compartilhado
-  de Difficulty e visões de recompensa por Threat no piloto revisado de Macalania.
+  de Difficulty e visões de recompensa por Threat de Macalania a Zanarkand,
+  além das integrações próprias de Omega, dentro de Sin e regiões despertadas.
   O materializador legado em disco não é iniciado. A confirmação em gameplay da
   correção de alvos das maldições permanece aberta.
 - **Force Last Battle:** novo pedido de encontro na thread principal, com número
@@ -359,6 +424,8 @@ para exportar um pacote utilizável de texto e fonte, além de selecionar um idi
 
 Os [contratos e a evidência do executável do F7](docs/F7_INLIVE.md) distinguem
 consumidores, larguras dos campos, ciclos de vida e níveis de evidência.
+
+Seymour Natus inclui Mortibody e Seymour Flux inclui Mortiorchis no Ultra Custom Mix. Cada dupla ocupa dois espaços, entra/sai junta e respeita o limite de oito atores.
 
 ## Outros sistemas de runtime
 
@@ -383,9 +450,9 @@ O [roadmap](docs/ROADMAP.md) preserva os checks concluídos e separa o que já f
 entregue em fonte/deploy do que ainda depende de RT2, authoring no Editor e release.
 As prioridades são aceitação em jogo da DLL exata, exportadores e validação de
 dependências no Editor, definições restantes do Spira e pendências F7/probe.
-O [dossiê completo do Editor](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
-reúne 40 identidades custom de autoabilities, 31 regras Vanguard, controles F8,
-78 cartas Arcana, formatos/dependências e 62 tarefas concretas do Editor.
+O [dossiê histórico do Editor](docs/ai/EDITOR_INTEGRATION_COMPLETE_HANDOFF_2026_09_28.md)
+registra o escopo de setembro. Seus totais são históricos; esta revisão acrescenta
+as cartas de chefes, integrações regionais, Oficina nativa e tradução descritas acima.
 É um handoff, não uma declaração de que essas tarefas do Editor já foram feitas.
 
 ## Arquitetura
@@ -440,6 +507,9 @@ modules, config, modules\config, then root > unmarked canonical (only without an
 | Vanguard | Gates `vanguard.*` independentes e mapeamentos `vanguard_ids.*` / `vanguard_commands.*` |
 | Elemental | `elemental.core`, `.tactics`, `.gravity`, `.magic_bdl`; pacote `elemental.pack` admitido |
 | Spira / Aeon | `spira.enabled`, `aeon_ascension.enabled`; validação de identidade/payload/dono e recibo pago |
+| Oficina | Menu nativo; `labs.equipment_workshop`, `labs.equipment_workshop_native_ui`; interface `equipment_workshop.native_menu` |
+| Capture / itens de MP | `spira.capture_cascade` / `spira.item_mp_regen` |
+| Omega | `spira.omega_ultima`, `spira.omega_t7`, `spira.omega_last_seal`; manifestos compatíveis ativados |
 | Arcana | `arcana.enabled`; opção de desenvolvimento separada `development.arcana_full_deck` |
 | AP/Gil por monstro | `cheats.monster_rewards`, autoridade F8 e `monster-rewards-v1.tsv` |
 | Dialog Skip / FMV | `input.dialog_skip` / `boosters.speed_hack_fmv` |
@@ -459,7 +529,7 @@ injetor SIN offline.
 vcpkg install --triplet x86-windows-static polyhook2 zydis minhook
 
 # Build the hooks DLL (PolyHook build, Release)
-.\src\runtime\FfxHooksDll\build_hooks.ps1 -WithPolyHook -Release
+.\src\runtime\FfxHooksDll\build_hooks.ps1 -WithPolyHook -Release -Steam20261001
 
 # Build the probe
 .\src\runtime\FfxDinput8Probe\build.ps1

@@ -318,6 +318,7 @@ public:
     void Cancel(BattleFieldRequest request);
     void Publish(int32_t fieldRow, BattleFieldSource source);
     BattleFieldTicket Consume();
+    bool Matches(BattleFieldRequest,int32_t fieldRow,BattleFieldSource) const noexcept;
 
 private:
     std::atomic<uint32_t> nextRequest_{0};
@@ -371,6 +372,8 @@ public:
     // Read-only: true while any captured field is still Owned or Indeterminate, so the UI
     // can distinguish "Off preset with fields to restore" from "nothing ever written".
     bool HasOwnedOrIndeterminateFields() const;
+    // Read-only proof for the original m910 after this sole writer applied T7.
+    bool OwnsOmegaMiniHp(uint64_t generation,const ActorRef&,uint32_t resource,uint32_t maximum) const;
 
 private:
     static constexpr size_t kRuntimeFieldCount = 44;
@@ -391,6 +394,8 @@ private:
         bool captured = false;
         uintptr_t address = 0;
         uint16_t formation = 0xFFFFu;
+        bool omegaResourceTracked = false, omegaResourceLost = false;
+        uint32_t omegaResource = 0;
         std::array<uint32_t, kRuntimeFieldCount> baseline{};
         std::array<uint32_t, kRuntimeFieldCount> lastApplied{};
         std::array<uint32_t, kRuntimeFieldCount> pendingTarget{};

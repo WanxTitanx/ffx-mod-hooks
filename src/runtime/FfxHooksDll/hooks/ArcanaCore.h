@@ -4,8 +4,11 @@
 #include <cstdint>
 
 namespace FfxHooks::Arcana {
-inline constexpr unsigned kCardCount=78,kActorCount=7,kMaximumSlots=3;
-inline constexpr unsigned kMaximumCardEffects=10;
+inline constexpr unsigned kStandardCardCount=78,kOmegaWeaponCard=78,kUltimaWeaponCard=79;
+inline constexpr unsigned kDarkAeonFirstCard=80,kDarkAeonCardCount=10;
+inline constexpr unsigned kCardCount=90,kActorCount=7,kMaximumSlots=3;
+inline constexpr unsigned kTarotIconResource=kCardCount,kCardBackResource=kCardCount+1,kImageResourceCount=kCardCount+2;
+inline constexpr unsigned kMaximumCardEffects=12;
 inline constexpr std::int16_t kEmpty=-1;
 enum class Mode : std::uint8_t { Twin=0, Constellation=1 };
 enum class Error : std::uint8_t {
@@ -63,6 +66,10 @@ Error Equip(State&,std::uint64_t expected,unsigned actor,unsigned slot,std::int1
 Error ChangeMode(State&,std::uint64_t expected,Mode,const Slots* resolved=nullptr) noexcept;
 Error Award(State&,unsigned card) noexcept;
 Error AwardAll(State&,std::uint64_t expected) noexcept;
+// Privileged grant: only the admitted Omega story-victory controller may call this.
+Error AwardOmegaWeapons(State&,std::uint64_t expected) noexcept;
+// Privileged grant for the matching completed original Dark Aeon challenge.
+Error AwardDarkAeon(State&,std::uint64_t expected,unsigned card) noexcept;
 int Owner(const State&,unsigned card) noexcept;
 Effects Aggregate(const State&,unsigned actor) noexcept;
 std::uint32_t BoostStat(std::uint32_t base,int percent,int flat,std::uint32_t cap) noexcept;

@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <cstdio>
+#include "../shared/ExecutableProfile.h"
 #include <exception>
 static unsigned checks=0,failures=0,installs=0,deleted=0;
 static uintptr_t g_base=0,lastTarget=0;

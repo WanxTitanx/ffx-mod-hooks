@@ -237,6 +237,31 @@ void TestClosedSelectionModelExpandsOnlySupportedAeons() {
            "non-adjacent Magus activations must become contiguous expansion groups");
 }
 
+void TestSeymourCompanionGroups() {
+    const auto natus=static_cast<MonsterChoice>(382);
+    const auto flux=static_cast<MonsterChoice>(398);
+    SelectionInput both{};both.activationCount=4;
+    both.activations[0]=natus;both.activations[1]=flux;
+    both.activations[2]=natus;both.activations[3]=flux;
+    const std::array<std::uint16_t,8> expected{{0x107Eu,0x107Fu,0x107Eu,0x107Fu,0x108Eu,0x108Fu,0x108Eu,0x108Fu}};
+    const auto expanded=BuildSelection(both);
+    Expect(expanded.result==SelectionResult::Ready&&expanded.expanded.monsterCount==8&&expanded.expanded.monsterIds==expected,
+           "repeated Natus and Flux choices keep every boss adjacent to its own exact companion and fill eight slots");
+    both.activations[both.activationCount++]=MonsterChoice::Valefor;
+    Expect(BuildSelection(both).result==SelectionResult::ExpandedCapacityExceeded,
+           "four Seymour duos leave no hidden spare actor slot");
+    for(const auto companion:{383u,399u}){
+        SelectionInput orphan{};orphan.activationCount=1;orphan.activations[0]=static_cast<MonsterChoice>(companion);
+        Expect(BuildSelection(orphan).result==SelectionResult::InvalidChoice,
+               "dependent Seymour companions remain unavailable as orphan standalone choices");
+    }
+    SelectionInput mixed{};mixed.activationCount=3;
+    mixed.activations[0]=MonsterChoice::Magus;mixed.activations[1]=flux;mixed.activations[2]=natus;
+    const auto seven=BuildSelection(mixed);
+    Expect(seven.result==SelectionResult::Ready&&seven.expanded.monsterCount==7&&seven.expanded.monsterIds[4]==0x108Fu&&seven.expanded.monsterIds[6]==0x107Fu,
+           "Seymour duos compose with the three-sister group without losing either companion");
+}
+
 void TestClosedSelectionModelRejectsEmptyInvalidAndOverflowInputs() {
     SelectionInput empty{};
     const SelectionOutcome emptyOutcome = BuildSelection(empty);
@@ -958,6 +983,7 @@ int main() {
            "catalog choices retain stable repeated order and native monster identity");
     TestPositionGenerationEditingAndTransactions();
     TestClosedSelectionModelExpandsOnlySupportedAeons();
+    TestSeymourCompanionGroups();
     TestClosedSelectionModelRejectsEmptyInvalidAndOverflowInputs();
     TestDefaultRequestPassesThroughWithoutPatching();
     TestOneAndEightMonsterTransactionsAreBoundedAndOneShot();

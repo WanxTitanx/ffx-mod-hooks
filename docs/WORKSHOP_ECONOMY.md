@@ -13,18 +13,25 @@ There is no failure roll, equipment breakage, downgrade, or inventory-based
 filtering of the eligible abilities.
 
 For a native Customize recipe requiring quantity `Q`, and the next ability rank
-`r` (1 through 10), the initial balance is:
+`r` (1 through 10), the current material balance (2026-10-03) is:
 
 ```text
-Specific ingredient cost = ceil(Q / 10) * r
+Specific ingredient cost = ceil(Q * r / 60)
 Base cost                = 1 Power Sphere
 Gil cost                 = progressive fee for the next total equipment rank
 ```
 
 The ingredient ID comes from the real Customize table, not the earlier research
 proposal TSV. For example, Auto-Protect requires 70 Light Curtains in the pinned
-Customize table: its refinement costs 7 at +1, 14 at +2, and 70 at +10, in addition
+Customize table: its refinement costs 2 at +1, 3 at +2, and 12 at +10, in addition
 to the base sphere for the roll.
+
+Auto-Protect's complete +1 through +10 progression now costs 69 Curtains instead
+of 385. Five recipes of that size reach equipment +50 with 345 specific
+ingredients instead of 1,925. One-item rare recipes stay at one ingredient per
+improvement. The whole rank price rounds once; Gil, rank caps, roulette
+eligibility and fifth-slot unlock/fusion prices remain unchanged. Explicit
+configuration can override the divisor; its default is now 60.
 
 Before a roll is allowed, the inventory must cover **every possible next-rank
 outcome**. For each item ID, the prerequisite is the largest alternative specific
@@ -192,7 +199,7 @@ refinement_mode=2
 expansion_recipe=1
 base_sphere_item=70
 base_sphere_amount=1
-refinement_divisor=10
+refinement_divisor=60
 fusion_divisor=3
 fusion_gil_per_ability=10000
 mod_recipe_quantity=30

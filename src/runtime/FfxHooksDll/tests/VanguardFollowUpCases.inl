@@ -1,5 +1,6 @@
 // Real native command lookup, append and compaction with a private command table.
 static unsigned finishWitnesses=0,finishWitnessFailures=0;
+static bool epochDuringFollowFinish=false;
 static std::array<int,FfxHooks::SharedAction::MaximumDepth> finishWitnessCounts{};
 static void* BeforeFollowFinish(const FfxHooks::SharedAction::FinishCall&) noexcept {
     const auto depth=FfxHooks::SharedAction::finishDepth;
@@ -13,8 +14,19 @@ static void AfterFollowFinish(void* token,const FfxHooks::SharedAction::FinishCa
     ++finishWitnesses;
     const auto count=*reinterpret_cast<std::int8_t*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>());
     if(count!=*static_cast<int*>(token)-1)++finishWitnessFailures;
+    if(epochDuringFollowFinish){
+        epochDuringFollowFinish=false;
+        // Reuse the remaining native row/actor allocation as byte-identical
+        // foreign work in the new epoch. No second guard call occurs here.
+        B::RunInitScene(B::kBattleStateInitSceneReturnRva,{nullptr,Scene},{},{});
+    }
 }
 static const FfxHooks::SharedAction::Observer followFinishWitness{nullptr,nullptr,BeforeFollowFinish,AfterFollowFinish};
+static DWORD WINAPI ForeignFollowHead(void* output){
+    constexpr unsigned rva=FfxHooks::ExecutableProfile::Steam20261001?0x3B0A10u:0x3B0A20u;
+    *static_cast<unsigned char**>(output)=reinterpret_cast<unsigned char*(__cdecl*)()>(base+rva)();return 0;
+}
+#include "VanguardFollowInputCases.inl"
 static void FollowUpCases(unsigned char* gear,std::vector<unsigned char>& kernel,bool combined=false){
     finishWitnesses=finishWitnessFailures=0;
     Check(FfxHooks::SharedAction::Subscribe(FfxHooks::SharedAction::Slot::Reserved,&followFinishWitness),
@@ -114,5 +126,87 @@ static void FollowUpCases(unsigned char* gear,std::vector<unsigned char>& kernel
     Actor(4)[0xDE5]=0;const unsigned previousWakka=wakkaBegins;Hit(0,20,100,0,true,0,4,0x3115);
     Check(wakkaBegins==previousWakka+1,"the next Wakka damage callback remains reachable in the private native queue harness");
     Check(finishWitnessFailures==0,"every status-retirement witness retains the native removal boundary across reciprocal actions");
+    // The real dispatcher asks this native accessor for the head BEFORE it
+    // starts target/animation work. A target may die after both assists queued.
+    constexpr unsigned headRva=FfxHooks::ExecutableProfile::Steam20261001?0x3B0A10u:0x3B0A20u;
+    const auto head=reinterpret_cast<unsigned char*(__cdecl*)()>(base+headRva);
+    reset();W16(gear+14,255);W16(gear+22*6+14,0x808C);
+    Actor(23)[0xDC8]=1;Actor(23)[0xDCC]=Actor(23)[0xDCD]=Actor(23)[0xDCE]=0;
+    W16(Actor(23)+0x606,0);W32(Actor(23)+0x5D0,200);W32(queue+16,1u<<23);
+    Hit(0,23,50);Complete(1);
+    Check(*count==2&&queue[0]==1&&queue[72]==6,"two assists retain the original Omega actor 23 before either executes");
+    Actor(1)[0xDE5]=0;Hit(0,23,500,0,true,0,1);queue[2]=1;finish(1,0,0);
+    Check(R32(Actor(23)+0x5D0)==0&&R32(Actor(20)+0x5D0)>0,"first assist kills the original target while another enemy remains alive");
+    Check(head()==nullptr&&*count==0&&Actor(6)[0xDE7]==0&&Actor(6)[0xDE5]==255,
+          "a pending follow-up to the now-dead target retires before native target/animation dispatch");
+    auto pending=[&](){
+        reset();W16(gear+14,255);Actor(18)[0xDC8]=1;
+        Actor(18)[0xDCC]=Actor(18)[0xDCD]=Actor(18)[0xDCE]=0;W16(Actor(18)+0x606,0);
+        Hit(0,18,1);Complete(1);
+        Check(*count==1&&queue[0]==1&&Actor(1)[0xDE7]==1,"pending assist is produced by a completed ordinary action");
+    };
+    pending();std::array<unsigned char,72> healthy{};std::memcpy(healthy.data(),queue,72);
+    Check(head()==queue&&*count==1&&!std::memcmp(healthy.data(),queue,72),"a living target keeps its original assist packet unchanged");
+    for(unsigned invalid=0;invalid<8;++invalid){
+        pending();const auto model=Word(Actor(18)+0xE);const int resource=R32(Actor(18)+0x48);
+        switch(invalid){
+            case 0:W32(Actor(18)+0x5D0,0);break;
+            case 1:Actor(18)[0xDC8]=0;break;
+            case 2:Actor(18)[0xDCC]=1;break;
+            case 3:Actor(18)[0xDCD]=1;break;
+            case 4:Actor(18)[0xDCE]=1;break;
+            case 5:W16(Actor(18)+0x606,5);break;
+            case 6:W16(Actor(18)+0xE,model+1);break;
+            case 7:W32(Actor(18)+0x48,resource+1);break;
+        }
+        Check(head()==nullptr&&*count==0&&Actor(1)[0xDE7]==0,"dead, absent, removed, petrified or replaced original targets are never dispatched");
+        W16(Actor(18)+0xE,model);W32(Actor(18)+0x48,resource);
+    }
+    pending();W32(Actor(1)+0x5D0,0);
+    Check(head()==nullptr&&*count==0,"a dead assisting actor does not keep an orphan reaction");
+    pending();std::array<unsigned char,72> ordinary=healthy,foreign=healthy;ordinary[1]=0;W32(ordinary.data()+16,1u<<20);
+    Check(append(1,ordinary.data(),0,0,0)==-1&&append(1,foreign.data(),0,0,1)==-1,"native appends retain a normal turn and an identical foreign reaction behind the owned assist");
+    const auto inputCount=*reinterpret_cast<unsigned char*>(base+FfxHooks::ExecutableProfile::Rva<0xD2BDE0>());
+    const auto pendingInput=Actor(1)[0xDE6],wait=Actor(1)[0x65C];const int originalMp=R32(Actor(1)+0x5D4),originalHp=R32(Actor(1)+0x5D0);
+    W32(Actor(18)+0x5D0,0);
+    Check(head()==queue&&*count==2&&Actor(1)[0xDE7]==2&&!std::memcmp(queue,ordinary.data(),72)&&!std::memcmp(queue+72,foreign.data(),72),
+          "skip removes only the owned assist, preserving the normal turn and identical foreign counter");
+    Check(Actor(1)[0xDE6]==pendingInput&&Actor(1)[0x65C]==wait&&R32(Actor(1)+0x5D4)==originalMp&&R32(Actor(1)+0x5D0)==originalHp&&
+          *reinterpret_cast<unsigned char*>(base+FfxHooks::ExecutableProfile::Rva<0xD2BDE0>())==inputCount,
+          "cancel does not spend the ordinary input turn, CTB wait, MP, HP or Vampirism healing");
+    Actor(1)[0xDE5]=0;const int nextTargetHp=R32(Actor(20)+0x5D0);Hit(0,20,10,0,true,0,1);queue[2]=1;
+    Check(R32(Actor(20)+0x5D0)==nextTargetHp-10&&finish(1,0,0)==1&&head()==queue&&*count==1,
+          "the preserved ordinary turn reaches native damage and retirement while the foreign reaction stays unowned");
+    pending();constexpr unsigned insertRva=FfxHooks::ExecutableProfile::Steam20261001?0x3B0A30u:0x3B0A40u;
+    using Insert=int(__cdecl*)(unsigned,const unsigned char*,unsigned,unsigned,unsigned,unsigned,unsigned);
+    const auto insert=reinterpret_cast<Insert>(base+insertRva);foreign[0]=4;W32(foreign.data()+16,1u<<20);
+    Check(insert(4,foreign.data(),0,0,1,0,1)==-1&&queue[0]==4&&queue[72]==1,"native priority insertion moves the pending assist to a later row");
+    W32(Actor(18)+0x5D0,0);Check(head()==queue&&*count==2,"a native inserted counter dispatches before any owned assist");
+    Check(finish(4,0,0)==1&&head()==nullptr&&*count==0&&Actor(1)[0xDE7]==0,"ownership follows native insertion and retirement without skipping the wrong row");
+    pending();foreign=healthy;
+    Check(insert(1,foreign.data(),0,0,1,0,1)==-1,"native insertion can create two byte-identical reaction rows");
+    W32(Actor(18)+0x5D0,0);
+    Check(head()==queue&&*count==2,"ambiguous byte-identical insertion relinquishes ownership instead of deleting a foreign row");
+    pending();W32(Actor(18)+0x5D0,0);Actor(1)[0xDE5]=0;queue[4]=1;
+    Check(head()==queue&&*count==1,"an already selected animation/action remains exclusively owned by native completion");
+    pending();W32(Actor(18)+0x5D0,0);W32(queue+16,1u<<20);
+    Check(head()==queue&&*count==1&&R32(queue+16)==(1<<20),"an externally changed packet is not rewritten or removed");
+    pending();W32(Actor(18)+0x5D0,0);unsigned char* foreignHead=nullptr;
+    HANDLE thread=CreateThread(nullptr,0,ForeignFollowHead,&foreignHead,0,nullptr);
+    const bool joined=thread&&WaitForSingleObject(thread,5000)==WAIT_OBJECT_0;if(thread)CloseHandle(thread);
+    Check(joined&&foreignHead==queue&&*count==1,"a foreign thread can read the queue but cannot cancel owned assists");
+    Check(head()==nullptr&&*count==0,"the owner thread cancels the same invalid assist exactly once");
+    reset();W16(gear+14,255);W16(gear+22*6+14,0x808C);Hit(0,18,1);Complete(1);
+    Check(*count==2&&queue[0]==1&&queue[72]==6,"two distinct owned assists prepare a generation change during cancellation");
+    W32(Actor(18)+0x5D0,0);const auto beforeEpochWitness=finishWitnesses;epochDuringFollowFinish=true;
+    Check(head()==queue&&*count==1&&queue[0]==6&&Actor(6)[0xDE7]==1&&finishWitnesses==beforeEpochWitness+1,
+          "a battle epoch changed inside retirement stops the old drain before it cancels new byte-identical work");
+    pending();W32(Actor(18)+0x5D0,0);
+    B::RunInitScene(B::kBattleStateInitSceneReturnRva,{nullptr,Scene},{},{});
+    Check(head()==queue&&*count==1,"a new battle epoch cannot cancel an old identical row using stale ownership");
+    FollowInputCases(pending,queue,count);
+    pending();W32(Actor(18)+0x5D0,0);V::RequestStop();
+    Check(head()==queue&&*count==1,"stop leaves both added native hooks inert and performs no queue writes");
+    Check(finishWitnessFailures==0,"skipping an invalid assist preserves shared native-retirement observations");
     FfxHooks::SharedAction::Unsubscribe(FfxHooks::SharedAction::Slot::Reserved,&followFinishWitness);
 }

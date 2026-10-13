@@ -604,7 +604,7 @@ bool ValidateTask6DetachBody(const std::string& body) {
     const auto rngAt=normalized.find(rngGuard);
     if(rngAt!=std::string::npos)normalized.replace(rngAt,rngGuard.size(),"FfxHooks::OriginalPs2Rng::Runtime::RequestStop();");
     return CompactSourceCode(normalized) ==
-           "caseDLL_PROCESS_DETACH:FfxHooks::OriginalPs2Rng::Runtime::RequestStop();FfxHooks::UiNativeFont::Stop();FfxHooks::Coexistence::runtime.Stop();FfxHooks::Arcana::NativeUi::Stop();FfxHooks::Arcana::Combat::Stop();FfxHooks::SetSupplementalDropProvider(nullptr);FfxHooks::Arcana::Assets::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::RemoveElementHook();FfxHooks::ElementalDominion::RequestDetachStop();FfxHooks::SpiraAbilities::RequestDetachStop();FfxHooks::MonsterRewards::RequestStop();FfxHooks::WeaponStrikeVfx::RequestStop();FfxHooks::RequestNulWardDetachStop();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::Vanguard::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::ElementNameInput::Abort();FfxHooks::NativeLanguage::RequestStop();FfxHooks::TextLanguage::Native::RequestStop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
+           "caseDLL_PROCESS_DETACH:FfxHooks::MinigameAssist::Stop();FfxHooks::OriginalPs2Rng::Runtime::RequestStop();FfxHooks::UiNativeFont::Stop();FfxHooks::Coexistence::runtime.Stop();FfxHooks::CaptureCascade::Capture::Stop();FfxHooks::CaptureCascade::Runtime::Stop();FfxHooks::CaptureCascade::Battle::Stop();FfxHooks::Arcana::FieldPresentation::Stop();FfxHooks::Arcana::NativeUi::Stop();FfxHooks::Arcana::Combat::Stop();FfxHooks::SetSupplementalDropProvider(nullptr);FfxHooks::Arcana::Assets::Stop();FfxHooks::Arcana::Runtime::Stop();FfxHooks::EquipmentWorkshop::NativeUi::Stop();FfxHooks::EquipmentWorkshop::MainMenu::RequestStop();FfxHooks::RemoveElementHook();FfxHooks::ElementalDominion::RequestDetachStop();FfxHooks::SpiraAbilities::RequestDetachStop();FfxHooks::MonsterRewards::RequestStop();FfxHooks::WeaponStrikeVfx::RequestStop();FfxHooks::RequestNulWardDetachStop();FfxHooks::EquipmentWorkshop::RequestStop();FfxHooks::Vanguard::RequestStop();FfxHooks::NativePorts::RequestStop();FfxHooks::ElementNameInput::Abort();FfxHooks::NativeLanguage::RequestStop();FfxHooks::TextLanguage::Native::RequestStop();FfxHooks::InsideSin::Runtime::RequestStop();FfxHooks::OmegaUltima::Runtime::Stop();FfxHooks::OmegaT7::Runtime::RequestStop();FfxHooks::OmegaLastSeal::Runtime::RequestStop();FfxHooks::Arcana::Challenge::Stop();FfxHooks::SinAi::RequestStop();FfxHooks::FmvSpeed::RequestStop();FfxHooks::Fastload::RequestFastloadStop();FfxHooks::RequestNovaSuperDamageStop();FfxHooks::RequestSeymourBattleStop();"
            "FfxHooks::SeymourMenuList::RequestStop();"
            "FfxHooks::SeymourPersistentRoster::RequestStop();"
            "FfxHooks::SeymourSession::RequestStop();"
@@ -2068,6 +2068,10 @@ void TestTask6DllmainIntegrationContracts() {
         dllmain.body, "case DLL_PROCESS_DETACH:", "break;");
     Expect(dllmain.Valid() && !detach.empty() && ValidateTask6DetachBody(detach),
            "DLL_PROCESS_DETACH must contain only lock-free runtime stop requests");
+    std::string workshopRootSource;
+    Expect(ReadWholeFile(RuntimeSourcePath("hooks/EquipmentWorkshopMainMenu.cpp"),workshopRootSource),"native Workshop root source readable");
+    const auto rootStop=SourceFunctionBody(workshopRootSource,"void RequestStop() noexcept");
+    Expect(rootStop.Valid()&&CompactSourceCode(rootStop.body)=="running=false;"&&workshopRootSource.find("std::atomic<bool>::is_always_lock_free")!=std::string::npos,"native Workshop detach only closes lock-free admission");
     std::string fontSource;
     Expect(ReadWholeFile(RuntimeSourcePath("hooks/UiNativeFont.cpp"),fontSource),"native font stop source is readable");
     const auto fontStop=SourceFunctionBody(fontSource,"void Stop() noexcept");
@@ -2313,15 +2317,21 @@ void TestTask6SourceValidatorMutationPressure() {
            "UnX booster source must be readable for Task 6 mutation pressure");
     const std::string validDetach =
         "case DLL_PROCESS_DETACH:\n"
+        "FfxHooks::MinigameAssist::Stop();\n"
         "FfxHooks::OriginalPs2Rng::Runtime::RequestStop();\n"
         "FfxHooks::UiNativeFont::Stop();\n"
         "FfxHooks::Coexistence::runtime.Stop();\n"
+        "FfxHooks::CaptureCascade::Capture::Stop();\n"
+        "FfxHooks::CaptureCascade::Runtime::Stop();\n"
+        "FfxHooks::CaptureCascade::Battle::Stop();\n"
+        "FfxHooks::Arcana::FieldPresentation::Stop();\n"
         "FfxHooks::Arcana::NativeUi::Stop();\n"
         "FfxHooks::Arcana::Combat::Stop();\n"
         "FfxHooks::SetSupplementalDropProvider(nullptr);\n"
         "FfxHooks::Arcana::Assets::Stop();\n"
         "FfxHooks::Arcana::Runtime::Stop();\n"
         "FfxHooks::EquipmentWorkshop::NativeUi::Stop();\n"
+        "FfxHooks::EquipmentWorkshop::MainMenu::RequestStop();\n"
         "FfxHooks::RemoveElementHook();\n"
         "FfxHooks::ElementalDominion::RequestDetachStop();\n"
         "FfxHooks::SpiraAbilities::RequestDetachStop();\n"
@@ -2334,6 +2344,11 @@ void TestTask6SourceValidatorMutationPressure() {
         "FfxHooks::ElementNameInput::Abort();\n"
         "FfxHooks::NativeLanguage::RequestStop();\n"
         "FfxHooks::TextLanguage::Native::RequestStop();\n"
+        "FfxHooks::InsideSin::Runtime::RequestStop();\n"
+        "FfxHooks::OmegaUltima::Runtime::Stop();\n"
+        "FfxHooks::OmegaT7::Runtime::RequestStop();\n"
+        "FfxHooks::OmegaLastSeal::Runtime::RequestStop();\n"
+        "FfxHooks::Arcana::Challenge::Stop();\n"
         "FfxHooks::SinAi::RequestStop();\n"
         "FfxHooks::FmvSpeed::RequestStop();\n"
         "FfxHooks::Fastload::RequestFastloadStop();\n"
@@ -4453,8 +4468,8 @@ void TestCatalogMetadataAndInvariants() {
                trackedIniSource.find("max_speed = 8.0") != std::string::npos,
            "Speed Hack defaults must document the fixed cycle, legacy keys, and 8x safety cap");
 
-    Expect(FfxHooks::F8FlagCount() == 91 && FfxHooks::Vanguard::FeatureCount == 31,
-           "catalog preserves established rows and appends independent weapon VFX and Nul spell gates");
+    Expect(FfxHooks::F8FlagCount() == 98 && FfxHooks::Vanguard::FeatureCount == 31,
+           "catalog preserves established rows and appends the three Omega gates");
     Expect(sizeof(expected) / sizeof(expected[0]) == 50,
            "the hand-derived legacy fixture still covers every established row");
     Expect(FfxHooks::F8TabCount() == 7, "catalog must expose exactly seven tabs");
@@ -5710,8 +5725,8 @@ void TestLabCatalogAndRestartControls() {
         {"labs.item_stack_cap","f8_authority.lab_item_stack_cap","FFXHOOKS_ENABLE_ITEM_STACK_CAP","item_stack_cap_255.flag","ItemStackCapFlagEnabled"},
         {"labs.double_triple_drop","f8_authority.lab_double_triple_drop","FFXHOOKS_ENABLE_DOUBLE_TRIPLE_DROP","double_triple_drop.flag","DoubleTripleDropEnabled"},
     };
-    Expect(FfxHooks::F8FlagCount()==91&&FfxHooks::F8TabCount()==7&&
-               strcmp(FfxHooks::F8TabName(6),"Reforge")==0,"Reforge retains existing rows and adds both optional drawing gates");
+    Expect(FfxHooks::F8FlagCount()==98&&FfxHooks::F8TabCount()==7&&
+               strcmp(FfxHooks::F8TabName(6),"Reforge")==0,"Reforge and Extras retain existing rows and the Omega gates append to Extras");
     std::string source;
     Expect(ReadWholeFile(RuntimeSourcePath("dllmain.cpp"),source),"Lab install source readable");
     const auto menuRows=SourceFunctionBody(source,"static void F7_BuildRows(int kind)");
@@ -5783,11 +5798,13 @@ void TestLabCatalogAndRestartControls() {
         bulk.flags["arcana.flag"]=BoolSource::LegacyFlagRoot;
         FfxHooks::PublishF8RuntimeStatus("arena_plus.compose_f7",F8RuntimeAvailability::Available,true,false);
         const auto disabled=FfxHooks::SetF8TabValues("Reforge",false);
-        Expect(disabled.eligible==17&&disabled.changed==11&&disabled.already==6&&bulk.persistCalls==1,
-               "Reforge bulk OFF resolves eleven stale Lab flags and retains six already-OFF nested Arena flags");
+        Expect(disabled.eligible==22&&disabled.changed==9&&disabled.already==13&&bulk.persistCalls==1,
+               "Reforge bulk OFF includes Spira while preserving native-owned Workshop gates");
         const auto enabled=FfxHooks::SetF8TabValues("Reforge",true);
-        Expect(enabled.eligible==17&&enabled.changed==17&&bulk.persistCalls==2,
-               "Reforge bulk ON includes its nested Arena controls in one atomic write");
+        Expect(enabled.eligible==22&&enabled.changed==22&&bulk.persistCalls==2,
+               "Reforge bulk ON includes nested Arena and Spira but excludes native-owned Workshop gates");
+        for(const char* key:{"spira.enabled","aeon_ascension.enabled","spira.capture_cascade","spira.item_mp_regen","spira.omega_ultima","spira.omega_t7","spira.omega_last_seal"})
+            Expect(FfxHooks::ResolveF8Flag(*FfxHooks::FindF8Flag(key)).value,"every regrouped Spira option participates in the Reforge setting transaction");
         for(const auto& row:rows)Expect(FfxHooks::ResolveF8Flag(*FfxHooks::FindF8Flag(row.key)).value,"every bulk-enabled Lab gate resolves ON");
     }
     Expect(!FfxHooks::FindF8Flag("labs.kimahri_ronso_mana_apply")&&
@@ -5869,8 +5886,8 @@ void TestMultiplierCatalogAndTransactions() {
     const FfxHooks::F8FlagSpec* ap = FfxHooks::FindF8Flag("cheats.ap_100x");
     const FfxHooks::F8FlagSpec* gil = FfxHooks::FindF8Flag("cheats.gil_100x");
     Expect(ap && gil, "AP and Gil legacy boolean rows must remain in the catalog");
-    Expect(FfxHooks::F8FlagCount() == 91,
-           "general scalar metadata adds no boolean rows beyond the explicit independent monster gate");
+    Expect(FfxHooks::F8FlagCount() == 98,
+           "general scalar metadata preserves the catalog including minigame, Cascade, MP item and Omega gates");
     Expect(ap && ap->scalar && strcmp(ap->scalar->canonicalKey, "cheats.ap_multiplier") == 0 &&
                ap->scalar->defaultValue == 100 && ap->scalar->minimum == 1 &&
                ap->scalar->maximum == 100,
@@ -12369,7 +12386,7 @@ void TestMaechenPresentPumpOwnershipContracts() {
                nativePresent.body.find("NativeMenuOtherOwnerOrRequestPublished") != std::string::npos,
            "only Pump may inspect raw native menu objects/held action; Present must consume atomic ownership publication");
     Expect(nativePump.Valid() &&
-               CountSourceToken(nativePump.body, "NativeMenu_ReserveAndConsumeOpenRequest(") == 5 &&
+               CountSourceToken(nativePump.body, "NativeMenu_ReserveAndConsumeOpenRequest(") == 4 &&
                CountSourceToken(tryOpenArena.body,
                                 "NativeMenu_ReserveAndConsumeOpenRequest(") == 1 &&
                CountSourceToken(promoteDelayedArena.body,
@@ -12384,7 +12401,8 @@ void TestMaechenPresentPumpOwnershipContracts() {
                    "&g_sinWantOpen, 0, &g_nativeOtherOwnerPublished") == 1 &&
                CountSourceToken(nativePump.body,
                    "&g_f7WantOpenKind, -1, &g_nativeOtherOwnerPublished") == 2 &&
-               CountSourceToken(nativePump.body,"&EquipmentMenu::wantOpen, 0, &g_nativeOtherOwnerPublished") == 1,
+               CountSourceToken(nativePump.body,"&EquipmentMenu::wantOpen, 0, &g_nativeOtherOwnerPublished") == 0 &&
+               dllmain.find("SampleShortcut(FfxHooks::NativeBindings::Action::Workshop)")==std::string::npos,
            "every native open-request consumer must reserve published ownership before clearing its request");
     Expect(publishNativeOwner.Valid() &&
                publishNativeOwner.body.find("NativeMenuOtherOwnerOrRequestActivePumpOnly()") != std::string::npos &&
@@ -12600,8 +12618,8 @@ void TestF7UnsafePrototypePolicyAndSourceContainment() {
            "legacy S.I.N. installation must fail closed before any detour or process setup");
     Expect(nativeMenu.find("S.I.N. Curses") != std::string::npos &&
                nativeMenu.find("S.I.N. - Unavailable") == std::string::npos &&
-               dllmain.find("SIN_RAM_ROW_COUNT         9") != std::string::npos &&
-               dllmain.find("Seeded encounters from Macalania to Zanarkand") !=
+               CompactSourceCode(dllmain).find("#defineSIN_RAM_ROW_COUNT10") != std::string::npos &&
+               dllmain.find("Regional curses and Omega's Seventh Seal") !=
                    std::string::npos,
             "the F7 S.I.N. submenu exposes the expanded seeded scope and its bounded preview-page control");
     const SourceBlock sinInput = SourceFunctionBody(
@@ -13189,10 +13207,23 @@ void TestNativeMenuFunctionKeySafetyContracts() {
                "NativeMenuForceGateClear()"}),
            "the terminal force/gate and keep-alive clear must be skipped while the hub close drain is pending");
     Expect(nativePump.Valid() && SourceTokensInOrder(nativePump.body, {
-               "(g_nativeMenuPumpTramp)(a1)",
+               "FfxHooks::NativeMenuHelp::Pump(",
+               "g_nativeMenuPumpTramp, a1, NativeMenuOwnsHelpPresentation()",
                "NativeMenuPollHubCloseDrainAfterPump()",
                "!NativeMenuOtherOwnerOrRequestActivePumpOnly()"}),
            "the hub close drain must be polled after the trampoline and before the no-owner force release");
+    const SourceBlock helpOwners = SourceFunctionBody(
+        dllmain, "static bool NativeMenuOwnsHelpPresentation()");
+    Expect(helpOwners.Valid() && helpOwners.body.find("g_nativeMenu.obj") != std::string::npos &&
+               helpOwners.body.find("g_f7Menu.obj") != std::string::npos &&
+               helpOwners.body.find("NativeMenuHubCloseDrainPending()") != std::string::npos &&
+               helpOwners.body.find("g_nativeWantSpawn") == std::string::npos,
+           "cached-help suppression must cover actual F7/F8 owners and close drain, not pending requests");
+    Expect(nativeStart.Valid() && SourceTokensInOrder(nativeStart.body, {
+               "FfxHooks::NativeMenuHelp::Start(g_base)", "g_nativeMenuPumpDetour->hook()"}) &&
+               nativeStop.Valid() && SourceTokensInOrder(nativeStop.body, {
+               "FfxHooks::NativeMenuHelp::Stop()", "F7CloseTransition("}),
+           "the profiled help guard must be ready before Pump activation and neutralized before closing its owners");
     Expect(pumpOnlyOwners.Valid() && publishedOwners.Valid() &&
                pumpOnlyOwners.body.find("NativeMenuHubCloseDrainPending()") != std::string::npos &&
                publishedOwners.body.find("NativeMenuHubCloseDrainPending()") != std::string::npos,
@@ -13224,10 +13255,10 @@ void TestNativeMenuFunctionKeySafetyContracts() {
                    std::string::npos,
            "the poll must stay bounded, reset only a still-owned object, and clear by exact-object CAS");
     Expect(presentTick.Valid() && SourceTokensInOrder(presentTick.body, {
-               "if (NativeMenuHubCloseDrainPending() || EquipmentMenu::NeedsPump())",
+               "if (NativeMenuHubCloseDrainPending() || EquipmentMenu::NeedsForcedPump())",
                "InterlockedExchange(&g_forceSubsystem, 1)",
                "const bool forcedByCustomMenu"}),
-           "Present must republish force before the snapshot while hub or Workshop work is pending");
+           "Present must republish force before the snapshot while a forced hub or legacy close drain is pending");
     Expect(abortDrain.Valid() && SourceTokensInOrder(abortDrain.body, {
                "NativeMenuHubObjectStillOwned(obj)",
                "NativeMenu::Reset(obj)",

@@ -4,12 +4,13 @@
 #include <atomic>
 #include <cstdint>
 #define FFXHOOKS_COMBAT_AMOUNT_POLICY_V1 1
+#define FFXHOOKS_WEAPON_ELEMENTS_V1 1
 
 namespace FfxHooks::CombatExtensions {
 
 // Each published descriptor is immutable and remains alive for the process.
 // Modules publish during startup and close their own admission before retiring.
-enum class Slot : unsigned { Elemental, Aeon, NulWard, Reserved, Count };
+enum class Slot : unsigned { Elemental, Aeon, NulWard, Reserved, InsideSin, OmegaT7, OmegaLastSeal, WeaponElements, Count };
 enum class ResetReason : unsigned { NativeLoad, BattleStart, BattleExit, Stop };
 inline constexpr unsigned SlotCount=static_cast<unsigned>(Slot::Count);
 inline constexpr unsigned MaximumDepth=16;
@@ -81,6 +82,8 @@ struct DamageScope {
     std::array<const Observer*,SlotCount> listeners{};
     std::array<void*,SlotCount> tokens{};
     std::array<bool,SlotCount> participating{};
+    std::array<unsigned,SlotCount> entryOrder{};
+    unsigned entryCount=0;
     DamageScope* previous=nullptr;
     unsigned depth=0;
     bool entered=false;
@@ -92,12 +95,14 @@ inline thread_local DamageScope* currentDamage=nullptr;
 inline bool EnterDamage(DamageScope& scope,const DamageCall& call,bool admit=true) noexcept {
     if(scope.entered)return false;
     scope.call=call;scope.forwardCommand=call.command;scope.previous=currentDamage;
+    scope.entryCount=0;scope.listeners={};scope.tokens={};scope.participating={};
     scope.depth=currentDamage?currentDamage->depth+1:1;scope.entered=true;
     currentDamage=&scope;
     if(!admit||scope.depth>MaximumDepth)return false;
-    for(unsigned i=0;i<SlotCount;++i){
+    const auto enter=[&](unsigned i){
         const auto* observer=observers[i].load(std::memory_order_acquire);
-        if(!observer)continue;
+        if(!observer)return;
+        scope.entryOrder[scope.entryCount++]=i;
         scope.listeners[i]=observer;
         if(observer->enter){
             const void* proposed=scope.forwardCommand;
@@ -105,14 +110,19 @@ inline bool EnterDamage(DamageScope& scope,const DamageCall& call,bool admit=tru
             scope.participating[i]=scope.tokens[i]!=nullptr;
             if(scope.participating[i]&&proposed)scope.forwardCommand=proposed;
         }else scope.participating[i]=true;
-    }
+    };
+    // Temporary weapon elements must be visible to native, Tarot and external
+    // affinity readers. Their lease outlives every later observer's cleanup.
+    constexpr auto weapon=static_cast<unsigned>(Slot::WeaponElements);
+    enter(weapon);
+    for(unsigned i=0;i<SlotCount;++i)if(i!=weapon)enter(i);
     return true;
 }
 
 inline bool LeaveDamage(DamageScope& scope,unsigned result,bool completed) noexcept {
     if(!scope.entered||currentDamage!=&scope)return false;
-    for(unsigned i=SlotCount;i>0;--i){
-        const unsigned index=i-1;
+    for(unsigned i=scope.entryCount;i>0;--i){
+        const unsigned index=scope.entryOrder[i-1];
         const auto* observer=scope.listeners[index];
         // Tokens still need cleanup after admission has closed. Their immutable
         // descriptors are retained, just like already published trampolines.

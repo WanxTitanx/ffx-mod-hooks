@@ -345,6 +345,22 @@ void TestSelectionEditingAndPreviewRemainClosedAndStable() {
            "Clear must return the symbolic draft to EMPTY");
 }
 
+void TestSeymourCompanionEditing() {
+    const auto natus=static_cast<MonsterChoice>(382),flux=static_cast<MonsterChoice>(398);
+    SelectionInput selection{};
+    for(unsigned n=0;n<3;++n)selection=Runtime::TryAddChoice(selection,natus).selection;
+    selection=Runtime::TryAddChoice(selection,MonsterChoice::Valefor).selection;
+    const auto rejected=Runtime::TryAddChoice(selection,flux);
+    Expect(!rejected.accepted&&std::memcmp(&rejected.selection,&selection,sizeof(selection))==0,
+           "adding a Seymour duo to seven occupied slots is rejected atomically without losing the existing formation");
+    const auto pair=Runtime::TryAddChoice({},flux);
+    Expect(pair.accepted&&pair.preview.expanded.monsterCount==2&&pair.preview.expanded.monsterIds[1]==0x108Fu,
+           "one Flux selection adds Mortiorchis through the production editor");
+    const auto removed=Runtime::RemoveLastChoice(pair.selection);
+    Expect(removed.accepted&&removed.selection.activationCount==0&&removed.status==Runtime::StatusCode::Empty,
+           "removing the last Seymour choice removes the whole duo without an orphan pet");
+}
+
 void TestRequestOneShotDeadlineCancellationAndStickyConflict() {
     Runtime::RequestState state;
     SelectionInput selection{};
@@ -705,6 +721,7 @@ int main() {
     TestOmittedOriginalFallsBackOnceInsidePatch();
     TestPassthroughRejectFalseThrowAndConflictPaths();
     TestSelectionEditingAndPreviewRemainClosedAndStable();
+    TestSeymourCompanionEditing();
     TestRequestOneShotDeadlineCancellationAndStickyConflict();
     TestStatusVocabularyAndCancellationLifecycle();
     TestQueueMustSucceedExactlyBeforeArm();

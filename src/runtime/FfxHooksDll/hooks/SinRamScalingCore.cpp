@@ -1,6 +1,8 @@
 #include "../shared/ExecutableProfile.h"
 #include "SinRamScalingCore.h"
 #include "SinSpreadCore.h"
+#include "CaptureCascadeScaling.generated.h"
+#include "OmegaT7Core.h"
 
 #include <algorithm>
 
@@ -17,9 +19,10 @@ namespace {
 constexpr std::uint32_t kNaturalTransitionCallerRva = (::FfxHooks::ExecutableProfile::Rva<0x00471CEFu>());
 constexpr std::uint32_t kSignedDwordMax = 0x7FFFFFFFu;
 
-bool IsThreatLevelValid(int threatLevel,std::uint16_t field) {
-    const auto maximum=(std::max)(2u,SinSpread::MaximumThreatForField(field));
-    return threatLevel >= 0 && static_cast<unsigned>(threatLevel) <= maximum;
+bool IsThreatLevelValid(int threatLevel,std::uint16_t field,unsigned minimum) {
+    if(minimum&&(minimum<7||minimum>10))return false;
+    const auto maximum=minimum?10u:(std::max)(2u,SinSpread::MaximumThreatForField(field));
+    return threatLevel >= static_cast<int>(minimum) && static_cast<unsigned>(threatLevel) <= maximum;
 }
 
 std::uint16_t ExactFieldKey(std::uint32_t encounterToken) {
@@ -67,6 +70,33 @@ std::uint8_t ScaleStat(std::uint8_t value, int threatLevel) {
     return static_cast<std::uint8_t>((std::min)(incremented, 255u));
 }
 
+DifficultyValues ThreatCurve(const DifficultyValues& base,int threat) {
+    auto values=base;const auto hpPercent=100u+static_cast<unsigned>(threat)*10u;
+    values.maxHp=ScaleSignedDword(base.maxHp,hpPercent);
+    values.overkill=ScaleSignedDword(base.overkill,hpPercent);
+    for(auto& stat:values.stats)stat=ScaleStat(stat,threat);
+    return values;
+}
+
+StructuralScalePlan OmegaPlan(const RuntimeRequest& request,std::uint64_t generation,
+    std::int32_t row,std::uint16_t formation,const DifficultyValues& base) {
+    StructuralScalePlan plan{};plan.fieldKey=ExactFieldKey(request.encounterToken);
+    if(!request.config.enabled)return plan;
+    if(request.transitionCallerRva!=kNaturalTransitionCallerRva){plan.reason=AdmissionReason::WrongTransitionCaller;return plan;}
+    if(request.origin!=EncounterOrigin::Natural){plan.reason=AdmissionReason::NonNaturalOrigin;return plan;}
+    RequestCorrelation correlation{request.transitionRequestId,request.actorRequestId,request.transitionGeneration,generation,generation};
+    if(!RequestIdentityMatches(correlation)){plan.reason=AdmissionReason::RequestMismatch;return plan;}
+    if(!ObservationIsFresh(correlation)){plan.reason=AdmissionReason::StaleObservation;return plan;}
+    if(!OmegaEncounter::Eligible(plan.fieldKey,request.encounterToken&0xFFFFu)){plan.reason=AdmissionReason::UnsupportedField;return plan;}
+    if(row<0||row>0xFFFF||row!=request.nativeFieldRow){plan.reason=AdmissionReason::RuntimeFieldMismatch;return plan;}
+    const auto model=SinSpread::ModelFromNative(formation);
+    if(!OmegaT7::Combatant(model)){plan.reason=AdmissionReason::UnsupportedMonster;return plan;}
+    if(!base.maxHp||!StructuralWritebackInDomain(base)||(model==910&&base.maxHp!=kOmegaMiniBaseHp)){
+        plan.reason=AdmissionReason::OutOfDomain;return plan;
+    }
+    plan.writeback=ThreatCurve(base,7);plan.admitted=true;plan.reason=AdmissionReason::Admitted;return plan;
+}
+
 std::uint32_t ApplyHpRatioOnce(
     const HpRatioIdentity& baseline, std::uint32_t finalMaxHp) {
     if (baseline.maxHp == 0u) return 0u;
@@ -94,7 +124,7 @@ StructuralScalePlan BuildStructuralScalePlan(const ScaleRequest& request) {
         plan.reason = AdmissionReason::Disabled;
         return plan;
     }
-    if (!IsThreatLevelValid(request.config.threatLevel,plan.fieldKey)) {
+    if (!IsThreatLevelValid(request.config.threatLevel,plan.fieldKey,request.config.minimumThreat)) {
         plan.reason = AdmissionReason::InvalidThreatLevel;
         return plan;
     }
@@ -114,25 +144,26 @@ StructuralScalePlan BuildStructuralScalePlan(const ScaleRequest& request) {
         plan.reason = AdmissionReason::StaleObservation;
         return plan;
     }
-    if (!SinSpread::AreaForField(plan.fieldKey)) {
+    if (!SinSpread::AreaForField(plan.fieldKey) || (SinSpread::AwakeningOnly(plan.fieldKey)&&!request.config.minimumThreat)) {
         plan.reason = AdmissionReason::UnsupportedField;
         return plan;
     }
-    if (!IsSupportedMonster(plan.fieldKey, request.encounter.monsterId)) {
+    const auto* floor=request.config.minimumThreat?CaptureCascade::Scaling::Find(
+        plan.fieldKey,SinSpread::ModelFromNative(request.encounter.monsterId)):nullptr;
+    if (!IsSupportedMonster(plan.fieldKey, request.encounter.monsterId) && !floor) {
         plan.reason = AdmissionReason::UnsupportedMonster;
         return plan;
     }
 
-    const std::uint32_t hpPercent =
-        100u + static_cast<std::uint32_t>(request.config.threatLevel) * 10u;
-    plan.writeback.maxHp =
-        ScaleSignedDword(request.afterDifficulty.maxHp, hpPercent);
-    plan.writeback.overkill =
-        ScaleSignedDword(request.afterDifficulty.overkill, hpPercent);
-    plan.writeback.stats = request.afterDifficulty.stats;
-    for (std::uint8_t& stat : plan.writeback.stats) {
-        stat = ScaleStat(stat, request.config.threatLevel);
+    auto base=request.afterDifficulty;
+    if(floor) {
+        // A value-only floor inside the existing sole actor writer. Never mutate
+        // the source monster resource or carry the endgame base to another battle.
+        base.maxHp=(std::max)(base.maxHp,floor->hp);
+        base.overkill=(std::max)(base.overkill,floor->overkill);
+        for(unsigned i=0;i<base.stats.size();++i)base.stats[i]=(std::max)(base.stats[i],floor->stats[i]);
     }
+    plan.writeback=ThreatCurve(base,request.config.threatLevel);
 
     plan.admitted = true;
     plan.reason = AdmissionReason::Admitted;
@@ -145,11 +176,17 @@ bool StructuralWritebackInDomain(const DifficultyValues& writeback) {
     return writeback.maxHp <= kSignedDwordMax &&
            writeback.overkill <= kSignedDwordMax;
 }
+bool NativeAbilitiesAwakening(const RuntimeRequest& request,std::uint16_t formationId) noexcept {
+    const auto field=ExactFieldKey(request.encounterToken),model=SinSpread::ModelFromNative(formationId);
+    return request.config.minimumThreat>=7&&request.config.minimumThreat<=10&&
+        CaptureCascade::Scaling::Find(field,model)&&!SinSpread::FindMonster(model,SinSpread::AreaForField(field));
+}
 
 StructuralScalePlan BuildRuntimeStructuralScalePlan(
     const RuntimeRequest& request, std::uint64_t runtimeGeneration,
     std::int32_t runtimeFieldRow, std::uint16_t formationId,
     const DifficultyValues& afterDifficulty) {
+    if(request.omegaT7)return OmegaPlan(request,runtimeGeneration,runtimeFieldRow,formationId,afterDifficulty);
     ScaleRequest scaleRequest{};
     scaleRequest.config = request.config;
     SinSpread::AreaAssignment assignment{};
@@ -159,9 +196,9 @@ StructuralScalePlan BuildRuntimeStructuralScalePlan(
             StructuralScalePlan invalid{};invalid.reason=AdmissionReason::InvalidDistribution;return invalid;
         }
         assignment=SinSpread::BuildAssignment(ExactFieldKey(request.encounterToken),request.config.seed,
-            request.areaVisit,static_cast<SinSpread::Distribution>(request.config.distribution),request.config.enabled);
+            request.areaVisit,static_cast<SinSpread::Distribution>(request.config.distribution),request.config.enabled,request.config.minimumThreat);
         assigned=assignment.Find(SinSpread::ModelFromNative(formationId));
-        scaleRequest.config.threatLevel=assigned?static_cast<int>(assigned->threat):0;
+        scaleRequest.config.threatLevel=assigned?static_cast<int>(assigned->threat):static_cast<int>(request.config.minimumThreat);
     }
     scaleRequest.encounter.encounterToken = request.encounterToken;
     scaleRequest.encounter.monsterId = formationId;
@@ -176,7 +213,7 @@ StructuralScalePlan BuildRuntimeStructuralScalePlan(
 
     StructuralScalePlan plan = BuildStructuralScalePlan(scaleRequest);
     if (!plan.admitted) return plan;
-    if(request.config.seeded && assigned && !assigned->curse) {
+    if(request.config.seeded && assigned && !assigned->curse && !request.config.minimumThreat) {
         plan.admitted=false;plan.reason=AdmissionReason::Uncursed;plan.writeback={};return plan;
     }
 

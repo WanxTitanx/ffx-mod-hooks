@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "author": "Jarvis-HOOK",
+  "enabledByDefault": false,
+  "chancePer10000": 750,
+  "secondGroupChancePer10000": 2500,
+  "maximumGroups": 2,
+  "minimumSinThreat": 7,
+  "equipmentGrants": {"remove": [32781, 32785], "merge": {"32792": 32791}},
+  "monsters": [
+    {"source": 334, "destination": 900, "family": 0, "hpPercent": 85},
+    {"source": 335, "destination": 901, "family": 1, "hpPercent": 85},
+    {"source": 336, "destination": 902, "family": 2, "hpPercent": 85},
+    {"source": 337, "destination": 903, "family": 3, "hpPercent": 85},
+    {"source": 338, "destination": 904, "family": 4, "hpPercent": 75},
+    {"source": 339, "destination": 905, "family": 6, "hpPercent": 75},
+    {"source": 340, "destination": 906, "family": 5, "hpPercent": 75},
+    {"source": 341, "destination": 907, "family": 7, "hpPercent": 75},
+    {"source": 342, "destination": 908, "family": 7, "hpPercent": 75},
+    {"source": 343, "destination": 909, "family": 7, "hpPercent": 75}
+  ],
+  "regions": [
+    {"family": 0, "name": "Besaid", "fields": [68, 70, 72], "candidates": [0, 1]},
+    {"family": 1, "name": "Bikanel", "fields": [350, 351, 352, 353], "candidates": [1, 0]},
+    {"family": 2, "name": "Thunder Plains", "fields": [300, 303], "candidates": [2, 3]},
+    {"family": 3, "name": "Macalania", "fields": [310, 311, 312, 330, 333, 340], "candidates": [3, 2]},
+    {"family": 4, "name": "Zanarkand", "fields": [502, 515], "candidates": [4, 6]},
+    {"family": 5, "name": "Cavern of the Stolen Fayth", "fields": [430], "candidates": [5, 6]},
+    {"family": 6, "name": "Mt. Gagazet", "fields": [486, 491, 492], "candidates": [6, 4]},
+    {"family": 7, "name": "Mushroom Rock Road", "fields": [220, 221, 224, 225, 227], "candidates": [7, 0]}
+  ],
+  "macalaniaRooms": [54, 110, 153, 183, 206, 241, 248],
+  "provenance": {
+    "monsterLayout": "FFXProjectEditor/FfxLib/Monster/Monster_StatSheet.cs; StatSheetPointer+0x14 HP, +0x72 monster ID, +0x78 ArenaId",
+    "battleLayout": "FFXProjectEditor/FfxLib/Battle/EncounterIndexBridge.cs; chunk2+0x0C, eight u16 actors",
+    "fieldRows": "Current vanilla VBF jppc/battle/kernel/btl.bin; only positive-weight ordinary groups with nonzero grace",
+    "macalaniaRooms": "research/mod_008_arcana/acquisition_sites.json; native-room evidence and existing GPL-3.0 TAS provenance"
+  }
+}

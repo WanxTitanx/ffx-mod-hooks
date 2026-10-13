@@ -40,8 +40,12 @@ inline bool RegisterActionObserver(const ActionObserver* value) noexcept {
 inline void UnregisterActionObserver(const ActionObserver* value) noexcept {
     const ActionObserver* expected=value;(void)actionObserver.compare_exchange_strong(expected,nullptr);
 }
-enum class ActionConsumer : unsigned {Elemental,Aeon,NulWard,Count};
+enum class ActionConsumer : unsigned {Elemental,Aeon,NulWard,InsideSin,OmegaT7,OmegaLastSeal,ChallengeRewards,Count};
 inline std::array<std::atomic<const ActionObserver*>,static_cast<unsigned>(ActionConsumer::Count)> actionConsumers{};
+inline bool OriginalChallengeEvidenceRequested() noexcept {
+    return actionConsumers[static_cast<unsigned>(ActionConsumer::OmegaLastSeal)].load()!=nullptr||
+        actionConsumers[static_cast<unsigned>(ActionConsumer::ChallengeRewards)].load()!=nullptr;
+}
 inline bool RegisterActionObserver(ActionConsumer consumer,const ActionObserver* value) noexcept {
     const auto index=static_cast<unsigned>(consumer);
     if(index>=actionConsumers.size()||!value||!value->newBattle)return false;

@@ -37,7 +37,7 @@ int main(){
         const auto* exact=S::FindMonster(entry.id,entry.field);
         Check(exact==&entry&&entry.allowedMask,"every area/monster pair has its own explicit authored allowlist");
         for(unsigned seed=0;seed<128;++seed){
-            const auto assignment=S::BuildAssignment(entry.field,seed,7,S::Distribution::All,true);
+            const auto assignment=S::BuildAssignment(entry.field,seed,7,S::Distribution::All,true,S::AwakeningOnly(entry.field)?7:0);
             const auto* actor=assignment.Find(entry.id);
             Check(actor&&assignment.cursed==assignment.count&&actor->curse&&
                   (entry.allowedMask&(std::uint64_t(1)<<(actor->curse-1))),
@@ -58,16 +58,18 @@ int main(){
         Check(!S::BuildAssignment(static_cast<std::uint16_t>(field),1,1,S::Distribution::All,true).supported,
               "scripted-only, excluded and masked-alias fields remain outside natural SIN authority");
     for(const auto& pair:S::kNaturalPairs){
-        const auto assignment=S::BuildAssignment(pair.field,1,1,S::Distribution::All,true);
+        const bool awakened=S::AwakeningOnly(pair.field);
+        const auto assignment=S::BuildAssignment(pair.field,1,1,S::Distribution::All,true,awakened?7:0);
         const auto* actor=assignment.Find(pair.monster);Check(actor!=nullptr,"every natural pair belongs to its canonical seed roster");
         if(!actor)continue;
         R::ScaleRequest request{};request.config.enabled=true;request.config.threatLevel=static_cast<int>(actor->threat);
+        request.config.minimumThreat=awakened?7:0;
         request.encounter={std::uint32_t(pair.field)<<16,S::NativeMonsterId(pair.monster),R::EncounterOrigin::Natural,
                            FfxHooks::ExecutableProfile::Rva<0x471CEF>()};
         request.correlation={1,1,1,1,1};request.preDifficultyHp={100,50};
         request.afterDifficulty.maxHp=100;request.afterDifficulty.overkill=100;request.afterDifficulty.stats.fill(10);
         const auto plan=R::BuildStructuralScalePlan(request);
-        Check(plan.admitted&&plan.writeback.maxHp==100+actor->threat*10,
+        Check(plan.admitted&&(awakened?plan.writeback.maxHp>100:plan.writeback.maxHp==100+actor->threat*10),
               "new T3 through T6 pairs compose once through the existing Difficulty memory owner");
         request.encounter.origin=R::EncounterOrigin::Arena;
         Check(!R::BuildStructuralScalePlan(request).admitted,"an exact monster and field cannot grant Arena authority");
@@ -78,6 +80,6 @@ int main(){
           "actual underwater formation membership is distinct from the broader regional pool");
     std::array<std::uint8_t,M::kLootSize> original{},reward{};original[0]=100;
     Check(M::RewardView(original,6,&reward)&&reward[0]==160,"T6 rewards use the same bounded ten-percent curve");
-    Check(!M::RewardView(original,7,&reward),"unsupported reward tiers fail closed");
+    Check(!M::RewardView(original,11,&reward),"unsupported reward tiers fail closed");
     std::printf("SIN_EXPANDED_CATALOG_RT0 %u/%u passed\n",checks-failures,checks);return failures?1:0;
 }

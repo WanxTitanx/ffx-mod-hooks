@@ -1,36 +1,31 @@
 #include "../hooks/ArcanaAcquisition.h"
+#include "../hooks/ArcanaWorldCore.h"
 #include <array>
 #include <cstdio>
 #include <cstring>
 using namespace FfxHooks::Arcana;
-static unsigned checks=0,failures=0;
-static void Check(bool ok,const char* label){++checks;if(!ok){++failures;std::printf("FAIL %s\n",label);}}
+namespace {unsigned checks=0,failures=0;void Check(bool ok,const char* label){++checks;if(!ok){++failures;std::printf("FAIL: %s\n",label);}}}
 int main(){
-    std::array<unsigned char,Acquisition::kPayloadBytes> payload{};State state;
-    Check(Acquisition::Reconcile(state,nullptr,0)==0&&state.revision==0,"unobserved native state grants nothing");
-    Check(Acquisition::Reconcile(state,payload.data(),payload.size()-1)==0,"partial native snapshot grants nothing");
-    Check(Acquisition::Reconcile(state,payload.data(),payload.size())==1&&state.acquired[0],"pilgrimage starts with The Fool only");
-    auto revision=state.revision;
-    Check(Acquisition::Reconcile(state,payload.data(),payload.size())==0&&state.revision==revision,"repeated milestone has one permanent receipt");
-    for(unsigned actor=8;actor<=12;++actor){
-        payload[0x55CC+actor*0x94+0x2C]=0x10;
-        Check(Acquisition::Reconcile(state,payload.data(),payload.size())>0,"obtained story Aeon reconciles temple rewards");
-    }
-    Check(!state.acquired[15]&&!state.acquired[21],"story completion does not grant challenge cards or World");
-    payload[0xC38]=1;for(unsigned actor=13;actor<18;++actor)payload[0x55CC+actor*0x94+0x2C]=0x10;
-    payload[0x3D10]=payload[0x3D11]=payload[0x3D12]=255;payload[0x3D13]=3;
-    Acquisition::Reconcile(state,payload.data(),payload.size());
-    unsigned owned=0;for(auto value:state.acquired)owned+=value;
-    Check(owned==73,"temples and optional collection milestones account for all 73 nonchallenge cards");
-    payload[0x400]=199;Acquisition::Reconcile(state,payload.data(),payload.size());Check(!state.acquired[19],"Sun requires 200 consecutive dodges");
-    payload[0x400]=200;Acquisition::Reconcile(state,payload.data(),payload.size());Check(state.acquired[19],"Sun records the lightning challenge");
-    payload[0xC89+4]=0x80;Acquisition::Reconcile(state,payload.data(),payload.size());Check(state.acquired[16]&&!state.acquired[20],"one Dark victory grants only its named challenge");
-    for(unsigned i=0;i<8;++i)payload[0x18F4+i]=1;
-    const auto snapshot=payload;Acquisition::Reconcile(state,payload.data(),payload.size());
-    owned=0;for(auto value:state.acquired)owned+=value;
-    Check(owned==78&&state.acquired[21]&&Validate(state)==Error::None,"old completed save reconciles all cards and noncircular World");
-    Check(payload==snapshot,"reconciliation cannot write native progress");
-    revision=state.revision;payload={};Check(Acquisition::Reconcile(state,payload.data(),payload.size())==0&&state.revision==revision,"already earned cards survive a missing or reset event flag");
-    for(unsigned id=0;id<78;++id)Check(std::strlen(Acquisition::Requirement(id))>8,"every locked card exposes a concrete acquisition requirement");
-    std::printf("ArcanaAcquisitionRt0 %u/%u passed\n",checks-failures,checks);return failures?1:0;
+    using namespace Acquisition;
+    std::array<unsigned char,kPayloadBytes> payload{};Facts facts;
+    Check(!ReadFacts(nullptr,0,facts)&&!ReadFacts(payload.data(),payload.size()-1,facts),"partial native state cannot establish milestones");
+    Check(ReadFacts(payload.data(),payload.size(),facts)&&!facts.freeTravel&&!facts.aeons&&!facts.darkAeons,"fresh save has no invented milestones");
+    payload[0xBEC]=0x63;payload[0xBED]=0x0B; // 2915: partial airship destinations.
+    ReadFacts(payload.data(),payload.size(),facts);Check(!facts.freeTravel,"first airship destination bit is not full travel");
+    payload[0xBEC]=0xB8;payload[0xBED]=0x0B; // 3000: production free-travel event.
+    ReadFacts(payload.data(),payload.size(),facts);Check(facts.freeTravel&&facts.story==3000,"native GameMoment opens free travel at the completed event");
+    payload[0x3BE]=2;ReadFacts(payload.data(),payload.size(),facts);Check(!facts.omega,"Ultima Weapon is not Omega Weapon");
+    payload[0x3BE]=4;payload[0x27B]=2;payload[0xC38]=1;
+    for(unsigned actor=8;actor<=17;++actor)payload[0x55CC+actor*0x94+0x2C]=0x10;
+    ReadFacts(payload.data(),payload.size(),facts);
+    Check(facts.omega&&facts.wobbly&&facts.mirror&&facts.aeons==0x3FF00u,"independent native optional flags and all ten aeons decode without inventory writes");
+    for(unsigned i=0;i<8;++i){payload[0x18F4+i]=255;payload[0xC89+i]=1;}
+    ReadFacts(payload.data(),payload.size(),facts);Check(facts.darkAeons==0,"partial fights and legacy counters are not Dark completion");
+    for(unsigned i=0;i<8;++i)payload[0xC89+i]=0x80;
+    payload[0xC8E]=1; // Yojimbo has started, but the final sequence is unfinished.
+    ReadFacts(payload.data(),payload.size(),facts);Check(facts.darkAeons==0xDF,"Dark Yojimbo progress cannot substitute for its final completion bit");
+    payload[0xC8E]=0x80;const auto unchanged=payload;
+    ReadFacts(payload.data(),payload.size(),facts);Check(facts.darkAeons==255&&payload==unchanged,"all eight terminal masks decode without changing native progress");
+    for(unsigned id=0;id<78;++id)Check(std::strlen(Requirement(id))>20,"every locked card describes a concrete collection requirement");
+    std::printf("ArcanaAcquisitionRt0: %u/%u checks passed\n",checks-failures,checks);return failures?1:0;
 }

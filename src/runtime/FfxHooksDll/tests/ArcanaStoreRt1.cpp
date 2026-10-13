@@ -8,9 +8,10 @@ using namespace FfxHooks::Arcana;
 static unsigned checks=0,failures=0;
 static void Check(bool ok,const char* name){++checks;if(!ok){++failures;std::printf("FAIL %s\n",name);}}
 static Hash Digest(unsigned value){Hash h{};h.fill(static_cast<unsigned char>(value));return h;}
-static bool Same(const Record& a,const Record& b){return a.nativeHash==b.nativeHash&&a.packHash==b.packHash&&a.state.revision==b.state.revision&&a.state.mode==b.state.mode&&a.state.acquired==b.state.acquired&&a.state.slots==b.state.slots&&a.resources.valid==b.resources.valid&&a.resources.hp==b.resources.hp&&a.resources.mp==b.resources.mp;}
+static bool Same(const Record& a,const Record& b){return a.nativeHash==b.nativeHash&&a.packHash==b.packHash&&a.state.revision==b.state.revision&&a.state.mode==b.state.mode&&a.state.acquired==b.state.acquired&&a.state.slots==b.state.slots&&a.resources.valid==b.resources.valid&&a.resources.hp==b.resources.hp&&a.resources.mp==b.resources.mp&&a.presentation.pending==b.presentation.pending&&a.presentation.count==b.presentation.count&&a.presentation.firstCard==b.presentation.firstCard&&a.presentation.page==b.presentation.page&&a.presentation.intro==b.presentation.intro&&a.presentation.legacy==b.presentation.legacy;}
 int main(){
     Record first;first.nativeHash=Digest(1);first.packHash=Digest(2);AwardAll(first.state,0);Equip(first.state,1,0,0,0);
+    Presentation::AdoptLegacy(first.presentation,first.state.acquired);
     first.resources.valid=1;first.resources.hp[0]=1234;first.resources.mp[0]=56;
     RecordBytes bytes{};Record read;
     const bool encoded=Encode(first,bytes);
@@ -70,9 +71,9 @@ int main(){
     Check(store.Read(v4Path,v4.nativeHash,v4.packHash,read)==StoreCode::Found&&Same(v4,read),"v4 migration remains read-only until a real save commits");
     std::ifstream f(native,std::ios::binary);std::string contents((std::istreambuf_iterator<char>(f)),{});f.close();
     Check(contents=="untouched native fixture","extension store never opens native save for writing");
-    const auto backup=Store::Extension(native,".arcana.previous.v1");
+    const auto backup=Store::Extension(native,".arcana.previous.v2");
     std::ifstream backupBefore(backup,std::ios::binary);const std::string protectedBackup((std::istreambuf_iterator<char>(backupBefore)),{});backupBefore.close();
-    {std::ofstream damaged(Store::Extension(native,".arcana.v1"),std::ios::binary);std::string junk(kRecordBytes,'x');damaged.write(junk.data(),static_cast<std::streamsize>(junk.size()));}
+    {std::ofstream damaged(Store::Extension(native,".arcana.v3"),std::ios::binary);std::string junk(kRecordBytes,'x');damaged.write(junk.data(),static_cast<std::streamsize>(junk.size()));}
     Check(store.Prepare(native,second)&&!store.Commit(native,second.nativeHash),"corrupt committed extension is not overwritten silently");
     std::ifstream backupAfter(backup,std::ios::binary);const std::string preserved((std::istreambuf_iterator<char>(backupAfter)),{});backupAfter.close();
     Check(preserved==protectedBackup,"corrupt current record cannot replace a valid recovery copy");

@@ -1,4 +1,5 @@
 #include "../shared/ExecutableProfile.h"
+#include "VanguardFollowQueue.inl"
 // Jarvis-HOOK: enqueue at most one reaction Attack per eligible equipped ally.
 // Native queue capacity and exact readback are authoritative; never call the
 // higher-level wrapper whose failure path can remove a normal actor turn.
@@ -21,7 +22,9 @@ bool FollowProfile(std::uintptr_t base) noexcept {
     for(const auto& span:helpers){Byte expected[16]{},actual[16]{};std::memcpy(expected,span.bytes,16);
         if(span.relocation!=255){std::uint32_t value=0;std::memcpy(&value,expected+span.relocation,4);
             value+=static_cast<std::uint32_t>(base-0x400000u);std::memcpy(expected+span.relocation,&value,4);}
-        if(!Copy(actual,reinterpret_cast<void*>(base+span.rva),16)||std::memcmp(expected,actual,16))return false;
+        if(!Copy(actual,reinterpret_cast<void*>(base+span.rva),16)||
+           (std::memcmp(expected,actual,16)&&!(span.rva==SharedCommandAvailability::Rva&&
+             SharedCommandAvailability::MatchesOwned(base,actual,16))))return false;
     }
     return true;
 }
@@ -41,7 +44,7 @@ void QueueFollowUps(unsigned source,const ActionBinding& binding) noexcept {
     if(!On(Feature::FollowUp)||!binding.single||!binding.targets||(binding.targets&(binding.targets-1)))return;
     unsigned target=0;while(target<31&&!(binding.targets&(1u<<target)))++target;
     auto* victim=Actor(target);
-    if(target<18||target>=31||!victim||!Read<Byte>(victim+0xDC8)||Read<int>(victim+0x5D0)<=0||(Read<std::uint16_t>(victim+0x606)&1))return;
+    if(target<18||target>=31||!FollowTargetAlive(victim))return;
     Byte attack[96]{};if(!FreeNativeAttack(attack))return;
     const auto epoch=actionEpoch.load();
     for(unsigned ally=0;ally<18;++ally){
@@ -60,6 +63,7 @@ void QueueFollowUps(unsigned source,const ActionBinding& binding) noexcept {
         if(added!=-1||Read<std::int8_t>(reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD2BDE1>())))!=before+1||!Copy(actual,reinterpret_cast<void*>(module + (::FfxHooks::ExecutableProfile::Rva<0xD2AC70>())+72*before),72)||std::memcmp(actual,proposal,72)){
             running=false;if(logger)logger("[ffx-hooks] Vanguard: follow-up queue readback failed; admission closed\n");return;
         }
+        RememberFollowUp(static_cast<unsigned>(before),ally,target,binding.token,actual);
         // The token identifies the triggering action; the ally gets its own
         // action token on the first native hit. A missing begin locates a stall
         // before damage/aftermath without touching the scheduler or animation.

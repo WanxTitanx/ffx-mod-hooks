@@ -17,6 +17,10 @@ inline constexpr unsigned MaximumThreatForField(unsigned field) noexcept {
     for(const auto& value:kAreaAliases)if(value.field==field)return value.maxThreat;
     return 0;
 }
+inline constexpr bool AwakeningOnly(unsigned field) noexcept {
+    for(const auto& value:kAreaAliases)if(value.field==field)return value.awakeningOnly;
+    return false;
+}
 inline constexpr bool NaturalMonsterPair(unsigned field,unsigned monster) noexcept {
     for(const auto& value:kNaturalPairs)if(value.field==field&&value.monster==monster)return true;
     return false;
@@ -79,15 +83,17 @@ struct AreaAssignment {
     }
 };
 inline AreaAssignment BuildAssignment(std::uint16_t field,std::uint32_t seed,std::uint32_t visit,
-    Distribution mode,bool enabled) noexcept {
+    Distribution mode,bool enabled,unsigned minimumThreat=0) noexcept {
     AreaAssignment result{};result.field=field;result.seed=seed;result.visit=visit;
     const auto area=AreaForField(field);
-    if(!area || !ValidDistribution(static_cast<unsigned>(mode)))return result;
+    if(!area || !ValidDistribution(static_cast<unsigned>(mode)) || (minimumThreat&&(minimumThreat<7||minimumThreat>10)) ||
+       (AwakeningOnly(field)&&!minimumThreat))return result;
     result.supported=true;result.active=enabled;
     for(const auto& entry:kMonsters)if(entry.field==area)result.monsters[result.count++].monster=entry.id;
     if(!enabled)return result;
     const std::uint32_t entropy=Mix(seed^Mix(visit+0x9E3779B9u)^Mix(area));
     result.cursed=mode==Distribution::Random?Mix(entropy)%(result.count*80u/100u+1u):Quota(result.count,mode);
+    if(minimumThreat)result.cursed=result.count;
     std::array<unsigned,kMaximumAreaMonsters> order{};
     for(unsigned i=0;i<result.count;++i)order[i]=i;
     std::sort(order.begin(),order.begin()+result.count,[&](unsigned a,unsigned b){
@@ -100,7 +106,7 @@ inline AreaAssignment BuildAssignment(std::uint16_t field,std::uint32_t seed,std
         std::array<unsigned,kMaximumCurse> choices{};unsigned count=0;
         for(unsigned id=1;id<=kMaximumCurse;++id)if(entry->allowedMask&(std::uint64_t(1)<<(id-1u)))choices[count++]=id;
         assignment.curse=choices[Mix(entropy^Mix(assignment.monster)^0x434F5253u)%count];
-        assignment.threat=Curse(assignment.curse).threat;
+        assignment.threat=(std::max)(Curse(assignment.curse).threat,minimumThreat);
         assignment.scalePercent=100+assignment.threat*10;
     }
     return result;

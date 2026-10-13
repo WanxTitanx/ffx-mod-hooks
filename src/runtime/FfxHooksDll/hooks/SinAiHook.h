@@ -10,6 +10,8 @@ struct Context {
     std::uint32_t seed=0,visit=0;
     SinSpread::Distribution distribution=SinSpread::Distribution::Random;
     std::uint64_t generation=0;
+    unsigned minimumThreat=0;
+    unsigned formation=0xFFFFu;
 };
 using ContextReader=bool(*)(bool commandsReady,Context*);
 using RegistrationReporter=void(*)(unsigned actorSlot,std::uint64_t generation);

@@ -751,6 +751,12 @@ BattleFieldTicket BattleFieldPublication::Consume() {
     ticket.request = request;
     return ticket;
 }
+bool BattleFieldPublication::Matches(BattleFieldRequest request,int32_t fieldRow,BattleFieldSource source) const noexcept {
+    const auto encoded=pending_.load(std::memory_order_acquire);
+    return request!=0&&(encoded&kBattleFieldValid)!=0&&DecodeBattleFieldRequest(encoded)==request&&
+        static_cast<int32_t>(static_cast<uint32_t>(encoded))==fieldRow&&
+        static_cast<BattleFieldSource>((encoded>>32)&0x07u)==source;
+}
 
 void EncounterCaptureSuppression::Begin() {
     uint32_t depth = depth_.load(std::memory_order_acquire);
@@ -983,6 +989,16 @@ void Runtime::BeginGeneration(uint64_t generation) {
     snapshots_ = {};
 }
 
+bool Runtime::OwnsOmegaMiniHp(uint64_t generation,const ActorRef& actor,uint32_t resource,uint32_t maximum) const {
+    if(!generationStarted_||!generation||generation!=generation_||actor.slot>=snapshots_.size()||
+       !resource||maximum!=SinRam::kOmegaMiniT7Hp)return false;
+    const auto& snapshot=snapshots_[actor.slot];
+    return snapshot.captured&&snapshot.address==actor.address&&snapshot.formation==0x138E&&
+        snapshot.omegaResourceTracked&&!snapshot.omegaResourceLost&&snapshot.omegaResource==resource&&
+        snapshot.baseline[kMaxHpField]==SinRam::kOmegaMiniBaseHp&&snapshot.lastApplied[kMaxHpField]==maximum&&
+        snapshot.ownership[kMaxHpField]==Ownership::Owned&&!snapshot.dynamicTransactions[0].pending;
+}
+
 bool Runtime::AdmitAutoStatus(
     const MemoryIo& io, ActorSnapshot& snapshot,
     const std::array<uint32_t, kRuntimeFieldCount>& desired, RuntimeResult& result) {
@@ -1105,11 +1121,20 @@ RuntimeResult Runtime::UpdateComposed(
         ++result.actorsSeen;
 
         ActorSnapshot& snapshot = snapshots_[actor.slot];
+        uint32_t omegaResource=0;
+        if(request.omegaT7||snapshot.omegaResourceTracked){
+            if(!io.read(io.context,actor.address+0x48,&omegaResource,sizeof(omegaResource))||!omegaResource){++result.faults;continue;}
+            if(snapshot.captured&&snapshot.address==actor.address&&snapshot.formation==formation&&snapshot.omegaResourceTracked&&
+               (snapshot.omegaResourceLost||snapshot.omegaResource!=omegaResource)){
+                snapshot.omegaResourceLost=true;++result.ownershipLost;continue;
+            }
+        }
         if (!snapshot.captured || snapshot.address != actor.address ||
             snapshot.formation != formation) {
             ActorSnapshot fresh{};
             fresh.address = actor.address;
             fresh.formation = formation;
+            fresh.omegaResourceTracked=request.omegaT7;fresh.omegaResource=omegaResource;
             bool captured = true;
             for (size_t fieldIndex = 0; fieldIndex < kRuntimeFields.size(); ++fieldIndex) {
                 if (!ReadValue(io, actor.address, kRuntimeFields[fieldIndex],
@@ -1129,7 +1154,8 @@ RuntimeResult Runtime::UpdateComposed(
         auto desired = preset.enabled
             ? DesiredValues(snapshot.baseline, preset)
             : snapshot.baseline;
-        if (request.config.enabled && (!request.scriptManaged || (request.scriptActorMask&(1u<<actor.slot))!=0)) {
+        if (request.config.enabled && (request.omegaT7 || !request.scriptManaged || (request.scriptActorMask&(1u<<actor.slot))!=0 ||
+            SinRam::NativeAbilitiesAwakening(request,formation))) {
             SinRam::DifficultyValues afterDifficulty{};
             afterDifficulty.maxHp = desired[kMaxHpField];
             afterDifficulty.overkill = desired[kOverkillField];
@@ -1457,6 +1483,11 @@ RuntimeResult Runtime::Restore(const MemoryIo& io) {
             snapshot = {};
             ++result.ownershipLost;
             continue;
+        }
+        if(snapshot.omegaResourceTracked){
+            uint32_t resource=0;
+            if(!io.read(io.context,snapshot.address+0x48,&resource,sizeof(resource))){++result.faults;continue;}
+            if(snapshot.omegaResourceLost||resource!=snapshot.omegaResource){snapshot.omegaResourceLost=true;++result.ownershipLost;continue;}
         }
         ++result.actorsSeen;
         const bool autoAdmitted = AdmitAutoStatus(io, snapshot, snapshot.baseline, result);

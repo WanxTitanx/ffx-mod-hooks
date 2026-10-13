@@ -158,11 +158,14 @@ struct F7DifficultyRuntimeStatus {
 };
 
 F7DifficultyRuntimeStatus F7_DifficultyStatus();
+bool F7_DifficultyOnOwnerThread() noexcept;
 // Bounded read-only probe for startup planning: does the on-disk f7_inlive.json already
 // carry a validated preset that enables Difficulty? Does not mutate runtime state.
 bool F7_DifficultyRequestedFromDisk();
 F7SinRamRuntimeStatus F7_SinRamStatus();
 bool F7_SinAiContext(bool commandsReady,SinAi::Context*);
+bool F7_InsideSinContext(bool commandsReady,SinAi::Context*);
+bool F7_OmegaT7Context(bool commandsReady,SinAi::Context*);
 void F7_SinAiRegistered(unsigned actorSlot,std::uint64_t generation);
 bool F7_SinObserveNaturalEncounter(const SinNatural::Evidence&);
 void F7_SinObserveLocation(); // read-only location epoch; no actor/save writer

@@ -11,6 +11,7 @@ std::atomic<unsigned> actionEpoch{0};
 unsigned observedActionEpoch=0;
 std::uint64_t actionSerial=0;
 unsigned actionTraceRemaining=0;
+void ResetFollowUps() noexcept;
 void TraceAction(const char* event,unsigned owner,std::uint64_t token,const Byte row[72],unsigned amount=0) noexcept {
     if(!logger||!actionTraceRemaining)return;
     --actionTraceRemaining;auto* actor=Actor(owner);char line[640]{};
@@ -29,7 +30,7 @@ void NewActionBattle() noexcept {InvalidateCastingActions();InvalidateFormationA
 const SharedBattleRuntime::ActionObserver actionObserver{NewActionBattle};
 bool SyncActionEpoch() noexcept {
     const auto epoch=actionEpoch.load();if(!epoch)return false;
-    if(epoch!=observedActionEpoch){actions.Reset();for(auto& value:actionBindings)value={};observedActionEpoch=epoch;actionTraceRemaining=128;}
+    if(epoch!=observedActionEpoch){actions.Reset();for(auto& value:actionBindings)value={};ResetFollowUps();observedActionEpoch=epoch;actionTraceRemaining=128;}
     return true;
 }
 bool ActionRow(unsigned owner,Byte row[72],unsigned* index=nullptr) noexcept {
@@ -189,5 +190,9 @@ int FinishBoundAction(unsigned owner,unsigned index,unsigned preserveCurrent){
 int __cdecl FinishShim(unsigned owner,unsigned index,unsigned preserve){
     const auto depth=SharedAction::finishDepth;
     if(depth&&depth<=deferredFollowUps.size())deferredFollowUps[depth-1]={};
-    return FinishCastAction(owner,index,preserve,&FinishBoundAction);
+    const bool track=On(Feature::FollowUp)&&Enter()&&SyncActionEpoch();
+    const auto epoch=actionEpoch.load();const int before=track?FollowQueueCount():-1;
+    const int result=FinishCastAction(owner,index,preserve,&FinishBoundAction);
+    if(track&&running.load()&&epoch==actionEpoch.load())FollowRetired(index,before,result);
+    return result;
 }

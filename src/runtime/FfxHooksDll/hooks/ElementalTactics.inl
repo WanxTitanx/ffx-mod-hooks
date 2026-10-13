@@ -17,7 +17,7 @@ std::array<NativeAction,ActorCount> nativeActions{};
 bool SyncingStatusActors=false;
 
 void SyncStatusActors() noexcept {
-    if(!options.tactics||!statusState.Generation()||SyncingStatusActors)return;
+    if(!ExtendedTactics()||!statusState.Generation()||SyncingStatusActors)return;
     SyncingStatusActors=true;std::uint32_t pointer=0;
     if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),pointer)||pointer<0x10000||pointer>UINT32_MAX-ActorCount*0xF90u){
         SyncingStatusActors=false;return;
@@ -31,7 +31,7 @@ void SyncStatusActors() noexcept {
             Read(address+0xDC8,exists)&&exists&&Copy(removed,reinterpret_cast<const void*>(address+0xDCD),2)&&!removed[0]&&!removed[1];
         auto& current=statusActors[slot];
         if(!valid){
-            if(current.token.Valid())(void)statusState.Remove(current.token);
+            if(current.token.Valid()){ProgressiveActor(current.token,false);(void)statusState.Remove(current.token);}
             current={};continue;
         }
         ActorRules rules{};
@@ -44,17 +44,17 @@ void SyncStatusActors() noexcept {
                 if(affinity.imperilResistBp<=10000)rules.imperilResistanceBp[affinity.element]=affinity.imperilResistBp;
             }
         }
-        if(rejected){if(current.token.Valid())(void)statusState.Remove(current.token);current={};continue;}
+        if(rejected){if(current.token.Valid()){ProgressiveActor(current.token,false);(void)statusState.Remove(current.token);}current={};continue;}
         if(current.token.Valid()&&current.address==address&&current.identity==identity&&current.file==file&&
            statusState.Current(slot)==current.token){(void)statusState.SetRules(current.token,rules);continue;}
-        current={statusState.Spawn(slot,rules),address,file,identity};
+        current={statusState.Spawn(slot,rules),address,file,identity};ProgressiveActor(current.token,true);
     }
     SyncingStatusActors=false;
 }
 bool ResetStatusState() noexcept {
     statusActors={};nativeActions={};
     ClearNulReservations();
-    if(!statusState.Start())return false;
+    if(!statusState.Start())return false;ProgressiveReset();
     SyncStatusActors();return true;
 }
 TimedAffinity Timed(unsigned target,unsigned element,const ActionToken* action,bool live) noexcept {
@@ -77,15 +77,16 @@ bool SameAction(const NativeAction& action,const std::array<Byte,72>& row,unsign
     return statusState.Snapshot(action.token,actor,0).valid;
 }
 NativeAction* TrackAction(unsigned owner) noexcept {
-    if(!CurrentData()||!options.tactics||owner>=ActorCount)return nullptr;
+    if(!CurrentData()||!ExtendedTactics()||owner>=ActorCount)return nullptr;
     SyncStatusActors();std::array<Byte,72> row{};unsigned index=0,count=0;
     if(!QueueRow(owner,row,index,count))return nullptr;
     auto& action=nativeActions[owner];
     if(!SameAction(action,row,index,statusActors[owner].token)){
         ReleaseNulReservations(action.token);
-        if(action.token.Valid())(void)statusState.Cancel(action.token);
+        if(action.token.Valid()){ProgressiveCancel(action.token);(void)statusState.Cancel(action.token);}
         action={};action.actor=statusActors[owner].token;action.queueIndex=index;action.row=row;
         action.token=statusState.Begin(action.actor,row[1]==0);
+        ProgressiveBegin(action.token,owner,unsigned(row[8])|(unsigned(row[9])<<8));
     }
     return action.token.Valid()?&action:nullptr;
 }
@@ -118,7 +119,7 @@ thread_local std::array<FinishStatusContext,SharedAction::MaximumDepth> finishCo
 void* BeforeStatusResult(const SharedAction::ResultCall& call) noexcept {
     if(!CurrentData()||call.source>=ActorCount||call.target>=ActorCount||call.sub>=4||
        !SharedAction::resultDepth||SharedAction::resultDepth>resultContexts.size())return nullptr;
-    auto* action=TrackAction(call.source);if(!action||action->bindings[call.sub]>=pack.commands.size())return nullptr;
+    auto* action=TrackAction(call.source);if(!action)return nullptr;
     auto& context=resultContexts[SharedAction::resultDepth-1];context={};
     context.generation=generation.load();context.action=action->token;context.target=statusActors[call.target].token;
     context.binding=action->bindings[call.sub];if(!context.target.Valid())return nullptr;
@@ -143,7 +144,7 @@ unsigned StatusRoll(unsigned source,const CommandBinding& binding,ActorToken tar
 void AfterStatusResult(void* token,const SharedAction::ResultCall& call,int,bool completed) noexcept {
     const auto* context=static_cast<const ResultStatusContext*>(token);
     if(!completed||!context||context->generation!=generation.load()||!CurrentData()||call.source>=ActorCount||
-       call.target>=ActorCount||context->binding>=pack.commands.size())return;
+       call.target>=ActorCount)return;
     auto& action=nativeActions[call.source];
     if(action.token.sequence!=context->action.sequence||action.token.generation!=context->action.generation||
        !(statusState.Current(call.target)==context->target))return;
@@ -154,9 +155,11 @@ void AfterStatusResult(void* token,const SharedAction::ResultCall& call,int,bool
         if(!Copy(after.data(),reinterpret_cast<const void*>(address),4)||before[2]!=call.source||before[3]!=call.sub||
            after[2]!=call.source||after[3]!=call.sub||after[0]<=before[0]||after[0]>16||after[0]>before[1])continue;
         SettleNulReservations(call,context->action,context->target,group,before[0],after[0]);
+        ProgressiveResults(context->action,call,group,before[0]);
         for(unsigned hit=before[0];hit<after[0];++hit){Byte result=1;
             if(Read(address+24+44*hit+1,result)&&result==0)landed=true;}
     }
+    if(context->binding>=pack.commands.size())return;
     const auto& binding=pack.commands[context->binding];
     if(!landed||binding.effects.empty()||action.attempted[call.target])return;
     const auto* expected=admitted.ExpectedCommand(binding.encoded);std::array<Byte,108> row{};
@@ -183,6 +186,7 @@ void AfterStatusFinish(void* token,const SharedAction::FinishCall& call,int resu
     auto& action=nativeActions[call.owner];
     if(action.token.sequence!=context->action.sequence||action.token.generation!=context->action.generation)return;
     ReleaseNulReservations(context->action);
+    ProgressiveFinish(context->action,context->complete);
     if(context->complete)(void)statusState.Complete(context->action);
     else (void)statusState.Cancel(context->action);
     action={};

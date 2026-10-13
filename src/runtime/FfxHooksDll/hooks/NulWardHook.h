@@ -13,6 +13,8 @@ namespace FfxHooks {
         bool experimentP16 = false; /* compatibility option; shared Nul entry */
         bool p16Apply = false;      /* compatibility option; shared Nul entry */
         bool allElements = false;  /* six explicit command rows; private external-key charges */
+        bool aeroEquipment = false; /* SOS NulAero provider, independent of spell grants */
+        bool equipmentOnly = false; /* infrastructure admission must not enable Ward spells */
     };
 
     struct NulWardInstallResult {

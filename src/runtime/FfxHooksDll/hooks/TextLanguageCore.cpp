@@ -247,8 +247,15 @@ bool CanonicalRequest(std::string_view path,std::string& output){
     if(!value.empty()&&value.front()=='/')value.erase(0,1);
     if(!SafeRelativePath(value))return false;
     value=Lower(value);
+    if(Starts(value,"ffx_ps2/"))value="ffx_data/"+value;
     if(!Starts(value,"ffx_data/"))return false;
     output="/"+value;return true;
+}
+bool NativeSourceRequest(std::string_view path,std::string& output){
+    std::string canonical;
+    if(!CanonicalRequest(path,canonical))return false;
+    output=Starts(canonical,"/ffx_data/ffx_ps2/")?canonical.substr(10):canonical.substr(1);
+    return true;
 }
 bool ParseManifest(std::string_view json,Manifest& output,std::string& error){
     try{
@@ -317,11 +324,46 @@ bool ParseManifest(std::string_view json,Manifest& output,std::string& error){
         output=std::move(candidate);error.clear();return true;
     }catch(const std::exception& e){error=e.what();return false;}
 }
+std::uint32_t NativeKernelLimit(std::string_view request,bool extended){
+    const auto slash=request.find_last_of('/');
+    if(slash==std::string_view::npos)return 0;
+    const auto folder=request.substr(0,slash),leaf=request.substr(slash+1);
+    constexpr std::string_view kernel="/battle/kernel";
+    if(folder.size()<kernel.size()||folder.substr(folder.size()-kernel.size())!=kernel)return 0;
+    for(const auto& table:ExtendedKernelTables)if(leaf==table.leaf)return extended?KernelStagingBytes:KernelU16Limit;
+    if(leaf=="ply_rom.bin")return KernelU16Limit;
+    for(const auto* name:{"monmagic1.bin","monmagic2.bin"})if(leaf==name)return KernelStagingBytes;
+    return 0;
+}
+KernelBankPlan PlanKernelBank(bool bankPresent,std::uint32_t knownCapacity,std::uint32_t size){
+    KernelBankPlan plan;
+    // Unknown capacity is 0: only an empty (missing) table reuses such a bank.
+    if(bankPresent&&size<=knownCapacity)return plan;
+    plan.allocate=true;plan.retainOld=bankPresent;return plan;
+}
 const Resource* Resolve(const Manifest& manifest,std::string_view request,std::uint32_t nativeLocale,bool readOnly){
     if(!readOnly||nativeLocale!=manifest.baseLocale)return nullptr;
     std::string key;if(!CanonicalRequest(request,key))return nullptr;
     for(const auto& r:manifest.resources)if(r.request==key)return &r;
     return nullptr;
+}
+bool DecodeLiteral(const Font& font,const std::uint8_t* bytes,std::size_t length,std::string& output){
+    if(!bytes||length>1024)return false;
+    // Build the inverse once, not once per glyph on the native draw thread.
+    static const auto native=[](){std::vector<std::uint32_t> map(256);
+        for(std::uint32_t u=32;u<=0x2026;++u){if(const auto code=BaseCode(u))map[code]=u;}
+        return map;}();
+    std::string result;result.reserve(length*2);
+    for(std::size_t i=0;i<length;++i){
+        const unsigned code=bytes[i];if(code<32)return false;
+        auto u=native[code];if(!u)for(const auto& glyph:font.glyphs)if(glyph.code==code){u=glyph.unicode;break;}
+        if(!u||u>0x10FFFF||(u>=0xD800&&u<=0xDFFF))return false;
+        if(u<0x80)result.push_back(static_cast<char>(u));
+        else if(u<0x800){result.push_back(static_cast<char>(0xC0|(u>>6)));result.push_back(static_cast<char>(0x80|(u&63)));}
+        else if(u<0x10000){result.push_back(static_cast<char>(0xE0|(u>>12)));result.push_back(static_cast<char>(0x80|((u>>6)&63)));result.push_back(static_cast<char>(0x80|(u&63)));}
+        else {result.push_back(static_cast<char>(0xF0|(u>>18)));result.push_back(static_cast<char>(0x80|((u>>12)&63)));result.push_back(static_cast<char>(0x80|((u>>6)&63)));result.push_back(static_cast<char>(0x80|(u&63)));}
+    }
+    output=std::move(result);return true;
 }
 bool EncodeLiteral(const Font& font,std::string_view utf8,std::size_t capacity,std::vector<std::uint8_t>& output,std::string& error){
     try{

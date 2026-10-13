@@ -1,8 +1,8 @@
 {
   "mod": "MOD-008",
   "tool": "image_gen.imagegen",
-  "expected_card_art": 78,
-  "generated_card_art": 78,
+  "expected_card_art": 90,
+  "generated_card_art": 90,
   "shared_assets": 3,
   "missing": [],
   "runtime_textures": 0,
@@ -991,6 +991,150 @@
         0,
         255
       ]
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/omega-weapon.png",
+      "role": "weapon.omega_weapon",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "2071f78db137aabf81ea76aed35c02b6f26b03f21dcdd0741c6bc4f9ae9143f4",
+      "bytes": 3267441,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/ultima-weapon.png",
+      "role": "weapon.ultima_weapon",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "cb76247437c57c6c019d2ceb15e8f9016f30de4c176fd66c5e4ccd689b6eb400",
+      "bytes": 3247434,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-valefor.png",
+      "role": "dark_aeon.valefor",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "f93863c6df1d42536d0e2c55caf09a32cc2e2431e6a37f8bf54e3b2fc53b20c4",
+      "bytes": 3193085,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-ifrit.png",
+      "role": "dark_aeon.ifrit",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "f454ef0e5ded67e821a550a48bf4d809bbbeb344a39b2678c5e9f4e6b216e6fb",
+      "bytes": 3209219,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-ixion.png",
+      "role": "dark_aeon.ixion",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "c1b5feb386023ee088b39f325af26c4ab033257e88dca9572e026531d3110cab",
+      "bytes": 3175684,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-shiva.png",
+      "role": "dark_aeon.shiva",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "03ab830648f03d66df54e46b69d9f1a662628073418d2a9a7f11e1a88346d447",
+      "bytes": 3186764,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-bahamut.png",
+      "role": "dark_aeon.bahamut",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "2fb19e3aa3367a648ce328b316426db1d549baa3ca135ef9e09f3bc40b1db70b",
+      "bytes": 3188951,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-anima.png",
+      "role": "dark_aeon.anima",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "5f812e528480ce03cc72357413feb09e9373e2a20c21da65cf0b44a98887460b",
+      "bytes": 3116442,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-yojimbo.png",
+      "role": "dark_aeon.yojimbo",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "e96b445152493cc4d42f2323b063b85c8e335044ff70cd08d3b8d1c0dc73c6f6",
+      "bytes": 3007901,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-cindy.png",
+      "role": "dark_aeon.cindy",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "18565575532e4dd880a3cb2955fe505241b478c51ea402a29595bc7526d636bb",
+      "bytes": 3077554,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-sandy.png",
+      "role": "dark_aeon.sandy",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "a0e80c9617ca984ee39a717ab844a78c4dd4bae66dea4a852d15f262ae6c7634",
+      "bytes": 3030779,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
+    },
+    {
+      "path": "assets/mod-008-arcana/concepts/cards/dark-mindy.png",
+      "role": "dark_aeon.mindy",
+      "status": "APPROVED_BOSS_REWARD_ART",
+      "sha256": "06f2500dcf93c6da28d252e96ea7f05cf8f9edbbd7f0fdcb056af5e81f1ae701",
+      "bytes": 2898354,
+      "width": 1024,
+      "height": 1536,
+      "mode": "RGB",
+      "runtime_converted": false,
+      "runtime_loaded": false
     }
   ]
 }

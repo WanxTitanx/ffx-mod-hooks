@@ -42,7 +42,7 @@ Arcana of the Fayth	Arcana of the Fayth	Arcana of the Fayth	Arcana of the Fayth	
 Nova Super Damage	Superdano de Nova	Superdaño de Nova	Super dégâts de Nova	Super danno Nova	Nova-Superschaden	サンシャインの超ダメージ	노바 초과 피해	新星超高伤害
 Ronso Mana	Mana Ronso	Maná Ronso	Mana Ronso	Mana Ronso	Ronso-Mana	ロンゾのマナ	론조 마나	隆索魔力
 Equipment Workshop	Oficina de equipamentos	Taller de equipo	Atelier d'équipement	Officina equipaggiamento	Ausrüstungswerkstatt	装備工房	장비 공방	装备工坊
-Native equipment details	Detalhes nativos de equipamento	Detalles de equipo nativos	Détails d'équipement natifs	Dettagli equipaggiamento nativi	Native Ausrüstungsdetails	標準画面の装備詳細	기본 화면 장비 상세	原生装备详情
+Native equipment details	Detalhes nativos dos equipamentos	Detalles de equipo nativos	Détails d'équipement natifs	Dettagli equipaggiamento nativi	Native Ausrüstungsdetails	標準画面の装備詳細	기본 화면 장비 상세	原生装备详情
 Scan Expanded	Scan expandido	Scan ampliado	Scan étendu	Scan esteso	Erweitertes Scan	ライブラ詳細表示	라이브라 확장	扩展侦测
 Scan Extra Elements	Scan de elementos extras	Scan de elementos adicionales	Scan des éléments supplémentaires	Scan elementi aggiuntivi	Scan zusätzlicher Elemente	ライブラ追加属性	라이브라 추가 속성	侦测额外属性
 Grid Teach	Ensinar pela Sphere Grid	Aprendizaje en la esfera	Apprentissage via le Sphérier	Apprendimento Sferografia	Lernen am Sphärobrett	スフィア盤で習得	스피어반 학습	晶球盘学习
@@ -65,19 +65,19 @@ Current-MP magic power	Poder mágico pelo MP atual	Poder mágico según PM actua
 Switch costs a turn	Troca consome turno	Cambiar consume turno	Le changement consomme un tour	Il cambio consuma un turno	Wechsel verbraucht einen Zug	交代でターン消費	교체 시 턴 소모	换人消耗回合
 Auto-reinforce Eject/Shatter	Reposição após Eject/Shatter	Relevo tras Eject/Shatter	Renfort après Eject/Shatter	Rinforzo dopo Eject/Shatter	Ersatz nach Eject/Shatter	退場・粉砕時に自動補充	추방/파괴 시 자동 보충	放逐/粉碎后自动补位
 Single/multi-hit scaling	Escala de golpes únicos/múltiplos	Escala de golpes únicos/múltiples	Échelle des coups uniques/multiples	Scala colpi singoli/multipli	Skalierung einzelner/mehrfacher Treffer	単発・多段攻撃の倍率	단일/다단 공격 배율	单段/多段攻击倍率
-Hero's Bravery	Bravura do Herói	Valentía del héroe	Bravoure du héros	Coraggio dell'eroe	Heldenmut	英雄の勇気	영웅의 용기	英雄勇气
-Energy Boost	Impulso de Energia	Impulso de energía	Gain d'énergie	Spinta energetica	Energieschub	エナジーブースト	에너지 부스트	能量提升
-Energy Burst	Explosão de Energia	Estallido de energía	Explosion d'énergie	Esplosione energetica	Energieausbruch	エナジーバースト	에너지 버스트	能量爆发
+Hero's Bravery	Bravura do herói	Valentía del héroe	Bravoure du héros	Coraggio dell'eroe	Heldenmut	英雄の勇気	영웅의 용기	英雄勇气
+Energy Boost	Impulso de energia	Impulso de energía	Gain d'énergie	Spinta energetica	Energieschub	エナジーブースト	에너지 부스트	能量提升
+Energy Burst	Explosão de energia	Estallido de energía	Explosion d'énergie	Esplosione energetica	Energieausbruch	エナジーバースト	에너지 버스트	能量爆发
 Efficiency	Eficiência	Eficiencia	Efficacité	Efficienza	Effizienz	効率化	효율	高效
 Vampirism	Vampirismo	Vampirismo	Vampirisme	Vampirismo	Vampirismus	吸血	흡혈	吸血
-Follow Up	Ataque de Apoio	Ataque de apoyo	Attaque de soutien	Attacco di supporto	Unterstützungsangriff	追撃	후속 공격	追击
-P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade
-M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade
-Hero's Caution	Cautela do Herói	Cautela del héroe	Prudence du héros	Cautela dell'eroe	Heldenvorsicht	英雄の慎重さ	영웅의 신중함	英雄警戒
+Follow Up	Ataque complementar	Ataque de apoyo	Attaque de soutien	Attacco di supporto	Unterstützungsangriff	追撃	후속 공격	追击
+P-Trade	Troca física	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade	P-Trade
+M-Trade	Troca mágica	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade	M-Trade
+Hero's Caution	Cautela do herói	Cautela del héroe	Prudence du héros	Cautela dell'eroe	Heldenvorsicht	英雄の慎重さ	영웅의 신중함	英雄警戒
 MP Regen	Regeneração de MP	Regeneración de PM	Régénération de PM	Rigenerazione MP	MP-Regeneration	MPリジェネ	MP 재생	MP 再生
-Elude	Esquiva	Evasión	Esquive	Elusione	Ausweichen	回避	회피	闪避
-Energy Wall	Muralha de Energia	Muro de energía	Mur d'énergie	Muro energetico	Energiewall	エナジーウォール	에너지 월	能量墙
-Energy Barrier	Barreira de Energia	Barrera de energía	Barrière d'énergie	Barriera energetica	Energiebarriere	エナジーバリア	에너지 배리어	能量屏障
+Elude	Evasão defensiva	Evasión	Esquive	Elusione	Ausweichen	回避	회피	闪避
+Energy Wall	Barreira de energia	Muro de energía	Mur d'énergie	Muro energetico	Energiewall	エナジーウォール	에너지 월	能量墙
+Energy Barrier	Escudo de energia	Barrera de energía	Barrière d'énergie	Barriera energetica	Energiebarriere	エナジーバリア	에너지 배리어	能量屏障
 Equipped active commands	Comandos ativos de equipamento	Comandos activos equipados	Commandes actives équipées	Comandi attivi equipaggiati	Aktive Ausrüstungsbefehle	装備によるコマンド	장비 활성 명령	装备主动指令
 Partial Overdrive costs	Custos parciais de Overdrive	Costes parciales de Overdrive	Coûts partiels d'Overdrive	Costi parziali Overdrive	Teilkosten für Overdrive	オーバードライブ部分消費	오버드라이브 부분 소모	超限技部分消耗
 Elemental Dominion: Core	Elemental Dominion: núcleo	Elemental Dominion: núcleo	Elemental Dominion : base	Elemental Dominion: base	Elemental Dominion: Basis	Elemental Dominion: 基本	Elemental Dominion: 기본	Elemental Dominion：核心

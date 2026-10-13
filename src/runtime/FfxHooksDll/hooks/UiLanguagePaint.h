@@ -140,4 +140,12 @@ inline void Presented() noexcept {
     if(LastPaintedActive)(void)Current(LastPaintedLocale,LastPaintedEpoch,LastPaintedRevision,true);
     else Unavailable();
 }
+#define FFXHOOKS_UI_PRESENT_RESULT_V1 1
+inline bool Present(bool(*draw)()) noexcept {
+    // A newer menu selection may supersede a texture during its upload. That
+    // is not a renderer failure: keep the admitted locale for the next frame.
+    if(!CanPresent())return false;
+    if(!draw||!draw()){Unavailable();return false;}
+    Presented();return true;
+}
 }

@@ -83,6 +83,30 @@ int main(int argc, char **argv)
     Check(L::ImportBinary({},ultraBinary,&roundtripUltra,&error) &&
           roundtripUltra.selection.activations==ultra.selection.activations && roundtripUltra.selection.musicTrack==49,
           "native import retains catalog choices and the JSON soundtrack");
+    auto duos=ultra;duos.selection.activations={};duos.selection.activationCount=2;
+    duos.selection.activations[0]=static_cast<CustomMixUltra::MonsterChoice>(382);
+    duos.selection.activations[1]=static_cast<CustomMixUltra::MonsterChoice>(398);
+    duos.selection.positions=ArenaScenery::Generate(duos.selection.scenery,4);
+    const auto duoJson=L::Serialize(duos);
+    Check(L::Parse(duoJson,&parsed,&error)&&parsed.selection.activationCount==2&&
+          CustomMixUltra::BuildSelection(parsed.selection).expanded.monsterCount==4,
+          "saved Natus and Flux keys retain their paired companions and four-position layout");
+    std::vector<unsigned char> duoBinary;
+    const bool builtDuos=L::BuildBinary({},duos,&duoBinary,&error);
+    Check(builtDuos,"both Seymour duos export through the normal arena battle program");
+    if(builtDuos){
+        std::array<uint16_t,4> nativeDuos{};
+        std::memcpy(nativeDuos.data(),duoBinary.data()+slots,sizeof(nativeDuos));
+        const std::array<uint16_t,4> expectedDuos{{0x107Eu,0x107Fu,0x108Eu,0x108Fu}};
+        Check(nativeDuos==expectedDuos,"native exported slots contain each Seymour immediately followed by the correct pet");
+        auto importedDuos=duos;
+        Check(L::ImportBinary({},duoBinary,&importedDuos,&error)&&importedDuos.selection.activationCount==2&&
+              importedDuos.selection.activations==duos.selection.activations,
+              "native reimport collapses boss and companion back into one selection per duo");
+        const uint16_t wrongPet=0x1009u;
+        std::memcpy(duoBinary.data()+slots+2u,&wrongPet,2);
+        Check(!L::ImportBinary({},duoBinary,&importedDuos,&error),"a mismatched Seymour companion cannot be imported as a valid pair");
+    }
     if(argc>4 && argv[4][0]) {
         const auto previous=Read(argv[4]);
         auto u32=[](const std::vector<unsigned char>& data,size_t offset){uint32_t n=0;std::memcpy(&n,data.data()+offset,4);return n;};

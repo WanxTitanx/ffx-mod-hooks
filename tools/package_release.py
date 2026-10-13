@@ -25,7 +25,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dll', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--version', default='v0.6.0-beta.4')
+    parser.add_argument('--version', default='v0.6.0-beta.5')
     args = parser.parse_args()
     if not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+-beta(?:\.[0-9]+)?', args.version):
         parser.error('Use an explicit supported beta version')
@@ -66,8 +66,8 @@ def main() -> None:
             if sha(data) != entry['sha256']:
                 parser.error('Shared art drift: ' + name)
             files['mods/arcana/shared/' + name] = data
-    if len(cards) != 78 or len(files) != 81:
-        parser.error('Expected DLL plus 78 cards and two shared runtime images')
+    if len(cards) != evidence['arcana_card_count'] or len(files) != 3 + len(cards):
+        parser.error('Expected DLL plus the recorded cards and two shared runtime images')
     for name in ('LICENSE', 'NOTICE', 'README.md', 'README.pt-BR.md', 'docs/INSTALL.md',
                  'docs/INSTALACAO_PT-BR.md', 'docs/ROADMAP.md', 'docs/FAHRENHEIT_V2.md'):
         files[name] = (ROOT / name).read_bytes()
@@ -137,7 +137,7 @@ save sidecars. All editable F8 boolean options default OFF.
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(args.output, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
         for name, data in sorted(files.items()):
-            info = zipfile.ZipInfo(name, date_time=(2026, 9, 28, 0, 0, 0))
+            info = zipfile.ZipInfo(name, date_time=(2026, 10, 13, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
             archive.writestr(info, data)
     with zipfile.ZipFile(args.output) as archive:

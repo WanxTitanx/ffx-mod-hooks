@@ -504,3 +504,21 @@ O clone EvelynTSMG_ffx-mods-fantasia está no commit 64b03ae915c32f47d4a84aefffc
 ## MOD-008 — Spira: Arcana of the Fayth
 
 Jarvis-HOOK, 2026-09-28: [identidade e 78 cartas](<mod-ideas/MOD 008 - ARCANA OF THE FAYTH.md>) preservadas em candidato nativo do menu principal **Equip**. Twin/Constellation, posse única, save separado, efeitos tipados e aquisição por templos/sidequests/desafios; opção independente de Desenvolvimento para obter as 78 instantaneamente, OFF por padrão. [Evidências e limites](research/MOD_008_RUNTIME_2026-09-28.md): RT0/RT1 e builds concluídos, sem deploy/RT2, revisão do autor.
+
+
+## MOD-010 — Spira: Predatory Instinct
+
+**Jarvis-HOOK, 2026-10-03 — conceito e nome aprovados; planejamento preparado.**
+
+Seleção inteligente dos alvos de habilidades ofensivas single-target: previsão
+do efeito por personagem, oportunidade de KO e coordenação curta entre turnos
+inimigos. Preserva habilidade, custos, CTB e restrições de roteiro; reavalia o
+foco após cada ação. Protect/Reflect/Nul e os efeitos dos mods ativos entram pela
+semântica real de cada habilidade.
+
+[Design e contrato](superpowers/specs/2026-10-03-spira-predatory-instinct-design.md) ·
+[Plano de implementação](superpowers/plans/2026-10-03-spira-predatory-instinct.md).
+
+O plano separa seis gates de pesquisa, núcleo puro, owner compartilhado,
+ObserveOnly, aplicação validada, F8 e matriz de composição. Implementação,
+revisão independente, deploy, RT2 e Production continuam etapas futuras.

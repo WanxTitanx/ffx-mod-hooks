@@ -39,7 +39,15 @@ bool ValidTargets(Owner owner, const uintptr_t* targets, size_t targetCount) {
                             owner == Owner::SharedClamp ||
                             owner == Owner::SharedCombat ||
                             owner == Owner::ArcanaUi ||
-                            owner == Owner::ArcanaGameplay ||
+        owner == Owner::ArcanaGameplay ||
+        owner == Owner::ArcanaField ||
+        owner == Owner::MinigameAssist ||
+        owner == Owner::CaptureCascade ||
+        owner == Owner::SharedQueue ||
+        owner == Owner::OmegaLastSeal ||
+        owner == Owner::OmegaT7 ||
+        owner == Owner::EquipmentWorkshopMenu ||
+        owner == Owner::SharedCommandAvailability ||
                             owner == Owner::TextLanguage || owner == Owner::MonsterRewards ||
                             owner == Owner::WeaponStrikeVfx ||
                             owner == Owner::NulWardRecovery ||

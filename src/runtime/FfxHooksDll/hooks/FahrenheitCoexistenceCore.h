@@ -117,7 +117,7 @@ inline Block FeatureBlock(const State& state,const char* key) noexcept {
     for(const char* blocked:{"labs.equipment_workshop","labs.equipment_workshop_native_ui",
         "labs.kimahri_ronso_mana","labs.nova_super_damage","arcana.enabled",
         "development.arcana_full_deck","labs.grid_teach","labs.kimahri_lancet_dual_grant",
-        "aeon_ascension.enabled","elemental.nul_spells"})
+        "aeon_ascension.enabled","elemental.nul_spells","spira.capture_cascade"})
         if(std::strcmp(key,blocked)==0)return Block::ManagedSaveProtocol;
     return Block::None;
 }

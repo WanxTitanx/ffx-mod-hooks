@@ -1,0 +1,2690 @@
+{
+  "author": "Jarvis-HOOK",
+  "date": "2026-10-09",
+  "external_source": {
+    "url": "https://github.com/coderwilson/FFX_TAS_Python",
+    "commit": "f31d2371611cbc720ea69f44d016715de55de49c",
+    "license": "GPL-3.0",
+    "adapted": "Authored symbol ground-plane anchors from read-only route waypoint coordinates and room transitions. No automation code is executed or copied."
+  },
+  "evidence_level": "Offline source and event-script evidence; no live collision or camera acceptance. New symbols use local actor floor elevation.",
+  "sites": [
+    {
+      "card": 0,
+      "stage": 0,
+      "location": [
+        19,
+        -265,
+        -389
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Besaid, praia, junto ao primeiro ponto de descanso de Tidus",
+        "room_id": 19,
+        "x": -265,
+        "z": -389,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/besaid.py",
+          "line": 230,
+          "waypoint": "Besaid2",
+          "checkpoint": 61
+        },
+        "room_binding_evidence": "area/besaid.py:78-81",
+        "semantic_anchor": "beach rest",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Besaid exploration: find the Tarot symbol at Besaid beach."
+    },
+    {
+      "card": 1,
+      "stage": 14,
+      "location": [
+        363,
+        115,
+        -74
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Zanarkand, acampamento diante da entrada do Dome",
+        "room_id": 363,
+        "x": 115,
+        "z": -74,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/area/zanarkand.py",
+          "line": 145,
+          "waypoint": "Campfire route target on map 363"
+        },
+        "room_binding_evidence": "area/zanarkand.py:139-150 map 363 campfire",
+        "semantic_anchor": "campfire path",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After arrival at Zanarkand: find the Tarot symbol at Zanarkand camp."
+    },
+    {
+      "card": 2,
+      "stage": 15,
+      "location": [
+        153,
+        778,
+        101
+      ],
+      "evidence": [
+        {
+          "claim": "Macalania Temple exterior route",
+          "source": "paths/mac_temple.py:MacalaniaTempleApproach[12]; area/mac_temple.py:approach detects map 153 before route continues"
+        }
+      ],
+      "hint": "After free airship travel: find the Tarot symbol at Macalania Temple exterior."
+    },
+    {
+      "card": 3,
+      "stage": 19,
+      "location": [
+        235,
+        -104,
+        112
+      ],
+      "evidence": [
+        {
+          "claim": "Moonflow south-bank route",
+          "source": "paths/moonflow.py:MoonflowBankSouth[0]; area/moonflow.py:south_bank"
+        }
+      ],
+      "hint": "After free travel and the three Magus Sisters: find the Tarot symbol at Moonflow south bank."
+    },
+    {
+      "card": 4,
+      "stage": 16,
+      "location": [
+        208,
+        33,
+        1251
+      ],
+      "evidence": [
+        {
+          "claim": "Map identity is certain; this is a map-specific event approach coordinate, not a TAS movement waypoint.",
+          "source": "memory/main.py:4352-4357 map 208 event approach helper; arena_select.py:110 identifies Highbridge as map 208"
+        }
+      ],
+      "hint": "After free travel and the Celestial Mirror: find the Tarot symbol at Bevelle Highbridge."
+    },
+    {
+      "card": 5,
+      "stage": 18,
+      "location": [
+        265,
+        -240,
+        324
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Airship corridor during the Evrae sequence",
+          "source": "paths/rescue_yuna.py:BevelleAirship[4]; area/rescue_yuna.py:42-45 maps checkpoint to room 265"
+        }
+      ],
+      "hint": "After free travel and Anima: find the Tarot symbol at airship temple archive."
+    },
+    {
+      "card": 6,
+      "stage": 12,
+      "location": [
+        206,
+        300,
+        100
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Macalania, lago da cena de Tidus e Yuna",
+        "room_id": 206,
+        "x": 300,
+        "z": 100,
+        "y": null,
+        "axes": "room206 TAS x,z ground plane; y unresolved",
+        "walkability_evidence": "Current TAS routine explicitly targets x,z [300,100] while returning through room206. EBP establishes the same native scene. y remains unresolved.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/area/rescue_yuna.py",
+          "line": 886,
+          "waypoint": "post-scene return target on map206",
+          "coordinate": [
+            300,
+            100
+          ]
+        },
+        "room_binding_evidence": "cdrom.fnd group-12 scene206 -> event/obj/mc/mcfr1200/mcfr1200.ebp; rescue_yuna.py:881-889 uses [300,100] on map206 after story exceeds2300, then exits via maps177/329.",
+        "semantic_anchor": "Post-scene lake/spring route point in room206",
+        "confidence": "medium: current route transitions plus walkthrough establish the Macalania Woods South campsite-to-spring region and story order; the walkthrough does not identify each native map ID by name.",
+        "native_room_name": "Macalania Woods South lake scene / Campsite-to-Spring sequence",
+        "native_room_evidence": "mcfr1200 EBP English text entries 0-73 contain the Tidus/Yuna lake dialogue; entry71 tells the party to head back to camp. Piggyback transcript pp.115-116 lines12030-12112 labels Campsite, Spring, then the extended video sequence.",
+        "coordinate_basis": "TAS map206 movement target x,z; EBP field mcfr12 matches MAP1 map/mcfr/mcfr12; y omitted."
+      },
+      "hint": "After Macalania spring scene: find the Tarot symbol at Macalania spring."
+    },
+    {
+      "card": 7,
+      "stage": 21,
+      "location": [
+        223,
+        -637,
+        -246
+      ],
+      "evidence": [
+        {
+          "claim": "Calm Lands map 223 is explicit in arena route metadata; route waypoint 6 is traversed. Not exact trainer/post location.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_select.py:110-111; work/arcana-acquisition-20261008/tas-waypoints.json:CalmLands.points[6]"
+        },
+        {
+          "claim": "Exact trainer interaction approach point",
+          "source": "area/chocobos.py:72-75 trainer approach; arena_select.py:110-111 map 223 is Calm Lands"
+        }
+      ],
+      "hint": "After Magus, Omega and the three-post chocobo route: find the Tarot symbol at Calm Lands chocobo trainer."
+    },
+    {
+      "card": 8,
+      "stage": 18,
+      "location": [
+        65,
+        -58,
+        144
+      ],
+      "evidence": [
+        {
+          "claim": "Outer stair route point; nearby route continuation enters map 78 temple entrance",
+          "source": "paths/kilika.py:Kilika2[84]; area/kilika.py:146,230 map 65 is stairs / forest transition"
+        }
+      ],
+      "hint": "After free travel and Anima: find the Tarot symbol at Kilika Temple steps."
+    },
+    {
+      "card": 9,
+      "stage": 15,
+      "location": [
+        265,
+        -226,
+        352
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Distinct Airship corridor route point",
+          "source": "paths/rescue_yuna.py:BevelleAirship[5]; area/rescue_yuna.py:42-45 room 265 corridor route"
+        }
+      ],
+      "hint": "After free airship travel: find the Tarot symbol at airship cabin."
+    },
+    {
+      "card": 10,
+      "stage": 20,
+      "location": [
+        211,
+        -10,
+        -79
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Airship Gallery/corridor route",
+          "source": "paths/airship.py:Airship[10]; airship_pathing.py:138-140 switches at map 211 to Gallery"
+        }
+      ],
+      "hint": "After free travel and Omega Weapon defeated: find the Tarot symbol at airship corridor near Rin."
+    },
+    {
+      "card": 11,
+      "stage": 11,
+      "location": [
+        183,
+        16.62839126586914,
+        17.296812057495117
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Macalania Woods, acampamento após Seymour Natus, junto ao ponto de descanso",
+        "room_id": 183,
+        "x": 16.62839126586914,
+        "z": 17.296812057495117,
+        "y": 9.023004531860352,
+        "axes": "native event world x,y,z",
+        "walkability_evidence": "Native scene EBP places a fixed actor at this exact x,y,z. This proves a valid authored actor point in room183; player collision/interaction remains offline-unverified.",
+        "coordinate_source": {
+          "file": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/jppc/event/obj/mc/mcfr1100/mcfr1100.ebp",
+          "container_chunk": 0,
+          "worker_index": 0,
+          "worker_function_index": 11,
+          "ATEL_offset": 4413,
+          "native_call": "setPosition (EventCallGlossary call 0x0013)",
+          "float_pool": "worker0 file constants",
+          "coordinate_values": [
+            16.62839126586914,
+            9.023004531860352,
+            17.296812057495117
+          ]
+        },
+        "room_binding_evidence": "cdrom.fnd group-12 scene 183 -> event/obj/mc/mcfr1100/mcfr1100.ebp; rescue_yuna.py enters map183 during the post-Natus Macalania route; EBP strings include Yuna, \"leave at dawn\", \"rest\", and save-sphere text.",
+        "semantic_anchor": "Macalania Woods South Campsite fixed-actor point",
+        "confidence": "high for native room and actor coordinate pairing; medium for clear player walkability at the exact actor point.",
+        "coordinate_basis": "native EBP setPosition fixed-actor world coordinate x,y,z; source event field matches mapout field mcfr11."
+      },
+      "hint": "After Seymour Natus defeated: find the Tarot symbol at Macalania campsite."
+    },
+    {
+      "card": 12,
+      "stage": 13,
+      "location": [
+        272,
+        229,
+        -274
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Gagazet, zona do muro de fayth, antes da saída rumo a Zanarkand",
+        "room_id": 272,
+        "x": 229,
+        "z": -274,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/gagazet.py",
+          "line": 245,
+          "waypoint": "GagazetCave",
+          "checkpoint": 43
+        },
+        "room_binding_evidence": "area/gagazet.py:765-766;846-867",
+        "semantic_anchor": "Fayth wall",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Seymour Flux defeated: find the Tarot symbol at Gagazet fayth wall."
+    },
+    {
+      "card": 13,
+      "stage": 18,
+      "location": [
+        140,
+        -44,
+        0
+      ],
+      "evidence": [
+        {
+          "claim": "Farplane entry route point; verify symbol remains on accessible exterior side",
+          "source": "paths/guadosalam.py:GuadoStoryline[22]; area/guadosalam.py:111-113 enters map 163, 361+ route ends in map 140"
+        }
+      ],
+      "hint": "After free travel and Anima: find the Tarot symbol at Farplane entrance."
+    },
+    {
+      "card": 14,
+      "stage": 19,
+      "location": [
+        109,
+        -305,
+        184
+      ],
+      "evidence": [
+        {
+          "claim": "Moonflow north-bank route",
+          "source": "paths/moonflow.py:MoonflowBankNorth[0]; area/moonflow.py:242-245 map transition at 109"
+        }
+      ],
+      "hint": "After free travel and the three Magus Sisters: find the Tarot symbol at Moonflow north bank."
+    },
+    {
+      "card": 15,
+      "stage": 22,
+      "location": [
+        374,
+        -266,
+        360
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Chosen new deck recovery-board position / direct walkable route point",
+          "source": "area/platinum.py:521-524 explicitly moves on map 374 to [-266,360] before save sphere"
+        }
+      ],
+      "hint": "After free travel and Dark Anima defeated: find the Tarot symbol at airship challenge register."
+    },
+    {
+      "card": 16,
+      "stage": 11,
+      "location": [
+        183,
+        14.38811206817627,
+        27.651365280151367
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Macalania Woods, acampamento após Seymour Natus, pacote junto às bagagens",
+        "room_id": 183,
+        "x": 14.38811206817627,
+        "z": 27.651365280151367,
+        "y": 8.776509284973145,
+        "axes": "native event world x,y,z",
+        "walkability_evidence": "Native scene EBP places a fixed actor at this exact x,y,z. This proves a valid authored actor point in room183; player collision/interaction remains offline-unverified.",
+        "coordinate_source": {
+          "file": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/jppc/event/obj/mc/mcfr1100/mcfr1100.ebp",
+          "container_chunk": 0,
+          "worker_index": 0,
+          "worker_function_index": 11,
+          "ATEL_offset": 5340,
+          "native_call": "setPosition (EventCallGlossary call 0x0013)",
+          "float_pool": "worker0 file constants",
+          "coordinate_values": [
+            14.38811206817627,
+            8.776509284973145,
+            27.651365280151367
+          ]
+        },
+        "room_binding_evidence": "cdrom.fnd group-12 scene 183 -> event/obj/mc/mcfr1100/mcfr1100.ebp; rescue_yuna.py enters map183 during the post-Natus Macalania route; EBP strings include Yuna, \"leave at dawn\", \"rest\", and save-sphere text.",
+        "semantic_anchor": "Macalania Woods South Campsite fixed-actor point",
+        "confidence": "high for native room and actor coordinate pairing; medium for clear player walkability at the exact actor point.",
+        "coordinate_basis": "native EBP setPosition fixed-actor world coordinate x,y,z; source event field matches mapout field mcfr11."
+      },
+      "hint": "After Seymour Natus defeated: find the Tarot symbol at Macalania campsite luggage."
+    },
+    {
+      "card": 17,
+      "stage": 15,
+      "location": [
+        153,
+        -13,
+        -99
+      ],
+      "evidence": [
+        {
+          "claim": "Lake route point; map 153 also serves as temple approach in another travel segment",
+          "source": "paths/mac_woods.py:MacalaniaLake[1]; area/mac_woods.py:MacalaniaLake route then after_crawler exits to map 153"
+        }
+      ],
+      "hint": "After free airship travel: find the Tarot symbol at Lake Macalania agency exterior."
+    },
+    {
+      "card": 18,
+      "stage": 17,
+      "location": [
+        110,
+        -131,
+        234
+      ],
+      "evidence": [
+        {
+          "claim": "Macalania Woods start (native room110) south-junction route point.",
+          "source": "paths/mac_woods.py:MacalaniaWoods[13]; area/mac_woods.py:118-121 map241 transition at cp18."
+        },
+        {
+          "claim": "Native map helper labels map110 as Mac woods start; room transition to map241 occurs only at checkpoint18.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/memory/main.py:4309; area/mac_woods.py:118-121"
+        }
+      ],
+      "hint": "After free travel and Yojimbo: find the Tarot symbol at Macalania Woods south junction. Inspect the three pyrefly marks first."
+    },
+    {
+      "card": 19,
+      "stage": 16,
+      "location": [
+        223,
+        -605,
+        -144
+      ],
+      "evidence": [
+        {
+          "claim": "Calm Lands map 223 is explicit in arena route metadata; route waypoint 6 is traversed. Not exact trainer/post location.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_select.py:110-111; work/arcana-acquisition-20261008/tas-waypoints.json:CalmLands.points[6]"
+        },
+        {
+          "claim": "Same Calm Lands room; route point is west-side traversal, not the trainer actor itself",
+          "source": "paths/nem/calm_lands.py:CalmFarm[1]; Calm Lands route, map 223 via arena_select.py:110-111"
+        }
+      ],
+      "hint": "After free travel and the Celestial Mirror: find the Tarot symbol at Calm Lands chocobo trainer."
+    },
+    {
+      "card": 20,
+      "stage": 23,
+      "location": [
+        374,
+        -7,
+        72
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Post-cockpit Airship room route point; exact map grouping inferred from checkpoint transition sequence",
+          "source": "paths/airship.py:Airship[3]; airship_pathing.py:135-140 identifies later room transitions map 351 then 211"
+        }
+      ],
+      "hint": "After free travel and all eight Dark Aeons completed: find the Tarot symbol at airship challenge register."
+    },
+    {
+      "card": 21,
+      "stage": 24,
+      "location": [
+        374,
+        -3,
+        11
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Post-cockpit Airship room route point; exact map grouping inferred from checkpoint transition sequence",
+          "source": "paths/airship.py:Airship[4]; airship_pathing.py:135-140 identifies map 351 at cp 6 and map 211 at cp 9"
+        }
+      ],
+      "hint": "After the other 77 Tarot cards: find the Tarot symbol at airship collection display."
+    },
+    {
+      "card": 22,
+      "stage": 2,
+      "location": [
+        18,
+        -301,
+        -258
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Kilika, cais próximo às casas reconstruídas",
+        "room_id": 18,
+        "x": -301,
+        "z": -258,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/kilika.py",
+          "line": 6,
+          "waypoint": "Kilika1",
+          "checkpoint": 0
+        },
+        "room_binding_evidence": "area/kilika.py:37-38",
+        "semantic_anchor": "dock",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Ifrit: find the Tarot symbol at Kilika docks."
+    },
+    {
+      "card": 23,
+      "stage": 8,
+      "location": [
+        248,
+        -129,
+        -343
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Macalania Woods, trilha junto à fonte onde ocorre Spherimorph",
+        "room_id": 248,
+        "x": -129,
+        "z": -343,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/area/mac_woods.py",
+          "line": 217,
+          "waypoint": "MacalaniaLake path branch at map 248"
+        },
+        "room_binding_evidence": "area/mac_woods.py:208-224 map_val==248",
+        "semantic_anchor": "Spherimorph map-248 route",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Spherimorph defeated: find the Tarot symbol at Macalania spring clearing."
+    },
+    {
+      "card": 24,
+      "stage": 5,
+      "location": [
+        82,
+        26,
+        50
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Djose, saída exterior do templo, junto ao caminho de pedras",
+        "room_id": 82,
+        "x": 26,
+        "z": 50,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Area routine advances through this checkpoint in the cited room segment; offline path target evidence only, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/djose.py",
+          "line": 255,
+          "waypoint": "DjoseExit",
+          "checkpoint": 23
+        },
+        "room_binding_evidence": "ffx-tas-reference/area/djose.py:424-425; DjoseExit checkpoints 22-28 are the bridge/courtyard segment before map75 road",
+        "semantic_anchor": "Djose outer courtyard path",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Ixion: find the Tarot symbol at Djose Temple exterior."
+    },
+    {
+      "card": 25,
+      "stage": 1,
+      "location": [
+        22,
+        -570,
+        91
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Besaid, Waterfall Way, ponte acessível pela trilha principal",
+        "room_id": 22,
+        "x": -570,
+        "z": 91,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/besaid.py",
+          "line": 202,
+          "waypoint": "Besaid2",
+          "checkpoint": 35
+        },
+        "room_binding_evidence": "area/besaid.py:74-77",
+        "semantic_anchor": "Waterfall Way",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Valefor: find the Tarot symbol at Besaid Waterfall Way."
+    },
+    {
+      "card": 26,
+      "stage": 2,
+      "location": [
+        65,
+        -10,
+        192
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Kilika, escadaria antes do portão do templo",
+        "room_id": 65,
+        "x": -10,
+        "z": 192,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/kilika.py",
+          "line": 132,
+          "waypoint": "Kilika2",
+          "checkpoint": 87
+        },
+        "room_binding_evidence": "area/kilika.py:229-231",
+        "semantic_anchor": "temple stair",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Ifrit: find the Tarot symbol at Kilika Temple steps."
+    },
+    {
+      "card": 27,
+      "stage": 4,
+      "location": [
+        120,
+        26,
+        -23
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Mi'ihen, exterior da agência de viagens, início da estrada alta",
+        "room_id": 120,
+        "x": 26,
+        "z": -23,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/miihen.py",
+          "line": 47,
+          "waypoint": "MiihenAgency",
+          "checkpoint": 0
+        },
+        "room_binding_evidence": "area/miihen.py:74-75;201-203",
+        "semantic_anchor": "agency",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Miihen agency arrival: find the Tarot symbol at Miihen Travel Agency exterior."
+    },
+    {
+      "card": 28,
+      "stage": 13,
+      "location": [
+        309,
+        1143,
+        73
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Gagazet, passagem exterior após Seymour Flux",
+        "room_id": 309,
+        "x": 1143,
+        "z": 73,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/gagazet.py",
+          "line": 187,
+          "waypoint": "GagazetPostDream",
+          "checkpoint": 0
+        },
+        "room_binding_evidence": "area/gagazet.py:608-620",
+        "semantic_anchor": "post-Flux path",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Seymour Flux defeated: find the Tarot symbol at Gagazet trail beyond Seymour Flux."
+    },
+    {
+      "card": 29,
+      "stage": 8,
+      "location": [
+        162,
+        4,
+        -36
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Thunder Plains, abrigo exterior da agência de Rin",
+        "room_id": 162,
+        "x": 4,
+        "z": -36,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/thunder_plains.py",
+          "line": 46,
+          "waypoint": "ThunderPlainsAgency",
+          "checkpoint": 0
+        },
+        "room_binding_evidence": "area/thunder_plains.py:309-310;399-400",
+        "semantic_anchor": "agency shelter",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Spherimorph defeated: find the Tarot symbol at Thunder Plains agency shelter."
+    },
+    {
+      "card": 30,
+      "stage": 14,
+      "location": [
+        225,
+        -17,
+        -435
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Zanarkand, início das ruínas, junto à trilha principal",
+        "room_id": 225,
+        "x": -17,
+        "z": -435,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/zanarkand.py",
+          "line": 8,
+          "waypoint": "ZanarkandOutdoors",
+          "checkpoint": 2
+        },
+        "room_binding_evidence": "area/zanarkand.py:174-193",
+        "semantic_anchor": "ruins trail",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After arrival at Zanarkand: find the Tarot symbol at Zanarkand ruins."
+    },
+    {
+      "card": 31,
+      "stage": 14,
+      "location": [
+        316,
+        -12,
+        -188
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Zanarkand, entrada do Dome, lateral do corredor acessível",
+        "room_id": 316,
+        "x": -12,
+        "z": -188,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/zanarkand.py",
+          "line": 52,
+          "waypoint": "ZanarkandDome",
+          "checkpoint": 21
+        },
+        "room_binding_evidence": "area/zanarkand.py:253-286",
+        "semantic_anchor": "Dome corridor",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After arrival at Zanarkand: find the Tarot symbol at Zanarkand Dome entrance."
+    },
+    {
+      "card": 32,
+      "stage": 10,
+      "location": [
+        351,
+        33,
+        53
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Airship, cabine, pacote de pertences resgatados de Bikanel",
+        "room_id": 351,
+        "x": 33,
+        "z": 53,
+        "y": null,
+        "axes": "room351 TAS x,z ground plane; y unresolved",
+        "walkability_evidence": "Airship path points checkpoints6-8 are traversed in map351 before the Gallery transition at checkpoint9; x,z only, no y guess.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py",
+          "waypoint": "Airship",
+          "checkpoint": 6,
+          "coordinate": [
+            33,
+            53
+          ]
+        },
+        "room_binding_evidence": "airship_pathing.py:135-140: get_map()==351 advances to Airship checkpoint6 (Isaaru screen), and get_map()==211 advances to checkpoint9 (Gallery); therefore checkpoints6-8 are in room351. scene 351 maps via cdrom.fnd group12 to event/obj/hi/hiku0200/hiku0200.ebp.",
+        "semantic_anchor": "interior protected compartment in native cabin room",
+        "confidence": "high for room/route pairing; medium-high for the cabin label from EBP and walkthrough sequence.",
+        "native_room_name": "Airship protected Isaaru compartment / Cabin",
+        "native_room_evidence": "hiku0200 EBP English text entry49: the corridor is protected and this room is safe; neighboring lines discuss the ship interior. Piggyback transcript p.108 (line around 11200) places the Cabin between Bridge and upper deck.",
+        "coordinate_basis": "TAS Airship checkpoint x,z route coordinate; checkpoint interval is room351, EBP field hiku02 matches MAP1 map/hiku/hiku02."
+      },
+      "hint": "After Home evacuation: find the Tarot symbol at airship survivor cabin."
+    },
+    {
+      "card": 33,
+      "stage": 12,
+      "location": [
+        223,
+        -637,
+        -246
+      ],
+      "evidence": {
+        "source": "FFX_TAS_Python area/chocobos.py:72-75, exact trainer approach on Calm Lands map223",
+        "reason": "The Wobbly receipt uses the same trainer post as the later reconnaissance dispatch, not the central plain checkpoint."
+      },
+      "hint": "Complete Wobbly Chocobo, then find the Tarot symbol near the Calm Lands trainer."
+    },
+    {
+      "card": 34,
+      "stage": 15,
+      "location": [
+        22,
+        -803,
+        39
+      ],
+      "evidence": [
+        {
+          "claim": "Besaid Falls / Waterfall Way side route",
+          "source": "paths/besaid.py:Besaid2[32]; area/besaid.py:558-562 transitions to map 22 at checkpoint 32"
+        }
+      ],
+      "hint": "After free airship travel: find the Tarot symbol at Besaid Waterfall Way."
+    },
+    {
+      "card": 35,
+      "stage": 18,
+      "location": [
+        65,
+        -20,
+        172
+      ],
+      "evidence": [
+        {
+          "claim": "Distinct exterior forest/stair route point",
+          "source": "paths/kilika.py:Kilika2[85]; area/kilika.py:146,230 detects map 65 stairs"
+        }
+      ],
+      "hint": "After free travel and Anima: find the Tarot symbol at Kilika forest temple approach. Inspect the three Ifrit emblems first."
+    },
+    {
+      "card": 36,
+      "stage": 0,
+      "location": [
+        19,
+        -318,
+        -472
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Besaid, praia, remanso acessível próximo ao grupo",
+        "room_id": 19,
+        "x": -318,
+        "z": -472,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/besaid.py",
+          "line": 228,
+          "waypoint": "Besaid2",
+          "checkpoint": 59
+        },
+        "room_binding_evidence": "area/besaid.py:78-81",
+        "semantic_anchor": "beach approach",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Besaid exploration: find the Tarot symbol at Besaid beach waterline."
+    },
+    {
+      "card": 37,
+      "stage": 6,
+      "location": [
+        235,
+        -104,
+        112
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Moonflow, margem sul, parada do Shoopuf",
+        "room_id": 235,
+        "x": -104,
+        "z": 112,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/moonflow.py",
+          "line": 81,
+          "waypoint": "MoonflowBankSouth",
+          "checkpoint": 0
+        },
+        "room_binding_evidence": "area/moonflow.py:55-56 returns from arrival only at map 235; main.py:756-758 invokes south_bank immediately afterward",
+        "semantic_anchor": "South Shoopuf bank route beginning after Moonflow arrival",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Rikku joins after the Moonflow crossing: find the Tarot symbol at Moonflow south Shoopuf platform."
+    },
+    {
+      "card": 38,
+      "stage": 3,
+      "location": [
+        123,
+        -256,
+        -76
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Luca, praça do mercado, banca voltada ao cais",
+        "room_id": 123,
+        "x": -256,
+        "z": -76,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Area routine advances through this checkpoint in the cited room segment; offline path target evidence only, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/luca.py",
+          "line": 19,
+          "waypoint": "Luca1",
+          "checkpoint": 10
+        },
+        "room_binding_evidence": "ffx-tas-reference/area/luca.py:149-153; TAS save ffx_024 scene 123/story 514",
+        "semantic_anchor": "Luca market-side front-dome route",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Yuna rescued in Luca: find the Tarot symbol at Luca market square."
+    },
+    {
+      "card": 39,
+      "stage": 2,
+      "location": [
+        44,
+        -242,
+        -57
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Kilika Woods, entroncamento da trilha principal para o templo",
+        "room_id": 44,
+        "x": -242,
+        "z": -57,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/kilika.py",
+          "line": 66,
+          "waypoint": "Kilika2",
+          "checkpoint": 22
+        },
+        "room_binding_evidence": "area/kilika.py:129-130",
+        "semantic_anchor": "forest path",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Ifrit: find the Tarot symbol at Kilika Woods junction."
+    },
+    {
+      "card": 40,
+      "stage": 6,
+      "location": [
+        109,
+        -305,
+        184
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Moonflow, margem norte, saída do desembarque",
+        "room_id": 109,
+        "x": -305,
+        "z": 184,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/moonflow.py",
+          "line": 90,
+          "waypoint": "MoonflowBankNorth",
+          "checkpoint": 0
+        },
+        "room_binding_evidence": "area/moonflow.py:227-245",
+        "semantic_anchor": "north landing",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Rikku joins after the Moonflow crossing: find the Tarot symbol at Moonflow north landing."
+    },
+    {
+      "card": 41,
+      "stage": 1,
+      "location": [
+        133,
+        38,
+        27
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Besaid, praça diante do templo, altar exterior",
+        "room_id": 133,
+        "x": 38,
+        "z": 27,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Area routine advances through this checkpoint in the cited room segment; offline path target evidence only, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/besaid.py",
+          "line": 47,
+          "waypoint": "Besaid1",
+          "checkpoint": 35
+        },
+        "room_binding_evidence": "ffx-tas-reference/area/besaid.py:74-77; checkpoint 36/map17 is inside temple",
+        "semantic_anchor": "Besaid village/plaza immediately outside temple",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Valefor: find the Tarot symbol at Besaid Temple plaza."
+    },
+    {
+      "card": 42,
+      "stage": 7,
+      "location": [
+        135,
+        -4,
+        152
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Guadosalam, passagem exterior do Farplane",
+        "room_id": 135,
+        "x": -4,
+        "z": 152,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/guadosalam.py",
+          "line": 52,
+          "waypoint": "GuadoStoryline",
+          "checkpoint": 20
+        },
+        "room_binding_evidence": "area/guadosalam.py:190-196",
+        "semantic_anchor": "Farplane exterior",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Farplane story visit: find the Tarot symbol at Farplane exterior passage."
+    },
+    {
+      "card": 43,
+      "stage": 13,
+      "location": [
+        272,
+        215,
+        -375
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Gagazet, caverna, primeira margem acessível após o muro de fayth",
+        "room_id": 272,
+        "x": 215,
+        "z": -375,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/gagazet.py",
+          "line": 246,
+          "waypoint": "GagazetCave",
+          "checkpoint": 44
+        },
+        "room_binding_evidence": "area/gagazet.py:765-766",
+        "semantic_anchor": "cave shelf",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Seymour Flux defeated: find the Tarot symbol at Gagazet cave dry trail."
+    },
+    {
+      "card": 44,
+      "stage": 3,
+      "location": [
+        104,
+        28,
+        -60
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Luca, tavern, mesa lateral",
+        "room_id": 104,
+        "x": 28,
+        "z": -60,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/luca.py",
+          "line": 25,
+          "waypoint": "Luca1",
+          "checkpoint": 14
+        },
+        "room_binding_evidence": "area/luca.py:156-160",
+        "semantic_anchor": "tavern",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Yuna rescued in Luca: find the Tarot symbol at Luca tavern."
+    },
+    {
+      "card": 45,
+      "stage": 15,
+      "location": [
+        133,
+        -18,
+        444
+      ],
+      "evidence": [
+        {
+          "claim": "Besaid Village plaza; Besaid1 cp29 begins map133 segment.",
+          "source": "ffx-tas-reference/memory/main.py:4392 (map19=Besaid beach); area/besaid.py map transition lines 74/147 and 562; tas-waypoints.json Besaid1/Besaid2"
+        }
+      ],
+      "hint": "After free airship travel: find the Tarot symbol at Besaid Village houses."
+    },
+    {
+      "card": 46,
+      "stage": 5,
+      "location": [
+        82,
+        53,
+        -17
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Djose, exterior do templo, grupo de acólitos",
+        "room_id": 82,
+        "x": 53,
+        "z": -17,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Area routine advances through this checkpoint in the cited room segment; offline path target evidence only, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/djose.py",
+          "line": 256,
+          "waypoint": "DjoseExit",
+          "checkpoint": 24
+        },
+        "room_binding_evidence": "ffx-tas-reference/area/djose.py:424-425; DjoseExit checkpoints 22-28 are the bridge/courtyard segment before map75 road",
+        "semantic_anchor": "Djose acolyte courtyard path",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Ixion: find the Tarot symbol at Djose Temple acolytes."
+    },
+    {
+      "card": 47,
+      "stage": 18,
+      "location": [
+        235,
+        -71,
+        48
+      ],
+      "evidence": [
+        {
+          "claim": "Distinct south-bank platform route point",
+          "source": "paths/moonflow.py:MoonflowBankSouth[3]; area/moonflow.py:south_bank"
+        }
+      ],
+      "hint": "After free travel and Anima: find the Tarot symbol at Moonflow south platform."
+    },
+    {
+      "card": 48,
+      "stage": 16,
+      "location": [
+        19,
+        -318,
+        -472
+      ],
+      "evidence": [
+        {
+          "claim": "Besaid coast memorial at beach map19; Besaid2 cp59.",
+          "source": "ffx-tas-reference/memory/main.py:4392 (map19=Besaid beach); area/besaid.py map transition lines 74/147 and 562; tas-waypoints.json Besaid1/Besaid2"
+        }
+      ],
+      "hint": "After free travel and the Celestial Mirror: find the Tarot symbol at Besaid coastal memorial."
+    },
+    {
+      "card": 49,
+      "stage": 16,
+      "location": [
+        374,
+        20,
+        -100
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Post-cockpit Airship room route point; exact map grouping inferred from checkpoint transition sequence",
+          "source": "paths/airship.py:Airship[5]; pre-351/post-cockpit transition segment"
+        }
+      ],
+      "hint": "After free travel and the Celestial Mirror: find the Tarot symbol at airship coastal route map. Visit the Besaid and Kilika exteriors after restoring the mirror."
+    },
+    {
+      "card": 50,
+      "stage": 13,
+      "location": [
+        285,
+        31,
+        -202
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Gagazet, passagem pós-Seymour Flux, junto ao ponto de descanso",
+        "room_id": 285,
+        "x": 31,
+        "z": -202,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/gagazet.py",
+          "line": 146,
+          "waypoint": "SeymourFlux",
+          "checkpoint": 2
+        },
+        "room_binding_evidence": "area/gagazet.py:365-398;452-466",
+        "semantic_anchor": "Flux arena",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Seymour Flux defeated: find the Tarot symbol at Gagazet rest point beyond Seymour Flux."
+    },
+    {
+      "card": 51,
+      "stage": 15,
+      "location": [
+        19,
+        -265,
+        -389
+      ],
+      "evidence": [
+        {
+          "claim": "Besaid beach trail exit at map19; Besaid2 cp61.",
+          "source": "ffx-tas-reference/memory/main.py:4392 (map19=Besaid beach); area/besaid.py map transition lines 74/147 and 562; tas-waypoints.json Besaid1/Besaid2"
+        }
+      ],
+      "hint": "After free airship travel: find the Tarot symbol at Besaid beach guard stone."
+    },
+    {
+      "card": 52,
+      "stage": 8,
+      "location": [
+        248,
+        -49,
+        -233
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Macalania Woods, margem da fonte de Spherimorph",
+        "room_id": 248,
+        "x": -49,
+        "z": -233,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/area/mac_woods.py",
+          "line": 219,
+          "waypoint": "MacalaniaLake path branch at map 248"
+        },
+        "room_binding_evidence": "area/mac_woods.py:208-224 map_val==248",
+        "semantic_anchor": "Spherimorph map-248 route",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Spherimorph defeated: find the Tarot symbol at Macalania spring clearing."
+    },
+    {
+      "card": 53,
+      "stage": 9,
+      "location": [
+        54,
+        -41,
+        95
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Lake Macalania, fundo do lago após Wendigo, estojo junto ao grupo",
+        "room_id": 54,
+        "x": -41,
+        "z": 95,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/mac_temple.py",
+          "line": 267,
+          "waypoint": "MacalaniaUnderTemple",
+          "checkpoint": 10
+        },
+        "room_binding_evidence": "area/mac_temple.py:490-515; tas-save-facts ffx_038/118",
+        "semantic_anchor": "lake floor",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Shiva and Wendigo defeated: find the Tarot symbol at Lake Macalania floor."
+    },
+    {
+      "card": 54,
+      "stage": 10,
+      "location": [
+        351,
+        22,
+        22
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Airship, cabine, arquivo dos sobreviventes de Home",
+        "room_id": 351,
+        "x": 22,
+        "z": 22,
+        "y": null,
+        "axes": "room351 TAS x,z ground plane; y unresolved",
+        "walkability_evidence": "Airship path points checkpoints6-8 are traversed in map351 before the Gallery transition at checkpoint9; x,z only, no y guess.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py",
+          "waypoint": "Airship",
+          "checkpoint": 7,
+          "coordinate": [
+            22,
+            22
+          ]
+        },
+        "room_binding_evidence": "airship_pathing.py:135-140: get_map()==351 advances to Airship checkpoint6 (Isaaru screen), and get_map()==211 advances to checkpoint9 (Gallery); therefore checkpoints6-8 are in room351. scene 351 maps via cdrom.fnd group12 to event/obj/hi/hiku0200/hiku0200.ebp.",
+        "semantic_anchor": "interior protected compartment in native cabin room",
+        "confidence": "high for room/route pairing; medium-high for the cabin label from EBP and walkthrough sequence.",
+        "native_room_name": "Airship protected Isaaru compartment / Cabin",
+        "native_room_evidence": "hiku0200 EBP English text entry49: the corridor is protected and this room is safe; neighboring lines discuss the ship interior. Piggyback transcript p.108 (line around 11200) places the Cabin between Bridge and upper deck.",
+        "coordinate_basis": "TAS Airship checkpoint x,z route coordinate; checkpoint interval is room351, EBP field hiku02 matches MAP1 map/hiku/hiku02."
+      },
+      "hint": "After Home evacuation: find the Tarot symbol at airship survivors archive."
+    },
+    {
+      "card": 55,
+      "stage": 6,
+      "location": [
+        109,
+        -400,
+        150
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Moonflow, margem norte, junto ao desembarque do Shoopuf",
+        "room_id": 109,
+        "x": -400,
+        "z": 150,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/moonflow.py",
+          "line": 91,
+          "waypoint": "MoonflowBankNorth",
+          "checkpoint": 1
+        },
+        "room_binding_evidence": "area/moonflow.py:227-245",
+        "semantic_anchor": "north bank",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Rikku joins after the Moonflow crossing: find the Tarot symbol at Moonflow north landing."
+    },
+    {
+      "card": 56,
+      "stage": 12,
+      "location": [
+        223,
+        -186,
+        -715
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Calm Lands, exterior da agência de viagens",
+        "room_id": 223,
+        "x": -186,
+        "z": -715,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/gagazet.py",
+          "line": 14,
+          "waypoint": "CalmLands",
+          "checkpoint": 7
+        },
+        "room_binding_evidence": "area/gagazet.py:106-112;139-140",
+        "semantic_anchor": "agency exterior",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Macalania spring scene: find the Tarot symbol at Calm Lands agency exterior."
+    },
+    {
+      "card": 57,
+      "stage": 12,
+      "location": [
+        223,
+        1440,
+        724
+      ],
+      "evidence": {
+        "source": "FFX_TAS_Python paths/gagazet.py CalmLands checkpoint14; area/gagazet.py:108-145",
+        "reason": "Authored collection point on the actual exit-bridge approach, before map279; original checkpoint2 was the southern entrance."
+      },
+      "hint": "After Macalania spring scene: find the Tarot symbol at Calm Lands bridge approach."
+    },
+    {
+      "card": 58,
+      "stage": 14,
+      "location": [
+        363,
+        270,
+        -165
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Zanarkand, acampamento diante das ruínas",
+        "room_id": 363,
+        "x": 270,
+        "z": -165,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/area/zanarkand.py",
+          "line": 147,
+          "waypoint": "Campfire exit route target on map 363"
+        },
+        "room_binding_evidence": "area/zanarkand.py:139-150 map 363 campfire",
+        "semantic_anchor": "campfire exit",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After arrival at Zanarkand: find the Tarot symbol at Zanarkand pilgrim camp."
+    },
+    {
+      "card": 59,
+      "stage": 15,
+      "location": [
+        315,
+        -15,
+        -49
+      ],
+      "evidence": [
+        {
+          "claim": "Dome threshold route point; placement at accessible exterior edge",
+          "source": "paths/zanarkand.py:ZanarkandDome[25]; area/zanarkand.py:719 marks map 315 as leaving the Dome"
+        }
+      ],
+      "hint": "After free airship travel: find the Tarot symbol at Zanarkand Dome exterior."
+    },
+    {
+      "card": 60,
+      "stage": 12,
+      "location": [
+        223,
+        516,
+        -1660
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Calm Lands, entrada da planície, junto ao ponto de descanso",
+        "room_id": 223,
+        "x": 516,
+        "z": -1660,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/gagazet.py",
+          "line": 6,
+          "waypoint": "CalmLands",
+          "checkpoint": 0
+        },
+        "room_binding_evidence": "area/gagazet.py:106-112;139-140",
+        "semantic_anchor": "entry rest",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Macalania spring scene: find the Tarot symbol at Calm Lands entrance."
+    },
+    {
+      "card": 61,
+      "stage": 21,
+      "location": [
+        223,
+        -579,
+        -178
+      ],
+      "evidence": [
+        {
+          "claim": "Calm Lands map 223 is explicit in arena route metadata; route waypoint 6 is traversed. Not exact trainer/post location.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_select.py:110-111; work/arcana-acquisition-20261008/tas-waypoints.json:CalmLands.points[6]"
+        },
+        {
+          "claim": "Distinct Calm Lands route point; route returns to the chocobo trainer for the award",
+          "source": "paths/nem/calm_lands.py:CalmFarm[2]; arena_select.py:110-111 identifies map 223"
+        }
+      ],
+      "hint": "After Magus, Omega and the three-post chocobo route: find the Tarot symbol at Calm Lands chocobo trainer."
+    },
+    {
+      "card": 62,
+      "stage": 19,
+      "location": [
+        290,
+        -604,
+        359
+      ],
+      "evidence": [
+        {
+          "claim": "Remiem Temple exterior approach point",
+          "source": "paths/nem/races.py:ToRemiem[13]; area/chocobos.py:837-840 detects map 290 before switching to temple route"
+        }
+      ],
+      "hint": "After free travel and the three Magus Sisters: find the Tarot symbol at Remiem Temple exterior."
+    },
+    {
+      "card": 63,
+      "stage": 11,
+      "location": [
+        183,
+        8.566779136657715,
+        35.23944091796875
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Macalania Woods, acampamento após Seymour Natus, junto ao equipamento dos guardiões",
+        "room_id": 183,
+        "x": 8.566779136657715,
+        "z": 35.23944091796875,
+        "y": 7.778964042663574,
+        "axes": "native event world x,y,z",
+        "walkability_evidence": "Native scene EBP places a fixed actor at this exact x,y,z. This proves a valid authored actor point in room183; player collision/interaction remains offline-unverified.",
+        "coordinate_source": {
+          "file": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/jppc/event/obj/mc/mcfr1100/mcfr1100.ebp",
+          "container_chunk": 0,
+          "worker_index": 0,
+          "worker_function_index": 11,
+          "ATEL_offset": 6783,
+          "native_call": "setPosition (EventCallGlossary call 0x0013)",
+          "float_pool": "worker0 file constants",
+          "coordinate_values": [
+            8.566779136657715,
+            7.778964042663574,
+            35.23944091796875
+          ]
+        },
+        "room_binding_evidence": "cdrom.fnd group-12 scene 183 -> event/obj/mc/mcfr1100/mcfr1100.ebp; rescue_yuna.py enters map183 during the post-Natus Macalania route; EBP strings include Yuna, \"leave at dawn\", \"rest\", and save-sphere text.",
+        "semantic_anchor": "Macalania Woods South Campsite fixed-actor point",
+        "confidence": "high for native room and actor coordinate pairing; medium for clear player walkability at the exact actor point.",
+        "coordinate_basis": "native EBP setPosition fixed-actor world coordinate x,y,z; source event field matches mapout field mcfr11."
+      },
+      "hint": "After Seymour Natus defeated: find the Tarot symbol at Macalania campsite."
+    },
+    {
+      "card": 64,
+      "stage": 17,
+      "location": [
+        133,
+        -22,
+        186
+      ],
+      "evidence": [
+        {
+          "claim": "Besaid Village shop/plaza; Besaid1 cp30 in map133 segment.",
+          "source": "ffx-tas-reference/memory/main.py:4392 (map19=Besaid beach); area/besaid.py map transition lines 74/147 and 562; tas-waypoints.json Besaid1/Besaid2"
+        }
+      ],
+      "hint": "After free travel and Yojimbo: find the Tarot symbol at Besaid Village shop."
+    },
+    {
+      "card": 65,
+      "stage": 17,
+      "location": [
+        265,
+        -223,
+        366
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Distinct Airship corridor route point",
+          "source": "paths/rescue_yuna.py:BevelleAirship[6]; corridor route proceeds after map 265 gate"
+        }
+      ],
+      "hint": "After free travel and Yojimbo: find the Tarot symbol at airship Al Bhed study desk."
+    },
+    {
+      "card": 66,
+      "stage": 5,
+      "location": [
+        82,
+        58,
+        -52
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Djose, pátio exterior do templo, bancada de curativos",
+        "room_id": 82,
+        "x": 58,
+        "z": -52,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Area routine advances through this checkpoint in the cited room segment; offline path target evidence only, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/djose.py",
+          "line": 257,
+          "waypoint": "DjoseExit",
+          "checkpoint": 25
+        },
+        "room_binding_evidence": "ffx-tas-reference/area/djose.py:424-425; DjoseExit checkpoints 22-28 are the bridge/courtyard segment before map75 road",
+        "semantic_anchor": "Djose courtyard stone path",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Ixion: find the Tarot symbol at Djose Temple courtyard."
+    },
+    {
+      "card": 67,
+      "stage": 16,
+      "location": [
+        211,
+        -19,
+        -86
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Distinct Airship corridor/Gallery route point",
+          "source": "paths/airship.py:Airship[11]; airship_pathing.py:138-140 map 211 Gallery segment"
+        }
+      ],
+      "hint": "After free travel and the Celestial Mirror: find the Tarot symbol at airship corridor near Rin."
+    },
+    {
+      "card": 68,
+      "stage": 13,
+      "location": [
+        285,
+        150,
+        -619
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Gagazet, ponto de descanso após Seymour Flux",
+        "room_id": 285,
+        "x": 150,
+        "z": -619,
+        "y": null,
+        "axes": "map room ID plus TAS x,z ground plane; y omitted",
+        "walkability_evidence": "Offline TAS source explicitly routes the controlled actor to this x,z point; this establishes offline traversal, not live collision proof.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/gagazet.py",
+          "line": 150,
+          "waypoint": "SeymourFlux",
+          "checkpoint": 6
+        },
+        "room_binding_evidence": "area/gagazet.py:452-466",
+        "semantic_anchor": "arena rest approach",
+        "confidence": "high for offline route-point/map association; placement is authored within approved locality"
+      },
+      "hint": "After Seymour Flux defeated: find the Tarot symbol at Gagazet post-Flux rest point."
+    },
+    {
+      "card": 69,
+      "stage": 16,
+      "location": [
+        241,
+        56,
+        -60
+      ],
+      "evidence": [
+        {
+          "claim": "Distinct south Woods branch route point",
+          "source": "paths/mac_woods.py:MacalaniaWoods[19]; area/mac_woods.py:118-121 detects map 241 then map 242"
+        }
+      ],
+      "hint": "After free travel and the Celestial Mirror: find the Tarot symbol at Macalania Woods south merchant post."
+    },
+    {
+      "card": 70,
+      "stage": 15,
+      "location": [
+        22,
+        -686,
+        78
+      ],
+      "evidence": [
+        {
+          "claim": "Distinct Besaid Falls / Waterfall Way route point",
+          "source": "paths/besaid.py:Besaid2[33]; area/besaid.py:558-562 map 22 segment"
+        }
+      ],
+      "hint": "After free airship travel: find the Tarot symbol at Besaid Waterfall Way."
+    },
+    {
+      "card": 71,
+      "stage": 20,
+      "location": [
+        265,
+        -243,
+        384
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Distinct Airship corridor route point",
+          "source": "paths/rescue_yuna.py:BevelleAirship[7]; map 265 corridor segment after checkpoint 4"
+        }
+      ],
+      "hint": "After free travel and Omega Weapon defeated: find the Tarot symbol at airship Rikku workbench."
+    },
+    {
+      "card": 72,
+      "stage": 16,
+      "location": [
+        123,
+        187,
+        18
+      ],
+      "evidence": [
+        {
+          "claim": "Luca plaza / theatre approach route",
+          "source": "paths/luca.py:Luca1[12]; area/luca.py:149-161 detects map 123 at checkpoint 10"
+        }
+      ],
+      "hint": "After free travel and the Celestial Mirror: find the Tarot symbol at Luca theater entrance."
+    },
+    {
+      "card": 73,
+      "stage": 15,
+      "location": [
+        133,
+        -16,
+        14
+      ],
+      "evidence": [
+        {
+          "claim": "Besaid Village memorial; Besaid1 cp31 in map133 segment.",
+          "source": "ffx-tas-reference/memory/main.py:4392 (map19=Besaid beach); area/besaid.py map transition lines 74/147 and 562; tas-waypoints.json Besaid1/Besaid2"
+        }
+      ],
+      "hint": "After free airship travel: find the Tarot symbol at Besaid Village memorial."
+    },
+    {
+      "card": 74,
+      "stage": 10,
+      "location": [
+        351,
+        -10,
+        -10
+      ],
+      "evidence": {
+        "status": "new interactive symbol proposed at TAS-traversed point",
+        "approved_locality": "Airship, cabine, mesa do estudioso sobrevivente",
+        "room_id": 351,
+        "x": -10,
+        "z": -10,
+        "y": null,
+        "axes": "room351 TAS x,z ground plane; y unresolved",
+        "walkability_evidence": "Airship path points checkpoints6-8 are traversed in map351 before the Gallery transition at checkpoint9; x,z only, no y guess.",
+        "coordinate_source": {
+          "file": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py",
+          "waypoint": "Airship",
+          "checkpoint": 8,
+          "coordinate": [
+            -10,
+            -10
+          ]
+        },
+        "room_binding_evidence": "airship_pathing.py:135-140: get_map()==351 advances to Airship checkpoint6 (Isaaru screen), and get_map()==211 advances to checkpoint9 (Gallery); therefore checkpoints6-8 are in room351. scene 351 maps via cdrom.fnd group12 to event/obj/hi/hiku0200/hiku0200.ebp.",
+        "semantic_anchor": "interior protected compartment in native cabin room",
+        "confidence": "high for room/route pairing; medium-high for the cabin label from EBP and walkthrough sequence.",
+        "native_room_name": "Airship protected Isaaru compartment / Cabin",
+        "native_room_evidence": "hiku0200 EBP English text entry49: the corridor is protected and this room is safe; neighboring lines discuss the ship interior. Piggyback transcript p.108 (line around 11200) places the Cabin between Bridge and upper deck.",
+        "coordinate_basis": "TAS Airship checkpoint x,z route coordinate; checkpoint interval is room351, EBP field hiku02 matches MAP1 map/hiku/hiku02."
+      },
+      "hint": "After Home evacuation: find the Tarot symbol at airship Home archive."
+    },
+    {
+      "card": 75,
+      "stage": 16,
+      "location": [
+        223,
+        -561,
+        -99
+      ],
+      "evidence": [
+        {
+          "claim": "Calm Lands map 223 is explicit in arena route metadata; route waypoint 6 is traversed. Not exact trainer/post location.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_select.py:110-111; work/arcana-acquisition-20261008/tas-waypoints.json:CalmLands.points[6]"
+        },
+        {
+          "claim": "Distinct Calm Lands route point; card remains claimable at the trainer after the Mirror gate",
+          "source": "paths/nem/calm_lands.py:CalmFarm[3]; arena_select.py:110-111 identifies map 223"
+        }
+      ],
+      "hint": "After free travel and the Celestial Mirror: find the Tarot symbol at Calm Lands chocobo trainer."
+    },
+    {
+      "card": 76,
+      "stage": 16,
+      "location": [
+        129,
+        0,
+        -74
+      ],
+      "evidence": [
+        {
+          "claim": "Bikanel oasis / desert starting route point",
+          "source": "paths/home.py:BikanelDesert[0]; arena_select.py:108 maps Bikanel destination to map 129"
+        }
+      ],
+      "hint": "After free travel and the Celestial Mirror: find the Tarot symbol at Bikanel Oasis."
+    },
+    {
+      "card": 77,
+      "stage": 17,
+      "location": [
+        211,
+        -33,
+        -86
+      ],
+      "evidence": [
+        {
+          "claim": "Airship route waypoint 0 is a traversed point; room 194 is accepted by TAS airship transition loops. Neither proves that this exact point is the deck/cabin/corridor target.",
+          "source": "work/arcana-acquisition-20261008/ffx-tas-reference/paths/airship.py:4-10; work/arcana-acquisition-20261008/ffx-tas-reference/nemesis/arena_prep.py:2296-2301"
+        },
+        {
+          "claim": "Distinct Airship corridor / Rin counter route point",
+          "source": "paths/airship.py:Airship[12]; airship_pathing.py:138-140 map 211 Gallery segment"
+        }
+      ],
+      "hint": "After free travel and Yojimbo: find the Tarot symbol at airship medicine records."
+    }
+  ],
+  "pyreflies": [
+    [
+      110,
+      -154,
+      247
+    ],
+    [
+      110,
+      -201,
+      230
+    ],
+    [
+      110,
+      -250,
+      200
+    ]
+  ],
+  "ifritEmblems": [
+    [
+      65,
+      -58,
+      144
+    ],
+    [
+      65,
+      -20,
+      172
+    ],
+    [
+      65,
+      13,
+      286
+    ]
+  ],
+  "chocoboPosts": [
+    [
+      223,
+      -186,
+      -715
+    ],
+    [
+      223,
+      1466,
+      841
+    ],
+    [
+      223,
+      1006,
+      -1445
+    ]
+  ],
+  "recovery": [
+    374,
+    -266,
+    360
+  ],
+  "native_event_evidence": {
+    "asset_origin": "/mnt/nvme-samsung/SteamLibrary/steamapps/common/FINAL FANTASY FFX&FFX-2 HD Remaster/data/mods/ffx_ps2/ffx/master/jppc/event/obj",
+    "parser": "FFXProjectEditor/research_tools/Atel/ev01_savevar_mining.py parser functions and atel_disasm.py opcode table; read-only parse, no output files.",
+    "airship_free_flight_scripts": [
+      {
+        "path": "hi/hiku0800/hiku0800.ebp",
+        "pc": "0x17112-0x17123",
+        "claim": "Writes GameMoment 2915 and AirshipDestinationUnlocks[0]|=0x08; an intermediate destination unlock.",
+        "sha256": "f8b9ccb9d785a6bf88897dac68f3444d9286e980f3f8bda0c3c32bd8521e1d77"
+      },
+      {
+        "path": "hi/hiku0801/hiku0801.ebp",
+        "pc": "0x9169-0x917A",
+        "claim": "Writes GameMoment=3000, then clears AirshipDestinationUnlocks[0] bit0x02.",
+        "sha256": "f873b1ff57eb194962dad32b30bf7b4a03fea0b8d21a24073120088b2ac2e9d0"
+      },
+      {
+        "path": "hi/hiku2100/hiku2100.ebp",
+        "pc": "0x449F-0x6014",
+        "claim": "Writes per-destination bits across two byte elements: element0 masks0x01..0x80; element1 masks0x01,0x02,0x04.",
+        "sha256": "908c62f34f085bd165cd39575d3f6bb5a0fe2c8ceee93f6e1b1ee8a36a486e23"
+      }
+    ],
+    "dark_completion_writers": [
+      {
+        "aeon": "Dark Valefor",
+        "event_save_slot": "0x0A9D",
+        "file_offset": 3273,
+        "payload_offset": "0xC89",
+        "completion_mask": "0x80",
+        "writer": "bs/bsvr0000/bsvr0000.ebp",
+        "writer_pc": "0x1499A-0x149A5",
+        "sha256": "74136ab06b79538f1d5e0db4b044082477eb315b530946d0e3a941598495e945"
+      },
+      {
+        "aeon": "Dark Ifrit",
+        "event_save_slot": "0x0A9E",
+        "file_offset": 3274,
+        "payload_offset": "0xC8A",
+        "completion_mask": "0x80",
+        "writer": "bi/bika0300/bika0300.ebp",
+        "writer_pc": "0x338F-0x339A",
+        "sha256": "7bb4b4646899bf832a9d0de180520348b173b1be10d3ff7d8c2db57fbfa5d62e"
+      },
+      {
+        "aeon": "Dark Ixion",
+        "event_save_slot": "0x0A9F",
+        "file_offset": 3275,
+        "payload_offset": "0xC8B",
+        "completion_mask": "0x80",
+        "writer": "ka/kami0300/kami0300.ebp",
+        "writer_pc": "0x998A-0x9990",
+        "sha256": "5724b8edb25b0121b2e37b62dba30b62e88d73faa758a7664252285b03e0479a"
+      },
+      {
+        "aeon": "Dark Shiva",
+        "event_save_slot": "0x0AA0",
+        "file_offset": 3276,
+        "payload_offset": "0xC8C",
+        "completion_mask": "0x80",
+        "writer": "mc/mcyt0000/mcyt0000.ebp",
+        "writer_pc": "0x8F31-0x8F3C",
+        "sha256": "f83d52290cac7260eb53da6ed1cc26770f401164e5d5b9bccbcf854fbec6387c"
+      },
+      {
+        "aeon": "Dark Bahamut",
+        "event_save_slot": "0x0AA1",
+        "file_offset": 3277,
+        "payload_offset": "0xC8D",
+        "completion_mask": "0x80",
+        "writer": "do/dome0600/dome0600.ebp",
+        "writer_pc": "0x43F8-0x4403",
+        "sha256": "aa45c51d4ac4814d14f828653135d7f416b7fe4c872521b50ec27cf67a72adbb"
+      },
+      {
+        "aeon": "Dark Yojimbo",
+        "event_save_slot": "0x0AA2",
+        "file_offset": 3278,
+        "payload_offset": "0xC8E",
+        "completion_mask": "0x80",
+        "writer": "na/nagi0500/nagi0500.ebp",
+        "writer_pc": "0x7EDA-0x7EE5",
+        "sha256": "b2a53ecdff189f31829f93441a0890b78db06031f3b05ce46fa8d61598ac2bce",
+        "progress_mask": "0x01",
+        "progress_writer": "na/nagi0400/nagi0400.ebp",
+        "progress_pc": "0x44B0-0x44B7",
+        "progress_sha256": "110d3411a1a1372ef8d8cefdcd14d18bdf7d125055cd593f82f43295c3909c40"
+      },
+      {
+        "aeon": "Dark Anima",
+        "event_save_slot": "0x0AA3",
+        "file_offset": 3279,
+        "payload_offset": "0xC8F",
+        "completion_mask": "0x80",
+        "writer": "mt/mtgz0000/mtgz0000.ebp",
+        "writer_pc": "0x135C3-0x135CE",
+        "sha256": "c260e6b41f0ff56bea01cdc78d7ef3fe7c6955c4ceeb9aa41df266e023280471"
+      },
+      {
+        "aeon": "Dark Magus Sisters",
+        "event_save_slot": "0x0AA4",
+        "file_offset": 3280,
+        "payload_offset": "0xC90",
+        "completion_mask": "0x80",
+        "writer": "ki/kino0000/kino0000.ebp and ki/kino0100/kino0100.ebp",
+        "writer_pc": "0xABB0 etc",
+        "sha256": "d3178365784a005caf9ce836fadd0a379dab5ae62866907fcc97d55994e7d167",
+        "partial_progress_masks": [
+          "0x02",
+          "0x04",
+          "0x08"
+        ],
+        "other_writer": "ki/kino0100/kino0100.ebp",
+        "other_writer_sha256": "8e120aecb066dd1008b23117390d12e9827b393d2818730cbd2f946b0ba6ba8c",
+        "additional_writer_sha256": "8e120aecb066dd1008b23117390d12e9827b393d2818730cbd2f946b0ba6ba8c"
+      }
+    ],
+    "dark_yojimbo_analysis": {
+      "event_save_slot": "0x0AA2",
+      "payload_offset": "0xC8E",
+      "progress": "nagi0400 writes bit0x01 at PC0x44B0-0x44B7.",
+      "completion": "nagi0500 conditionally writes bit0x80 at PC0x7EDA-0x7EE5 (EventData slot1 bit0x40 condition), and its guards test bits0x01 and0x80.",
+      "battle_identity": "Map Directory Codes.md:92 maps nagi05_70 to Dark Yojimbo; Piggyback p.209 says five consecutive victories complete the episode.",
+      "predicate": "bit0x80 only; bit0x01 and legacy0x18F4 are not final-completion predicates.",
+      "confidence": "high_for_eventfield_transition_medium_high_for_fifth-battle_link"
+    },
+    "method_limits": [
+      "No game process, RT2, deployment, or save write.",
+      "Extracted PC Steam EBP scripts, hashed as listed.",
+      "Native y and collision geometry remain unknown."
+    ],
+    "source_parity": {
+      "comparison_root": "/mnt/nvme-samsung/FFX Extracted/FFX/ffx_ps2/ffx/master/jppc/event/obj",
+      "result": "All cited EBP scripts, including hiku, Dark Aeon, Omega Ruins, and Calm Lands chocobo scripts, match the separate FFX Extracted corpus by SHA-256.",
+      "scope": "Read-only byte identity check; no assets modified.",
+      "source_comparison_note": "Selected EBP files match the separate FFX Extracted corpus. The Omega/Wobbly/current-mount readers are also present in current ArcanaAcquisition.cpp (mirror/omega/wobbly/story); no game was launched.",
+      "verified_file_count": 16
+    },
+    "minigame_and_boss_flag_writers": [
+      {
+        "field": "OmegaRuinsProgressionFlags",
+        "SaveData_slot": "0x01D2",
+        "serialized_file_offset": 1022,
+        "payload_offset_hex": "0x3BE",
+        "writers": [
+          {
+            "ebp": "omeg0000.ebp",
+            "pc": "0x832B-0x8336",
+            "OR_mask": "0x02",
+            "registry_semantics": "Ultima Weapon Defeated, bit1",
+            "sha256": "023feef28fcae611c3c5daf17764b608281285bd2c4eba055b137d11735d300b"
+          },
+          {
+            "ebp": "omeg0100.ebp",
+            "pc": "0x34E6-0x34F4",
+            "OR_mask": "0x04",
+            "registry_semantics": "Omega Weapon Defeated, bit2",
+            "sha256": "5874c4b37bb7a03025045fdd2d0f3e520a683598602b6dbb93c9253749e3e670"
+          }
+        ]
+      },
+      {
+        "field": "Riding Chocobo on Mi'ihen Highroad",
+        "SaveData_slot": "0x0080",
+        "serialized_file_offset": 684,
+        "payload_offset_hex": "0x26C",
+        "mask": "0x01",
+        "writer": "nagi0000.ebp (Calm Lands Chocobo event)",
+        "set_pcs": [
+          "0x25D0F-0x25D16",
+          "0x25DFE-0x25E0C",
+          "0x25E73-0x25E7B",
+          "0x25ED9-0x25EE1"
+        ],
+        "clear_pc": "0x1C1AE-0x1C1B6 (AND 0xFFFE)",
+        "sha256": "3049ac22f436498f16b52122fc0b566ce1dcd8fef2a8e7de43346bf9d632e941",
+        "interpretation": "Native Calm Lands Chocobo event toggles the same flag. On map223 use file-payload bit0x26C bit0 as mounted-state predicate; no Wobbly completion prerequisite."
+      },
+      {
+        "field": "CalmLandsQuestProgressionFlags",
+        "SaveData_slot": "0x008D",
+        "serialized_file_offset": 697,
+        "payload_offset_hex": "0x279",
+        "array_length": 3,
+        "wobbly_element_index": 2,
+        "wobbly_mask": "0x02",
+        "wobbly_file_offset": 699,
+        "writer": "nagi0000.ebp PC0x214AB-0x214B6 (array index2, OR 0x02)",
+        "sha256": "3049ac22f436498f16b52122fc0b566ce1dcd8fef2a8e7de43346bf9d632e941",
+        "cross_reference": "FFXED registry labels Wobbly Chocobo Complete at file699 bit1; ArcanaAcquisition.cpp reads payload0x27B bit1. This remains independent of the P21 route."
+      }
+    ],
+    "mirror_field_validation": {
+      "claim": "payload[0xC38] == 1 reads the native celestial_mirror_obtained bool, file offset 0xC78 (3192); EV01 writes 1 to its underlying SaveData field in the Macalania Woods event.",
+      "chain": [
+        "EV01 SaveData slot0xA4C (2636) serializes at EV01 SaveData base0x1EC + slot = Fahrenheit payload offset0xC38.",
+        "Save payload uses a 64-byte header; payload0xC38 maps to save-file offset0xC78 (3192).",
+        "Fahrenheit native SaveData layout labels FieldOffset(0xC38) as bool celestial_mirror_obtained (savedata.cs:259).",
+        "Production EBP mc/mcfr0100/mcfr0100.ebp (SHA-256 63466cb214dfb0bc4bc44d719cd42b49a007f201078986ddbb72d5157cd12fa3) has SaveData slot0xA4C one-byte POPV stores at ATEL PCs0x198D and0x7C4D; each is preceded by PUSHII1."
+      ],
+      "limits": "This is native field definition plus production event write proof, not runtime/save-file observation. Exact scene text tying the write to the restoration-completion interaction rather than an earlier step was not recovered in this pass; preserve medium confidence for that semantic nuance."
+    }
+  },
+  "native_fact_evidence": {
+    "mirror": {
+      "payload_offset_hex": "0xC38",
+      "payload_to_file_mapping": "payload offset 0xC38 + 0x40-byte save header = file offset 0xC78 (3192); this is also FFX Fahrenheit SaveData slot 0xA4C (2636) + EV01 SaveData base 0x1EC = Fh offset 0xC38, then +64-byte file header.",
+      "native_field": "Fahrenheit SaveData @FieldOffset(0xC38), bool celestial_mirror_obtained.",
+      "native_writer": {
+        "ebp": "mc/mcfr0100/mcfr0100.ebp",
+        "sha256": "63466cb214dfb0bc4bc44d719cd42b49a007f201078986ddbb72d5157cd12fa3",
+        "save_data_slot_hex": "0x0A4C",
+        "save_data_slot_decimal": 2636,
+        "write_value": 1,
+        "store_pcs": [
+          "0x198D",
+          "0x7C4D"
+        ],
+        "instruction": "POPV var[1]; var descriptor is SaveData slot 2636, one byte.",
+        "scene": "Macalania Woods event script mcfr0100."
+      },
+      "predicate": "payload[0xC38] == 1",
+      "independent_evidence": [
+        "/home/wanderson/Documents/ffx-editor-main/research_tools/Ida/fahrenheit_probe/savedata.cs:259",
+        "/home/wanderson/Documents/ffx-editor-main/docs/reverse/FFX_SAVE_PAYLOAD_G1_G6_MAP_2026-08-19.md:112",
+        "/home/wanderson/Documents/ffx-editor-main/research_tools/Atel/ev01_savevar_mining.py (SaveData base 0x1EC; variable descriptor/access parsing)",
+        "Steam EBP asset path above"
+      ],
+      "confidence": "high_for_native_field_mapping_and_true_write; medium_for_story-semantics",
+      "unresolved": "The native writer is in Macalania Woods and writes the SaveData field named celestial_mirror_obtained=1. This identifies the mirror milestone independently of ArcanaAcquisition, but the extracted EBP context inspected here does not by itself distinguish the exact interaction frame (Cloudy Mirror quest start versus completion of its restoration). No claim is made that a live save was observed."
+    },
+    "omega_weapon_defeated": {
+      "file_offset": 1022,
+      "payload_offset_hex": "0x3BE",
+      "bit_index": 2,
+      "mask_hex": "0x04",
+      "predicate": "(payload[0x3BE] & 0x04) != 0",
+      "source": "src/runtime/FfxHooksDll/hooks/ArcanaAcquisition.cpp:17; FFXED registry bitfield; omeg EBP writer cross-check",
+      "ebp_crosscheck": "OmegaRuinsProgressionFlags SaveData slot0x1D2; omeg0100.ebp OR-writes 0x04 at PC0x34E6-0x34F4"
+    },
+    "dark_anima_defeated": {
+      "event_save_slot": "0x0AA3",
+      "file_offset": 3279,
+      "payload_offset_hex": "0xC8F",
+      "bit_index": 7,
+      "mask_hex": "0x80",
+      "predicate": "(payload[0xC8F]&0x80)!=0",
+      "writer": "mt/mtgz0000/mtgz0000.ebp PC0x135C3",
+      "confidence": "high_for_native_event_completion_bit"
+    },
+    "dark_aeons_named_flags": {
+      "native_event_completion_fields": [
+        {
+          "aeon": "Dark Valefor",
+          "event_save_slot": "0x0A9D",
+          "file_offset": 3273,
+          "payload_offset_hex": "0xC89",
+          "mask_hex": "0x80",
+          "writer": "bs/bsvr0000/bsvr0000.ebp",
+          "pc": "0x1499A-0x149A5"
+        },
+        {
+          "aeon": "Dark Ifrit",
+          "event_save_slot": "0x0A9E",
+          "file_offset": 3274,
+          "payload_offset_hex": "0xC8A",
+          "mask_hex": "0x80",
+          "writer": "bi/bika0300/bika0300.ebp",
+          "pc": "0x338F-0x339A"
+        },
+        {
+          "aeon": "Dark Ixion",
+          "event_save_slot": "0x0A9F",
+          "file_offset": 3275,
+          "payload_offset_hex": "0xC8B",
+          "mask_hex": "0x80",
+          "writer": "ka/kami0300/kami0300.ebp",
+          "pc": "0x998A-0x9990"
+        },
+        {
+          "aeon": "Dark Shiva",
+          "event_save_slot": "0x0AA0",
+          "file_offset": 3276,
+          "payload_offset_hex": "0xC8C",
+          "mask_hex": "0x80",
+          "writer": "mc/mcyt0000/mcyt0000.ebp",
+          "pc": "0x8F31-0x8F3C"
+        },
+        {
+          "aeon": "Dark Bahamut",
+          "event_save_slot": "0x0AA1",
+          "file_offset": 3277,
+          "payload_offset_hex": "0xC8D",
+          "mask_hex": "0x80",
+          "writer": "do/dome0600/dome0600.ebp",
+          "pc": "0x43F8-0x4403"
+        },
+        {
+          "aeon": "Dark Yojimbo",
+          "event_save_slot": "0x0AA2",
+          "file_offset": 3278,
+          "payload_offset_hex": "0xC8E",
+          "mask_hex": "0x80",
+          "writer": "na/nagi0500/nagi0500.ebp",
+          "pc": "0x7EDA-0x7EE5"
+        },
+        {
+          "aeon": "Dark Anima",
+          "event_save_slot": "0x0AA3",
+          "file_offset": 3279,
+          "payload_offset_hex": "0xC8F",
+          "mask_hex": "0x80",
+          "writer": "mt/mtgz0000/mtgz0000.ebp",
+          "pc": "0x135C3-0x135CE"
+        },
+        {
+          "aeon": "Dark Magus Sisters",
+          "event_save_slot": "0x0AA4",
+          "file_offset": 3280,
+          "payload_offset_hex": "0xC90",
+          "mask_hex": "0x80",
+          "writer": "ki/kino0000/kino0000.ebp and ki/kino0100/kino0100.ebp",
+          "pc": "0xABB0 etc"
+        }
+      ],
+      "yojimbo_progress_vs_completion": "slot0x0AA2 bit0x01 is progress; bit0x80 is terminal completion; see nagi0400/nagi0500 bytecode.",
+      "legacy_0x18f4": "separate legacy fight-state array; excluded from acquisition completion gates."
+    },
+    "unresolved": [
+      "No live/RT2 observation was performed; event writer predicates are source-derived only.",
+      "The legacy0x18F4 per-fight array is separate and excluded from P22/P23."
+    ],
+    "source": "FFXProjectEditor/FfxLib/Ai/AiSaveDataVariableNames.cs; artifacts/2026-09-14/ev01-mining/ev01_savevar_report.json; docs/reverse/FFX_MONSTER_ARENA_UNLOCK_FLAGS_DARK_AEON_ARENA_RESEARCH_2026-06-13.md fold-in 2026-09-19; docs/ai/HANDOFF_DARKAEON_FLAG_OFFSET_DISCOVERY_2026-06-13.md",
+    "candidate_unlabeled_bits": [],
+    "native_completion_store_conflict": {
+      "event_script_store": "Production EV01 sets event SaveData bit0x80 on completion; use it as acquisition gate.",
+      "legacy_runtime_store": "File/payload0x18F4 is separate legacy fight state and not a completion fallback."
+    },
+    "dark_event_completion_result": {
+      "result": "Production EV01 resolves event-owned completion bit0x80 per Dark Aeon; use those fields for P22/P23.",
+      "yojimbo": "nagi0400 writes bit0x01 progress; nagi0500 writes bit0x80 terminal completion. Map/event and guide evidence link terminal event to five-victory sequence.",
+      "magus": "DarkMagusSistersCompletionFlags has partial masks0x02/0x04/0x08 plus completion0x80; gate complete encounter on0x80.",
+      "legacy": "Exclude0x18F4 from P22/P23; legacy per-fight state does not establish final completion.",
+      "confidence": "high_for_event_masks_medium_high_for_fifth-battle_link"
+    },
+    "ultima_weapon_defeated": {
+      "file_offset": 1022,
+      "payload_offset_hex": "0x3BE",
+      "bit_index": 1,
+      "mask_hex": "0x02",
+      "source": "FFXED registry bitfield; omeg0000 EBP writes mask0x02"
+    },
+    "wobbly_chocobo_complete": {
+      "file_offset": 699,
+      "payload_offset_hex": "0x27B",
+      "bit_index": 1,
+      "mask_hex": "0x02",
+      "predicate": "(payload[0x27B] & 0x02) != 0",
+      "source": "src/runtime/FfxHooksDll/hooks/ArcanaAcquisition.cpp:18; FFXED registry bitfield; nagi0000 EBP writer cross-check"
+    },
+    "celestial_mirror": {
+      "payload_offset_hex": "0xC38",
+      "predicate": "payload[0xC38] == 1",
+      "reader": "src/runtime/FfxHooksDll/hooks/ArcanaAcquisition.cpp:16",
+      "confidence": "high_for_existing_exact_reader"
+    },
+    "mounted_chocobo_state": {
+      "file_offset": 684,
+      "payload_offset_hex": "0x26C",
+      "bit_index": 0,
+      "mask_hex": "0x01",
+      "predicate": "(payload[0x26C] & 0x01) != 0",
+      "source": "FFXED registry bitfield Riding Chocobo on Mi'ihen Highroad at file684 bit0; EV01 SaveData slot0x80/file684; same bit is set and cleared by the native Calm Lands nagi0000 Chocobo event."
+    }
+  },
+  "critical_room_evidence": {
+    "native_scene_event_audit": {
+      "mapping_method": "Two-stage native binding. (1) Decoded extracted cdrom.fnd group-12 event-resource names at base 562 + 18*scene id to identify the exact EBP. (2) The first six EBP basename characters give FieldAssetDiscovery.FieldId; the same FieldId appears in the MAP1 mapout.vpa folder. Group-19 fnd entry identifies the mapout.vpa resource index. This pairs event and map geometry in the same native field.",
+      "source_files": [
+        "/mnt/nvme-samsung/FFX Extracted/FFX/ffx_ps2/ffx/proj/battle/jp/cddata/cdrom.fnd",
+        "docs/reverse/FFX_CDFND_RESOLVE_2026-09-18.md",
+        "docs/reverse/FFX_FIELD_MAPLOAD_WARP_RE_2026-06-06.md"
+      ],
+      "rooms": [
+        {
+          "map_id": 183,
+          "event": "event/obj/mc/mcfr1100/mcfr1100.ebp",
+          "native_area": "Macalania Woods South campsite",
+          "evidence": "EBP worker0/function11 fixed-actor setPosition calls; English text has Yuna, leave at dawn, rest, and save-sphere text.",
+          "field_id": "mcfr11",
+          "mapout_vpa": "jppc/map/mcfr/mcfr11/bin/mapout.vpa",
+          "mapout_resource_index": 321,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        },
+        {
+          "map_id": 206,
+          "event": "event/obj/mc/mcfr1200/mcfr1200.ebp",
+          "native_area": "Macalania Woods South lake/spring scene",
+          "evidence": "Tidus/Yuna lake dialogue and line to head back to camp; TAS returns through map206 at [300,100] after story>2300.",
+          "field_id": "mcfr12",
+          "mapout_vpa": "jppc/map/mcfr/mcfr12/bin/mapout.vpa",
+          "mapout_resource_index": 322,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        },
+        {
+          "map_id": 274,
+          "event": "event/obj/mc/mcfr0800/mcfr0800.ebp",
+          "native_area": "Macalania Woods transition room",
+          "evidence": "Native event resource mapping; its EBP chunks are empty and it is not used as camp/spring anchor.",
+          "field_id": "mcfr08",
+          "mapout_vpa": "jppc/map/mcfr/mcfr08/bin/mapout.vpa",
+          "mapout_resource_index": 318,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        },
+        {
+          "map_id": 177,
+          "event": "event/obj/mc/mcfr0700/mcfr0700.ebp",
+          "native_area": "Macalania Woods post-scene return room",
+          "evidence": "rescue_yuna.py return path after story>2300.",
+          "field_id": "mcfr07",
+          "mapout_vpa": "jppc/map/mcfr/mcfr07/bin/mapout.vpa",
+          "mapout_resource_index": 317,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        },
+        {
+          "map_id": 329,
+          "event": "event/obj/mc/mcfr1400/mcfr1400.ebp",
+          "native_area": "Macalania Woods final return transition",
+          "evidence": "rescue_yuna.py returns via map329 before map223 party control.",
+          "field_id": "mcfr14",
+          "mapout_vpa": "jppc/map/mcfr/mcfr14/bin/mapout.vpa",
+          "mapout_resource_index": 324,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        },
+        {
+          "map_id": 194,
+          "event": "event/obj/hi/hiku0800/hiku0800.ebp",
+          "native_area": "Airship Bridge",
+          "evidence": "Guide p.108 calls this Bridge; separate from cabin room351.",
+          "field_id": "hiku08",
+          "mapout_vpa": "jppc/map/hiku/hiku08/bin/mapout.vpa",
+          "mapout_resource_index": 388,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        },
+        {
+          "map_id": 265,
+          "event": "event/obj/hi/hiku0500/hiku0500.ebp",
+          "native_area": "Airship corridor / pre-Evrae section",
+          "evidence": "rescue_yuna.py starts the Airship section here; guide p.108 routes from Bridge through ship interior.",
+          "field_id": "hiku05",
+          "mapout_vpa": "jppc/map/hiku/hiku05/bin/mapout.vpa",
+          "mapout_resource_index": 385,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        },
+        {
+          "map_id": 351,
+          "event": "event/obj/hi/hiku0200/hiku0200.ebp",
+          "native_area": "Airship Cabin / protected Isaaru compartment",
+          "evidence": "airship_pathing.py labels map351 as the Isaaru screen; hiku0200 EBP entry49 says the room is protected; route checkpoints6-8 pair to room351.",
+          "field_id": "hiku02",
+          "mapout_vpa": "jppc/map/hiku/hiku02/bin/mapout.vpa",
+          "mapout_resource_index": 382,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        },
+        {
+          "map_id": 211,
+          "event": "event/obj/hi/hiku0000/hiku0000.ebp",
+          "native_area": "Airship Gallery",
+          "evidence": "airship_pathing.py:137-140 explicitly labels Gallery and changes to checkpoint9.",
+          "field_id": "hiku00",
+          "mapout_vpa": "jppc/map/hiku/hiku00/bin/mapout.vpa",
+          "mapout_resource_index": 380,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        },
+        {
+          "map_id": 374,
+          "event": "event/obj/hi/hiku1900/hiku1900.ebp",
+          "native_area": "Airship upper deck / exterior",
+          "evidence": "map374 save-sphere approach x,z[-266,360]; hiku1900 has save/board-airship text; guide p.108 identifies upper deck before Evrae.",
+          "field_id": "hiku19",
+          "mapout_vpa": "jppc/map/hiku/hiku19/bin/mapout.vpa",
+          "mapout_resource_index": 399,
+          "binding_confidence": "same-field EBP basename and MAP1 directory match; scene/room semantic checked against TAS route and EBP text"
+        }
+      ]
+    }
+  },
+  "narrative_threshold_evidence": [
+    {
+      "stage": "P00",
+      "proposal_threshold": "Controle em Besaid",
+      "required_story_condition": "Besaid free control after arrival; opening Fool introduction follows the first rest point.",
+      "native_story_word": null,
+      "native_story_word_status": "unresolved; use region and state witness where no numeric bound is needed",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above."
+    },
+    {
+      "stage": "P01",
+      "proposal_threshold": "Valefor",
+      "required_story_condition": "Valefor obtained and party able to leave Besaid.",
+      "native_story_word": null,
+      "native_story_word_status": "unresolved; use region and state witness where no numeric bound is needed",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above."
+    },
+    {
+      "stage": "P02",
+      "proposal_threshold": "Ifrit",
+      "required_story_condition": "Ifrit obtained in Kilika.",
+      "native_story_word": null,
+      "native_story_word_status": "unresolved; use region and state witness where no numeric bound is needed",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above."
+    },
+    {
+      "stage": "P03",
+      "proposal_threshold": "Resgate em Luca",
+      "required_story_condition": "Yuna rescue completed at the docks; no sports condition. Conservative story bound: story >= 514.",
+      "native_story_word": {
+        "operator": ">=",
+        "value": 514,
+        "kind": "conservative stage witness, not exact earliest boundary",
+        "exact_earliest_boundary": null
+      },
+      "native_story_word_status": "conservative numeric witness supported; exact earliest threshold remains unresolved",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above.",
+      "conservative_gate_evidence": "tas-save-facts.json ffx_024; docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md Luca rule"
+    },
+    {
+      "stage": "P04",
+      "proposal_threshold": "Mi’ihen",
+      "required_story_condition": "Free control at Mi’ihen Travel Agency before Operation Mi’ihen.",
+      "native_story_word": null,
+      "native_story_word_status": "unresolved; use region and state witness where no numeric bound is needed",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above."
+    },
+    {
+      "stage": "P05",
+      "proposal_threshold": "Ixion",
+      "required_story_condition": "Ixion obtained; Djose exterior available after temple scenes.",
+      "native_story_word": null,
+      "native_story_word_status": "unresolved; use region and state witness where no numeric bound is needed",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above."
+    },
+    {
+      "stage": "P06",
+      "proposal_threshold": "Moonflow / Rikku",
+      "required_story_condition": "Shoopuf crossing incident resolved and Rikku integrated into party.",
+      "native_story_word": null,
+      "native_story_word_status": "unresolved; use region and state witness where no numeric bound is needed",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above."
+    },
+    {
+      "stage": "P07",
+      "proposal_threshold": "Farplane",
+      "required_story_condition": "First narrative Farplane visit completed and control returned outside.",
+      "native_story_word": null,
+      "native_story_word_status": "unresolved; use region and state witness where no numeric bound is needed",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above."
+    },
+    {
+      "stage": "P08",
+      "proposal_threshold": "Macalania / Spherimorph",
+      "required_story_condition": "Spherimorph defeated and exploration control restored; Thunder Plains only after permitted return. Conservative story bound: story >= 1455.",
+      "native_story_word": {
+        "operator": ">=",
+        "value": 1455,
+        "kind": "conservative stage witness, not exact earliest boundary",
+        "exact_earliest_boundary": null
+      },
+      "native_story_word_status": "conservative numeric witness supported; exact earliest threshold remains unresolved",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above.",
+      "conservative_gate_evidence": "ffx-tas-reference/area/mac_woods.py:241"
+    },
+    {
+      "stage": "P09",
+      "proposal_threshold": "Shiva / Wendigo / fundo do lago",
+      "required_story_condition": "Shiva obtained, Wendigo defeated, and control returned on Lake Macalania floor before Auron conversation/Sin transition. Conservative story bound: story >= 1600.",
+      "native_story_word": {
+        "operator": ">=",
+        "value": 1600,
+        "kind": "conservative stage witness, not exact earliest boundary",
+        "exact_earliest_boundary": null
+      },
+      "native_story_word_status": "conservative numeric witness supported; exact earliest threshold remains unresolved",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [
+        {
+          "scene": 54,
+          "story": 1600,
+          "files": [
+            "tas_saves/ffx_038",
+            "tas_saves/ffx_118"
+          ],
+          "meaning": "Observed same-room control checkpoint per supplied task context; not a demonstrated earliest unlock boundary."
+        }
+      ],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above.",
+      "conservative_gate_evidence": "tas-save-facts.json ffx_038 and ffx_118; task-provided route evidence"
+    },
+    {
+      "stage": "P10",
+      "proposal_threshold": "Evacuação de Home",
+      "required_story_condition": "Home evacuation and first escape boarding confirmed; later Calm Lands collection still waits for physical arrival. Conservative story bound: story >= 1950.",
+      "native_story_word": {
+        "operator": ">=",
+        "value": 1950,
+        "kind": "conservative stage witness, not exact earliest boundary",
+        "exact_earliest_boundary": null
+      },
+      "native_story_word_status": "conservative numeric witness supported; exact earliest threshold remains unresolved",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above.",
+      "conservative_gate_evidence": "tas-save-facts.json ffx_041"
+    },
+    {
+      "stage": "P11",
+      "proposal_threshold": "Fuga de Bevelle",
+      "required_story_condition": "Proposal composes Bahamut + Via Purifico exit + Seymour Natus defeat + control returned at Macalania camp. Conservative story bound: story >= 2300.",
+      "native_story_word": {
+        "operator": ">=",
+        "value": 2300,
+        "kind": "conservative stage witness, not exact earliest boundary",
+        "exact_earliest_boundary": null
+      },
+      "native_story_word_status": "conservative numeric witness supported; exact earliest threshold remains unresolved",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest boundary is unknown; use the conservative story word and the specified scene room/state.",
+      "conservative_gate_evidence": "ffx-tas-reference/area/rescue_yuna.py:820,865-873",
+      "regional_route_reference": "macalania_woods_south_route"
+    },
+    {
+      "stage": "P12",
+      "proposal_threshold": "Cena do lago / caminho às Calm Lands",
+      "required_story_condition": "Lake scene completed; collect after scene, then follow east to Calm Lands. Conservative story bound: story > 2300.",
+      "native_story_word": {
+        "operator": ">",
+        "value": 2300,
+        "kind": "conservative stage witness, not exact earliest boundary",
+        "exact_earliest_boundary": null
+      },
+      "native_story_word_status": "conservative numeric witness supported; exact earliest threshold remains unresolved",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest boundary is unknown; use the conservative story word and the specified scene room/state.",
+      "conservative_gate_evidence": "ffx-tas-reference/area/rescue_yuna.py:865-889",
+      "regional_route_reference": "macalania_woods_south_route"
+    },
+    {
+      "stage": "P13",
+      "proposal_threshold": "Gagazet / Seymour Flux",
+      "required_story_condition": "Seymour Flux defeated; points beyond arena still wait for physical progression. Conservative story bound: story >= 2651.",
+      "native_story_word": {
+        "operator": ">=",
+        "value": 2651,
+        "kind": "conservative stage witness, not exact earliest boundary",
+        "exact_earliest_boundary": null
+      },
+      "native_story_word_status": "conservative numeric witness supported; exact earliest threshold remains unresolved",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above.",
+      "conservative_gate_evidence": "ffx-tas-reference/area/gagazet.py:846-854"
+    },
+    {
+      "stage": "P14",
+      "proposal_threshold": "Zanarkand",
+      "required_story_condition": "First arrival at Zanarkand ruins with free control, before Yunalesca.",
+      "native_story_word": null,
+      "native_story_word_status": "unresolved; use region and state witness where no numeric bound is needed",
+      "evidence": [
+        "docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md:55-97",
+        "work/arcana-acquisition-20261008/NATIVE_NOTES.md (Story getter note: VA 0x86C470 returns WORD at save-base+0xBEC; P00-P24 thresholds not mapped)"
+      ],
+      "nearby_tas_checkpoint_samples": [],
+      "gate_strategy": "Combine the stated conservative story witness, when present, with the physical room/locality and required aeon/boss/party/control state; never use blitzball.",
+      "remaining_blocker": "Exact earliest story-word boundary is unresolved; use the conservative witness and semantic gate above."
+    }
+  ],
+  "chocobo_route_evidence": {
+    "agency": "paths/gagazet.py CalmLands checkpoint7, paired area/gagazet.py:108-145 (map223 until exit279)",
+    "bridge_approach": "paths/gagazet.py CalmLands checkpoint15, before checkpoint17 at map279 transition; area/gagazet.py:108-145",
+    "remiem_approach": "paths/nem/races.py ToRemiem checkpoint9, prior to map290 at checkpoint13; area/chocobos.py:837-840",
+    "reason": "Match the approved agency / exit-bridge / Remiem approach route, while retaining native mounted-only collection."
+  }
+}

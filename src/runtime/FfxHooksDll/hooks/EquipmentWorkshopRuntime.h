@@ -16,6 +16,7 @@ const char* Detail();
 // Menu calls run on the native pump owner; operations never write a game file.
 bool Capture(workshop::State& state);
 bool ReadAeons(workshop::AeonProgress& progress);
+bool ReadAcquisition(workshop::AcquisitionCatalog& catalog);
 // Read-only UI association also works in battle; it grants no mutation access.
 bool ReadPresentation(const void* native,workshop::Piece& piece);
 using PresentationAdapter=const unsigned char*(*)(std::uintptr_t,const unsigned char*);

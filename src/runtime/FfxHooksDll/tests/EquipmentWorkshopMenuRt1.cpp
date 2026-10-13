@@ -3,6 +3,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
+#include "../shared/ExecutableProfile.h"
 #include <cstdio>
 #include <cstring>
 #include <algorithm>
@@ -14,6 +15,7 @@
 #include "../../NativeMenuShell/MenuFeedback.h"
 #include "../hooks/F8FlagsUiState.h"
 #include "../hooks/EquipmentWorkshopRuntime.h"
+#include "WorkshopAcquisitionFixture.h"
 #include "../hooks/AeonAscensionBridge.h"
 #include "../hooks/EquipmentWorkshopCatalogBridge.h"
 #include "../hooks/EquipmentWorkshopSettings.h"
@@ -26,7 +28,7 @@ enum {O_ENTER=8,O_UPDATE=12,O_DRAW=16,O_AUX=20,O_VALIDATOR=28,O_COUNT=48,O_TOP=5
 struct Menu {int obj;};
 alignas(16) unsigned char pool[POOL_MAX*POOL_STRIDE]{};
 int popup=0,drawCalls=0;
-uintptr_t FfxBase(){return reinterpret_cast<uintptr_t>(pool)-(POOL_VA-kImageBase);}
+uintptr_t FfxBase(){return reinterpret_cast<uintptr_t>(pool)-(::FfxHooks::ExecutableProfile::Va<POOL_VA>()-kImageBase);}
 unsigned char* Pb(int obj,int at){return reinterpret_cast<unsigned char*>(static_cast<uintptr_t>(obj))+at;}
 void WrB(int o,int at,unsigned char v){*Pb(o,at)=v;}
 void WrW(int o,int at,short v){std::memcpy(Pb(o,at),&v,2);}
@@ -52,6 +54,11 @@ struct TextCall {std::string text;float x,y;};
 std::vector<TextCall> rendered;
 void DrawString(const unsigned char* text,float x,float y){++drawCalls;rendered.push_back({reinterpret_cast<const char*>(text),x,y});}
 void DrawStringSub(const unsigned char* text,float x,float y){DrawString(text,x,y);}
+void DrawStringRaw(const unsigned char* text,float x,float y){DrawString(text,x,y);}
+void DrawStringSubRaw(const unsigned char* text,float x,float y){DrawString(text,x,y);}
+int nativeFrames=0,nativeSelectors=0;
+void DrawTexQuad(unsigned,float,float,float,float,float u0,float v0,float u1,float v1,unsigned,unsigned){if(u0==1118.f&&v0==0.f&&u1==1599.f&&v1==67.f)++nativeSelectors;}
+void DrawWindow(float,float,float,float,int style){if(style==10)++nativeFrames;}
 void DrawSolidRect(float,float,float,float,unsigned,unsigned){++drawCalls;}
 void DrawCursor(float,float){++drawCalls;}
 void DrawMenuBackdrop(){++drawCalls;}void DrawMenuNeonFrame(int){}
@@ -90,6 +97,8 @@ FfxHooks::AeonAscension::SaveId saveId{};
 FfxHooks::AeonAscension::Mapping paidMapping{};
 }
 namespace FfxHooks::EquipmentWorkshop {
+static auto nativeRecipes=WorkshopRecipes();
+bool ReadAcquisition(workshop::AcquisitionCatalog& out){return workshop::ReadAcquisition(nativeRecipes.data(),nativeRecipes.size(),out);}
 bool Capture(workshop::State& out){if(!TestHost::available)return false;out=TestHost::state;return true;}
 bool ReadAeons(workshop::AeonProgress& out){out=TestHost::aeons;return TestHost::available;}
 workshop::Error Access(){
@@ -103,7 +112,8 @@ workshop::Error Preview(const workshop::Request& r,workshop::Plan& out){
     economy.aeons=TestHost::aeons;
     (void)CatalogBridge::Read(economy.catalog);
     if(!Settings::Read(economy.policy)||!Settings::AdmitsExpansion(r))return workshop::Error::InvalidPolicy;
-    return TestHost::available?workshop::Preview(TestHost::state,r,out,economy):workshop::Error::InvalidState;
+    workshop::AcquisitionCatalog acquisition{};ReadAcquisition(acquisition);
+    return TestHost::available?workshop::Preview(TestHost::state,r,out,economy,&acquisition):workshop::Error::InvalidState;
 }
 bool Commit(const workshop::Request& r,const workshop::Plan& reviewed){
     workshop::Plan plan{};
@@ -165,7 +175,6 @@ static void SinCurse_CloseMenu(){}static void F7Sub_CloseMenu(){}static void F8R
 static void ArenaPlusComposePick_Close(){}static void ArenaMixRenameAbort(){}static void SinRam_ClearSaveFeedback(){}
 static const char* F7CloseSourceName(FfxHooks::F7Ui::CloseSource){return "fixture";}
 #include "WorkshopCloseTransition.inc"
-static bool NativeMenuLegacyModalAllocationIdle(){return !EquipmentMenu::Active();}
 void NativeMenuForceGatePublish(){g_forceSubsystem=1;}
 namespace FfxHooks {
 long NativeMenu_ReserveAndConsumeOpenRequest(volatile long* request,long empty,volatile long* owner){
@@ -195,6 +204,27 @@ static void Check(bool ok,const char* name){++checks;if(!ok){++failures;std::pri
 #include "ElementNameMenuCases.inl"
 #include "MonsterRewardMenuCases.inl"
 #include "F8SoundFeedbackCases.inl"
+#include "WorkshopNativeSettingsCases.inl"
+static void AcquisitionMenuCases(){
+    using A=EquipmentMenu::Action;using P=EquipmentMenu::Page;
+    for(unsigned word:{0x800Du,0x8011u,0x8018u}){
+        FfxHooks::EquipmentWorkshop::nativeRecipes=WorkshopRecipes(true);
+        Check(WorkshopTestOpen(),"retired-ability menu fixture opens");auto& piece=TestHost::state.pieces[0];piece.fifthUnlocked=1;piece.native[5]=word==0x8018?1:0;
+        WorkshopTestChoose(A::Piece,0);WorkshopTestChoose(A::Fifth);
+        Check(!WorkshopTestLists(A::Value,word),"Spira fifth picker omits a retired native target");
+        FfxHooks::EquipmentWorkshop::nativeRecipes=WorkshopRecipes();EquipmentMenu::Build(P::Fifth);
+        Check(WorkshopTestLists(A::Value,word),"the same picker restores the ability under the vanilla table");
+        FfxHooks::EquipmentWorkshop::nativeRecipes=WorkshopRecipes(true);
+        auto& donor=TestHost::state.pieces[1];const auto nativeWord=static_cast<std::uint16_t>(word);std::memcpy(donor.native+14,&nativeWord,2);
+        EquipmentMenu::snapshot=TestHost::state;EquipmentMenu::draft.other=1;EquipmentMenu::transfer=0;EquipmentMenu::Build(P::Source);
+        Check(!WorkshopTestLists(A::Value,0),"legacy donor word is not offered for transfer");
+        EquipmentMenu::selectedSlot=1;EquipmentMenu::Build(P::Clear);
+        Check(WorkshopTestLists(A::Value,0),"the same legacy word remains visible for removal");
+        Check(workshop::Ability(TestHost::state.pieces[1],0)==word&&TestHost::commits==0,"listing/filtering never deletes or modifies existing gear");
+        EquipmentMenu::StopReady();
+    }
+    FfxHooks::EquipmentWorkshop::nativeRecipes=WorkshopRecipes();
+}
 static void FullFifthPickerCases(){
     using A=EquipmentMenu::Action;
     for(unsigned kind=0;kind<2;++kind){
@@ -216,7 +246,17 @@ int main(){
     InterlockedExchange(&EquipmentMenu::wantOpen,1);
     g_f7CloseSourcePending=static_cast<LONG>(FfxHooks::F7Ui::CloseSource::FocusLost);
     PendingCloseAndOpenPump();
-    Check(EquipmentMenu::menu.obj!=0&&EquipmentMenu::Active()&&g_forceSubsystem!=0,"old F7 close is consumed before the new Workshop allocation");
+    Check(!EquipmentMenu::menu.obj&&!EquipmentMenu::Active()&&!EquipmentMenu::wantOpen,"retired shortcut request is discarded without opening Workshop");
+    Check(EquipmentMenu::Open(true),"native main menu remains the sole published entry");
+    const int acceptedObject=EquipmentMenu::menu.obj;
+    const bool ownsProfiledPool=EquipmentMenu::StillOwned(acceptedObject);
+    Check(ownsProfiledPool,"Workshop recognizes its object in the selected executable's actual native pool");
+    // A bad pool base abandons live native objects, so stop this negative case
+    // before later tests exhaust the pool and obscure the ownership failure.
+    if(!ownsProfiledPool){std::fflush(stdout);return 1;}
+    EquipmentMenu::Tick();
+    Check(EquipmentMenu::Active()&&EquipmentMenu::menu.obj==acceptedObject,
+          "the first field tick keeps the accepted Workshop object and modal ownership alive");
     if(EquipmentMenu::menu.obj)EquipmentMenu::Draw(EquipmentMenu::menu.obj);
     Check(NativeMenu::drawCalls>0,"the first accepted open reaches its draw callback");
     EquipmentMenu::StopReady();
@@ -254,6 +294,7 @@ int main(){
     AeonWorkshopMenuCases();
     VanguardMenuCases();
     FullFifthPickerCases();
+    AcquisitionMenuCases();
     WorkshopCatalogMenuCases();
     AeonAscensionMenuCases();
     ModFeatureMenuCases();
@@ -264,7 +305,7 @@ int main(){
     F8SoundFeedbackCases();
     TestHost::nativeDetails=false;Check(WorkshopTestOpen(),"native display status fixture opens");
     NativeMenu::rendered.clear();EquipmentMenu::Draw(EquipmentMenu::menu.obj);
-    Check(WorkshopRendered("Native detail hook: OFF")&&WorkshopRendered("Reforge"),"Workshop explains disabled native display");
+    Check(WorkshopRendered("Native detail hook: OFF")&&WorkshopRendered("Workshop settings"),"Workshop explains disabled native display");
     TestHost::nativeDetails=true;NativeMenu::rendered.clear();EquipmentMenu::Draw(EquipmentMenu::menu.obj);
     Check(WorkshopRendered("Native detail hook: ON"),"Workshop identifies an active native detail hook");
     TestHost::nativeDetails=false;EquipmentMenu::StopReady();
@@ -275,5 +316,24 @@ int main(){
             char label[128]{};F8NativeSettingsLabel(NativeSettingsPage::ElementScan,1,label,sizeof(label));
             Check(std::strstr(label,active?"Running: ON":"Running: OFF")&&WorkshopRendered(label),"Scan settings distinguish actual hook status from saved preferences");}
         TestHost::scanActive=false;F8NativeSettingsReset();NativeMenu::Reset(statusObj);}
+    EquipmentMenu::StopReady();TestHost::available=true;
+    Check(EquipmentMenu::Open(true),"native main-menu origin opens the complete Workshop");
+    Check(EquipmentMenu::NeedsPump()&&!EquipmentMenu::NeedsForcedPump(),"native origin never borrows the forced F7 pump");
+    Check(EquipmentMenu::nativePresentation,"native origin selects the game's own presentation");
+    NativeMenu::nativeFrames=0;EquipmentMenu::Draw(EquipmentMenu::menu.obj);
+    Check(NativeMenu::nativeSelectors>0,"native submenu selection uses the game texture strip");
+    Check(NativeMenu::nativeFrames>=4,"native origin draws standard game frames for the same Workshop pages");
+    Check(std::strcmp(EquipmentMenu::rows[EquipmentMenu::count-1].label,"Return to main menu")==0,"native origin returns to its parent");
+    EquipmentMenu::Close();
+    Check(!EquipmentMenu::NeedsForcedPump(),"native close drain leaves the game menu pump in charge");
+    EquipmentMenu::StopReady();
+    Check(EquipmentMenu::Open(true)&&!EquipmentMenu::NeedsForcedPump(),"Workshop opens through its native menu without an independent shortcut pump");
+    EquipmentMenu::StopReady();
+    workshopTestMainOrigin=true;
+    WorkshopMenuTransactionCases();WorkshopMenuEconomyCases();WorkshopNavigationCases();
+    WorkshopExpansionSettingsCases();AeonWorkshopMenuCases();FullFifthPickerCases();
+    AcquisitionMenuCases();WorkshopCatalogMenuCases();AeonAscensionMenuCases();
+    EquipmentMenu::StopReady();workshopTestMainOrigin=false;
+    WorkshopNativeSettingsCases();
     std::printf("EquipmentWorkshopMenuRt1 %u/%u passed\n",checks-failures,checks);return failures?1:0;
 }

@@ -5,6 +5,12 @@
 #include <intrin.h>
 #include "SpiraRuntime.h"
 #include "SpiraRules.h"
+#include "SpiraItemMpRegen.h"
+#include "AeroEquipmentCore.h"
+#include "AeroEquipmentBridge.h"
+#include "SpiraElementalBridge.h"
+#include "RecoveryNative.h"
+#include "OriginalPs2RngEvidence.generated.h"
 #include "ModFeatureCatalog.h"
 #include "VanguardCatalog.h"
 #include "AeonAscensionBridge.h"
@@ -48,6 +54,7 @@ std::uint64_t proof=0;
 // NativeUiSupport publishes these trampolines before enabling the batch.
 void* originals[2]{};
 bool inTick=false;
+ItemMpRegen::State itemMpRegen;
 bool Copy(void* out,const void* source,std::size_t size) noexcept {return NativeUiSupport::Copy(out,source,size);}
 template<class T> bool Read(std::uintptr_t address,T& out) noexcept {
     return address>=0x10000&&address<=UINT32_MAX-sizeof(T)&&Copy(&out,reinterpret_cast<const void*>(address),sizeof(T));
@@ -68,7 +75,13 @@ void ReadMappings(Mapping& ids,ForeignMapping& foreign){
 bool Language(std::uint32_t& manager,std::uint32_t& id) noexcept {
     return Read(module + (::FfxHooks::ExecutableProfile::Rva<0x8DED48>()),manager)&&manager>=0x10000&&manager<=UINT32_MAX-8&&Read(manager+4,id)&&id<=18;
 }
+#ifdef FFXHOOKS_TESTING
+std::uint64_t currentChecks=0;
+#endif
 bool Current() noexcept {
+#ifdef FFXHOOKS_TESTING
+    ++currentChecks;
+#endif
     std::uint32_t pointer=0;std::uint16_t size=0;
     std::uint32_t manager=0,language=0;
     if(!ready.load()||!armed.load()||ownerThread.load()!=GetCurrentThreadId()||
@@ -122,6 +135,7 @@ bool Equipped(unsigned owner,unsigned effect) noexcept {
     return W::ReadPresentation(reinterpret_cast<const void*>(address),piece)&&piece.fifthUnlocked&&
         workshop::NativeSlotsFilled(piece)&&piece.fifth==bindings[effect].word&&piece.abilities[4]!=0;
 }
+#include "SpiraAeroEquipment.inl"
 bool PaidMapping(AeonAscension::Mapping& out) noexcept {
     out={};if(!options.ascension||!RowCurrent(0)||!RowCurrent(1))return false;
     out.enabled=true;out.proof=proof;out.words={static_cast<std::uint16_t>(bindings[0].word),static_cast<std::uint16_t>(bindings[1].word)};
@@ -137,7 +151,8 @@ bool Fifth(unsigned owner,const workshop::Piece& piece) noexcept {
     if(!piece.fifthUnlocked||!workshop::NativeSlotsFilled(piece)||!piece.abilities[4]||piece.native[4]!=owner)return false;
     for(unsigned i=0;i<Count;++i)if(bindings[i].word==piece.fifth&&OwnerKindMatches(i,owner,piece.native[5])&&EnabledIndex(i))
         return i<2?W::AscensionEffect(owner,i):true;
-    return false;
+    return AeroReady()&&owner<18&&piece.fifth>=0x80AF&&piece.fifth<=0x80B4&&
+        piece.native[5]==(piece.fifth<=0x80B0?0:1);
 }
 bool EffectRow(unsigned owner,unsigned slot,unsigned position,const Byte* gear,unsigned word,const void* table,
                const Byte* original,Byte* output) noexcept {
@@ -157,13 +172,18 @@ bool EffectRow(unsigned owner,unsigned slot,unsigned position,const Byte* gear,u
 }
 const Pipeline::Provider equipmentProvider{Fifth,EffectRow};
 struct DoubleScope {unsigned owner=31;Byte* actor=nullptr;DoubleScope* previous=nullptr;unsigned depth=0;};
+bool ConvertItemMp(unsigned owner,Byte* actor,int& mask) noexcept;
 thread_local DoubleScope* doubleScope=nullptr;
 void AdjustClamp(std::uintptr_t caller,int&,int&,int& maximum) noexcept {
+    // The shared clamp also runs thousands of times while Enter settles AP.
+    // Admit only our four HP/MP sites before touching the ability bank/config.
+    if(caller!=ExecutableProfile::Rva<0x3868A7>()&&caller!=ExecutableProfile::Rva<0x3868CF>()&&
+       caller!=ExecutableProfile::Rva<0x38D3A4>()&&caller!=ExecutableProfile::Rva<0x38D418>())return;
     unsigned owner=31;bool hp=false,mp=false;
-    if(Current()&&Pipeline::current&&Pipeline::current->depth<=16&&!Pipeline::current->battle){
+    if(Pipeline::current&&Pipeline::current->depth<=16&&!Pipeline::current->battle&&Current()){
         owner=Pipeline::current->owner;hp=caller==(::FfxHooks::ExecutableProfile::Rva<0x3868A7>());mp=caller==(::FfxHooks::ExecutableProfile::Rva<0x3868CF>());
     }
-    if(Current()&&doubleScope&&doubleScope->depth<=16&&Actor(doubleScope->owner)==doubleScope->actor){
+    if(doubleScope&&doubleScope->depth<=16&&Current()&&Actor(doubleScope->owner)==doubleScope->actor){
         owner=doubleScope->owner;hp=caller==(::FfxHooks::ExecutableProfile::Rva<0x38D3A4>());mp=caller==(::FfxHooks::ExecutableProfile::Rva<0x38D418>());
     }
     if((hp||mp)&&owner<18){
@@ -173,6 +193,7 @@ void AdjustClamp(std::uintptr_t caller,int&,int&,int& maximum) noexcept {
     }
 }
 int __cdecl DoubleShim(unsigned owner,Byte* actor,int mask){
+    ConvertItemMp(owner,actor,mask);
     DoubleScope frame{owner,actor,doubleScope,doubleScope?doubleScope->depth+1:1};doubleScope=&frame;int result=0;
     __try{result=reinterpret_cast<int(__cdecl*)(unsigned,Byte*,int)>(originals[0])(owner,actor,mask);}
     __finally{doubleScope=frame.previous;}
@@ -191,14 +212,24 @@ int __cdecl RewardShim(unsigned item,int quantity,void* rewards){
     }
     return reinterpret_cast<int(__cdecl*)(unsigned,int,void*)>(originals[1])(item,quantity,rewards);
 }
-struct Hit {std::uint64_t generation=0;bool valid=false,paid=false;std::array<Byte,108> command{};};
+struct Hit {std::uint64_t generation=0;bool valid=false,paid=false,mpConverted=false;unsigned width=0;std::array<Byte,108> command{};};
 thread_local std::array<Hit,Bus::MaximumDepth> hits{};
+bool ConvertItemMp(unsigned owner,Byte* actor,int& mask) noexcept {
+    if(!options.itemMpRegen||!Current()||owner>=18||Actor(owner)!=actor||!Bus::currentDamage||
+       !Bus::currentDamage->depth||Bus::currentDamage->depth>hits.size())return false;
+    const auto& call=Bus::currentDamage->call;
+    if(call.target!=owner||call.targetActor!=actor)return false;
+    auto& hit=hits[Bus::currentDamage->depth-1];Byte previous=0;
+    if(hit.generation!=epoch.load()||!Copy(&previous,actor+0x640,1)||
+       !ItemMpRegen::Convert(true,call.commandId,hit.command.data(),hit.width,owner,previous,mask))return false;
+    hit.mpConverted=true;return true;
+}
 void* EnterHit(const Bus::DamageCall& call,const void*& forwarded) noexcept {
     if(!Current()||!Bus::currentDamage||!Bus::currentDamage->depth||Bus::currentDamage->depth>hits.size()||
        Actor(call.user)!=call.userActor||Actor(call.target)!=call.targetActor)return nullptr;
     const auto family=call.commandId>>12;const unsigned width=family==2||family==3?96:family==4||family==6?92:0;
     if(!width||!forwarded)return nullptr;
-    auto& hit=hits[Bus::currentDamage->depth-1];hit={};hit.generation=epoch.load();
+    auto& hit=hits[Bus::currentDamage->depth-1];hit={};hit.generation=epoch.load();hit.width=width;
     if(!Copy(hit.command.data(),forwarded,width))return nullptr;
     const auto* row=hit.command.data();
     hit.valid=(row[0x23]&1)!=0&&(row[0x20]&0x10)==0&&row[0x28]!=0;
@@ -208,7 +239,18 @@ void* EnterHit(const Bus::DamageCall& call,const void*& forwarded) noexcept {
     // the shared upper-clamp policy expands positive HP damage.
     return &hit;
 }
-void LeaveHit(void* token,const Bus::DamageCall&,unsigned,bool) noexcept {if(token)*static_cast<Hit*>(token)={};}
+void LeaveHit(void* token,const Bus::DamageCall& call,unsigned,bool complete) noexcept {
+    if(!token)return;
+    auto& hit=*static_cast<Hit*>(token);
+    if(complete&&options.itemMpRegen&&hit.generation==epoch.load()&&Current()&&call.target<18&&Actor(call.target)==call.targetActor){
+        int hp=0;
+        if(Copy(&hp,static_cast<const Byte*>(call.targetActor)+0x5D0,4)){
+            if(hp<=0)itemMpRegen.Forget(call.target);
+            else if(hit.mpConverted)itemMpRegen.Grant(call.target,reinterpret_cast<std::uintptr_t>(call.targetActor),hit.generation);
+        }
+    }
+    hit={};
+}
 void Cap(void* token,const Bus::DamageCall& call,Bus::CapRequests& request) noexcept {
     const auto* hit=static_cast<const Hit*>(token);
     if(hit&&hit->paid&&hit->generation==epoch.load()&&Current())request.aeonAuthorized=W::AscensionEffect(call.user,1);
@@ -225,11 +267,15 @@ bool AdvanceEpoch() noexcept {
 }
 void ResetData(Bus::ResetReason) noexcept {ready=false;(void)AdvanceEpoch();}
 const Bus::Observer combatObserver{EnterHit,LeaveHit,Cap,ResetData,Modify};
-void Turn(unsigned owner,void* actor,std::uint32_t) noexcept {
-    if(!Current()||!options.spira||owner>=18||Actor(owner)!=actor||!Equipped(owner,2))return;
+void Turn(unsigned owner,void* actor,std::uint32_t sequence) noexcept {
+    if(!Current()||owner>=18||Actor(owner)!=actor)return;
     int hp=0,current=0,maximum=0;auto* bytes=static_cast<Byte*>(actor);
-    if(!Copy(&hp,bytes+0x5D0,4)||hp<=0||!Copy(&current,bytes+0x5D4,4)||!Copy(&maximum,bytes+0x598,4))return;
-    const int next=ManaSpring(current,maximum);if(next!=current)Copy(bytes+0x5D4,&next,4);
+    if(!Copy(&hp,bytes+0x5D0,4)||!Copy(&current,bytes+0x5D4,4)||!Copy(&maximum,bytes+0x598,4))return;
+    if(hp<=0){itemMpRegen.Forget(owner);return;}
+    const auto generation=epoch.load();
+    int next=options.spira&&Equipped(owner,2)?ManaSpring(current,maximum):current;
+    if(options.itemMpRegen)next=itemMpRegen.Turn(owner,reinterpret_cast<std::uintptr_t>(actor),generation,sequence,hp,next,maximum);
+    if(next!=current&&generation==epoch.load()&&Current()&&Actor(owner)==actor)Copy(bytes+0x5D4,&next,4);
 }
 const SharedTurn::Observer turnObserver{Turn};
 bool Profile(std::uintptr_t base){
@@ -254,20 +300,28 @@ bool Profile(std::uintptr_t base){
 } // namespace
 
 bool Prepare(std::uintptr_t image,RuntimeOptions selected,bool validateOnly,LogFn log){
-    if(configured.load()||terminal.load()||validateOnly||(!selected.spira&&!selected.ascension))return false;
-    if(!Profile(image))return false;
+    if(configured.load()||terminal.load()||validateOnly||(!selected.spira&&!selected.ascension&&!selected.itemMpRegen))return false;
+    if(!Profile(image)||(selected.spira&&!AeroProfile(image)))return false;
+    if(selected.itemMpRegen){
+        // Exact native special-buff byte read, signed refresh branch and BYTE
+        // replacement at actor+0x640. No status offset is inferred from an enum.
+        constexpr Byte witness[]={0x55,0x8B,0xEC,0x53,0x8B,0x5D,0x10,0x56,0x8B,0x75,0x0C,0x57,0x0F,0xB6,0x96,0x40,0x06,0x00,0x00,0x8B,0xC2,0xD1,0xE8,0x8B,0xCA,0x83,0xE0,0x01,0x83,0xE1,0x01,0x89,0x45,0x0C,0x85,0xDB,0x79,0x09,0xBF,0x01,0x00,0x00,0x00,0x8B,0xDA,0xEB,0x08,0x33,0xFF,0x88,0x9E,0x40,0x06,0x00,0x00};
+        Byte bytes[sizeof(witness)]{};
+        if(!Copy(bytes,reinterpret_cast<void*>(image+ExecutableProfile::Rva<0x38D330>()),sizeof(bytes))||std::memcmp(bytes,witness,sizeof(bytes)))return false;
+    }
     module=image;options=selected;logger=log;
     const std::uint32_t rvas[]={(::FfxHooks::ExecutableProfile::Rva<0x38D330>()),(::FfxHooks::ExecutableProfile::Rva<0x398AD0>())};
     void* replacements[]={reinterpret_cast<void*>(&DoubleShim),reinterpret_cast<void*>(&RewardShim)};
     if(!SharedClamp::Start(image)||!SharedClamp::Register(SharedClamp::Slot::Spira,&AdjustClamp))return false;
     if(!NativeUiSupport::Install(image,rvas,replacements,originals,MinHookBatch::Owner::SpiraRuntime,reinterpret_cast<const void*>(&DoubleShim))){RequestStop();return false;}
     if(!Pipeline::Register(&equipmentProvider)||!Bus::Subscribe(Bus::Slot::Aeon,&combatObserver)||
+       (selected.spira&&(!AeroEquipmentBridge::Register(&aeroProvider)||!Bus::Subscribe(Bus::Slot::WeaponElements,&aeroObserver)))||
        !AeonAscension::RegisterProvider(&paidProvider)||
-       (selected.spira&&(!SharedTurn::Start(image)||!SharedTurn::Register(SharedTurn::Consumer::Spira,&turnObserver)))){RequestStop();return false;}
+       ((selected.spira||selected.itemMpRegen)&&(!SharedTurn::Start(image)||!SharedTurn::Register(SharedTurn::Consumer::Spira,&turnObserver)))){RequestStop();return false;}
     configured=true;return true;
 }
 bool Prepare(std::uintptr_t image,bool validateOnly,LogFn log){
-    return Prepare(image,{ModFeatures::Enabled(ModFeatures::Feature::Spira),ModFeatures::Enabled(ModFeatures::Feature::Ascension)},validateOnly,log);
+    return Prepare(image,{ModFeatures::Enabled(ModFeatures::Feature::Spira),ModFeatures::Enabled(ModFeatures::Feature::Ascension),ModFeatures::Enabled(ModFeatures::Feature::ItemMpRegen)},validateOnly,log);
 }
 bool Activate() noexcept {
     if(!configured.load()||terminal.load()||!W::CombatProducerReady()||!IsCombatDamageClampInstalled())return false;
@@ -292,12 +346,15 @@ void TickMainThread() noexcept {
         for(unsigned i=0;i<Count;++i){if(!result[i].rowVerified&&numeric[i].rowVerified)result[i]=numeric[i];
             hash^=ids[i];hash*=1099511628211ull;if(result[i].rowVerified){any=true;std::memcpy(rows[i].data(),bytes.data()+20+ids[i]*108,108);}}
         for(const auto id:foreign){hash^=id;hash*=1099511628211ull;}
+        bool nextAero=options.spira&&AeroEquipment::Validate(bytes.data(),bytes.size());
+        for(const auto id:ids)if(id>=AeroEquipment::First&&id<=AeroEquipment::Last)nextAero=false;
+        for(const auto id:foreign)if(id>=AeroEquipment::First&&id<=AeroEquipment::Last)nextAero=false;
         unsigned last=0;std::size_t pool=0;
-        if(!any||!Table(bytes.data(),bytes.size(),last,pool)||last<25){ready=false;return;}
+        if((!any&&!options.itemMpRegen&&!nextAero)||!Table(bytes.data(),bytes.size(),last,pool)||last<25){ready=false;return;}
         for(unsigned i=0;i<3;++i)std::memcpy(vanillaBreaks[i].data(),bytes.data()+20+(23+i)*108+0x58,20);
         if(!AdvanceEpoch())return;
         mapping=ids;foreignMapping=foreign;bindings=result;bankAddress=address;bankBytes=size;proof=hash?hash:1;
-        languageManager=manager;languageId=language;kernelSnapshot=std::move(bytes);ready=true;
+        languageManager=manager;languageId=language;kernelSnapshot=std::move(bytes);aeroBound=nextAero;ready=true;
         if(logger)logger("[ffx-hooks] Spira loaded ability identities admitted\n");
     }catch(...){ready=false;}
 }
@@ -309,6 +366,7 @@ void RequestStop() noexcept {
     RequestDetachStop();
     SharedClamp::Unregister(SharedClamp::Slot::Spira,&AdjustClamp);
     SharedTurn::Unregister(SharedTurn::Consumer::Spira,&turnObserver);
+    AeroEquipmentBridge::Unregister(&aeroProvider);Bus::Unsubscribe(Bus::Slot::WeaponElements,&aeroObserver);
     Pipeline::Unregister(&equipmentProvider);AeonAscension::UnregisterProvider(&paidProvider);Bus::Unsubscribe(Bus::Slot::Aeon,&combatObserver);
 }
 bool Ready() noexcept {return Current();}
@@ -322,4 +380,7 @@ unsigned PartyDropMultiplier() noexcept {
     return result;
 }
 const char* RuntimeDetail() noexcept {return terminal.load()?"Stopped":Current()?"Ready":configured.load()?"Waiting for native ability data":"Disabled";}
+#ifdef FFXHOOKS_TESTING
+std::uint64_t ValidationCountForTests() noexcept {return currentChecks;}
+#endif
 } // namespace FfxHooks::SpiraAbilities

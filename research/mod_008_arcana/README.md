@@ -1,15 +1,22 @@
 # MOD-008 — Spira: Arcana of the Fayth
 
-Jarvis-HOOK. Native runtime candidate implemented on the current Hooks base; RT0/RT1 verified, RT2 pending; author review only. See [runtime contracts and validation](../../docs/research/MOD_008_RUNTIME_2026-09-28.md).
+Jarvis-HOOK. Native runtime candidate with progression-gated field acquisition,
+item-received notices and a complete first-card introduction. RT0/RT1 and the
+combined Release build are verified; live RT2 is pending. The acquisition update
+has an independent source review; that review does not cover every Arcana feature.
+See [acquisition behavior and evidence](../../docs/research/ARCANA_ACQUISITION_IMPLEMENTATION_2026_10_09.md)
+and the earlier [runtime contracts](../../docs/research/MOD_008_RUNTIME_2026-09-28.md).
 
 - [Design and settled decisions](<../../docs/mod-ideas/MOD 008 - ARCANA OF THE FAYTH.md>)
 - [All 78 cards and current effects](<../../docs/mod-ideas/MOD 008 - CATALOGO DAS 78 CARTAS.md>)
+- [78-card acquisition distribution](../../docs/research/ARCANA_ACQUISITION_PROPOSAL_2026_10_08.md)
+- [Implemented sites, gates and provenance](acquisition_sites.json)
 - [Local gallery](../../assets/mod-008-arcana/gallery.html)
 - [Native integration plan](../../docs/research/MOD_008_IMPLEMENTATION_PLAN_2026-09-27.md)
 - [Recovery and delivery review](../../docs/research/MOD_008_DELIVERY_REVIEW_2026-09-27.md)
 
 The active art set is selected by `cards.proposed.json` and `assets-manifest.json`:
-78 individual cards, the original frame, a card back and a transparent icon.
+90 individual cards (78 original cards and twelve boss rewards), the original frame, a card back and a transparent icon.
 The native preview decodes these selected PNG masters with WIC and a bounded D3D11 cache. Generation receipts preserve
 their origins. Nine of Cups uses `044-cups-nine-v2.png`; its original extra-cup
 concept remains local and is excluded from version control.
@@ -44,7 +51,7 @@ text, symbolism or visual quality; review the selected images separately.
 
 Use `src/runtime/FfxHooksDll/arcana_rt1.ps1 -GameExecutable <private-FFX.exe> -NativeSaveFixture <disposable-native-save> -AssetsRoot <mods/arcana> -CandidateDll <candidate-dll>` with MSVC x86. The CRT fixture requires the exact game `msvcr110.dll` beside the private PE. This maps the PE without running its entrypoint and never launches or deploys the game.
 
-Create a private package with `python3 research/mod_008_arcana/package_runtime.py --dll <candidate-dll> --output <candidate.zip>`. It includes the DLL, all 78 selected cards, icon/back, OFF examples, effect/acquisition references, licenses and SHA-256 identities. The original frame master remains in the art delivery.
+Create a private package with `python3 research/mod_008_arcana/package_runtime.py --dll <candidate-dll> --output <candidate.zip>`. It includes the DLL, all 90 selected cards, icon/back, OFF examples, effect/acquisition references, licenses and SHA-256 identities. The original frame master remains in the art delivery.
 
 ## Standalone installation and repository completeness
 
@@ -52,7 +59,7 @@ MOD-008 is an FFX Hooks module. It does not require Spira Reforge, its launcher,
 its data packs, FFX-2, or an online card download. The name and artwork retain the
 Spira: Arcana of the Fayth identity. Every Arcana runtime dependency is tracked
 in this repository: native code and compiled catalog under
-`src/runtime/FfxHooksDll/`, the 78 PNGs and shared art under
+`src/runtime/FfxHooksDll/`, the 90 PNGs and shared art under
 `assets/mod-008-arcana/`, and acquisition rules, source catalogs, generators,
 package scripts and license notices under `research/mod_008_arcana/`.
 
@@ -70,7 +77,9 @@ as provenance; runtime, packaging and default offline checks do not read them.
 3. Merge `Arcana-settings.ini.example` into `_isolated/ffx-hooks.ini` while
    preserving other settings. Both options ship OFF. Set `[arcana] enabled=1`
    and restart FFX to use **Main Menu > Equip > Tarot**.
-4. Normal play awards cards from the documented story/challenge milestones.
+4. Story/challenge milestones unlock interactive Tarot symbols. Approach and
+   confirm to collect; each new card displays a native item receipt, and the first
+   opens the complete introduction. **Equip > Tarot guide** reopens that guide.
    **F8 > Dev > Arcana: full deck** grants all 78 immediately. Disabling this
    development option keeps the collection. Preserve each save's Arcana
    sidecars when copying saves.
@@ -95,9 +104,18 @@ original Auto-Abilities caption artwork, with an Arcana label alongside it.
 The main Status overview also shows the equipped Tarot slots side by side in
 the existing gap below Armor, including Empty/Locked states.
 
-[Acquisition rules](acquisition-v1.md) implement story/sidequest/challenge reconciliation. The separate Development option grants all cards immediately and is OFF by default. Native Equip contains the picker; it is not an F7 equipment replacement.
+[The authored acquisition catalog](acquisition_sites.json) controls the current
+field interactions and their progression gates. No card depends on blitzball.
+The older [v1 acquisition notes](acquisition-v1.md) describe automatic milestone
+grants before this update and are historical. The separate Development option
+grants all cards immediately and is OFF by default. Native Equip contains the
+picker; it is not an F7 equipment replacement.
 
-The dated September 27 reports describe concept/research evidence. `cards.proposed.json` intentionally remains a design source, not a runtime parser contract. The compiled typed catalog and [runtime validation record](runtime-validation.json) describe this candidate. No independent review or live visual/gameplay result is claimed; source integration follows the user's later explicit PR/merge instruction. RT2 and Production promotion remain separate.
+The dated September 27 reports and [runtime validation record](runtime-validation.json)
+describe their original checkpoints. `cards.proposed.json` remains a design source,
+not a runtime parser contract. The October acquisition evidence linked above
+records the subsequent review and tests. No live visual/gameplay result is claimed;
+RT2 and Production promotion remain separate.
 
 
 ## Elemental major-card additions (2026-09-29 source candidate)

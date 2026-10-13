@@ -3,13 +3,14 @@
 // native fixture. Existing rows/text remain intact; no installed asset is edited.
 #include "../hooks/SpiraAbilityCatalog.h"
 #include "../hooks/VanguardCatalog.h"
+#include "../hooks/AeroEquipmentCore.h"
 #include <vector>
 #include <cstring>
 #include <stdexcept>
 namespace SpiraKernelFixture {
 inline void Word(unsigned char* p,unsigned v){p[0]=static_cast<unsigned char>(v);p[1]=static_cast<unsigned char>(v>>8);}
 inline void Dword(unsigned char* p,unsigned v){std::memcpy(p,&v,4);}
-inline std::vector<unsigned char> Build(const std::vector<unsigned char>& original){
+inline std::vector<unsigned char> Build(const std::vector<unsigned char>& original,bool aero=false){
     namespace S=FfxHooks::SpiraAbilities;
     unsigned last=0;std::size_t pool=0;
     if(!S::Table(original.data(),original.size(),last,pool)||last<130)throw std::runtime_error("Invalid private native ability kernel");
@@ -42,6 +43,12 @@ inline std::vector<unsigned char> Build(const std::vector<unsigned char>& origin
         else if(i>=20&&i<=21){row[0x55]=static_cast<unsigned char>(10*(i-19));Word(row+0x56,0x3000);}
         else if(i==24||i==25)row[0x11]=15;
         name(id,S::Entries[i].label);
+    }
+    if(aero)for(unsigned i=0;i<FfxHooks::AeroEquipment::Count;++i){
+        const auto id=FfxHooks::AeroEquipment::First+i;
+        auto* row=result.data()+20+108*id;std::memset(row,0,108);
+        std::memcpy(row+16,FfxHooks::AeroEquipment::Payloads[i].data(),92);
+        name(id,FfxHooks::AeroEquipment::Names[i]);
     }
     if(result.size()>65535)throw std::runtime_error("Private kernel exceeds the loaded-size WORD");
     return result;

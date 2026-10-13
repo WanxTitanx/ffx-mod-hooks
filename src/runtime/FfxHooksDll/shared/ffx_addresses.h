@@ -555,6 +555,10 @@
 #define RVA_FFX_RENDER_ENGINE_NOTIFY_FRAME_END    (::FfxHooks::ExecutableProfile::Rva<0x00487E70u>())  /* IDA 0x887E70: int __cdecl(int phase) — frame epilogue notify */
 #define RVA_FFX_MENU_SUBSYSTEM_SUPPRESS_FLAG      (::FfxHooks::ExecutableProfile::Rva<0x00F407F0u>())  /* IDA 0x13407F0: third 820de2 gate */
 #define RVA_FFX_PHYRE_RT_BIND_ACTIVE              (::FfxHooks::ExecutableProfile::Rva<0x00EFB79Cu>())  /* IDA 0x12FB79C: RT-stack bind active flag */
+/* Renderer singleton 0xC94F00 +0x74: IDXGISwapChain* written by the only
+ * D3D11CreateDeviceAndSwapChain call and read by the unique present routine
+ * (legacy 0x5938F0 / Steam 0x593760, identical 38-byte body). 4-byte pointer, read only. */
+#define RVA_FFX_RENDERER_SWAPCHAIN                (::FfxHooks::ExecutableProfile::Rva<0x00894F74u>())  /* preferred VA 0x00C94F74 */
 /* Ronso IDs 104..115 are bits 8..19 of the native party command bank at D307FC.
  * The twelve-bit view starts at D307FD; 9307FD was a double-base transcription
  * into renderer data. The native grant owns writes; this address is observation evidence. */

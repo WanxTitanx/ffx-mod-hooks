@@ -10,6 +10,14 @@ namespace B=FfxHooks::CombatExtensions;
 unsigned checks=0,failures=0,entered=0,left=0,aborted=0;
 void Check(bool value,const char* why){++checks;if(!value){++failures;std::printf("FAIL %s\n",why);}}
 int marker=0;
+#ifdef FFXHOOKS_WEAPON_ELEMENTS_V1
+unsigned weaponMask=0,maskSeenAtEnter=0,maskSeenAtLeave=0;
+void* WeaponEnter(const B::DamageCall&,const void*&) noexcept {weaponMask=0x40;return &weaponMask;}
+void WeaponLeave(void*,const B::DamageCall&,unsigned,bool) noexcept {weaponMask=0;}
+void* ObserveWeapon(const B::DamageCall&,const void*&) noexcept {maskSeenAtEnter=weaponMask;return &maskSeenAtEnter;}
+void ObserveWeaponLeave(void*,const B::DamageCall&,unsigned,bool) noexcept {maskSeenAtLeave=weaponMask;}
+const B::Observer weaponObserver{WeaponEnter,WeaponLeave},elementObserver{ObserveWeapon,ObserveWeaponLeave};
+#endif
 void* Enter(const B::DamageCall& call,const void*& command) noexcept {
     ++entered;if(call.commandId==0x3042)command=&marker;
     return reinterpret_cast<void*>(std::uintptr_t(call.commandId));
@@ -84,6 +92,17 @@ int main(){
     Check(B::LeaveDamage(modified,0,true),"modifier retires normally");
 #else
     Check(false,"shared positive-HP modifier interface is missing");
+#endif
+#ifdef FFXHOOKS_WEAPON_ELEMENTS_V1
+    Check(B::Subscribe(B::Slot::Elemental,&elementObserver)&&B::Subscribe(B::Slot::WeaponElements,&weaponObserver),"weapon and affinity observers register independently");
+    B::DamageScope weaponScope{};B::EnterDamage(weaponScope,call);
+    Check(maskSeenAtEnter==0x40&&weaponMask==0x40,"temporary weapon element is visible before affinity admission");
+    B::Unsubscribe(B::Slot::WeaponElements,&weaponObserver);
+    B::LeaveDamage(weaponScope,0,false);
+    Check(maskSeenAtLeave==0x40&&!weaponMask,"element cleanup precedes weapon restoration even after stop or abort");
+    B::Unsubscribe(B::Slot::Elemental,&elementObserver);
+#else
+    Check(false,"pre-affinity weapon-element scope is missing");
 #endif
     std::printf("COMBAT_EXTENSION_BUS_RT0 %u/%u passed\n",checks-failures,checks);return failures?1:0;
 }

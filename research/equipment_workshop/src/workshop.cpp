@@ -1,6 +1,7 @@
 #include "workshop.h"
 #include "customize_recipes.h"
 #include "customize_constraints.h"
+#include "acquisition.h"
 #include <algorithm>
 #include <array>
 #include <cstring>
@@ -68,7 +69,7 @@ bool Affordable(const State& state,const Plan& plan,bool unlocking=false,unsigne
     }
     return true;
 }
-Error Edit(const State& before,const Request& r,Plan& out){
+Error Edit(const State& before,const Request& r,Plan& out,const AcquisitionCatalog* acquisition){
     auto& s=out.after;auto& p=s.pieces[r.slot];
     if(r.op==Op::Create){
         if(r.gearTemplate[4]>=8&&r.gearTemplate[4]<18)return Error::Protected;
@@ -115,7 +116,7 @@ Error Edit(const State& before,const Request& r,Plan& out){
         }
         for(unsigned i=0;i<r.count;++i){
             const auto ability=Ability(donor,r.from[i]);
-            const auto allowed=CustomizeEligibility(combination,r.to[i],ability,&out.catalog);if(allowed!=Error::Ok)return allowed;
+            const auto allowed=CustomizeEligibility(combination,r.to[i],ability,&out.catalog,acquisition);if(allowed!=Error::Ok)return allowed;
             SetAbility(combination,r.to[i],ability);
         }
         IndividualRanks(p);IndividualRanks(donor);
@@ -123,7 +124,7 @@ Error Edit(const State& before,const Request& r,Plan& out){
             if(src>=donor.native[11] || dst>=p.native[11] || Ability(donor,src)==Empty)return Error::InvalidRequest;
             const auto ability=Ability(donor,src);
             unsigned item=0,quantity=0;bool native=false;
-            if(!CustomizeCost(ability,out.policy,item,quantity,native,&out.catalog))return Error::UnsupportedAbility;
+            if(!CustomizeCost(ability,out.policy,item,quantity,native,&out.catalog,acquisition))return Error::UnsupportedAbility;
             if(!Charge(out,item,(quantity+out.policy.fusionDivisor-1)/out.policy.fusionDivisor))return Error::InvalidRequest;
             SetAbility(p,dst,ability);p.abilities[dst]=donor.abilities[src];
             p.ranks[dst]=donor.ranks[src];
@@ -153,9 +154,9 @@ Error Edit(const State& before,const Request& r,Plan& out){
         if(Special(p))return Error::Protected;
         const unsigned slot=r.to[0];if(slot>=4 || slot>=Capacity(p) || !Evolves(Ability(p,slot),r.value))return Error::InvalidRequest;
         if(ProtectedAbility(p,slot))return Error::Protected;
-        const auto allowed=CustomizeEligibility(p,slot,r.value,&out.catalog);if(allowed!=Error::Ok)return allowed;
+        const auto allowed=CustomizeEligibility(p,slot,r.value,&out.catalog,acquisition);if(allowed!=Error::Ok)return allowed;
         unsigned item=0,quantity=0;bool native=false;
-        if(!CustomizeCost(r.value,out.policy,item,quantity,native,&out.catalog)||!native)return Error::UnsupportedAbility;
+        if(!CustomizeCost(r.value,out.policy,item,quantity,native,&out.catalog,acquisition)||!native)return Error::UnsupportedAbility;
         // Preserve other legacy A ranks without charging catch-up refinement.
         IndividualRanks(p);
         SetAbility(p,slot,r.value);p.abilities[slot]=Id(s);p.ranks[slot]=0;
@@ -226,10 +227,10 @@ Error Edit(const State& before,const Request& r,Plan& out){
         if(Special(p))return Error::Protected;
         if(ProtectedAbility(p,4))return Error::Protected;
         unsigned item=0,quantity=0;
-        if(!p.fifthUnlocked || !FifthCost(p,r.value,out.policy,item,quantity,&out.catalog))return Error::UnsupportedAbility;
+        if(!p.fifthUnlocked || !FifthCost(p,r.value,out.policy,item,quantity,&out.catalog,acquisition))return Error::UnsupportedAbility;
         if(!NativeSlotsFilled(p))return Error::InvalidRequest;
         if(p.fifth==r.value)return Error::NoChange;
-        const auto allowed=CustomizeEligibility(p,4,r.value,&out.catalog);if(allowed!=Error::Ok)return allowed;
+        const auto allowed=CustomizeEligibility(p,4,r.value,&out.catalog,acquisition);if(allowed!=Error::Ok)return allowed;
         IndividualRanks(p); // Preserve old A ranks without granting them to a new ability.
         if(!Charge(out,item,quantity))return Error::InvalidRequest;
         out.gilCost=200000;
@@ -315,8 +316,8 @@ bool ValidFifthWord(std::uint16_t word){
     // grants neither authoring nor native effect admission.
     return word==Empty||(word>=0x8000&&word<=0x8082)||(word>=0x8087&&word<=0x8FFF);
 }
-bool CustomizeCost(std::uint16_t word,Policy policy,unsigned& item,unsigned& quantity,bool& native,const Catalog* catalog){
-    if(!ValidPolicy(policy)||!SupportedRefinement(word,catalog))return false;
+bool CustomizeCost(std::uint16_t word,Policy policy,unsigned& item,unsigned& quantity,bool& native,const Catalog* catalog,const AcquisitionCatalog* acquisition){
+    if(!ValidPolicy(policy)||!SupportedRefinement(word,catalog)||!AcquisitionAllowed(word,acquisition))return false;
     if(const auto* extra=FindCatalogEntry(word,catalog)){item=extra->item;quantity=policy.modRecipeQuantity;native=false;return true;}
     const auto row=CustomizeRecipes[word-0x8000];native=row.quantity!=0;
     item=row.item;quantity=native?row.quantity:policy.modRecipeQuantity;return true;
@@ -345,16 +346,16 @@ bool NativeSlotsFilled(const Piece& piece){
     for(unsigned i=0;i<4;++i)if(Ability(piece,i)==Empty)return false;
     return true;
 }
-bool FifthCost(const Piece& piece,std::uint16_t word,Policy policy,unsigned& item,unsigned& quantity,const Catalog* catalog){
+bool FifthCost(const Piece& piece,std::uint16_t word,Policy policy,unsigned& item,unsigned& quantity,const Catalog* catalog,const AcquisitionCatalog* acquisition){
     bool native=false;unsigned original=0;
-    if(piece.native[5]>1||!SupportedFifth(word,catalog)||!CustomizeCost(word,policy,item,original,native,catalog))return false;
+    if(piece.native[5]>1||!SupportedFifth(word,catalog)||!CustomizeCost(word,policy,item,original,native,catalog,acquisition))return false;
     const auto* extra=FindCatalogEntry(word,catalog);
     if(extra){if(extra->kind!=unsigned(piece.native[5])+1)return false;}
     else if(!native||CustomizeRecipes[word-0x8000].kind!=unsigned(piece.native[5])+1)return false;
     quantity=(3*original+1)/2;return true;
 }
-Error CustomizeEligibility(const Piece& piece,unsigned slot,std::uint16_t word,const Catalog* catalog){
-    if(slot>4||piece.fifthUnlocked>1||piece.native[5]>1||!SupportedRefinement(word,catalog))return Error::UnsupportedAbility;
+Error CustomizeEligibility(const Piece& piece,unsigned slot,std::uint16_t word,const Catalog* catalog,const AcquisitionCatalog* acquisition){
+    if(slot>4||piece.fifthUnlocked>1||piece.native[5]>1||!SupportedRefinement(word,catalog)||!AcquisitionAllowed(word,acquisition))return Error::UnsupportedAbility;
     if(ProtectedAbility(piece,slot))return Error::Protected;
     const auto* extra=FindCatalogEntry(word,catalog);
     if(extra){if(extra->kind!=unsigned(piece.native[5])+1)return Error::UnsupportedAbility;}
@@ -430,7 +431,7 @@ Error Import(const std::uint8_t* records,const std::uint16_t* items,std::uint64_
     for(unsigned i=0;i<GearCount;++i)Initialize(s,s.pieces[i],records+i*NativeBytes);
     std::memcpy(s.items,items,sizeof(s.items));const auto error=Validate(s);if(error==Error::Ok)out=s;return error;
 }
-Error Preview(const State& s,const Request& r,Plan& out,Economy economy){
+Error Preview(const State& s,const Request& r,Plan& out,Economy economy,const AcquisitionCatalog* acquisition){
     out={};out.after=s;
     if(!ValidPolicy(economy.policy)||!ValidCatalog(economy.catalog))return Error::InvalidPolicy;
     auto error=Validate(s);if(error!=Error::Ok)return error;
@@ -441,7 +442,7 @@ Error Preview(const State& s,const Request& r,Plan& out,Economy economy){
     if(!observedEvent && !economy.customizeUnlocked && !economy.policy.devIgnoreProgression)return Error::Locked;
     if(!observedEvent){const auto access=AeonAccess(s.pieces[r.slot],r.slot,economy.aeons);if(access!=Error::Ok)return access;}
     Plan planned{};planned.after=s;planned.policy=economy.policy;planned.gilBefore=economy.gil;planned.customizeUnlocked=economy.customizeUnlocked;planned.aeons=economy.aeons;planned.catalog=economy.catalog;
-    error=Edit(s,r,planned);
+    error=Edit(s,r,planned,acquisition);
     if(error==Error::Ok&&!observedEvent&&IsAeon(s.pieces[r.slot])){
         if(planned.gilCost>UINT32_MAX/2u)error=Error::InvalidRequest;else planned.gilCost*=2;
         for(unsigned i=0;i<5;++i)if(ProtectedAbility(s.pieces[r.slot],i)&&

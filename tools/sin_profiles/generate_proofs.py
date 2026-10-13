@@ -14,7 +14,7 @@ def fnv(data):
     return value
 
 
-def generate(manifest_path, pack_path, command_path):
+def generate(manifest_path, pack_path, command_path, variants=(), canonical=None):
     manifest = json.loads(manifest_path.read_text())
     pack = pack_path.read_bytes()
     if hashlib.sha256(pack).hexdigest().upper() != manifest['packSha256']:
@@ -73,6 +73,26 @@ def generate(manifest_path, pack_path, command_path):
             raise ValueError(f'Command {index} must have exactly one definition')
         command_rows.extend(matches)
 
+    if canonical:
+        known=json.loads(canonical.read_text())['commands']
+        if len(known)!=len(indices) or [r['index'] for r in known]!=indices or any(r['size']!=92 or len(r['hash'])!=16 for r in known):
+            raise ValueError('Canonical command identity set differs from dependency indices')
+        command_rows=[f"    {{{r['index']}, {r['size']}, 0x{int(r['hash'],16):016X}ULL}}," for r in known]
+    variant_rows=[]
+    for path in variants:
+        data=path.read_bytes();count=struct.unpack_from('<H',data)[0]
+        if not 0<count<=16 or len(data)<8+count*12:raise ValueError('Invalid variant command header')
+        for index in indices:
+            found=[]
+            for segment in range(count):
+                first,last,size,_,offset=struct.unpack_from('<HHHHI',data,8+segment*12)
+                if first>last or size!=92 or offset<8+count*12:raise ValueError('Invalid variant segment')
+                if first<=index<=last:
+                    row=data[offset+(index-first)*size:offset+(index+1-first)*size]
+                    if len(row)!=size:raise ValueError('Truncated variant command')
+                    found.append(f'    {{{index}, {size}, 0x{fnv(row):016X}ULL}},')
+            if len(found)!=1:raise ValueError('Missing or ambiguous variant command')
+            if found[0] not in command_rows and found[0] not in variant_rows:variant_rows+=found
     return '\n'.join([
         '#pragma once', '#include <array>', '#include <cstdint>',
         '// Jarvis-HOOK. Hash-only identities for privately generated Editor profiles.',
@@ -82,6 +102,7 @@ def generate(manifest_path, pack_path, command_path):
         f'inline constexpr std::array<Proof,{len(rows)}> kProofs={{{{', *rows, '}};',
         'struct CommandProof {std::uint16_t index;std::uint16_t size;std::uint64_t hash;};',
         f'inline constexpr std::array<CommandProof,{len(command_rows)}> kCommands={{{{', *command_rows, '}};',
+        f'inline constexpr std::array<CommandProof,{len(variant_rows)}> kCommandVariants={{{{', *variant_rows, '}};',
         f'inline constexpr std::uint64_t kLegacyCommandMask=0x{legacy_mask:X}ULL;',
         '} // namespace FfxHooks::SinAi', '',
     ])
@@ -91,9 +112,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('manifest', 'pack', 'commands', 'output'):
         parser.add_argument('--' + name, required=True, type=Path)
+    parser.add_argument('--command-variant',action='append',default=[],type=Path)
+    parser.add_argument('--canonical-commands',type=Path)
     args = parser.parse_args()
     if args.output.resolve() in {p.resolve() for p in (args.manifest, args.pack, args.commands)}:
         parser.error('Output must differ from every input')
-    result = generate(args.manifest, args.pack, args.commands)
+    result = generate(args.manifest, args.pack, args.commands,args.command_variant,args.canonical_commands)
     args.output.write_text(result)
     print('S.I.N. hash-only proofs generated; pack and command dependencies verified.')

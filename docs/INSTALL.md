@@ -1,4 +1,4 @@
-# Install FFX Hooks v0.6.0-beta.4
+# Install FFX Hooks v0.6.0-beta.5
 
 No new Fahrenheit add-on is included. The [beta.3 guide](FAHRENHEIT_V2.md) is historical; its provider/bridge is not certified for the updated executable.
 
@@ -9,13 +9,13 @@ same Windows DLL and the same paths relative to the game directory.
 
 ## Download and verify
 
-Download `ffx-hooks-release-v0.6.0-beta.4.zip` and `ffx-hooks-v0.6.0-beta.4.sha256`
-from the [release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.4).
-The matching `ffx-hooks-source-v0.6.0-beta.4.tar.gz` contains the public tagged source.
+Download `ffx-hooks-release-v0.6.0-beta.5.zip` and `ffx-hooks-v0.6.0-beta.5.sha256`
+from the [release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.5).
+The matching `ffx-hooks-source-v0.6.0-beta.5.tar.gz` contains the public tagged source.
 Verify the downloaded file hashes against the checksum file. The ZIP also has
 `CHECKSUMS.sha256`, `SOURCE.md` and `release-manifest.json` for its contents.
 
-The exact DLL size and hash are recorded in [release inputs](releases/v0.6.0-beta.4-inputs.json). Its PE resource remains 0.2.0.0. The supported FFX.exe is 10,687,744 bytes with SHA-256 `0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d`. Earlier executables need their corresponding Hooks build.
+The exact DLL size and hash are recorded in [release inputs](releases/v0.6.0-beta.5-inputs.json). Its PE resource remains 0.2.0.0. The supported FFX.exe is 10,687,744 bytes with SHA-256 `0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d`. Earlier executables need their corresponding Hooks build.
 
 ## Install with the game closed
 
@@ -29,7 +29,7 @@ The exact DLL size and hash are recorded in [release inputs](releases/v0.6.0-bet
    `<game>/_isolated/ffx-hooks.ini`. The examples are OFF; do not blindly replace
    your existing configuration or install lab flag directories from the source.
 6. Restart FFX after enabling a restart-required option. F8 opens the dashboard;
-   Extras contains Additional mods and Vanguard, Dev contains FieldScout, and
+   Reforge contains Spira Reforged options, Extras contains the remaining additional mods and Vanguard, Dev contains FieldScout, and
    Cheats contains AP/Gil Multipliers. Installed/admitted status is separate from
    the saved checkbox value.
 
@@ -40,7 +40,7 @@ The exact DLL size and hash are recorded in [release inputs](releases/v0.6.0-bet
   _isolated/ffx-hooks.ini             preserve/merge your active settings
   modules/
     ffx-hooks.dll
-    mods/arcana/cards/                78 selected images
+    mods/arcana/cards/                90 selected images
     mods/arcana/shared/               icon and card back
 ```
 
@@ -67,6 +67,10 @@ private S.I.N. AI packs. Their loaders/contracts are implemented; obtain or auth
 compatible packages under the documented source/hash/owner rules. No game asset
 or proprietary executable is required to build the DLL itself. Some native RT1
 fixtures require your own exact PE/save/kernel inputs and are not redistributed.
+
+Workshop opens only from the native game menu, below Help. Its settings live inside Workshop; F10 and the old F8 Workshop entry are retired. To opt into its menu while the writer is OFF, merge `[equipment_workshop] native_menu=1` and restart.
+
+The twelve boss Tarot cards require their actual victories; the full-deck development option grants the original 78 cards only.
 
 ## Verify and troubleshoot
 
@@ -115,3 +119,7 @@ assets; they are not proprietary files redistributed in this ZIP. Use the
 matching bank and Holy animation donor. The source archive includes all recipe
 code, checks and rollback instructions. Live visual/gameplay acceptance remains
 pending.
+
+## PT-BR / Launcher
+
+Launcher 1.0.13 pins the previous Hooks identity for PT-BR activation. It needs a compatible update to recognize this DLL; do not bypass that check or replace its signed feed. Hooks API4 and the separate translation runtime remain available through their documented manual configuration.

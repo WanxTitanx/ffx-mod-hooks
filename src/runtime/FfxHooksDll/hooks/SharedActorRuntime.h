@@ -18,7 +18,7 @@ struct Observer {
     void (*beforeInitialize)(unsigned mode,unsigned actor) noexcept=nullptr;
     void (*afterInitialize)(unsigned mode,unsigned actor,int result,bool completed) noexcept=nullptr;
 };
-enum class Slot : unsigned { Elemental,Vanguard,Aeon,NulWard,Count };
+enum class Slot : unsigned { Elemental,Vanguard,Aeon,NulWard,InsideSin,OmegaT7,OmegaLastSeal,Count };
 inline constexpr unsigned ActorCount=31,MaximumDepth=16,Rva=(::FfxHooks::ExecutableProfile::Rva<0x39B500>());
 inline std::array<std::atomic<const Observer*>,static_cast<unsigned>(Slot::Count)> observers{};
 inline std::array<std::atomic<unsigned>,ActorCount> initializing{};

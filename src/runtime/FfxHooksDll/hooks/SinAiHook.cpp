@@ -181,7 +181,7 @@ int Dispatch(int channel,const char* name,const void* original,std::uint32_t cal
             else {
                 char label[5]{};unsigned monster=0;
                 if(ReadMemory(nullptr,reinterpret_cast<std::uintptr_t>(name),label,sizeof(label)) && MonsterName(label,&monster)){
-                    const auto assignment=SinSpread::BuildAssignment(context.field,context.seed,context.visit,context.distribution,true);
+                    const auto assignment=SinSpread::BuildAssignment(context.field,context.seed,context.visit,context.distribution,true,context.minimumThreat);
                     const auto* actor=assignment.Find(monster);
                     const View* view=actor&&actor->curse?g_pack.Find(monster,actor->curse):nullptr;
                     if(view && SinSpread::NaturalMonsterPair(context.field,monster) &&

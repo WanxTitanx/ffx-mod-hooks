@@ -4,7 +4,7 @@
 
 namespace FfxHooks::ElementalDominion {
 using RuntimeLog=void(*)(const char*);
-struct RuntimeOptions {bool core=false,tactics=false,gravity=false,magicBdl=false;};
+struct RuntimeOptions {bool core=false,tactics=false,gravity=false,magicBdl=false,progression=false,omegaRite=false;};
 enum class RuntimeCode : unsigned {
     Disabled,ValidationOnly,WaitingForData,Ready,Unsupported,PackMissing,
     PackInvalid,DataMismatch,Conflict,Stopped

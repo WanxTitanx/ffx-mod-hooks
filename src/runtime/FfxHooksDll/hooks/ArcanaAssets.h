@@ -4,7 +4,12 @@
 struct ID3D11Device;struct ID3D11DeviceContext;struct ID3D11RenderTargetView;
 namespace FfxHooks::Arcana::Assets {
 bool Start(const std::filesystem::path& root,void(*log)(const char*));
+bool WaitReady(unsigned milliseconds) noexcept;
 void Publish(const NativeUi::Images&) noexcept;
+void PublishMessage(const NativeUi::Images&) noexcept;
+void PublishWorld(const NativeUi::Images&) noexcept;
+using FieldVisibility=bool(*)(const NativeUi::Images&) noexcept;
+void SetFieldVisibility(FieldVisibility) noexcept;
 void Stop() noexcept;
 bool Decoded(unsigned resource) noexcept;
 bool Render(ID3D11Device*,ID3D11DeviceContext*,ID3D11RenderTargetView*,unsigned width,unsigned height) noexcept;

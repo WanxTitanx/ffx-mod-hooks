@@ -2,7 +2,7 @@
 #include "ArcanaCore.h"
 
 namespace FfxHooks::Arcana::Ui {
-enum class Page {Closed,Root,Picker,Transfer,ModeReview,SlotBlocked};
+enum class Page {Closed,Root,Picker,Transfer,ModeReview,SlotBlocked,Guide};
 enum class Key {None,Up,Down,PageUp,PageDown,Confirm,Cancel};
 enum class Action {None,NativeWeapon,NativeArmor,NativeBack,Equip,Mode};
 enum class Sound : unsigned char {None=0,MoveConfirm=1,Error=3,Cancel=4};
@@ -12,11 +12,11 @@ struct Command {
 };
 struct View {
     Page page=Page::Closed;std::uintptr_t context=0;std::uint64_t generation=0,revision=0;
-    unsigned actor=0,category=0,slot=0,cursor=0,top=0;Error error=Error::None;
+    unsigned actor=0,category=0,slot=0,cursor=0,top=0,guidePage=0;Error error=Error::None;
     std::int16_t pending=kEmpty;Mode proposed=Mode::Twin;
 };
-inline constexpr unsigned kPickerRows=kCardCount+2,kVisibleRows=7;
-inline constexpr unsigned kUnequipRow=0,kModeRow=1,kFirstCardRow=2;
+inline constexpr unsigned kPickerRows=kCardCount+3,kVisibleRows=7;
+inline constexpr unsigned kUnequipRow=0,kModeRow=1,kGuideRow=2,kFirstCardRow=3;
 std::int16_t PickerCard(unsigned row) noexcept;
 bool SlotLocked(const State&,unsigned actor,unsigned slot) noexcept;
 void Observe(View&,const State&,std::uintptr_t context,std::uint64_t generation,unsigned actor,bool idle) noexcept;

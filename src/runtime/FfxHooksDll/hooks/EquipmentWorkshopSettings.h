@@ -3,6 +3,11 @@
 #include "../../../../research/equipment_workshop/include/workshop.h"
 
 namespace FfxHooks::EquipmentWorkshop::Settings {
+// Keep the native configuration entry reachable when equipment editing is off.
+// This opt-in is UI-only; it never enables the transaction backend.
+inline constexpr const char* NativeMenuKey="equipment_workshop.native_menu";
+inline bool NativeMenuRequested(){return Config::GetBool(NativeMenuKey,false);}
+inline bool KeepNativeMenu(){return NativeMenuRequested()||Config::SetInt(NativeMenuKey,1);}
 inline constexpr const char* ModeKey="equipment_workshop.refinement_mode";
 inline constexpr const char* ExpansionKey="equipment_workshop.expansion_recipe";
 inline bool ReadExpansion(unsigned& out){

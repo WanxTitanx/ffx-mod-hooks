@@ -4,6 +4,8 @@
 #include <cstdint>
 
 namespace FfxHooks::SinRam {
+inline constexpr std::uint32_t kOmegaMiniBaseHp=150000;
+inline constexpr std::uint32_t kOmegaMiniT7Hp=kOmegaMiniBaseHp*170/100;
 
 // Production wiring is RAM-only and composed inside F7Difficulty's sole actor writer. The legacy
 // SinCurse compatibility API is a separate inert adapter and grants no fallback writer authority.
@@ -16,6 +18,8 @@ struct Config {
     bool seeded = false;
     unsigned distribution = 0;
     std::uint32_t seed = 1;
+    // Runtime-only awakening floor. Never parsed from the global F7 preference.
+    unsigned minimumThreat = 0;
 };
 
 enum class EncounterOrigin : std::uint8_t {
@@ -52,6 +56,9 @@ struct RequestCorrelation {
 // the call site, so this request cannot become a second actor writer.
 struct RuntimeRequest {
     Config config{};
+    // Runtime-only authority for the separate Omega consumer, never persisted
+    // in regional SIN preferences and never consumed by reward calculations.
+    bool omegaT7 = false;
     bool scriptManaged = false;
     std::uint8_t scriptActorMask = 0xFFu;
     std::uint32_t areaVisit = 0;
@@ -142,6 +149,9 @@ StructuralScalePlan BuildRuntimeStructuralScalePlan(
     const DifficultyValues& afterDifficulty);
 
 bool StructuralWritebackInDomain(const DifficultyValues& writeback);
+// Existing ordinary monsters intentionally outside the curse catalog retain
+// native abilities, but still receive the awakened regional stat floor.
+bool NativeAbilitiesAwakening(const RuntimeRequest&,std::uint16_t formationId) noexcept;
 
 // Offline consumers that need a complete value-only plan reuse the same gate and
 // add exactly one final current-HP ratio after structural composition.

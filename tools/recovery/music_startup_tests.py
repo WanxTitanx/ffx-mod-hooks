@@ -23,12 +23,19 @@ std::uintptr_t g_base=0x400000;
 bool g_runtimeValidateOnly=false,g_musicHookArmed=false;
 namespace Fake {
 FFXHooksBlock block;
-int requested=-1,custom=-1,lateChoice=-1,creates=0,installs=0,cas=0;
+int requested=-1,custom=-1,lateChoice=-1,creates=0,installs=0,cas=0,probeChecks=0,waits=0,soundCmdRegistrations=0;
 bool enabled=true,validate=false,createOk=true,hookOk=true,targetOk=true,dual=false,battleTargets=true,ordered=true;
+bool skipProbe=false,peer=false,probeLoaded=false,heartbeat=false;
 std::string logs;
-void Reset(){requested=custom=lateChoice=-1;creates=installs=cas=0;enabled=createOk=hookOk=targetOk=battleTargets=true;
- validate=dual=false;ordered=true;logs.clear();block.musicOverrideTrackIndex=-1;g_block=nullptr;g_musicHookArmed=false;}
+void Reset(){requested=custom=lateChoice=-1;creates=installs=cas=probeChecks=waits=soundCmdRegistrations=0;
+ enabled=createOk=hookOk=targetOk=battleTargets=true;
+ validate=dual=skipProbe=peer=probeLoaded=heartbeat=false;ordered=true;logs.clear();block.musicOverrideTrackIndex=-1;
+ g_block=nullptr;g_musicHookArmed=false;}
 }
+namespace FfxHooks { namespace Coexistence {
+struct RuntimeView {bool PeerPresent() const {return Fake::peer;}};
+RuntimeView runtime;
+} }
 LONG InterlockedCompareExchange(volatile LONG* p,LONG value,LONG expected){
  ++Fake::cas;Fake::ordered=Fake::ordered&&g_musicHookArmed&&g_block&&Fake::installs==1;
  if(Fake::lateChoice>=0){*p=Fake::lateChoice;Fake::lateChoice=-1;}
@@ -38,10 +45,14 @@ void Log(const char* format,...){char text[1024]{};va_list args;va_start(args,fo
  std::vsnprintf(text,sizeof(text),format,args);va_end(args);Fake::logs+=text;}
 void LogLine(const char*){}
 bool MusicHookEnabledFromConfig(){return Fake::enabled;}
-bool EnvFlagEnabled(const char* name){return std::strcmp(name,"FFXHOOKS_VALIDATE_ONLY")==0?Fake::validate:true;}
+bool EnvFlagEnabled(const char* name){
+ if(std::strcmp(name,"FFXHOOKS_VALIDATE_ONLY")==0)return Fake::validate;
+ if(std::strcmp(name,"FFXHOOKS_SKIP_PROBE_WAIT")==0)return Fake::skipProbe;
+ return false;}
 int EnvInt(const char*,int){return Fake::requested;}
 bool FpsScoutEnabledFromConfig(){return false;}
-bool WaitForProbeHeartbeat(unsigned){return true;}
+bool ProbeModuleMayPublishHeartbeat(){++Fake::probeChecks;return Fake::probeLoaded;}
+bool WaitForProbeHeartbeat(unsigned){++Fake::waits;return Fake::heartbeat;}
 bool CreateBlock(){++Fake::creates;if(!Fake::createOk)return false;g_block=&Fake::block;return true;}
 unsigned GetLastError(){return 0;}
 int ArenaPlus_MusicFadeFrames(){return 20;}
@@ -56,7 +67,7 @@ enum class MusicHookTarget {SwitchCrossfade,PlayTrack};
 struct MusicHookInstallResult {bool ok;std::uintptr_t trampoline;};
 const char* GetMusicHookTargetName(MusicHookTarget){return "simulated target";}
 void SetMusicHookMinFadeFrames(int){}
-void SetArenaBattleMusicSoundCmdFn(void(*)()){}
+void SetArenaBattleMusicSoundCmdFn(void(*)()){++Fake::soundCmdRegistrations;}
 MusicHookInstallResult Install(){++Fake::installs;
  if(Fake::custom>=0&&g_block)g_block->musicOverrideTrackIndex=Fake::custom;
  return {Fake::hookOk,0};}
@@ -99,6 +110,20 @@ int main(){
  Fake::Reset();Fake::requested=37;Fake::lateChoice=109;Startup();
  Check(g_block&&g_block->musicOverrideTrackIndex==109,"choice arriving at publication wins atomically");
  Check(Fake::cas==1&&Fake::ordered,"racing choice does not retry or reassert boot value");
+ // Startup latency: an absent probe must not cost the 10 s heartbeat wait or arm soundcmd.
+ for(int path=0;path<3;++path){Fake::Reset();Fake::dual=path>0;Fake::battleTargets=path!=2;Startup();
+  Check(Fake::probeChecks==1&&Fake::waits==0,"absent probe skips the heartbeat wait");
+  Check(Fake::soundCmdRegistrations==0,"absent probe never arms the soundcmd lab path");
+  Check(Fake::installs==1,"absent probe still installs MusicHook");}
+ for(int path=1;path<3;++path){Fake::Reset();Fake::dual=true;Fake::battleTargets=path!=2;Fake::probeLoaded=true;Fake::heartbeat=true;Startup();
+  Check(Fake::probeChecks==1&&Fake::waits==1,"loaded probe keeps the bounded heartbeat wait");
+  Check(Fake::soundCmdRegistrations==1,"live probe arms soundcmd exactly once");}
+ Fake::Reset();Fake::dual=true;Fake::probeLoaded=true;Fake::heartbeat=false;Startup();
+ Check(Fake::waits==1&&Fake::soundCmdRegistrations==0,"silent probe times out without arming soundcmd");
+ Fake::Reset();Fake::dual=true;Fake::peer=true;Fake::probeLoaded=true;Startup();
+ Check(Fake::probeChecks==0&&Fake::waits==0&&Fake::soundCmdRegistrations==0,"peer coexistence never waits for the probe");
+ Fake::Reset();Fake::dual=true;Fake::skipProbe=true;Startup();
+ Check(Fake::probeChecks==0&&Fake::waits==0&&Fake::soundCmdRegistrations==1,"explicit skip keeps its historical trust-the-probe meaning");
  static_assert(sizeof(FFXHooksBlock)==256,"use actual shared schema");
  std::printf("MusicStartupSimulatedRt1: %d/%d passed (actual startup block, simulated dependencies)\n",total-failed,total);
  return failed?1:0;

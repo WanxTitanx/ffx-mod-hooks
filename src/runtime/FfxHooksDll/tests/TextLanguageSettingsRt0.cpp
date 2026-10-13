@@ -21,5 +21,10 @@ int main(){
  const auto count=writes;Check(!S::Save(-1)&&!S::Save(2)&&writes==count,"invalid cursor value never writes configuration");
  C::LoadTextForTests("[language]\ntext_locale=../escape\n","C:\\mod006-settings.ini");
  Check(S::Selection()==-1,"unknown config is diagnosed rather than mistaken for PT-BR");
+ Check(!S::ExtendedKernelTables(),"the 32-bit kernel table adapter is OFF by default");
+ C::LoadTextForTests("[language]\ntext_locale=pt-BR\ntext_extended_kernel_tables=1\n","C:\\mod006-settings.ini");
+ Check(S::Selection()==1&&S::ExtendedKernelTables(),"the kernel table adapter is an explicit opt-in beside the locale");
+ C::LoadTextForTests("[language]\ntext_extended_kernel_tables=maybe\n","C:\\mod006-settings.ini");
+ Check(!S::ExtendedKernelTables(),"an unreadable adapter value keeps it OFF");
  C::ResetForTests();std::cout<<"TextLanguageSettings RT0: "<<checks<<" checks, "<<failures<<" failures\n";return failures?1:0;
 }

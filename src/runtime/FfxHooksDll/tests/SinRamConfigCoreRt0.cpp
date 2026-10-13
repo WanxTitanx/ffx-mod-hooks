@@ -147,7 +147,7 @@ void TestDifficultyAndSinParseIndependently() {
            "an invalid sinRam member must leave valid Difficulty data usable");
 
     const std::string invalidDifficulty =
-        R"({"diff_enabled":true,"diff_elemWeak":32,"sinRam":{"enabled":true,"threatLevel":2}})";
+        R"({"diff_enabled":true,"diff_elemWeak":256,"sinRam":{"enabled":true,"threatLevel":2}})";
     sin = {};
     difficulty = FfxHooks::F7Difficulty::MakeNeutralConfig();
     const ParseResult validSin = Parse(invalidDifficulty, &sin);
@@ -157,7 +157,7 @@ void TestDifficultyAndSinParseIndependently() {
     Expect(validSin.code == Code::Ok && sin.enabled && sin.threatLevel == 2,
            "valid sinRam data must survive an independently invalid Difficulty member");
     Expect(invalidDiff.code != FfxHooks::F7Difficulty::ConfigCode::Ok,
-           "the Difficulty parser must still reject its own invalid multiplier");
+           "the Difficulty parser must still reject an element mask wider than its eight supported bits");
 }
 
 void TestWrongTypesAndRangesFailClosed() {

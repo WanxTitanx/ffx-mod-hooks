@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cmath>
 namespace FfxHooks::UiCaption {
-inline constexpr unsigned MaxLines=64;
+inline constexpr unsigned MaxLines=128;
 inline constexpr std::size_t MaxText=2048;
 inline constexpr std::uint32_t MaxAgeMs=250;
 // GDI text has RGB but no alpha. Native font sprites already carry coverage;

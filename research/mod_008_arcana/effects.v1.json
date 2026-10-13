@@ -1861,10 +1861,244 @@
       "inspiration": [
         "Ribbon"
       ]
+    },
+    {
+  "id": 78,
+  "effects": [
+    {
+      "kind": "BreakDamage",
+      "value": 1
+    },
+    {
+      "kind": "BreakHp",
+      "value": 1
+    },
+    {
+      "kind": "OutgoingDamage",
+      "value": 30
+    },
+    {
+      "kind": "OverdriveDamage",
+      "value": 60
+    },
+    {
+      "kind": "IncomingDamage",
+      "value": -10
+    },
+    {
+      "kind": "AutoHaste",
+      "value": 1
+    },
+    {
+      "kind": "Piercing",
+      "value": 1
+    },
+    {
+      "kind": "SurviveOnce",
+      "value": 1
+    },
+    {
+      "kind": "SurviveHeal",
+      "value": 25
+    },
+    {
+      "kind": "StrikeShadow",
+      "value": 1
+    },
+    {
+      "kind": "WardShadow",
+      "value": 1
     }
   ],
-  "balance_revision": 5,
+  "description": "Break HP/Damage Limit; outgoing HP damage +30%; additional Overdrive damage +60%; incoming HP damage -10%; Auto-Haste; Piercing; survive one lethal HP hit per battle and recover 25% HP; Darkstrike; Dark Ward",
+  "inspiration": [
+    "Omega Weapon victory"
+  ]
+},
+    {
+  "id": 79,
+  "effects": [
+    {
+      "kind": "BreakDamage",
+      "value": 1
+    },
+    {
+      "kind": "BreakHp",
+      "value": 1
+    },
+    {
+      "kind": "OutgoingDamage",
+      "value": 25
+    },
+    {
+      "kind": "MagicPercent",
+      "value": 30
+    },
+    {
+      "kind": "MpPercent",
+      "value": 50
+    },
+    {
+      "kind": "HalfMp",
+      "value": 1
+    },
+    {
+      "kind": "MpPerTurn",
+      "value": 3
+    },
+    {
+      "kind": "WhiteHealing",
+      "value": 38
+    },
+    {
+      "kind": "StrikeHoly",
+      "value": 1
+    },
+    {
+      "kind": "WardHoly",
+      "value": 1
+    }
+  ],
+  "description": "Break HP/Damage Limit; outgoing HP damage +25%; Magic +30%; max MP +50%; Half MP; restore 3% MP per turn; White Magic healing +38%; Holystrike; Holy Ward",
+  "inspiration": [
+    "Omega Weapon victory"
+  ]
+},
+{
+  "id": 80,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Valefor victory"
+  ]
+},
+{
+  "id": 81,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Ifrit victory"
+  ]
+},
+{
+  "id": 82,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Ixion victory"
+  ]
+},
+{
+  "id": 83,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Shiva victory"
+  ]
+},
+{
+  "id": 84,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Bahamut victory"
+  ]
+},
+{
+  "id": 85,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Anima victory"
+  ]
+},
+{
+  "id": 86,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Yojimbo victory"
+  ]
+},
+{
+  "id": 87,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Cindy victory"
+  ]
+},
+{
+  "id": 88,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Sandy victory"
+  ]
+},
+{
+  "id": 89,
+  "effects": [
+    {
+      "kind": "HpPercent",
+      "value": 10
+    }
+  ],
+  "description": "Max HP +10%",
+  "inspiration": [
+    "Dark Mindy victory"
+  ]
+}
+  ],
+  "balance_revision": 6,
+  "compatible_identity_card_count": 78,
   "compatible_pack_hashes": [
+    "9ffaa68fd969de9598684e813e570afd5c8ef30e702522f477d4e4cf78ec6ca7",
     "53b3c692d78b846e0d2556d22717c0039f01f4d551fbcb3a56412724da4e163e",
     "b31ad58a8c3ee8e8989c3dea3487b418f11b3a3006974bb902a8e3134c489e75",
     "c9a3b6349b274d2137e2b317eed244590e1920752849fbc72ce16a1bac51ce37",

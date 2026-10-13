@@ -33,6 +33,9 @@ ALLOWED_TESTS = {
     "equipment_workshop_menu_rt1.ps1",
     "spira_runtime_rt1.ps1",
     "arcana_spira_composition_rt1.ps1",
+    "arcana_runtime_presentation_rt1.ps1",
+    "arcana_field_presentation_rt1.ps1",
+    "minigame_assist_rt1.ps1",
     "arcana_combat_rt1.ps1",
     "ronso_pool_io_rt1.ps1",
     "text_languages_rt1.ps1",
@@ -80,7 +83,8 @@ def checked(arguments: list[str], **options: object) -> subprocess.CompletedProc
 
 
 def snapshot(destination: Path, ability_kernel: Path | None, executable: Path | None = None,
-             battle_effect: Path | None = None) -> list[dict[str, object]]:
+             battle_effect: Path | None = None, arcana_assets: bool = False,
+             minigame_fixtures: Path | None = None) -> list[dict[str, object]]:
     result = checked(["git", "ls-files", "-z", "-co", "--exclude-standard"],
                      cwd=ROOT, capture_output=True)
     entries = []
@@ -130,6 +134,28 @@ def snapshot(destination: Path, ability_kernel: Path | None, executable: Path | 
             archive.writestr(relative, data)
             entries.append({"path": relative, "bytes": len(data), "kind": "private_fixture",
                             "sha256": hashlib.sha256(data).hexdigest()})
+        if arcana_assets:
+            for origin, target in (
+                ("cards/000-major-the_fool.png", "cards/000-major-the_fool.png"),
+                ("tarot-icon-v1.png", "shared/tarot-icon-v1.png"),
+                ("card-back-v1.png", "shared/card-back-v1.png"),
+            ):
+                data = (ROOT / "assets/mod-008-arcana/concepts" / origin).read_bytes()
+                if not data.startswith(b"\x89PNG\r\n\x1a\n") or len(data) > 8 * 1024 * 1024:
+                    raise RuntimeError("Invalid Arcana art fixture: " + origin)
+                relative = "arcana-art-fixtures/" + target
+                archive.writestr(relative, data)
+                entries.append({"path": relative, "bytes": len(data), "kind": "art_fixture",
+                                "sha256": hashlib.sha256(data).hexdigest()})
+        if minigame_fixtures is not None:
+            for field in ("mcfr0100", "mcfr0200", "nagi0000", "lmyt0000"):
+                data = (minigame_fixtures / (field + ".atel.bin")).read_bytes()
+                if not 64 <= len(data) <= 512 * 1024:
+                    raise RuntimeError("Invalid private ATEL fixture: " + field)
+                relative = "minigame-fixtures/" + field + ".atel.bin"
+                archive.writestr(relative, data)
+                entries.append({"path": relative, "bytes": len(data), "kind": "private_fixture",
+                                "sha256": hashlib.sha256(data).hexdigest()})
         archive.writestr("source-manifest.json", json.dumps(entries, indent=2) + "\n")
     if not entries:
         raise RuntimeError("No eligible source files were captured")
@@ -141,6 +167,7 @@ def main() -> int:
     parser.add_argument("--windows-host", required=True)
     parser.add_argument("--test", action="append", required=True, choices=sorted(ALLOWED_TESTS))
     parser.add_argument("--label", default="validation")
+    parser.add_argument("--remote-root", default="C:/VMTasks", help="Existing Windows directory for disposable lanes")
     parser.add_argument("--ability-kernel", type=Path,
                         help="Explicit local private a_ability.bin fixture; required outside the Nova-only harness")
     parser.add_argument("--fixture-root", default=r"C:\VMTasks\ffx-hooks-jarvis-20260918\native-fixtures")
@@ -148,7 +175,10 @@ def main() -> int:
     parser.add_argument("--steam-profile", action="store_true", help="Select the new executable for isolated native harnesses")
     parser.add_argument("--executable-fixture", type=Path, help="Explicit current private FFX.exe, required with --steam-profile")
     parser.add_argument("--battle-effect", type=Path, help="Explicit private et_battle.bin for native weapon-effect harnesses")
+    parser.add_argument("--minigame-fixtures", type=Path, help="Explicit directory with four original private ATEL blobs")
     args = parser.parse_args()
+    if "minigame_assist_rt1.ps1" in args.test and (args.minigame_fixtures is None or not args.minigame_fixtures.is_dir()):
+        parser.error("Minigame tests require --minigame-fixtures")
     if args.steam_profile and (args.executable_fixture is None or not args.executable_fixture.is_file()):
         parser.error("--steam-profile requires an existing --executable-fixture")
     if args.executable_fixture is not None and not args.steam_profile:
@@ -159,6 +189,8 @@ def main() -> int:
         parser.error("Use a configured SSH alias or a plain hostname")
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,50}", args.label):
         parser.error("The evidence label must be a short alphanumeric filename component")
+    if not re.fullmatch(r"[A-Za-z]:/[A-Za-z0-9_./-]+", args.remote_root) or ".." in args.remote_root.split("/"):
+        parser.error("Use an absolute Windows directory with simple path components for --remote-root")
     for test in args.test:
         if not (ROOT / "src/runtime/FfxHooksDll" / test).is_file():
             parser.error("The selected checked-in runner is missing: " + test)
@@ -170,8 +202,9 @@ def main() -> int:
     evidence = ROOT / ".superpowers/mod007" / (args.label + "-" + lane)
     evidence.mkdir(parents=True)
     archive = evidence / "source.zip"
-    entries = snapshot(archive, args.ability_kernel, args.executable_fixture, args.battle_effect)
-    remote = "C:/VMTasks/" + lane
+    entries = snapshot(archive, args.ability_kernel, args.executable_fixture, args.battle_effect,
+                       "arcana_runtime_presentation_rt1.ps1" in args.test,args.minigame_fixtures)
+    remote = args.remote_root.rstrip("/") + "/" + lane
     receipt: dict[str, object] = {
         "producer": "Jarvis-HOOK", "level": "RT1-isolated-Windows-harness",
         "host": args.windows_host, "remote_lane": remote, "tests": args.test,
@@ -198,7 +231,7 @@ $archive = $lane + '.zip'
 $fixtureSource = __FIXTURES__
 $dependencySource = __DEPENDENCIES__
 if (Test-Path -LiteralPath $lane) { throw 'Disposable lane already exists; refusing replacement' }
-if ((Get-PSDrive C).Free -lt 2GB) { throw 'Insufficient free disk space for the isolated lane' }
+if ((Get-PSDrive -Name $lane.Substring(0,1)).Free -lt 2GB) { throw 'Insufficient free disk space for the isolated lane' }
 if (-not (Test-Path -LiteralPath $fixtureSource)) { throw 'Private native fixtures are unavailable' }
 if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne __ZIP_HASH__) { throw 'Source ZIP fingerprint mismatch' }
 Expand-Archive -LiteralPath $archive -DestinationPath $lane

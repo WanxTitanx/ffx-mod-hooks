@@ -73,7 +73,15 @@ static uint32_t ReadNextEncounterTokenSnapshot() {
 
 static int __cdecl BattleEnd_Shim() {
     const uint32_t handle = ReadHandlePreCall();
-    const int rv = ((EndCleanup_t)g_trampoline)();
+    std::array<const BattleTerminal::Observer*,static_cast<unsigned>(BattleTerminal::Slot::Count)> listeners{};
+    std::array<void*,static_cast<unsigned>(BattleTerminal::Slot::Count)> tokens{};
+    int rv=0;bool completed=false;
+    __try {
+        if(handle)for(unsigned i=0;i<listeners.size();++i){listeners[i]=BattleTerminal::observers[i].load();if(listeners[i])tokens[i]=listeners[i]->before(handle);}
+        rv=((EndCleanup_t)g_trampoline)();completed=true;
+    }__finally {
+        for(unsigned i=static_cast<unsigned>(listeners.size());i>0;--i)if(listeners[i-1]&&tokens[i-1])listeners[i-1]->after(tokens[i-1],completed);
+    }
 
     // Debounce: the cleanup wrapper is called once per battle teardown, but the
     // handle stays put for a single dispatcher tick. We use g_lastHandle to

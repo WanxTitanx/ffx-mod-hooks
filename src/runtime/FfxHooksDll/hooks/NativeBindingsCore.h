@@ -6,7 +6,7 @@
 
 namespace FfxHooks::NativeBindings {
 enum Modifier : unsigned { Control=1, Shift=2, Alt=4 };
-enum class Action : unsigned { MenuF7, MenuF8, Performance, Borderless, FreeLook, TimeStop, SpeedCycle, Sensor, PartyAP, NativeTurbo, Supercharge, EncounterRate, AutoBattle, HideHud, GameMenu, RefreshWindow, Workshop, Count, None=255 };
+enum class Action : unsigned { MenuF7, MenuF8, Performance, Borderless, FreeLook, TimeStop, SpeedCycle, Sensor, PartyAP, NativeTurbo, Supercharge, EncounterRate, AutoBattle, HideHud, GameMenu, RefreshWindow, Count, None=255 };
 struct Binding { unsigned key=0, modifiers=0; };
 using Table=std::array<Binding,static_cast<unsigned>(Action::Count)>;
 enum class BindResult { Ok, Invalid, Reserved, Protected, Duplicate };
@@ -32,7 +32,6 @@ inline const char* Name(Action action) noexcept {
     case Action::HideHud:return "Hide game HUD (F5)";
     case Action::GameMenu:return "Open game menu";
     case Action::RefreshWindow:return "Refresh game window";
-    case Action::Workshop:return "Open Equipment Workshop";
     default:return "Unknown action";
     }
 }
@@ -54,7 +53,6 @@ inline const char* Key(Action action) noexcept {
     case Action::HideHud:return "bindings.hide_hud";
     case Action::GameMenu:return "bindings.game_menu";
     case Action::RefreshWindow:return "bindings.refresh_window";
-    case Action::Workshop:return "bindings.workshop";
     default:return nullptr;
     }
 }
@@ -64,7 +62,7 @@ inline BindResult Validate(const Table& table,Action action,Binding binding) noe
         return BindResult::Invalid;
     if(!binding.key)return BindResult::Ok;
     if(binding.key>=0x70u && binding.key<=0x74u)return BindResult::Reserved;
-    if((action==Action::MenuF7 || action==Action::MenuF8 || action==Action::Workshop) &&
+    if((action==Action::MenuF7 || action==Action::MenuF8) &&
        (binding.key==0x0Du || binding.key==0x20u || binding.key==0x09u || (binding.key>=0x25u&&binding.key<=0x28u)))return BindResult::Reserved;
     if(action!=Action::SpeedCycle && binding.key=='K' && binding.modifiers==(Control|Shift))return BindResult::Protected;
     if(binding.key<0x08u || binding.key==0x1Bu || binding.key==0x5Bu || binding.key==0x5Cu ||

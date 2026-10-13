@@ -10,6 +10,7 @@
 #include "SharedClampRuntime.h"
 #include "EquipmentWorkshopStore.h"
 #include "RonsoPoolSave.h"
+#include "ArcanaChallengeBridge.h"
 #include "RonsoPoolStore.h"
 #include <algorithm>
 #include <atomic>
@@ -33,6 +34,8 @@ std::atomic<std::uint64_t> battleGeneration{0};
 std::atomic<bool> battleInSession{false};
 std::recursive_mutex mutex;
 State state;
+Presentation::State presentation;
+Acquisition::Progress objectives{};
 std::uint64_t generation=0;
 std::array<Effects,kActorCount> effects{};
 std::array<std::array<unsigned char,25>,kActorCount> nativeInflict{};
@@ -68,17 +71,17 @@ bool InBattle() noexcept {unsigned char value=1;return !Copy(&value,reinterpret_
 bool OnOwner() noexcept {return ownerThread.load()==GetCurrentThreadId();}
 bool Development() noexcept {return settings.developmentEnabled?settings.developmentEnabled():settings.fullDeck;}
 void CacheEffects(){for(unsigned actor=0;actor<kActorCount;++actor)effects[actor]=Aggregate(state,actor);}
+bool GrantDevelopment(State& current,Presentation::State& notices){
+    auto next=current;auto pendingNotices=notices;
+    if(AwardAll(next,next.revision)!=Error::None||
+       !Presentation::ObserveAwards(pendingNotices,current.acquired,next.acquired))return false;
+    current=next;notices=pendingNotices;return true;
+}
 std::uintptr_t BattleActor(unsigned actor);
 bool ReadElementalEffects(unsigned actor,Elemental::Snapshot& output) noexcept {
     const auto* current=ActorEffects(actor);const auto battle=BattleGeneration();
     if(!started.load()||!current||!battle||!InBattle()||!BattleActor(actor))return false;
     output=Elemental::Collect(*current,battle,state.revision);return true;
-}
-void ReconcileNative(){
-    std::array<unsigned char,Acquisition::kPayloadBytes> payload{};
-    if(!enabled.load()||!ready.load()||!OnOwner()||!Copy(payload.data(),reinterpret_cast<void*>(base+saveRva),payload.size()))return;
-    const auto awarded=Acquisition::Reconcile(state,payload.data(),payload.size());
-    if(awarded){char message[128]{};std::snprintf(message,sizeof(message),"[ffx-hooks] Arcana: awarded %u card(s) from observed pilgrimage/challenge milestones\n",awarded);Notice(message);}
 }
 unsigned char* Player(unsigned actor){return reinterpret_cast<unsigned char*>(base+playerRva+actor*NativeEffects::kPlayerBytes);}
 std::uintptr_t BattleActor(unsigned actor){
@@ -113,18 +116,22 @@ void RejectReadEvent() noexcept {
     catch(...){code=Code::StorageError;}
 }
 void ResetEvent() noexcept {
-    if(!enabled.load())return;
     try {
         std::lock_guard<std::recursive_mutex> lock(mutex);
-        state={};state.mode=settings.defaultMode;
-        if(Development())AwardAll(state,state.revision);
+        // A stopped observer can remain subscribed to strip temporary native
+        // fields. A confirmed new game still invalidates that old save binding.
+        ready=false;bound=false;pending.clear();incoming={};
+        state={};presentation={};objectives={};state.mode=settings.defaultMode;
         ++generation;restore={};shadows={};appliedMask=0;CacheEffects();loading=false;battleInSession=false;
+        if(!enabled.load()){code=Code::Stopped;return;}
+        if(Development()&&!GrantDevelopment(state,presentation)){code=Code::Conflict;return;}
         ownerThread=GetCurrentThreadId();bound=true;ready=true;code=Code::Ready;
     }catch(...){ready=false;code=Code::Conflict;}
 }
 void BeginLoad(const NativeGameplayEvents::Call& call) noexcept {
     if(call.destination!=reinterpret_cast<void*>(base+saveRva)||call.size!=RonsoPool::kSaveSize)return;
     ready=false;bound=false;loading=true;incoming.valid=false;battleInSession=false;
+    if(!enabled.load())return;
     try {
         Hash payload{};if(!Payload(static_cast<const unsigned char*>(call.source),call.size,payload))return;
         Pending selected;bool found=false;
@@ -144,20 +151,24 @@ void BeginLoad(const NativeGameplayEvents::Call& call) noexcept {
         if(result==StoreCode::Missing){record.nativeHash=selected.disk;record.packHash=packHash;record.state.mode=settings.defaultMode;}
         else if(result!=StoreCode::Found&&result!=StoreCode::Recovered){code=result==StoreCode::Foreign?Code::Conflict:Code::StorageError;return;}
         if(migrated)Notice("[ffx-hooks] Arcana: known balance pack upgraded; collection and equipped cards preserved\n");
-        if(Development())AwardAll(record.state,record.state.revision);
+        if(Development()&&!GrantDevelopment(record.state,record.presentation)){code=Code::Conflict;return;}
         incoming.record=record;incoming.valid=true;
     }catch(...){code=Code::StorageError;}
 }
 void EndLoad(const NativeGameplayEvents::Call& call,bool complete) noexcept {
     if(call.destination!=reinterpret_cast<void*>(base+saveRva))return;
     loading=false;
+    if(complete&&!enabled.load()){
+        try {std::lock_guard<std::recursive_mutex> lock(mutex);incoming={};pending.clear();restore={};shadows={};appliedMask=0;++generation;}
+        catch(...){code=Code::StorageError;}
+        ready=false;bound=false;return;
+    }
     if(!complete||!incoming.valid){ready=false;return;}
     try {
         std::lock_guard<std::recursive_mutex> lock(mutex);
-        state=incoming.record.state;restore=incoming.record.resources;++generation;
+        state=incoming.record.state;presentation=incoming.record.presentation;objectives=incoming.record.objectives;restore=incoming.record.resources;++generation;
         shadows={};appliedMask=0;CacheEffects();ownerThread=GetCurrentThreadId();
         incoming.valid=false;bound=true;ready=true;code=Code::Ready;
-        ReconcileNative();
         Notice("[ffx-hooks] Arcana: native save session bound; equipment state recovered\n");
     }catch(...){ready=false;code=Code::Conflict;}
 }
@@ -260,7 +271,6 @@ bool ProjectEvent(const wchar_t* path,const unsigned char* source,unsigned char*
     *cookie=nullptr;
     try {
         std::lock_guard<std::recursive_mutex> lock(mutex);
-        if(!InBattle())ReconcileNative();
         Resources resources;
         for(unsigned actor=0;actor<kActorCount;++actor){
             if(!shadows[actor].valid)continue;
@@ -276,7 +286,7 @@ bool ProjectEvent(const wchar_t* path,const unsigned char* source,unsigned char*
         // fails after the game's CRT has already opened the native save.
         if(bound.load())try {
             auto current=std::make_unique<WriteCookie>();
-            current->record.state=state;current->record.packHash=packHash;
+            current->record.state=state;current->record.presentation=presentation;current->record.objectives=objectives;current->record.packHash=packHash;
             current->record.resources=resources;current->path=path;current->generation=generation;
             *cookie=current.release();
         }catch(...){code=Code::StorageError;}
@@ -368,10 +378,13 @@ void Stop() noexcept {
 }
 void Tick() noexcept {
     if(!enabled.load()||!ready.load()||!OnOwner()||InBattle())return;
+    Challenge::Tick();
     try {
         std::lock_guard<std::recursive_mutex> lock(mutex);
-        ReconcileNative();
-        if(Development()&&AwardAll(state,state.revision)==Error::None)CacheEffects();
+        if(Development()){
+            if(!GrantDevelopment(state,presentation)){code=Code::Conflict;return;}
+            CacheEffects();
+        }
         for(unsigned actor=0;actor<kActorCount;++actor){
             bool equipped=false;for(auto id:state.slots[actor])if(id!=kEmpty)equipped=true;
             if(equipped&&!shadows[actor].valid)Refresh(actor);
@@ -382,6 +395,50 @@ bool Requested() noexcept {return primed.load()&&enabled.load();}
 bool Capture(State& out,std::uint64_t& session) noexcept {
     if(!enabled.load()||!ready.load()||!OnOwner()||InBattle())return false;
     try {std::lock_guard<std::recursive_mutex> lock(mutex);out=state;session=generation;return true;}catch(...){return false;}
+}
+bool CapturePresentation(Presentation::State& out,std::uint64_t& session) noexcept {
+    if(!enabled.load()||!ready.load()||!OnOwner()||InBattle())return false;
+    try {
+        std::lock_guard<std::recursive_mutex> lock(mutex);
+        if(!Presentation::Validate(presentation,state.acquired))return false;
+        out=presentation;session=generation;return true;
+    }catch(...){return false;}
+}
+Error AcknowledgePresentation(std::uint64_t session,const Presentation::View& view,Presentation::Navigation action) noexcept {
+    if(!enabled.load()||!ready.load()||!OnOwner()||InBattle())return Error::InvalidState;
+    try {
+        std::lock_guard<std::recursive_mutex> lock(mutex);
+        if(session!=generation)return Error::Stale;
+        auto next=presentation;
+        if(!Presentation::Acknowledge(next,view,action))return Error::Stale;
+        if(!Presentation::Validate(next,state.acquired))return Error::InvalidState;
+        presentation=next;return Error::None;
+    }catch(...){return Error::InvalidState;}
+}
+bool CaptureWorld(State& out,Acquisition::Progress& progress,Acquisition::Facts& facts,std::uint64_t& session,std::uint16_t room) noexcept {
+    if(!enabled.load()||!ready.load()||!OnOwner()||InBattle())return false;
+    try {
+        std::lock_guard<std::recursive_mutex> lock(mutex);
+        std::array<unsigned char,Acquisition::kPayloadBytes> payload{};
+        if(!Copy(payload.data(),reinterpret_cast<void*>(base+saveRva),payload.size())||
+           (unsigned(payload[0])|(unsigned(payload[1])<<8))!=room||!Acquisition::ReadFacts(payload.data(),payload.size(),facts))return false;
+        Acquisition::ObserveTravel(objectives,facts,room);
+        out=state;progress=objectives;session=generation;return true;
+    }catch(...){return false;}
+}
+Acquisition::Result InteractWorld(std::uint64_t session,const Acquisition::Target& target,std::uint16_t room,float x,float z) noexcept {
+    if(!enabled.load()||!ready.load()||!OnOwner()||InBattle())return {};
+    try {
+        std::lock_guard<std::recursive_mutex> lock(mutex);
+        if(session!=generation||Presentation::Current(presentation).kind!=Presentation::Kind::None)return {};
+        State next;Acquisition::Progress progress;Acquisition::Facts facts;std::uint64_t current=0;
+        if(!CaptureWorld(next,progress,facts,current,room)||current!=session)return {};
+        const auto result=Acquisition::Interact(next,progress,facts,target,room,x,z,facts.riding);
+        auto notices=presentation;
+        if(!Presentation::ObserveAwards(notices,state.acquired,next.acquired))return {};
+        state=next;objectives=progress;presentation=notices;
+        return result;
+    }catch(...){return {};}
 }
 Error EquipCard(std::uint64_t session,std::uint64_t revision,unsigned actor,unsigned slot,std::int16_t card,bool transfer) noexcept {
     if(!enabled.load()||!ready.load()||!OnOwner()||InBattle())return Error::InvalidState;
@@ -408,6 +465,23 @@ Error SelectMode(std::uint64_t session,std::uint64_t revision,Mode mode,bool rel
 const Effects* ActorEffects(unsigned actor) noexcept {return enabled.load()&&ready.load()&&OnOwner()&&actor<kActorCount?&effects[actor]:nullptr;}
 unsigned NativeAttackChance(unsigned actor,unsigned status) noexcept {return actor<kActorCount&&status<25&&OnOwner()?nativeInflict[actor][status]:0;}
 std::uint64_t BattleGeneration() noexcept {return battleInSession.load()?battleGeneration.load():0;}
+std::uint64_t SaveSession() noexcept {
+    return enabled.load()&&ready.load()&&bound.load()&&!loading.load()&&OnOwner()?generation:0;
+}
+Error GrantVictory(const VictoryReceipt& receipt) noexcept {
+    if(!SaveSession()||receipt.session!=generation||receipt.battle!=BattleGeneration())return Error::Stale;
+    const auto card=VictoryCard(receipt);if(card>=kCardCount)return Error::InvalidCard;
+    try{
+        std::lock_guard<std::recursive_mutex> lock(mutex);
+        if(receipt.session!=SaveSession()||receipt.battle!=BattleGeneration())return Error::Stale;
+        auto next=state;auto notices=presentation;
+        const auto result=card==kOmegaWeaponCard?AwardOmegaWeapons(next,next.revision):AwardDarkAeon(next,next.revision,card);
+        if(result!=Error::None)return result;
+        if(!Presentation::ObserveAwards(notices,state.acquired,next.acquired))return Error::InvalidState;
+        state=next;presentation=notices;CacheEffects();
+        return Error::None;
+    }catch(...){return Error::InvalidState;}
+}
 Code Status() noexcept {return code.load();}
 const char* Detail() noexcept {
     switch(code.load()){

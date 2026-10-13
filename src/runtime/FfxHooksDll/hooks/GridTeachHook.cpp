@@ -4,6 +4,8 @@
 #include "NulElementCommands.h"
 #include "ModFeatureCatalog.h"
 #include "RecoveryNative.h"
+#include "SharedCommandAvailability.h"
+#include "AeroEquipmentBridge.h"
 #include "../shared/ffx_addresses.h"
 #include <intrin.h>
 #include <array>
@@ -53,6 +55,17 @@ bool EntryAllows(unsigned character,unsigned command) noexcept {
     if(!row||(command!=0&&row==zero)||!RecoveryNative::Range(reinterpret_cast<std::uintptr_t>(row),92)||
        !RecoveryNative::Copy(&owner,row+25,1))return false;
     return owner==0xff||owner==character;
+}
+bool ValeforAero(unsigned character,unsigned command) noexcept {
+    if(character!=8||command!=367||!commandEntry||!AeroEquipmentBridge::Valefor())return false;
+    std::array<std::uint8_t,96> row{};
+    __try {const auto* source=commandEntry(367,0);
+        if(!source||source==commandEntry(0,0)||!RecoveryNative::Copy(row.data(),source,row.size()))return false;
+    } __except(EXCEPTION_EXECUTE_HANDLER){return false;}
+    // Narrow exception to the authored Lulu spell. Native learned bits end at
+    // 351; setting bit367 would corrupt the adjacent disabled-command flags.
+    return (row[0x19]==5||row[0x19]==255)&&row[0x16]==0&&row[0x17]==1&&row[0x18]==1&&
+        row[0x20]==2&&row[0x23]==1&&row[0x28]==3&&row[0x2A]==12&&row[0x2B]==1&&row[0x2D]==0x40;
 }
 bool AuthoredNul(unsigned command) noexcept {
     const auto* definition=NulElements::Find(0x3000u|command);if(!definition||!commandEntry)return false;
@@ -116,7 +129,10 @@ int __cdecl HasShim(std::uint8_t character,std::uint16_t command){
     const auto original=reinterpret_cast<HasFn>(hasOriginal);
     if(!Admitted())return original(character,command);
     const unsigned id=command&0xfff;
-    if((command&0xf000)==0x3000&&id>=320){
+    // Native menu construction passes raw IDs; action callers also pass 0x3000
+    // IDs. Neither may read an extended bit from the adjacent disabled flags.
+    if(((command&0xf000)==0||(command&0xf000)==0x3000)&&id>=320){
+        if(ValeforAero(character,id))return 1;
         if(AuthoredNul(id)&&!nulSpellMenus)return 0;
         if(id==FFX_CMD_WHITE_MAGIC_PLUS_MENU_ID&&NulLearned(character)&&EntryAllows(character,id))return 1;
         return EntryAllows(character,id)&&Learning::Has(character,id)?1:0;
@@ -130,7 +146,7 @@ int __cdecl HasShim(std::uint8_t character,std::uint16_t command){
 // entry detour nor suppresses the native reset based on a historical caller label.
 bool Empty(std::uint16_t code) noexcept {return code==0||code==0xff||code==0xffff;}
 void Append(std::uint16_t* ring,unsigned count,unsigned id){
-    for(unsigned i=0;i<count;++i)if(!Empty(ring[i])&&(ring[i]&0xfff)==id)return;
+    for(unsigned i=0;i<count;++i)if(!Empty(ring[i])&&(unsigned(ring[i])&0xfffu)==id)return;
     for(unsigned i=0;i<count;++i)if(Empty(ring[i])){ring[i]=static_cast<std::uint16_t>(0x3000|id);return;}
 }
 bool Misplaced(unsigned character,unsigned offset,unsigned id){
@@ -146,6 +162,16 @@ bool Misplaced(unsigned character,unsigned offset,unsigned id){
     return id>=320&&!EntryAllows(character,id);
 }
 void UpdateExtendedMenu(unsigned character){
+    if(character==8){
+        if(!ValeforAero(character,367))return;
+        std::uintptr_t table=0;
+        if(!RecoveryNative::Copy(&table,reinterpret_cast<void*>(module+RVA_FFX_BATTLE_COMMAND_RING_BASE_PTR),4)||!table||
+           table>UINT32_MAX-31u*FFX_BATTLE_COMMAND_RING_SLOT_STRIDE)return;
+        const auto ring=table+character*FFX_BATTLE_COMMAND_RING_SLOT_STRIDE+120;
+        if(!RecoveryNative::Range(ring,48,0,false,true))return;
+        __try {Append(reinterpret_cast<std::uint16_t*>(ring),24,367);}__except(EXCEPTION_EXECUTE_HANDLER){}
+        return;
+    }
     if(character>=7||!Learning::Ready())return;
     std::uintptr_t table=0;
     if(!RecoveryNative::Copy(&table,reinterpret_cast<void*>(module+RVA_FFX_BATTLE_COMMAND_RING_BASE_PTR),4)||!table)return;
@@ -193,7 +219,13 @@ bool Validate(std::uintptr_t base){
     using namespace RecoveryEvidence;
     if(!RecoveryNative::Profile(base))return false;
     const Proof proofs[]={GridGrant,GridBuildMenu,GridHasCommand,GridCommandEntry};
-    for(const auto& proof:proofs)if(!RecoveryNative::Match(base,proof))return false;
+    for(const auto& proof:proofs){
+        if(RecoveryNative::Match(base,proof))continue;
+        std::array<unsigned char,48> bytes{};
+        if(proof.rva!=SharedCommandAvailability::Rva||proof.size>bytes.size()||
+           !RecoveryNative::Copy(bytes.data(),reinterpret_cast<const void*>(base+proof.rva),proof.size)||
+           !SharedCommandAvailability::MatchesOwned(base,bytes.data(),proof.size))return false;
+    }
     for(const auto& limit:menuLimits){
         const Proof proof{limit.rva,limit.bytes,limit.size,nullptr,0};
         if(limit.size<5||limit.size>6||limit.immediate+4!=limit.size||!RecoveryNative::Match(base,proof))return false;
@@ -203,13 +235,14 @@ bool Validate(std::uintptr_t base){
 } // namespace
 
 bool StartGridTeachSaveTracking(std::uintptr_t base,GridTeachLogFn log){return Coexistence::runtime.SavePipelineAllowed()&&GridLearned::Runtime::Start(base,log);}
-bool StartNativeSaveLoadEvents(std::uintptr_t module){return Coexistence::runtime.SavePipelineAllowed()&&GridLearned::Runtime::StartLoadEvents(module);}
+bool StartNativeSaveLoadEvents(std::uintptr_t image){return Coexistence::runtime.SavePipelineAllowed()&&GridLearned::Runtime::StartLoadEvents(image);}
 bool NativeSaveLoadEventsReady() noexcept {return GridLearned::Runtime::loadEventsReady.load(std::memory_order_acquire);}
 void RequestNativeSaveLoadEventsStop() noexcept {GridLearned::Runtime::RequestLoadEventsStop();}
 bool RemoveNativeSaveLoadEvents() noexcept {return GridLearned::Runtime::StopLoadEvents();}
 bool IsGridTeachLearningReady(){return IsGridTeachHookInstalled()&&GridLearned::Runtime::Ready();}
 void RequestGridTeachStop() noexcept {
     admission.store(2,std::memory_order_release);installed.store(false,std::memory_order_release);
+    SharedCommandAvailability::UnregisterLearned(&HasShim);
     Learning::RequestStop();
 }
 
@@ -226,17 +259,21 @@ GridTeachInstallResult InstallGridTeachHook(std::uintptr_t base,GridTeachLogFn l
         Log("[ffx-hooks] GridTeach unavailable: signature, profile or save producer not ready\n");return result;
     }
     commandEntry=reinterpret_cast<CommandFn>(base+RecoveryEvidence::GridCommandEntry.rva);
+    if(!SharedCommandAvailability::Start(base))return result;
+    hasOriginal=reinterpret_cast<void*>(SharedCommandAvailability::Original());
     const struct Target {std::uint32_t rva;void* replacement;void** original;} targets[]={
         {RecoveryEvidence::GridGrant.rva,reinterpret_cast<void*>(&GrantShim),&grantOriginal},
-        {RecoveryEvidence::GridBuildMenu.rva,reinterpret_cast<void*>(&BuildShim),&buildOriginal},
-        {RecoveryEvidence::GridHasCommand.rva,reinterpret_cast<void*>(&HasShim),&hasOriginal}};
+        {RecoveryEvidence::GridBuildMenu.rva,reinterpret_cast<void*>(&BuildShim),&buildOriginal}};
     for(const auto& target:targets)if(!batch.Add(base+target.rva,target.replacement,target.original)){Discard();return result;}
     std::size_t index=0;
     for(const auto& limit:RecoveryEvidence::menuLimits){
         auto* code=static_cast<std::uint8_t*>(RecoveryNative::AllocateCode(limit.size+5));
         if(!code){Discard();return result;}limitGateways[index]=code;
         std::memcpy(code,limit.bytes,limit.size);
-        const std::uint32_t extended=FFX_BATTLE_MENU_COMMAND_ID_LIMIT_EXTENDED;
+        // The middle loop writes native learned flags (actor+0x664). Widening
+        // it past320 aliases extended IDs into the adjacent disabled bank.
+        // Only read/menu loops may visit the shadow-backed extended commands.
+        const std::uint32_t extended=limit.rva==ExecutableProfile::Rva<0x39be0d>()?320u:FFX_BATTLE_MENU_COMMAND_ID_LIMIT_EXTENDED;
         std::memcpy(code+limit.immediate,&extended,4);code[limit.size]=0xe9;
         const auto relative=static_cast<std::uint32_t>(base+limit.rva+limit.size-reinterpret_cast<std::uintptr_t>(code)-limit.size-5);
         std::memcpy(code+limit.size+1,&relative,4);
@@ -246,6 +283,7 @@ GridTeachInstallResult InstallGridTeachHook(std::uintptr_t base,GridTeachLogFn l
     if(!batch.Publish(MinHookBatch::Owner::GridTeachRecovery,reinterpret_cast<const void*>(&InstallGridTeachHook))){RequestGridTeachStop();Discard();return result;}
     unsigned closed=0;
     if(!admission.compare_exchange_strong(closed,1)){batch.Neutralize();return result;}
+    if(!SharedCommandAvailability::RegisterLearned(&HasShim)){RequestGridTeachStop();batch.Neutralize();return result;}
     installed=true;result.ok=true;result.menuBoundPatched=true;result.menuBoundPatchVa=base+RecoveryEvidence::menuLimits[0].rva;
     Log("[ffx-hooks] GridTeach ready: complete owned batch; save/character-bound extended commands; no global learned-bank writer\n");
 #else

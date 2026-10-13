@@ -1,0 +1,95 @@
+{
+  "schema": "ffx.public-release-validation.v1",
+  "producer": "Jarvis-HOOK",
+  "release": "v0.6.0-beta.5",
+  "runtime_source_commit": "877dcdb96fe8dfdda817dc4ce49799f6e612e679",
+  "public_checks": [
+    {
+      "name": "public-text",
+      "command": "python3 tools/text_languages/run_checks.py --output <isolated-output> --sanitizers --profile steam-20261001",
+      "result": "PASS",
+      "stages": 19,
+      "log_sha256": "ab2b4350a1cb21aa75e9e9008985695611d1887e138a85b80ed4e25b5c9553fd"
+    },
+    {
+      "name": "public-ui",
+      "command": "python3 tools/ui_languages/catalog.py --check",
+      "result": "PASS",
+      "log_sha256": "37287be947606ac0629f87f77e80fc9356e890ff89dd53f3b190256795d797eb"
+    },
+    {
+      "name": "public-ui-tests",
+      "command": "PYTHONPATH=tools/ui_languages python3 -m unittest discover -s tools/ui_languages -v",
+      "result": "PASS",
+      "log_sha256": "95f10735f9889cd19c4501d95b10dd4d0d8319b2bbf852c95976f41daba93926"
+    },
+    {
+      "name": "public-arcana",
+      "command": "python3 research/mod_008_arcana/compile_catalog.py --check",
+      "result": "PASS",
+      "log_sha256": "f9d3530a16d4a248f93b09f35f6478b6a5ada7ab281312b8481c1682e8937823"
+    },
+    {
+      "name": "public-balance",
+      "command": "python3 research/mod_008_arcana/check_balance.py",
+      "result": "PASS",
+      "log_sha256": "224df75fc9340df6607b392e964ed154fe23720b6ec0bc0ee13cc4cc386e1182"
+    },
+    {
+      "name": "public-workshop",
+      "command": "python3 research/equipment_workshop/run_checks.py",
+      "result": "PASS_WITH_DECLARED_PRIVATE_SKIPS",
+      "log_sha256": "4bd6cdb222d7dcf3990e5ccea6440ae6279939b7228d3f4154ff55d7e2593717"
+    },
+    {
+      "name": "public-present",
+      "command": "python3 tools/recovery/present_startup_tests.py",
+      "result": "PASS_SIMULATED",
+      "log_sha256": "08dfae16b04a8e146c9d851056d60c857eebf6416beaa5b8788c81378e848494"
+    },
+    {
+      "name": "public-music",
+      "command": "python3 tools/recovery/music_startup_tests.py",
+      "result": "PASS_SIMULATED",
+      "log_sha256": "7d8d79404b59b4174211e04fa244d0dd980d4a96ef9328c559a9784c97978055"
+    }
+  ],
+  "windows": {
+    "reuse_basis": "All 515 recorded production inputs are byte-identical to the isolated Windows source that produced the candidate; the input set was rehashed for this release. The earlier capture differs by a local variable rename in dllmain.cpp, but the final Windows source and build contain that rename.",
+    "production_manifest_sha256": "01641326dd15e6c6a5624f6dcb7cc8cc3646188c6df7f56709268a9444164d1c",
+    "dll_sha256": "fbf9818b6a8153b6d3d966b8347f11679bd53e5969684e513b23a24c9d2a4ffa",
+    "results": [
+      "MSVC x86 Steam Release passed",
+      "Text-language native default suite passed; private gameplay not run",
+      "F8 4727 checks passed",
+      "Workshop menu 30406 checks passed",
+      "UI locale/rendering and F7/audio passed",
+      "14 elemental modes passed, including blocked prototype requests",
+      "Spira runtime 77, MP 77, paid 363 and Aero 75 checks passed"
+    ],
+    "logs": {
+      "windows-validation.log": "618bcf0ee1af5eea7eb7847152aa797bf973232db448d5037af2d59f56812063",
+      "windows-resume.log": "fbffad6661743a34a5c7b97e4cb51b0eb61a2e292522bc9e9e960f8a7fe3b641"
+    },
+    "profile_correction": "The earlier helper called the default build Legacy in its message. The current script defaults to Steam; this receipt claims the Steam candidate only, not a new legacy-executable release."
+  },
+  "distribution": {
+    "translation_pack_included": false,
+    "game_fixtures_included": false,
+    "paid_dependencies_added": false,
+    "arcana_cards": 90,
+    "source_secret_pattern_hits": 0
+  },
+  "independent_review": {
+    "status": "PENDING",
+    "scope": "Frozen source, candidate, public delta, package and notes"
+  },
+  "limitations": [
+    "RT0 and isolated RT1 are not live RT2 or Production acceptance",
+    "No game installation or gameplay session was touched for this release",
+    "No new Fahrenheit bridge/provider package or P4 parity claim",
+    "Broader PT-BR terminology, item-name collisions and ESC/Flash screens remain incomplete",
+    "Experimental elemental progression adapter stays inert in normal builds",
+    "Hosted Actions previously failed before running jobs; no hosted CI PASS is claimed"
+  ]
+}

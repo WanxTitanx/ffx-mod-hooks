@@ -5,6 +5,8 @@
 #include "../hooks/EquipmentWorkshopRuntime.h"
 #include "../hooks/EquipmentWorkshopSettings.h"
 #include "../hooks/EquipmentWorkshopCatalogBridge.h"
+#include "../hooks/EquipmentWorkshopAcquisition.h"
+#include "WorkshopAcquisitionFixture.h"
 #include "../hooks/RonsoPoolSave.h"
 #include <array>
 #include <cstdio>
@@ -80,6 +82,7 @@ bool Capture(workshop::State& out){
 static void SetGil(std::uint32_t value){std::memcpy(reinterpret_cast<void*>(module+kGilRam),&value,4);}
 static std::uint32_t Gil(){std::uint32_t value=0;std::memcpy(&value,reinterpret_cast<void*>(module+kGilRam),4);return value;}
 static void Reset(){
+    static const auto nativeRecipes=WorkshopRecipes();BindWorkshopRecipes(module,nativeRecipes);
     ascensionReceipts={};ascensionSave={};
     std::memset(reinterpret_cast<void*>(module+kSaveRam),0,0x68C0);
     std::array<unsigned char,4400> gear{};std::array<std::uint16_t,112> items{};items.fill(255);
@@ -175,6 +178,31 @@ static void Run(){
     Check(!Commit(r,p)&&Bytes()==before&&!ready,"projection metadata failure cannot publish or charge a paid checkpoint");
     projectionReady=true;NativeSaveEvents::Unsubscribe(&projection);
 }
+static void AcquisitionCases(){
+    auto native=WorkshopRecipes(),spira=WorkshopRecipes(true);
+    for(unsigned word:{0x800Du,0x8011u,0x8018u}){
+        Reset();const auto kind=word==0x8018?1u:0u;
+        for(unsigned slot=0;slot<2;++slot){auto& piece=state.pieces[slot];piece.native[5]=static_cast<unsigned char>(kind);
+            for(unsigned i=0;i<4;++i){const auto value=static_cast<std::uint16_t>(slot==1&&i==0?word:0x8062+i);std::memcpy(piece.native+14+2*i,&value,2);}
+            std::memcpy(reinterpret_cast<void*>(module+kGearRam+slot*22),piece.native,22);}
+        state.pieces[0].fifthUnlocked=1;workshop::Request r{};r.op=workshop::Op::SetFifth;r.pieceId=state.pieces[0].id;r.revision=state.revision;r.value=static_cast<std::uint16_t>(word);
+        BindWorkshopRecipes(module,native);workshop::Plan quote{};
+        Check(Preview(r,quote)==workshop::Error::Ok,"vanilla direct runtime quote keeps the ability available");
+        const auto before=Bytes();const auto legacy=state;BindWorkshopRecipes(module,spira);
+        Check(!Commit(r,quote)&&Bytes()==before&&std::memcmp(&state,&legacy,sizeof(state))==0,"changing the loaded customization profile invalidates an old quote before payment");
+        Check(Preview(r,quote)==workshop::Error::UnsupportedAbility,"direct runtime fifth request cannot bypass the retired native target");
+        r.op=workshop::Op::Fuse;r.other=1;r.otherId=state.pieces[1].id;r.count=1;r.from[0]=0;r.to[0]=0;
+        Check(Preview(r,quote)==workshop::Error::UnsupportedAbility&&!Commit(r,quote)&&Bytes()==before,"direct runtime fusion cannot transfer a retired legacy ability");
+        r.op=workshop::Op::Clear;r.slot=1;r.pieceId=state.pieces[1].id;r.value=0;
+        Check(Preview(r,quote)==workshop::Error::Ok&&Commit(r,quote)&&workshop::Ability(state.pieces[1],0)==workshop::Empty,"legacy gear remains removable through the real transaction path");
+    }
+    Reset();auto request=Fusion();workshop::Plan quote{};Check(Preview(request,quote)==workshop::Error::Ok,"valid table quotes a normal fusion");
+    const auto before=Bytes();const std::uint32_t missing=0;std::memcpy(reinterpret_cast<void*>(module+Acquisition::PointerRva),&missing,4);
+    Check(!Commit(request,quote)&&Bytes()==before,"loss of native recipe data invalidates confirmation without spending");
+    request.op=workshop::Op::Clear;request.value=0;
+    Check(Preview(request,quote)==workshop::Error::Ok&&Commit(request,quote),"missing acquisition data does not quarantine existing gear removal");
+    Reset();
+}
 static void CatalogAndPresentationCases(){
     namespace Bridge=FfxHooks::EquipmentWorkshop::CatalogBridge;
     static workshop::Catalog active{};
@@ -186,7 +214,8 @@ static void CatalogAndPresentationCases(){
     state.pieces[0].fifthUnlocked=1;
     workshop::Request request{};request.op=workshop::Op::SetFifth;request.pieceId=state.pieces[0].id;
     request.revision=state.revision;request.value=0x808D;workshop::Plan plan{};
-    Check(Preview(request,plan)==workshop::Error::Ok&&plan.catalog.proof==111,
+    workshop::AcquisitionCatalog acquisition{};Check(Acquisition::Read(module,acquisition),"transaction has a current native recipe snapshot");
+    Check(Preview(request,plan)==workshop::Error::Ok&&plan.catalog.proof==workshop::AcquisitionProof(111,acquisition),
           "native transaction quotes a currently admitted extension recipe");
     auto before=Bytes();const auto beforeState=state;active.proof=222;
     Check(!Commit(request,plan)&&Bytes()==before&&std::memcmp(&state,&beforeState,sizeof(state))==0,
@@ -240,7 +269,7 @@ int main(){
     void* memory=VirtualAlloc(nullptr,0xE00000,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
     if(!memory)return 2;module=reinterpret_cast<std::uintptr_t>(memory);
     Check(FfxHooks::NativeSaveEvents::RegisterCheckpointSerializer(&FixtureSerializer),"transaction fixture registers a controlled serializer boundary");
-    Run();ProgressionCases();CatalogAndPresentationCases();
+    Run();ProgressionCases();AcquisitionCases();CatalogAndPresentationCases();
     Reset();auto& piece=state.pieces[0];piece.native[11]=2;
     for(unsigned i=2;i<4;++i){piece.native[14+2*i]=255;piece.native[15+2*i]=0;piece.abilities[i]=0;piece.ranks[i]=0;}
     std::memcpy(reinterpret_cast<void*>(module+kGearRam),piece.native,22);

@@ -49,6 +49,14 @@ enum class Owner : uint8_t {
     SeymourGearSort,
     SeymourMenuList,
     OriginalPs2Rng,
+    ArcanaField,
+    MinigameAssist,
+    CaptureCascade,
+    SharedQueue,
+    OmegaLastSeal,
+    SharedCommandAvailability,
+    OmegaT7,
+    EquipmentWorkshopMenu,
 };
 
 enum class State : uint8_t {

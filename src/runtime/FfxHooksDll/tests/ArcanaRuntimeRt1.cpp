@@ -163,6 +163,7 @@ int main(int argc,char** argv){
         if(priorStatus)previous.packHash={0xc9,0xa3,0xb6,0x34,0x9b,0x27,0x4d,0x21,0x37,0xe2,0xb3,0x17,0xee,0xd2,0x44,0x59,0x0e,0x19,0x20,0x75,0x28,0x49,0xfb,0xc7,0x2c,0xe1,0x6a,0x1b,0xac,0x51,0xce,0x37};
         if(priorElements)previous.packHash={0xc6,0xfe,0x69,0xe9,0xf9,0x6c,0xf7,0x76,0xa9,0x43,0xeb,0xeb,0xa7,0x25,0xed,0x65,0xdc,0x18,0x72,0xcc,0x6e,0x8e,0x0e,0x15,0x39,0x96,0x3c,0x16,0x4d,0xf2,0x45,0x3e};
         previous.state.mode=Mode::Constellation;AwardAll(previous.state,0);
+        Presentation::AdoptLegacy(previous.presentation,previous.state.acquired);
         Equip(previous.state,previous.state.revision,0,0,21);Equip(previous.state,previous.state.revision,1,0,13);
         Equip(previous.state,previous.state.revision,2,0,18);Equip(previous.state,previous.state.revision,3,0,71);
         Equip(previous.state,previous.state.revision,4,0,0);
@@ -177,7 +178,28 @@ int main(int argc,char** argv){
 #endif
     Check(Runtime::Capture(state,generation)&&generation!=0,"observed read plus actual load binds one Arcana session");
     unsigned owned=0;for(auto card:state.acquired)owned+=card;
-    Check(owned==((development||legacy)?78u:74u),"native fixture reconciles earned cards and retains the known legacy collection");
+    Check(owned==((development||legacy)?78u:0u),"native progression unlocks sites without auto-granting; known legacy collection is retained");
+    if(!development&&!legacy){
+        const auto& site=Acquisition::Catalog()[0];
+        const auto sceneAddress=base+::FfxHooks::ExecutableProfile::Rva<0xD2CA90>();
+        std::uint16_t previousRoom=0;std::memcpy(&previousRoom,reinterpret_cast<void*>(sceneAddress),2);
+        std::memcpy(reinterpret_cast<void*>(sceneAddress),&site.location.room,2);
+        Acquisition::Progress objectives;Acquisition::Facts facts;State fieldState;std::uint64_t fieldGeneration=0;
+        Check(Runtime::CaptureWorld(fieldState,objectives,facts,fieldGeneration,site.location.room)&&fieldGeneration==generation,"field acquisition reads the exact owning native save snapshot");
+        Acquisition::Target target;target.card=0;target.location=site.location;
+        Check(Runtime::InteractWorld(generation-1,target,site.location.room,site.location.x,site.location.z).kind==Acquisition::ResultKind::None,"stale field interaction cannot grant into a different save");
+        Check(Runtime::InteractWorld(generation,target,site.location.room,site.location.x,site.location.z).kind==Acquisition::ResultKind::Awarded&&Runtime::Capture(state,generation)&&state.acquired[0],"actual runtime symbol transaction grants the card and its queued native receipt together");
+        std::memcpy(reinterpret_cast<void*>(sceneAddress),&previousRoom,2);owned=1;
+    }
+    Presentation::State presentation;std::uint64_t presentationGeneration=0;
+    Check(Runtime::CapturePresentation(presentation,presentationGeneration)&&presentationGeneration==generation&&
+          Presentation::Validate(presentation,state.acquired),"native load binds presentation to the same save generation");
+    Check(presentation.count==(legacy?0u:owned),"fresh awards are announced individually while existing legacy cards stay silent");
+    const auto firstView=Presentation::Current(presentation);
+    Check(Runtime::AcknowledgePresentation(generation-1,firstView,Presentation::Navigation::Next)==Error::Stale,
+          "stale native notice cannot acknowledge a different save generation");
+    Check(Runtime::AcknowledgePresentation(generation,firstView,Presentation::Navigation::Next)==(owned?Error::None:Error::Stale),
+          "only a pending native notice or legacy introduction accepts acknowledgement");
     if(legacy){
         Check(state.mode==Mode::Constellation&&state.slots[0][0]==21&&state.slots[1][0]==13&&state.slots[2][0]==18&&state.slots[3][0]==71,"real native load migrates the old collection without clearing equipped cards");
         Check(Runtime::ActorEffects(0)->Get(EffectKind::OverdriveDamage)==50&&Runtime::ActorEffects(1)->Get(EffectKind::DeathImmuneDamage)==20&&Runtime::ActorEffects(2)->Get(EffectKind::TouchConfuse)==50&&Runtime::ActorEffects(3)->Get(EffectKind::ApBonus)==75,"legacy ownership receives the current World, Death, Moon and Eight effects");
@@ -209,7 +231,15 @@ int main(int argc,char** argv){
     FfxHooks::RonsoPool::SealSave(projected);
     Check(FfxHooks::NativeSaveEvents::PrepareWrite(path.c_str(),projected.data(),projected.size(),transaction),"sidecar prepare binds the exact projected native bytes");
     FfxHooks::NativeSaveEvents::FinishWrite(transaction,projected.data(),projected.size(),true);
-    Check(std::filesystem::exists(Store::Extension(path,".arcana.v1")),"successful native completion persists the Arcana extension");
+    Check(std::filesystem::exists(Store::Extension(path,".arcana.v3")),"successful native completion persists the versioned Arcana extension");
+    {Hash savedHash{};Record saved;Store reader;
+     Check(FfxHooks::EquipmentWorkshop::Fingerprint(projected.data(),projected.size(),savedHash)&&
+           reader.Read(path,savedHash,Hash{kPackHash[0]},saved)!=StoreCode::Found,
+           "presentation storage never bypasses the full catalog identity");
+     Hash catalog{};std::copy(std::begin(kPackHash),std::end(kPackHash),catalog.begin());
+     Check(reader.Read(path,savedHash,catalog,saved)==StoreCode::Found&&
+           saved.presentation.intro==(owned?Presentation::Intro::Reading:Presentation::Intro::Waiting)&&saved.presentation.page==(legacy?1u:0u),
+           "the actual native save preserves a pending guide or waits for a first real collection");}
     if(legacy){
         Hash hash{},currentPack{};std::copy(std::begin(kPackHash),std::end(kPackHash),currentPack.begin());Record upgraded;Store reader;
         Check(FfxHooks::EquipmentWorkshop::Fingerprint(projected.data(),projected.size(),hash)&&reader.Read(path,hash,currentPack,upgraded)==StoreCode::Found&&upgraded.state.slots==state.slots,"the next real save commits the migrated collection with the new pack identity");
@@ -240,7 +270,15 @@ int main(int argc,char** argv){
         FfxHooks::RonsoPool::SealSave(projected);
         Check(FfxHooks::NativeSaveEvents::PrepareWrite(path.c_str(),projected.data(),projected.size(),stopped),"post-stop final metadata still prepares");
         FfxHooks::NativeSaveEvents::FinishWrite(stopped,nullptr,0,false);
-        Check(!std::filesystem::exists(Store::Extension(path,".arcana.pending.v1"))&&std::filesystem::exists(Store::Extension(path,".arcana.v1")),"failed native completion aborts its journal and preserves the prior committed collection");
+        Check(!std::filesystem::exists(Store::Extension(path,".arcana.pending.v3"))&&std::filesystem::exists(Store::Extension(path,".arcana.v3")),"failed native completion aborts its journal and preserves the prior committed collection");
+        FfxHooks::NativeSaveEvents::ResetCompleted();
+        const auto newPath=(std::filesystem::path(root)/L"ffx_009").wstring();
+        FfxHooks::NativeSaveEvents::WriteTransaction fresh;
+        Check(FfxHooks::NativeSaveEvents::ProjectWrite(newPath.c_str(),save.data(),projected.data(),save.size(),fresh),"post-stop new-game save still follows the native serialization pipeline");
+        FfxHooks::RonsoPool::SealSave(projected);
+        Check(FfxHooks::NativeSaveEvents::PrepareWrite(newPath.c_str(),projected.data(),projected.size(),fresh)&&
+              !std::filesystem::exists(Store::Extension(newPath,".arcana.pending.v3")),"new game after Stop cannot journal the previous collection or tutorial");
+        FfxHooks::NativeSaveEvents::FinishWrite(fresh,nullptr,0,false);
     }
     std::printf("ArcanaRuntimeRt1 %u/%u passed\n",checks-failures,checks);return failures?1:0;
 }

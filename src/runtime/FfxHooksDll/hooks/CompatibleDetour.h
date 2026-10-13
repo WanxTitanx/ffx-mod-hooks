@@ -21,6 +21,7 @@ class CompatibleDetour {
     unsigned char* relay_=nullptr;
     volatile LONG* destination_=nullptr;
     bool attempted_=false, active_=false, peer_=false;
+    bool followCall_=true;
 
     bool PrepareRelay() noexcept {
         static_assert(sizeof(void*)==4, "The game detour ABI is x86");
@@ -50,6 +51,9 @@ public:
         :target_(target),replacement_(replacement),original_(original){}
     CompatibleDetour(const CompatibleDetour&)=delete;
     CompatibleDetour& operator=(const CompatibleDetour&)=delete;
+    // Match PolyHook's pre-install option. A real entry can start with CALL
+    // without being a forwarding stub; MinHook always hooks that exact entry.
+    void setIsFollowCallOnFnAddress(bool value){if(!attempted_)followCall_=value;}
     ~CompatibleDetour(){
         if(standalone_)delete standalone_;
         // Once created, a relay/trampoline can be reached through another
@@ -62,6 +66,7 @@ public:
         attempted_=true;peer_=Coexistence::runtime.PeerPresent();
         if(!peer_){
             standalone_=new PLH::x86Detour(target_,replacement_,original_);
+            standalone_->setIsFollowCallOnFnAddress(followCall_);
             active_=standalone_->hook();return active_;
         }
         api_=Coexistence::detourApi.load(std::memory_order_acquire);

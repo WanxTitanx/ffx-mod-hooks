@@ -21,10 +21,13 @@
 
 namespace FfxHooks::Arcana {
 namespace {
-constexpr unsigned char magic[8]={'A','R','C','A','N','A','0','1'};
-constexpr const char* finalSuffix=".arcana.v1";
-constexpr const char* pendingSuffix=".arcana.pending.v1";
-constexpr const char* previousSuffix=".arcana.previous.v1";
+constexpr unsigned char magic[8]={'A','R','C','A','N','A','0','3'};
+constexpr unsigned char v2Magic[8]={'A','R','C','A','N','A','0','2'};
+constexpr unsigned char legacyMagic[8]={'A','R','C','A','N','A','0','1'};
+constexpr const char* finalSuffix=".arcana.v3";
+constexpr const char* pendingSuffix=".arcana.pending.v3";
+constexpr const char* previousSuffix=".arcana.previous.v3";
+struct StoredBytes {RecordBytes bytes{};std::size_t size=0;};
 std::atomic<unsigned> temporarySequence{0};
 void Put(unsigned char* p,std::uint64_t value,unsigned bytes) noexcept {
     for(unsigned i=0;i<bytes;++i)p[i]=static_cast<unsigned char>(value>>(i*8));
@@ -44,34 +47,38 @@ bool ValidResources(const Resources& r) noexcept {
         if(!(r.valid&(1u<<i))&&(r.hp[i]||r.mp[i]))return false;
     return true;
 }
-StoreCode ReadBytes(const std::filesystem::path& path,RecordBytes& bytes) {
+StoreCode ReadBytes(const std::filesystem::path& path,StoredBytes& bytes) {
 #ifdef _WIN32
     HANDLE file=CreateFileW(path.c_str(),GENERIC_READ,FILE_SHARE_READ,nullptr,OPEN_EXISTING,FILE_FLAG_OPEN_REPARSE_POINT,nullptr);
     if(file==INVALID_HANDLE_VALUE){const auto error=GetLastError();return error==ERROR_FILE_NOT_FOUND||error==ERROR_PATH_NOT_FOUND?StoreCode::Missing:StoreCode::IoFailure;}
     BY_HANDLE_FILE_INFORMATION info{};DWORD read=0;
     const bool valid=GetFileInformationByHandle(file,&info)&&!(info.dwFileAttributes&(FILE_ATTRIBUTE_REPARSE_POINT|FILE_ATTRIBUTE_DIRECTORY))&&
-        !info.nFileSizeHigh&&info.nFileSizeLow==bytes.size();
-    const bool ok=valid&&ReadFile(file,bytes.data(),static_cast<DWORD>(bytes.size()),&read,nullptr)&&read==bytes.size();
+        !info.nFileSizeHigh&&(info.nFileSizeLow==kRecordBytes||info.nFileSizeLow==kV2RecordBytes||info.nFileSizeLow==kLegacyRecordBytes);
+    if(valid)bytes.size=info.nFileSizeLow;
+    const bool ok=valid&&ReadFile(file,bytes.bytes.data(),static_cast<DWORD>(bytes.size),&read,nullptr)&&read==bytes.size;
     CloseHandle(file);return ok?StoreCode::Found:valid?StoreCode::IoFailure:StoreCode::Invalid;
 #else
     const int file=open(path.c_str(),O_RDONLY|O_NOFOLLOW);
     if(file<0)return errno==ENOENT?StoreCode::Missing:StoreCode::IoFailure;
-    struct stat st{};const bool valid=fstat(file,&st)==0&&S_ISREG(st.st_mode)&&st.st_size==static_cast<off_t>(bytes.size());
+    struct stat st{};const bool valid=fstat(file,&st)==0&&S_ISREG(st.st_mode)&&
+        (st.st_size==static_cast<off_t>(kRecordBytes)||st.st_size==static_cast<off_t>(kV2RecordBytes)||st.st_size==static_cast<off_t>(kLegacyRecordBytes));
+    if(valid)bytes.size=static_cast<std::size_t>(st.st_size);
     std::size_t total=0;
-    if(valid)while(total<bytes.size()){const auto n=read(file,bytes.data()+total,bytes.size()-total);if(n<=0)break;total+=static_cast<std::size_t>(n);}
-    close(file);return valid&&total==bytes.size()?StoreCode::Found:valid?StoreCode::IoFailure:StoreCode::Invalid;
+    if(valid)while(total<bytes.size){const auto n=read(file,bytes.bytes.data()+total,bytes.size-total);if(n<=0)break;total+=static_cast<std::size_t>(n);}
+    close(file);return valid&&total==bytes.size?StoreCode::Found:valid?StoreCode::IoFailure:StoreCode::Invalid;
 #endif
 }
-bool AtomicWrite(const std::filesystem::path& path,const RecordBytes& bytes) {
+bool AtomicWrite(const std::filesystem::path& path,const StoredBytes& bytes) {
     // Refuse to overwrite a foreign/corrupt file just because it uses our suffix.
-    RecordBytes old{};const auto existing=ReadBytes(path,old);Record decoded;
-    if(existing!=StoreCode::Missing&&(existing!=StoreCode::Found||!Decode(old.data(),old.size(),decoded)))return false;
+    StoredBytes old{};const auto existing=ReadBytes(path,old);Record decoded;
+    if(!Decode(bytes.bytes.data(),bytes.size,decoded))return false;
+    if(existing!=StoreCode::Missing&&(existing!=StoreCode::Found||!Decode(old.bytes.data(),old.size,decoded)))return false;
     auto temporary=path;temporary+=(".tmp-"+std::to_string(std::chrono::high_resolution_clock::now().time_since_epoch().count())+
         "-"+std::to_string(temporarySequence.fetch_add(1)));
 #ifdef _WIN32
     HANDLE file=CreateFileW(temporary.c_str(),GENERIC_WRITE,0,nullptr,CREATE_NEW,FILE_ATTRIBUTE_NORMAL,nullptr);
     if(file==INVALID_HANDLE_VALUE)return false;
-    DWORD written=0;bool ok=WriteFile(file,bytes.data(),static_cast<DWORD>(bytes.size()),&written,nullptr)&&written==bytes.size()&&FlushFileBuffers(file);
+    DWORD written=0;bool ok=WriteFile(file,bytes.bytes.data(),static_cast<DWORD>(bytes.size),&written,nullptr)&&written==bytes.size&&FlushFileBuffers(file);
     if(!CloseHandle(file))ok=false;
     if(ok)ok=MoveFileExW(temporary.c_str(),path.c_str(),MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)!=FALSE;
     if(!ok)DeleteFileW(temporary.c_str());
@@ -80,8 +87,8 @@ bool AtomicWrite(const std::filesystem::path& path,const RecordBytes& bytes) {
     const int file=open(temporary.c_str(),O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW,0600);
     if(file<0)return false;
     std::size_t total=0;
-    while(total<bytes.size()){const auto n=write(file,bytes.data()+total,bytes.size()-total);if(n<=0)break;total+=static_cast<std::size_t>(n);}
-    bool ok=total==bytes.size()&&fsync(file)==0;
+    while(total<bytes.size){const auto n=write(file,bytes.bytes.data()+total,bytes.size-total);if(n<=0)break;total+=static_cast<std::size_t>(n);}
+    bool ok=total==bytes.size&&fsync(file)==0;
     if(close(file))ok=false;
     if(ok)ok=rename(temporary.c_str(),path.c_str())==0;
     if(!ok)unlink(temporary.c_str());
@@ -91,52 +98,85 @@ bool AtomicWrite(const std::filesystem::path& path,const RecordBytes& bytes) {
 }
 }
 bool Encode(const Record& record,RecordBytes& output) noexcept {
-    if(Validate(record.state)!=Error::None||!Nonzero(record.nativeHash)||!Nonzero(record.packHash)||!ValidResources(record.resources))return false;
-    RecordBytes result{};std::memcpy(result.data(),magic,8);Put(result.data()+8,1,4);Put(result.data()+12,result.size(),4);
+    if(Validate(record.state)!=Error::None||!Nonzero(record.nativeHash)||!Nonzero(record.packHash)||!ValidResources(record.resources)||
+       !Presentation::Validate(record.presentation,record.state.acquired)||!Acquisition::ValidProgress(record.objectives))return false;
+    RecordBytes result{};std::memcpy(result.data(),magic,8);Put(result.data()+8,3,4);Put(result.data()+12,result.size(),4);
     std::copy(record.nativeHash.begin(),record.nativeHash.end(),result.begin()+16);
     std::copy(record.packHash.begin(),record.packHash.end(),result.begin()+48);
     Put(result.data()+80,record.state.revision,8);result[88]=static_cast<unsigned char>(record.state.mode);result[89]=record.resources.valid;
     std::copy(record.state.acquired.begin(),record.state.acquired.end(),result.begin()+96);
-    unsigned at=174;
+    unsigned at=96+kCardCount;
     for(const auto& actor:record.state.slots)for(auto slot:actor){Put(result.data()+at,static_cast<std::uint16_t>(slot),2);at+=2;}
     for(auto hp:record.resources.hp){Put(result.data()+at,hp,4);at+=4;}
     for(auto mp:record.resources.mp){Put(result.data()+at,mp,4);at+=4;}
-    Put(result.data()+272,Crc(result.data(),272),4);output=result;return true;
+    result[194+kCardCount]=static_cast<unsigned char>(record.presentation.intro);
+    result[195+kCardCount]=record.presentation.page;result[196+kCardCount]=record.presentation.firstCard;
+    result[197+kCardCount]=record.presentation.legacy?1:0;result[198+kCardCount]=record.presentation.count;
+    std::copy(record.presentation.pending.begin(),record.presentation.pending.end(),result.begin()+199+kCardCount);
+    std::copy(record.objectives.begin(),record.objectives.end(),result.begin()+200+2*kCardCount);
+    Put(result.data()+kRecordBytes-4,Crc(result.data(),kRecordBytes-4),4);output=result;return true;
 }
 bool Decode(const unsigned char* bytes,std::size_t size,Record& output) noexcept {
-    if(!bytes||size!=kRecordBytes||std::memcmp(bytes,magic,8)||Get(bytes+8,4)!=1||Get(bytes+12,4)!=size||Get(bytes+272,4)!=Crc(bytes,272))return false;
+    if(!bytes||(size!=kRecordBytes&&size!=kV2RecordBytes&&size!=kLegacyRecordBytes))return false;
+    const bool legacy=size==kLegacyRecordBytes,v3=size==kRecordBytes;
+    const unsigned version=v3?3u:legacy?1u:2u,crcAt=static_cast<unsigned>(size)-4;
+    if(std::memcmp(bytes,v3?magic:legacy?legacyMagic:v2Magic,8)||Get(bytes+8,4)!=version||
+       Get(bytes+12,4)!=size||Get(bytes+crcAt,4)!=Crc(bytes,crcAt))return false;
     for(unsigned i=90;i<96;++i)if(bytes[i])return false;
     Record result;std::copy(bytes+16,bytes+48,result.nativeHash.begin());std::copy(bytes+48,bytes+80,result.packHash.begin());
     result.state.revision=Get(bytes+80,8);result.state.mode=static_cast<Mode>(bytes[88]);result.resources.valid=bytes[89];
-    std::copy(bytes+96,bytes+174,result.state.acquired.begin());unsigned at=174;
+    const unsigned cards=v3?kCardCount:kStandardCardCount;
+    // Old ownership ends at byte174, immediately before the first equipment slot.
+    // Never read the two new bits from that old slot or reinterpret an old ID>=78.
+    std::copy_n(bytes+96,cards,result.state.acquired.begin());unsigned at=96+cards;
     for(auto& actor:result.state.slots)for(auto& slot:actor){
         const auto word=Get(bytes+at,2);at+=2;
-        if(word!=0xFFFF&&word>=kCardCount)return false;
+        if(word!=0xFFFF&&word>=cards)return false;
         slot=word==0xFFFF?kEmpty:static_cast<std::int16_t>(word);
     }
     for(auto& hp:result.resources.hp){hp=static_cast<std::uint32_t>(Get(bytes+at,4));at+=4;}
     for(auto& mp:result.resources.mp){mp=static_cast<std::uint32_t>(Get(bytes+at,4));at+=4;}
     if(Validate(result.state)!=Error::None||!Nonzero(result.nativeHash)||!Nonzero(result.packHash)||!ValidResources(result.resources))return false;
+    if(legacy){
+        if(!Presentation::AdoptLegacy(result.presentation,result.state.acquired))return false;
+    }else{
+        const unsigned base=v3?194u+kCardCount:272u,pending=base+5,reserved=pending+cards;
+        if(bytes[base+3]>1||bytes[reserved]||bytes[base+4]>cards||
+           (bytes[base+2]!=Presentation::kNoCard&&bytes[base+2]>=cards))return false;
+        result.presentation.intro=static_cast<Presentation::Intro>(bytes[base]);
+        result.presentation.page=bytes[base+1];result.presentation.firstCard=bytes[base+2];
+        result.presentation.legacy=bytes[base+3]!=0;result.presentation.count=bytes[base+4];
+        std::copy_n(bytes+pending,cards,result.presentation.pending.begin());
+        std::copy_n(bytes+reserved+1,result.objectives.size(),result.objectives.begin());
+        if(!Presentation::Validate(result.presentation,result.state.acquired)||!Acquisition::ValidProgress(result.objectives))return false;
+    }
     output=result;return true;
 }
 std::filesystem::path Store::Extension(const std::filesystem::path& path,const char* suffix){auto result=path;result+=suffix;return result;}
 StoreCode Store::Read(const std::filesystem::path& native,const Hash& hash,const Hash& pack,Record& out) const {
     try {
-        bool present=false,invalid=false,ioFailure=false;
-        for(const char* suffix:{finalSuffix,pendingSuffix,previousSuffix}){
-            RecordBytes bytes{};const auto found=ReadBytes(Extension(native,suffix),bytes);
+        bool present=false,invalid=false,ioFailure=false,currentNative=false;
+        unsigned candidate=0;
+        for(const char* suffix:{finalSuffix,pendingSuffix,previousSuffix,".arcana.v2",".arcana.pending.v2",".arcana.previous.v2",".arcana.v1",".arcana.pending.v1",".arcana.previous.v1"}){
+            // Once this native snapshot has a newer record, older metadata is not
+            // an alternative recovery generation: it can omit newly earned cards.
+            // A different, older native snapshot can still match its retained v1.
+            if((candidate==3||candidate==6)&&(invalid||ioFailure||currentNative))break;
+            ++candidate;
+            StoredBytes bytes{};const auto found=ReadBytes(Extension(native,suffix),bytes);
             if(found==StoreCode::Missing)continue;
             present=true;
             if(found==StoreCode::IoFailure){ioFailure=true;continue;}
             Record record;
-            if(found!=StoreCode::Found||!Decode(bytes.data(),bytes.size(),record)){invalid=true;continue;}
+            if(found!=StoreCode::Found||!Decode(bytes.bytes.data(),bytes.size,record)){invalid=true;continue;}
+            if(record.nativeHash==hash)currentNative=true;
             if(record.nativeHash==hash&&record.packHash==pack){out=record;return suffix==finalSuffix?StoreCode::Found:StoreCode::Recovered;}
         }
         return ioFailure?StoreCode::IoFailure:invalid?StoreCode::Invalid:present?StoreCode::Foreign:StoreCode::Missing;
     }catch(...){return StoreCode::IoFailure;}
 }
 bool Store::Prepare(const std::filesystem::path& native,const Record& record) const {
-    try {RecordBytes bytes{};return Encode(record,bytes)&&AtomicWrite(Extension(native,pendingSuffix),bytes);}catch(...){return false;}
+    try {RecordBytes bytes{};return Encode(record,bytes)&&AtomicWrite(Extension(native,pendingSuffix),StoredBytes{bytes,bytes.size()});}catch(...){return false;}
 }
 StoreCode Store::ReadCompatible(const std::filesystem::path& native,const Hash& hash,const Hash& pack,
                                 const Hash* previous,std::size_t count,Record& out,bool& migrated) const {
@@ -157,11 +197,11 @@ StoreCode Store::ReadCompatible(const std::filesystem::path& native,const Hash& 
 }
 bool Store::Commit(const std::filesystem::path& native,const Hash& written) const {
     try {
-        RecordBytes pending{};Record record;
-        if(ReadBytes(Extension(native,pendingSuffix),pending)!=StoreCode::Found||!Decode(pending.data(),pending.size(),record)||record.nativeHash!=written)return false;
-        RecordBytes previous{};const auto old=ReadBytes(Extension(native,finalSuffix),previous);
+        StoredBytes pending{};Record record;
+        if(ReadBytes(Extension(native,pendingSuffix),pending)!=StoreCode::Found||!Decode(pending.bytes.data(),pending.size,record)||record.nativeHash!=written)return false;
+        StoredBytes previous{};const auto old=ReadBytes(Extension(native,finalSuffix),previous);
         Record previousRecord;
-        if(old!=StoreCode::Missing&&(old!=StoreCode::Found||!Decode(previous.data(),previous.size(),previousRecord)||
+        if(old!=StoreCode::Missing&&(old!=StoreCode::Found||!Decode(previous.bytes.data(),previous.size,previousRecord)||
             !AtomicWrite(Extension(native,previousSuffix),previous)))return false;
         if(!AtomicWrite(Extension(native,finalSuffix),pending))return false;
         std::error_code ignored;std::filesystem::remove(Extension(native,pendingSuffix),ignored);
@@ -170,12 +210,12 @@ bool Store::Commit(const std::filesystem::path& native,const Hash& written) cons
 }
 bool Store::Abort(const std::filesystem::path& native,const Record& prepared) const {
     try {
-        RecordBytes expected{},actual{};
+        RecordBytes expected{};StoredBytes actual{};
         if(!Encode(prepared,expected))return false;
         const auto path=Extension(native,pendingSuffix);
         const auto found=ReadBytes(path,actual);
         if(found==StoreCode::Missing)return true;
-        if(found!=StoreCode::Found||actual!=expected)return false;
+        if(found!=StoreCode::Found||actual.size!=expected.size()||actual.bytes!=expected)return false;
         std::error_code error;
         return std::filesystem::remove(path,error)&&!error;
     }catch(...){return false;}

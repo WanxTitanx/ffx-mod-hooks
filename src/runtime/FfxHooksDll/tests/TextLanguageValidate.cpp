@@ -60,6 +60,10 @@ bool Read(void* value,const Resource& resource,bool source,Bytes& bytes){
  return ReadBounded(host.pack,resource.path,resource.size,bytes);
 #endif
 }
+void Retain(void*,const Resource& resource,const char* reason){
+ // The runtime serves these requests from the native/mod file; report them, admit the rest.
+ std::cout<<"RETAINED native: "<<resource.id<<" "<<resource.request<<" ("<<reason<<")\n";
+}
 bool Hash(void*,const Bytes& bytes,std::string& out){
 #ifdef _WIN32
  return Fingerprint(bytes,out);
@@ -73,7 +77,10 @@ bool Hash(void*,const Bytes& bytes,std::string& out){
 }
 }
 int main(int argc,char** argv){
- if(argc!=3){std::cerr<<"Usage: TextLanguageValidate PACK REFERENCE\n";return 2;}
+ // --extended-kernel-tables admits command/a_ability/item up to the native staging
+ // buffer, as the runtime does only when the optional 32-bit loader adapter is armed.
+ const bool extended=argc==4&&std::string(argv[3])=="--extended-kernel-tables";
+ if(argc!=3&&!extended){std::cerr<<"Usage: TextLanguageValidate PACK REFERENCE [--extended-kernel-tables]\n";return 2;}
  try{
   Host host;host.source=std::filesystem::canonical(argv[2]);
   std::string json,error;
@@ -88,7 +95,7 @@ int main(int argc,char** argv){
   Bytes raw;if(!ReadBounded(host.pack,"manifest.json",MaxManifestBytes,raw))throw std::runtime_error("Manifest is missing, redirected or oversized");
   json.assign(raw.begin(),raw.end());
 #endif
-  PreparedPack pack;const PackIo io{&host,Read,Hash};
+  PreparedPack pack;const PackIo io{&host,Read,Hash,Retain,extended};
   if(!AdmitPack(json,io,pack,error))throw std::runtime_error(error);
   std::size_t menu=0,battle=0,events=0;
   for(const auto& resource:pack.manifest.resources){
@@ -96,8 +103,9 @@ int main(int argc,char** argv){
   }
   std::cout<<"ADMITTED RT0 locale="<<pack.manifest.locale<<" schema="<<pack.manifest.schemaVersion
            <<" api="<<pack.manifest.hookApi<<" menu="<<menu<<" battle="<<battle<<" events="<<events
-           <<" resources="<<pack.resources.size()<<"\n";
-  std::cout<<"Source identity will be checked again at the native font boundary. Restart-only; live validation is separate.\n";
+           <<" resources="<<pack.resources.size()<<" retained="<<pack.retainedCount
+           <<" kernel_tables="<<(extended?"32bit":"16bit")<<"\n";
+  std::cout<<"Source identity will be checked again through the native loader before paired publication. Restart-only; live validation is separate.\n";
   return 0;
  }catch(const std::exception& error){std::cerr<<"REJECTED: "<<error.what()<<'\n';return 1;}
 }

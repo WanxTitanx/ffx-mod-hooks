@@ -20,6 +20,7 @@
 #include <fstream>
 #include <iterator>
 #include <vector>
+#include <chrono>
 
 #if __has_include("../hooks/SpiraRuntime.h")
 #include "../hooks/SpiraRuntime.h"
@@ -82,12 +83,17 @@ static unsigned __cdecl DamageEndpoint(unsigned user,void*,unsigned,void*,const 
 }
 #include "SpiraPaidCapsCases.inl"
 #include "SpiraRewardCases.inl"
+#include "SpiraItemMpCases.inl"
+#include "SpiraApCountingCases.inl"
+#include "SpiraAeroCases.inl"
 int main(int argc,char** argv){
-    if(argc!=4&&argc!=5)return 2;const bool paidMode=argc==5;std::setvbuf(stdout,nullptr,_IONBF,0);
+    if(argc!=4&&argc!=5)return 2;const bool itemMpMode=argc==5&&std::strcmp(argv[4],"item-mp")==0;
+    const bool aeroMode=argc==5&&std::strcmp(argv[4],"aero")==0;
+    const bool paidMode=argc==5&&!itemMpMode&&!aeroMode;std::setvbuf(stdout,nullptr,_IONBF,0);
     const auto image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES);if(!image)return 2;
     base=reinterpret_cast<std::uintptr_t>(image);Check(PrivatePeFixture::NormalizeRelocations(image),"private PE relocates");
     std::ifstream input(argv[2],std::ios::binary);std::vector<unsigned char> source((std::istreambuf_iterator<char>(input)),{});
-    auto kernel=SpiraKernelFixture::Build(source);
+    auto kernel=SpiraKernelFixture::Build(source,aeroMode);
     const auto kp=reinterpret_cast<std::uintptr_t>(kernel.data()),ap=reinterpret_cast<std::uintptr_t>(actors.data());
     std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A944>()),&kp,4);W16(reinterpret_cast<unsigned char*>(base+::FfxHooks::ExecutableProfile::Rva<0xD2A970>()),static_cast<unsigned>(kernel.size()));
     std::memcpy(reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),&ap,4);
@@ -97,7 +103,7 @@ int main(int argc,char** argv){
         W32(actor+0x594,1000);W32(actor+0x5D0,500);W32(actor+0x598,999);W32(actor+0x5D4,100);Equip(owner,0,{});Equip(owner,1,{});}
     FfxHooks::Config::LoadTextForTests("[spira]\nenabled=1\n[aeon_ascension]\nenabled=1\n","C:\\private-spira.ini");
     Check(!S::Prepare(base,{},false,nullptr),"default-OFF prepares no consumer");
-    Check(S::Prepare(base,{true,true},false,nullptr),"Spira requests one shared equipment and combat pipeline");
+    Check(S::Prepare(base,{true,true,itemMpMode},false,nullptr),"Spira requests one shared equipment and combat pipeline");
     Check(FfxHooks::InstallNovaSuperDamageHook(base,false,false,false,nullptr).ok,"existing finite clamp owner installs with Nova OFF");
     const auto directory=std::filesystem::path(argv[3]).wstring();
     Check(W::StartForTests(base,paidMode,directory.c_str(),nullptr),"Spira equipment infrastructure does not require Workshop gameplay");
@@ -111,6 +117,9 @@ int main(int argc,char** argv){
     if(paidMode){PaidCases(directory,argv[4]);S::RequestStop();W::RequestStop();
         std::printf("SPIRA_PAID_CAPS_RT1 %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     SpiraRewardCases();
+    SpiraApCountingCases();
+    if(aeroMode){SpiraAeroCases(kernel);S::RequestStop();W::RequestStop();
+        std::printf("SPIRA_AERO_RT1 %u/%u passed\n",checks-failures,checks);return failures?1:0;}
     Equip(2,1,{0x8099,0x8017});Equip(0,1,{0x8099,0x8017});
     {
         FieldLimits limits;Check(limits.armed,"private field bridge isolates growth while running actual max/current clamp sites");
@@ -155,6 +164,7 @@ int main(int argc,char** argv){
     Check(hit()==1000,"changed ID configuration retires the old runtime binding immediately");
     FfxHooks::Config::LoadTextForTests("[spira]\nenabled=1\n[aeon_ascension]\nenabled=1\n","C:\\private-spira.ini");
     Check(hit()==2250,"restoring the exact admitted data and mapping restores only their original identities");
+    SpiraItemMpCases(itemMpMode);
     S::RequestStop();Check(hit()==1000&&!FfxHooks::AeonAscension::ReadMapping(paid),"stop retires combat and paid mapping admission");
     const auto mp=R32(Actor(8)+0x5D4);edge(8,Actor(8));Check(R32(Actor(8)+0x5D4)==mp,"stopped Mana Spring leaves the turn owner usable");
     std::printf("SPIRA_RUNTIME_RT1 %u/%u passed\n",checks-failures,checks);return failures?1:0;

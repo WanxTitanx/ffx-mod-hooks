@@ -205,7 +205,7 @@ const F8FlagSpec kFlags[] = {
     {"Reforge", "Equipment Workshop",
      {"labs.equipment_workshop", "f8_authority.equipment_workshop", nullptr,
       "FFXHOOKS_EQUIPMENT_WORKSHOP", "equipment_workshop.flag", nullptr, nullptr, nullptr, false, true},
-     "RESTART REQUIRED - Workshop; set its shortcut in Input.",
+     "RESTART REQUIRED - Workshop settings are in the game menu.",
      F8Activation::RestartRequired, F8ApplyMode::None},
     {"Reforge", "Native equipment details",
      {"labs.equipment_workshop_native_ui", "f8_authority.equipment_workshop_native_ui", nullptr,
@@ -273,7 +273,7 @@ const F8FlagSpec kFlags[] = {
     VANGUARD_GATE(28,"energy_barrier","Reduce damage above 75% Overdrive."),
     VANGUARD_GATE(29,"equipment_active_commands","Commands require verified equipped gear."),
     VANGUARD_GATE(30,"equipment_partial_overdrive","Display and debit the same partial fee."),
-#define MOD_FEATURE(index) {"Extras",ModFeatures::Entries[index].label,ModFeatures::Entries[index].gate,ModFeatures::Entries[index].help,F8Activation::RestartRequired,F8ApplyMode::None}
+#define MOD_FEATURE(index) {ModFeatures::GroupFor(static_cast<ModFeatures::Feature>(index))==ModFeatures::MenuGroup::Additional?"Extras":"Reforge",ModFeatures::Entries[index].label,ModFeatures::Entries[index].gate,ModFeatures::Entries[index].help,F8Activation::RestartRequired,F8ApplyMode::None}
     MOD_FEATURE(0),MOD_FEATURE(1),MOD_FEATURE(2),MOD_FEATURE(3),MOD_FEATURE(4),MOD_FEATURE(5),
     {"Cheats", "Per-monster AP/Gil",
      {"cheats.monster_rewards", "f8_authority.monster_rewards", nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, false},
@@ -283,6 +283,13 @@ const F8FlagSpec kFlags[] = {
     MOD_FEATURE(6),
     MOD_FEATURE(7),
     MOD_FEATURE(8),
+    MOD_FEATURE(9),
+    MOD_FEATURE(10),
+    MOD_FEATURE(11),
+    MOD_FEATURE(12),
+    MOD_FEATURE(13),
+    MOD_FEATURE(14),
+    MOD_FEATURE(15),
 #undef MOD_FEATURE
 };
 #undef VANGUARD_GATE
@@ -489,7 +496,8 @@ F8BulkEditResult SetF8TabValues(const char* tab, bool requestedValue) {
         // callers. Reforge includes it; Extras must never inherit its controls.
         const bool matchesGroup = strcmp(kFlags[i].tab, tab) == 0 ||
             (strcmp(tab,"Arena+")==0 && strncmp(kFlags[i].gate.canonicalKey,"arena_plus.",11)==0);
-        if (matchesGroup &&
+        const bool workshopOwned = strcmp(kFlags[i].gate.canonicalKey,"labs.equipment_workshop")==0 || strcmp(kFlags[i].gate.canonicalKey,"labs.equipment_workshop_native_ui")==0;
+        if (matchesGroup && !workshopOwned &&
             kFlags[i].activation != F8Activation::NotWired && kFlags[i].activation != F8Activation::ReadOnly) {
             indexes[indexCount++] = i;
         }

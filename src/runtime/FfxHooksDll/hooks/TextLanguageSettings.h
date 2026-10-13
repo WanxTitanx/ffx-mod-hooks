@@ -10,6 +10,9 @@ inline int Selection(){
  if(std::strcmp(value,"pt-BR")==0)return 1;
  return -1;
 }
+// Restart-only opt-in for the 32-bit kernel table adapter; OFF by default.
+inline constexpr char ExtendedKernelTablesKey[]="language.text_extended_kernel_tables";
+inline bool ExtendedKernelTables(){return Config::GetBool(ExtendedKernelTablesKey,false);}
 inline bool Save(int choice){
  return (choice==0||choice==1)&&Config::SetString(Key,choice==0?"native":"pt-BR");
 }

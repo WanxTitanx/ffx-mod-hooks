@@ -180,7 +180,7 @@ inline workshop::Error Preview(const workshop::State& source,const Ledger& owned
 }
 inline workshop::Error PreviewGeneric(const workshop::State& source,const Ledger& receipts,const SaveId& save,
                                       const Mapping&,const workshop::Economy& economy,
-                                      const workshop::Request& request,workshop::Plan& output){
+                                      const workshop::Request& request,workshop::Plan& output,const workshop::AcquisitionCatalog* acquisition=nullptr){
     using Error=workshop::Error;
     if(!Validate(receipts,save,source))return Error::InvalidState;
     if(request.slot>=workshop::GearCount)return Error::InvalidRequest;
@@ -197,7 +197,7 @@ inline workshop::Error PreviewGeneric(const workshop::State& source,const Ledger
     // inventing a +rank scale or modifying the persisted State-v1 ABI.
     for(auto& entry:masked.pieces)if(HasPaidPiece(receipts,entry.id))
         for(unsigned position=0;position<5;++position)if(PaidPosition(receipts,entry,position))SetWord(entry,position,0x807B);
-    workshop::Plan candidate{};const auto result=workshop::Preview(masked,request,candidate,economy);
+    workshop::Plan candidate{};const auto result=workshop::Preview(masked,request,candidate,economy,acquisition);
     if(result!=Error::Ok){
         // The existing UI consumes cost/requirement diagnostics on a rejected
         // quote. Never expose the temporary protected-word substitutions.

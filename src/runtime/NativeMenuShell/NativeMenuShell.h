@@ -45,6 +45,7 @@
 #  error "NativeMenuShell targets 32-bit FFX.exe (x86) ONLY — cdecl float-on-stack ABI + 4-byte pointers."
 #endif
 #include <stdint.h>
+#include <atomic>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -110,8 +111,28 @@ static inline float NY(float v) { return SY(v * 1080.0f); }
 static inline float NW(float w) { return SX(w * 1920.0f); }
 static inline float NH(float h) { return SY(h * 1080.0f); }
 static inline void  DrawWindow(float l, float t, float w, float h, int style) { FFX_FN(0x8F5F70, Fn_DrawWindow)(l, t, w, h, style); }
-static inline void  DrawString(const unsigned char* s, float x, float y)       { FFX_FN(0x9016B0, Fn_DrawString)(0, s, x, y, 0, 0.78f, 1.0f); }
-static inline void  DrawStringSub(const unsigned char* s, float x, float y)   { FFX_FN(0x9016B0, Fn_DrawString)(0, s, x, y, 0, 0.52f, 0.70f); }
+using CaptionSink=bool(*)(const unsigned char*,float,float,bool,bool) noexcept;
+using CaptionWidth=float(*)(const char*,float) noexcept;
+inline std::atomic<CaptionSink> captionSink{nullptr};
+inline std::atomic<CaptionWidth> captionWidth{nullptr};
+static inline void DrawString(const unsigned char* s,float x,float y) {
+    const auto sink=captionSink.load();if(sink&&sink(s,x,y,false,false))return;
+    FFX_FN(0x9016B0,Fn_DrawString)(0,s,x,y,0,0.78f,1.0f);
+}
+static inline void DrawStringSub(const unsigned char* s,float x,float y) {
+    const auto sink=captionSink.load();if(sink&&sink(s,x,y,true,false))return;
+    FFX_FN(0x9016B0,Fn_DrawString)(0,s,x,y,0,0.52f,0.70f);
+}
+// User names, filenames and native identities are data even if their bytes
+// happen to match an interface translation key such as Back or Search.
+static inline void DrawStringRaw(const unsigned char* s,float x,float y) {
+    const auto sink=captionSink.load();if(sink&&sink(s,x,y,false,true))return;
+    FFX_FN(0x9016B0,Fn_DrawString)(0,s,x,y,0,0.78f,1.0f);
+}
+static inline void DrawStringSubRaw(const unsigned char* s,float x,float y) {
+    const auto sink=captionSink.load();if(sink&&sink(s,x,y,true,true))return;
+    FFX_FN(0x9016B0,Fn_DrawString)(0,s,x,y,0,0.52f,0.70f);
+}
 static inline void  DrawCursor(float x, float y)                               { FFX_FN(0x8C0640, Fn_DrawCursor)(x, y, 0); }
 static inline void  DrawTexQuad(unsigned int sel, float x, float y, float w, float h, float u0, float v0, float u1, float v1, unsigned int c0, unsigned int c1) { FFX_FN(0x903EE0, Fn_DrawTexQuad)(sel, x, y, w, h, u0, v0, u1, v1, c0, c1); }
 // Raw color primitives (IDA-confirmed 2026-06-10, IFRIT lane). Both use the same signature and
@@ -296,7 +317,8 @@ static inline float DrawInputHint(float x, float y, int padA, int padB, int kbA,
         x += NX(0.003f);
         DrawStringSub(enc, x, y + NH(0.006f));
         int len = 0; for (const char* p = label; *p; ++p) ++len;
-        x += (float)len * NX(0.0086f);
+        const float nativeWidth=(float)len*NX(0.0086f);
+        const auto localizedWidth=captionWidth.load();x+=localizedWidth?localizedWidth(label,nativeWidth):nativeWidth;
     }
     return x + NX(0.020f);
 }

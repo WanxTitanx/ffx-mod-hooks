@@ -10,6 +10,7 @@
 #include "EquipmentWorkshopSettings.h"
 #include "CombatExtensionBus.h"
 #include "EquipmentWorkshopCatalogBridge.h"
+#include "EquipmentWorkshopAcquisition.h"
 #include "AeonAscensionBridge.h"
 #include "EquipmentEffectBridge.h"
 #include "RonsoPoolSave.h"
@@ -97,7 +98,7 @@ bool OnOwner(){return accepting.load() && ready && ownerThread==GetCurrentThread
 const AeonAscension::Ledger* ReceiptSnapshot(){
     return AeonAscension::Nonzero(ascensionReceipts.saveId)?&ascensionReceipts:nullptr;
 }
-workshop::Error ReadEconomy(workshop::Economy& economy){
+workshop::Error ReadEconomy(workshop::Economy& economy,workshop::AcquisitionCatalog* acquisition=nullptr){
     if(!Settings::Read(economy.policy))return workshop::Error::InvalidPolicy;
     std::uint16_t story=0;
     if(!Copy(&economy.gil,reinterpret_cast<void*>(module+kGilRam),4)||!Copy(&story,reinterpret_cast<void*>(module+kSaveRam+0xBEC),2))return workshop::Error::InvalidState;
@@ -105,7 +106,12 @@ workshop::Error ReadEconomy(workshop::Economy& economy){
     if(!Copy(payload,reinterpret_cast<void*>(module+kSaveRam),sizeof(payload))||
        !workshop::ReadAeonProgress(payload,sizeof(payload),economy.aeons))return workshop::Error::InvalidState;
     economy.customizeUnlocked=workshop::NativeCustomizeUnlocked(story)?1:0;
-    (void)CatalogBridge::Read(economy.catalog);return workshop::Error::Ok;
+    (void)CatalogBridge::Read(economy.catalog);
+    if(acquisition){(void)Acquisition::Read(module,*acquisition);
+        // Bind even vanilla/current recipe changes to the existing reviewed
+        // transaction proof without changing persisted State or host ABI sizes.
+        economy.catalog.proof=workshop::AcquisitionProof(economy.catalog.proof,*acquisition);}
+    return workshop::Error::Ok;
 }
 bool NormalizeLoadedImage(SaveImage& image) noexcept {
     if(RonsoPool::IsValidSave(image))return true;
@@ -547,13 +553,16 @@ workshop::Error Access(){
     workshop::Economy economy{};const auto error=ReadEconomy(economy);if(error!=workshop::Error::Ok)return error;
     return economy.customizeUnlocked||economy.policy.devIgnoreProgression?workshop::Error::Ok:workshop::Error::Locked;
 }
+bool ReadAcquisition(workshop::AcquisitionCatalog& catalog){
+    std::lock_guard<std::recursive_mutex> lock(mutex);catalog={};return OnOwner()&&Acquisition::Read(module,catalog);
+}
 workshop::Error Preview(const workshop::Request& request,workshop::Plan& plan){
     std::lock_guard<std::recursive_mutex> lock(mutex);
     if(request.op==workshop::Op::Create||request.op==workshop::Op::Swap||request.op==workshop::Op::Retire)return workshop::Error::Protected;
     if(!Settings::AdmitsExpansion(request))return workshop::Error::InvalidPolicy;
     workshop::State current{};if(!Capture(current))return workshop::Error::InvalidState;
-    workshop::Economy economy{};const auto error=ReadEconomy(economy);
-    return error==workshop::Error::Ok?AeonAscension::PreviewGeneric(current,ascensionReceipts,ascensionSave,{},economy,request,plan):error;
+    workshop::Economy economy{};workshop::AcquisitionCatalog acquisition{};const auto error=ReadEconomy(economy,&acquisition);
+    return error==workshop::Error::Ok?AeonAscension::PreviewGeneric(current,ascensionReceipts,ascensionSave,{},economy,request,plan,&acquisition):error;
 }
 namespace {
 template<class Stage>
@@ -632,9 +641,9 @@ bool Commit(const workshop::Request& request,const workshop::Plan& reviewed){
     if(request.op==workshop::Op::Create||request.op==workshop::Op::Swap||request.op==workshop::Op::Retire)return false;
     if(!Settings::AdmitsExpansion(request))return false;
     workshop::State current{};if(!Capture(current))return false;
-    workshop::Economy economy{};if(ReadEconomy(economy)!=workshop::Error::Ok)return false;
+    workshop::Economy economy{};workshop::AcquisitionCatalog acquisition{};if(ReadEconomy(economy,&acquisition)!=workshop::Error::Ok)return false;
     workshop::Plan plan{};
-    if(AeonAscension::PreviewGeneric(current,ascensionReceipts,ascensionSave,{},economy,request,plan)!=workshop::Error::Ok||
+    if(AeonAscension::PreviewGeneric(current,ascensionReceipts,ascensionSave,{},economy,request,plan,&acquisition)!=workshop::Error::Ok||
        std::memcmp(&plan,&reviewed,sizeof(plan)))return false;
     const auto* receipts=ReceiptSnapshot();
     return CommitInventory(current,plan,receipts,request.slot,[&](const SaveImage& before){

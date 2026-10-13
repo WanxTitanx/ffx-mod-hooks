@@ -18,6 +18,8 @@ Extract 'static void F7MainMenuMouseTick(int obj)' 'HubMouseAudio.inc'
 Extract 'enum class ArenaPlusMenuKind : int' 'ArenaKindAudio.inc'
 Extract 'static int __cdecl ArenaPlus_InputCb(int obj)' 'ArenaInputAudio.inc'
 Extract 'static void ArenaPlus_DispatchMenuConfirm(int row)' 'ArenaDispatchAudio.inc'
+Extract 'static unsigned SinCurse_PreviewCount()' 'SinPreviewCountAudio.inc'
+Extract 'static unsigned SinCurse_NextArea(bool backwards)' 'SinNextAreaAudio.inc'
 Extract 'static int __cdecl SinCurse_InputCb(int obj)' 'SinInputAudio.inc'
 $sinInput=Join-Path $out 'SinInputAudio.inc'
 # Keep the source input callback and real catalog helpers; only seed-validation

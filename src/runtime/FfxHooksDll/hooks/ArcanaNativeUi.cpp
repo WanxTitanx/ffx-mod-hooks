@@ -1,5 +1,6 @@
 #include "../shared/ExecutableProfile.h"
 #include "ArcanaNativeUi.h"
+#include "ArcanaPresentation.h"
 #include "ArcanaAcquisition.h"
 #include "ArcanaEvidence.generated.h"
 #include "EquipmentWorkshopNativeUi.h"
@@ -163,7 +164,7 @@ void Root(const State& state,Images& images) {
         const float iconX=(cursorX+DrawNative::SX(370.f))/DrawNative::MenuPhysW()*1920.f;
         // The square icon master contains a narrow, padded card. Widen its
         // transparent quad while retaining the visible icon's center.
-        Image(images,78,iconX-21.f,y-7.f,75.f,54.f);
+        Image(images,kTarotIconResource,iconX-21.f,y-7.f,75.f,54.f);
     }
     if(view.category>=2){
         const float top=state.mode==Mode::Twin?708.f:768.f;
@@ -171,7 +172,7 @@ void Root(const State& state,Images& images) {
         const auto id=Ui::Preview(view,state);const auto* card=id==kEmpty?nullptr:FindCard(static_cast<unsigned>(id));
         const bool locked=Ui::SlotLocked(state,view.actor,view.category-2);
         const float height=1022.f-top;
-        Image(images,card?card->id:79u,400.f,top,height*2.f/3.f,height);
+        Image(images,card?card->id:kCardBackResource,400.f,top,height*2.f/3.f,height);
         Text(locked?"Tarot slot locked":card?card->name:"Empty Tarot slot",DrawNative::SX(960.f),top+10.f,true);
         if(locked)Description("Two Major Arcana use all four capacity. Unequip one Major to use this slot.",DrawNative::SX(960.f),top+52.f,48);
         else if(card)Description(card->description,DrawNative::SX(960.f),top+52.f,48);
@@ -193,6 +194,7 @@ void Picker(const State& state,Images& images) {
         const auto cardId=Ui::PickerCard(index);
         const char* name="Unequip";
         if(index==Ui::kModeRow)name=state.mode==Mode::Twin?"Switch to Constellation":"Switch to Twin Arcana";
+        else if(index==Ui::kGuideRow)name="Tarot guide";
         else if(cardId!=kEmpty)name=FindCard(static_cast<unsigned>(cardId))->name;
         Text(name,DrawNative::SX(250.f),y,true);
         if(cardId!=kEmpty){
@@ -206,10 +208,37 @@ void Picker(const State& state,Images& images) {
     }
     const auto id=Ui::Preview(view,state);
     if(id!=kEmpty)Image(images,static_cast<unsigned>(id),1230.f,328.f,440.f,660.f);
-    else Image(images,79,1230.f,328.f,440.f,660.f);
+    else Image(images,kCardBackResource,1230.f,328.f,440.f,660.f);
     if(view.error!=Error::None)Description(ErrorText(view.error),DrawNative::SX(230.f),930.f,68,2);
     else if(id!=kEmpty)Description(state.acquired[id]?FindCard(static_cast<unsigned>(id))->description:Acquisition::Requirement(static_cast<unsigned>(id)),DrawNative::SX(230.f),880.f,68,4,28.f);
+    else if(view.cursor==Ui::kGuideRow)Description("Review acquisition, equipment, shared cards, both modes, capacity and effects. Reading does not change your equipment.",DrawNative::SX(230.f),880.f,68,4,28.f);
     Text("Confirm: choose   Back: Equip   Up/Down: browse   Page: skip seven",DrawNative::SX(230.f),1000.f,true);
+}
+void Guide(const State& state,Images& images) {
+    const auto* page=Presentation::Guide(view.guidePage);if(!page)return;
+    Box(180.f,190.f,1540.f,850.f);
+    char counter[48]{};std::snprintf(counter,sizeof(counter),"Tarot guide - %u / %u",view.guidePage+1,Presentation::kGuidePageCount);
+    Text(counter,DrawNative::SX(230.f),230.f,true);
+    Text(page->title,DrawNative::SX(230.f),295.f);
+    const bool example=view.guidePage==0;
+    Description(page->text,DrawNative::SX(230.f),370.f,example?52u:84u,9,40.f);
+    if(example){
+        unsigned card=0;while(card<kCardCount&&!state.acquired[card])++card;
+        if(card<kCardCount){
+            const auto* entry=FindCard(card);
+            Image(images,card,1250.f,325.f,390.f,585.f);
+            Description(entry->name,DrawNative::SX(230.f),610.f,58,2,40.f);
+            Description(entry->description,DrawNative::SX(230.f),720.f,58,6,36.f);
+        }
+    }else if(view.guidePage==6){
+        Text("Major + Major     Major + Minor     Minor + Minor",DrawNative::SX(230.f),720.f,true);
+        Text("Two slots for each character",DrawNative::SX(230.f),785.f,true);
+    }else if(view.guidePage==7){
+        Text("Major (2) + Major (2) = 4     Third slot locked",DrawNative::SX(230.f),715.f,true);
+        Text("Major (2) + Minor (1) + Minor (1) = 4",DrawNative::SX(230.f),780.f,true);
+        Text("Minor (1) + Minor (1) + Minor (1) = 3     Three slots",DrawNative::SX(230.f),845.f,true);
+    }
+    Text(view.guidePage+1==Presentation::kGuidePageCount?"Confirm: finish   Back: card list   Page: previous / next":"Confirm: next   Back: card list   Page: previous / next",DrawNative::SX(230.f),990.f,true);
 }
 void Modal(const State& state) {
     Box(240.f,360.f,1440.f,430.f);
@@ -413,6 +442,7 @@ int __cdecl DrawShim() {
         __try {
             if(view.page==Ui::Page::Root)Root(state,images);
             else if(view.page==Ui::Page::Picker)Picker(state,images);
+            else if(view.page==Ui::Page::Guide)Guide(state,images);
             else if(view.page==Ui::Page::Transfer||view.page==Ui::Page::ModeReview||view.page==Ui::Page::SlotBlocked)Modal(state);
             PublishImages(images);
         } __except(EXCEPTION_EXECUTE_HANDLER){active=false;Hide();}

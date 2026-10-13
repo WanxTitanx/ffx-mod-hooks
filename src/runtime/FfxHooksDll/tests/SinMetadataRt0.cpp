@@ -58,6 +58,6 @@ int main(){
         const auto expected=std::min(65535u,value*(100u+threat*10u)/100u);
         Check(M::ScaledReward(static_cast<std::uint16_t>(value),threat)==expected,"native u16 reward bounds and truncation hold");
     }
-    unchanged=marked;auto same=scaled;Check(!M::RewardView(loot,0,&scaled)&&scaled==same&&!M::RewardView(loot,7,&scaled),"unsupported threats do not publish a reward view");
+    unchanged=marked;auto same=scaled;Check(!M::RewardView(loot,0,&scaled)&&scaled==same&&!M::RewardView(loot,11,&scaled),"unsupported threats do not publish a reward view");
     std::printf("SinMetadataRt0: %d/%d passed; failures=%d\n",checks-failures,checks,failures);return failures?1:0;
 }

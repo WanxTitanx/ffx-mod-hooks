@@ -73,8 +73,9 @@ int main(int argc,char** argv){
         for(const auto& pair:S::kNaturalPairs)if(pair.monster==proof.monster&&S::AreaForField(pair.field)==definition->field){field=pair.field;break;}
         Check(field!=0,"profile fixture uses an actual natural field/monster pair");if(!field)return 2;
         context={true,field,0,1,S::Distribution::Most,context.generation+1};
+        context.minimumThreat=S::AwakeningOnly(field)?7:0;
         bool found=false;
-        for(;context.seed<100000;++context.seed){const auto selection=S::BuildAssignment(context.field,context.seed,context.visit,context.distribution,true);if(selection.Find(proof.monster)->curse==proof.curse){found=true;break;}}
+        for(;context.seed<100000;++context.seed){const auto selection=S::BuildAssignment(context.field,context.seed,context.visit,context.distribution,true,context.minimumThreat);const auto* selected=selection.Find(proof.monster);if(selected&&selected->curse==proof.curse){found=true;break;}}
         Check(found,"deterministic seed reaches every compatible curated curse");if(!found)return 2;
         std::fill(actors.begin(),actors.end(),static_cast<unsigned char>(0));reported=0;
         Put32(actors.data(),2*0xF90+0x48,reinterpret_cast<std::uintptr_t>(mon.data()));

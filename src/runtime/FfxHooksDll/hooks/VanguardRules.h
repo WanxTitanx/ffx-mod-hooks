@@ -1,6 +1,7 @@
 #pragma once
 #include "VanguardCatalog.h"
 #include "AutoAbilitySlots.h"
+#include "SpiraCapturePayload.h"
 #include <cstddef>
 #include <cstdint>
 #include <algorithm>
@@ -32,7 +33,7 @@ inline MappingValidation ValidateMapping(const unsigned char* bytes,std::size_t 
         bool valid=true;
         for(unsigned j=0;j<AbilityCount;++j) if(i!=j&&ids[i]==ids[j]) valid=false;
         const auto* row=bytes+20+ids[i]*108;
-        for(unsigned at=16;at<108;++at) if(row[at]) valid=false;
+        for(unsigned at=16;at<108;++at) if(!SpiraCapturePayload::Matches(ids[i],at,row[at])) valid=false;
         result.valid[i]=valid;
     }
     return result;

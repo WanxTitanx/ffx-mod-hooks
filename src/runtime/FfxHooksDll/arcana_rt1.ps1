@@ -26,7 +26,7 @@ $mh=Join-Path $PSScriptRoot 'third_party\minhook'
 [IO.Directory]::CreateDirectory($OutputDirectory) | Out-Null
 $OutputDirectory=(Resolve-Path $OutputDirectory).Path
 $sources=@(
- 'hooks\ArcanaCore.cpp','hooks\ArcanaAcquisition.cpp','hooks\ArcanaStore.cpp',
+ 'hooks\ArcanaCore.cpp','hooks\ArcanaPresentation.cpp','hooks\ArcanaAcquisition.cpp','hooks\ArcanaWorldCore.cpp','hooks\ArcanaStore.cpp',
  'hooks\ArcanaNativeEffects.cpp','hooks\ArcanaRuntime.cpp','hooks\ArcanaCombatCore.cpp','hooks\ArcanaCombat.cpp',
  'hooks\ArcanaUiCore.cpp','hooks\ArcanaNativeUi.cpp','hooks\ArcanaAssets.cpp',
  'hooks\EquipmentWorkshopRuntime.cpp','hooks\EquipmentWorkshopNativeUi.cpp','hooks\EquipmentWorkshopStore.cpp',
@@ -63,7 +63,12 @@ try {
         RunFixture 'ArcanaNativeUiRt1' @($GameExecutable,'workshop')
     }
     if($Cases -contains 'combat'){RunFixture 'ArcanaCombatRt1' @($GameExecutable)}
-    if($Cases -contains 'assets'){RunFixture 'ArcanaAssetsRt1' @($AssetsRoot)}
+    if($Cases -contains 'assets'){
+        RunFixture 'ArcanaAssetsRt1' @($AssetsRoot)
+        $missing=Join-Path $OutputDirectory ('missing-art-'+[guid]::NewGuid().ToString('N'))
+        [IO.Directory]::CreateDirectory($missing) | Out-Null
+        RunFixture 'ArcanaAssetsRt1' @($missing,'missing')
+    }
     if($Cases -contains 'runtime'){foreach($mode in @('development','normal','workshop','legacy','v2','v3','v4')) {
         $data=Join-Path $OutputDirectory ('session-'+[guid]::NewGuid().ToString('N'))
         [IO.Directory]::CreateDirectory($data) | Out-Null

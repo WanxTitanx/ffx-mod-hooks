@@ -7,15 +7,22 @@
 #include <cstring>
 using namespace FfxHooks::Arcana;
 static unsigned checks=0,failures=0;
+static bool fieldVisible=true;
+static bool FieldVisible(const NativeUi::Images&) noexcept {return fieldVisible;}
 static void Check(bool ok,const char* name){++checks;if(!ok){++failures;std::printf("FAIL %s\n",name);}}
 template<class T> static void Release(T*& p){if(p){p->Release();p=nullptr;}}
 int main(int argc,char** argv){
-    std::setvbuf(stdout,nullptr,_IONBF,0);if(argc!=2)return 2;
+    std::setvbuf(stdout,nullptr,_IONBF,0);if(argc!=2&&argc!=3)return 2;
     const bool started=Assets::Start(argv[1],nullptr);Check(started,"bounded asset worker starts from its own package directory");
     if(!started){std::printf("ArcanaAssetsRt1 %u/%u passed\n",checks-failures,checks);return 1;}
+    if(argc==3){
+        Check(!Assets::WaitReady(5000),"missing mandatory icon never admits world acquisition as ready");
+        Assets::Stop();std::printf("ArcanaAssetsRt1 missing %u/%u passed\n",checks-failures,checks);return failures?1:0;
+    }
+    Check(Assets::WaitReady(5000),"mandatory shared artwork and shaders complete before startup admission");
     NativeUi::Images images;images.generation=7;images.count=1;images.quads[0]={0,0,0,1,1};Assets::Publish(images);
     for(unsigned i=0;i<500&&!Assets::Decoded(0);++i)Sleep(10);
-    Check(Assets::Decoded(0)&&Assets::Decoded(78),"selected PNG and icon decode without I/O in draw callbacks");
+    Check(Assets::Decoded(0)&&Assets::Decoded(kTarotIconResource),"selected PNG and icon decode without I/O in draw callbacks");
     ID3D11Device* device=nullptr;ID3D11DeviceContext* context=nullptr;
     const HRESULT created=D3D11CreateDevice(nullptr,D3D_DRIVER_TYPE_WARP,nullptr,0,nullptr,0,D3D11_SDK_VERSION,&device,nullptr,&context);
     Check(SUCCEEDED(created),"isolated software D3D device is available");if(!device||!context)return 2;
@@ -36,6 +43,14 @@ int main(int argc,char** argv){
     Assets::Publish({});Check(!Assets::Render(device,context,rtv,64,96),"closed native menu cannot draw a stale preview");
     Assets::Publish(images);Check(!Assets::Render(device,context,rtv,64,96),"late image requests from a closed generation cannot reopen the preview");
     images.generation=8;Assets::Publish(images);Check(Assets::Render(device,context,rtv,64,96),"a new native menu generation can reuse the bounded image cache");
+    Assets::Publish({});Assets::SetFieldVisibility(FieldVisible);
+    NativeUi::Images world;world.generation=1;world.count=1;world.quads[0]={kTarotIconResource,.25f,.25f,.5f,.5f};
+    Assets::PublishWorld(world);Check(Assets::Render(device,context,rtv,64,96),"field symbol uses the actual shared icon through the graphics renderer");
+    fieldVisible=false;Check(!Assets::Render(device,context,rtv,64,96),"field gate immediately hides retained world images");
+    fieldVisible=true;images.generation=1;Assets::PublishMessage(images);
+    Check(Assets::Render(device,context,rtv,64,96),"first-card artwork has an independent generation from the Equip menu");
+    Assets::PublishMessage({});Check(Assets::Render(device,context,rtv,64,96),"closing an introduction releases its artwork channel back to world symbols");
+    Assets::PublishWorld({});Check(!Assets::Render(device,context,rtv,64,96),"closing world symbols cannot revive an old Equip or introduction image");
     Assets::Stop();Check(!Assets::Render(device,context,rtv,64,96),"stop closes render admission without waiting on the worker");
     Release(staging);Release(rtv);Release(target);Release(context);Release(device);
     std::printf("ArcanaAssetsRt1 %u/%u passed\n",checks-failures,checks);return failures?1:0;

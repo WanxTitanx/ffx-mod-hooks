@@ -87,7 +87,7 @@ python3 tools/text_languages/run_checks.py --output work/mod006-private-checks \
 
 The Windows runner uses MSVC x86, compiles the native adapters, and runs file/configuration/F8 tests. Supplying all three private arguments also runs the relocated native stream/font cases and audio invariance tests. `-BuildDll` builds the full Release DLL but never deploys it or launches FFX. Without private fixtures, public CI explicitly reports native execution as not supplied.
 
-Keep generated fonts, extracted game resources, executable/save fixtures and reference snapshots outside Git. A future pack revision needs its own validator result and affected live tests. Painted texture text and generic video subtitle formats are not advertised by API 3; unlisted resources stay native. The [public release validation](../../docs/releases/v0.6.0-beta.4-validation.json) records the private test-pack checks and their limits.
+Keep generated fonts, extracted game resources, executable/save fixtures and reference snapshots outside Git. A future pack revision needs its own validator result and affected live tests. Painted texture text and generic video subtitle formats are not advertised by API 3; unlisted resources stay native. The [API 3 verification report](../../docs/research/MOD006_API3_VERIFICATION_2026_10_05.md) records the private test-pack checks and their limits.
 
 ## Explicit API 4 authoring
 
@@ -118,5 +118,5 @@ cannot authorize new graphics in an existing DLL.
 
 Supply `--graphics COMPILED_DIRECTORY` with `--hook-api 4` to package the current
 466 examined UI resources. All four native font pages stay owned by the paired
-font transaction. See [public language-pack contract](../../docs/TEXT_LANGUAGE_PACKS.md)
+font transaction. See [API 4 evidence](../../docs/research/MOD006_API4_INTEGRATION_2026_10_07.md)
 for exact input identities, full candidate checks and outstanding live limits.

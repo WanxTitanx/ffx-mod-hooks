@@ -34,8 +34,26 @@
 #pragma once
 
 #include <stdint.h>
+#include <cstdint>
+#include <array>
+#include <atomic>
 
 namespace FfxHooks {
+
+namespace BattleTerminal {
+struct Observer {
+    void* (*before)(std::uint32_t handle) noexcept=nullptr;
+    void (*after)(void*,bool completed) noexcept=nullptr;
+};
+enum class Slot : unsigned {OmegaLastSeal,ChallengeRewards,Count};
+inline std::array<std::atomic<const Observer*>,static_cast<unsigned>(Slot::Count)> observers{};
+inline bool Subscribe(Slot slot,const Observer* value) noexcept {
+    const unsigned index=static_cast<unsigned>(slot);if(index>=observers.size()||!value||!value->before||!value->after)return false;
+    const Observer* empty=nullptr;return observers[index].compare_exchange_strong(empty,value)||empty==value;
+}
+inline void Unsubscribe(Slot slot,const Observer* value) noexcept {const unsigned index=static_cast<unsigned>(slot);if(index<observers.size())observers[index].compare_exchange_strong(value,nullptr);}
+inline bool Requested() noexcept {for(const auto& slot:observers)if(slot.load())return true;return false;}
+}
 
 using BattleEndLogFn = void (*)(const char*);
 

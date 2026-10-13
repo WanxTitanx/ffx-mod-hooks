@@ -16,12 +16,13 @@ int main(){
     Check(Ui::Input(v,state,Ui::Key::Confirm).action==Ui::Action::None&&v.page==Ui::Page::Picker&&v.slot==0,"Tarot opens its picker without creating native gear index 2");
     Ui::Input(v,state,Ui::Key::Down);
     Ui::Input(v,state,Ui::Key::Down);
-    Check(Ui::Preview(v,state)==0,"picker preview follows the selected card");
+    Ui::Input(v,state,Ui::Key::Down);
+    Check(Ui::Preview(v,state)==0,"picker preview follows the selected card after the guide action");
     auto command=Ui::Input(v,state,Ui::Key::Confirm);
     Check(command.action==Ui::Action::Equip&&command.actor==0&&command.slot==0&&command.card==0&&command.generation==1,"picker submits a revision-bound Arcana command");
     const auto equipped=Equip(state,command.revision,command.actor,command.slot,command.card,command.transfer);Ui::Result(v,state,equipped);
     Check(v.page==Ui::Page::Root&&Ui::Preview(v,state)==0,"successful equipment returns to the same Tarot root row");
-    Ui::Observe(v,state,0x1000,1,1,true);Ui::Input(v,state,Ui::Key::Confirm);Ui::Input(v,state,Ui::Key::Down);Ui::Input(v,state,Ui::Key::Down);
+    Ui::Observe(v,state,0x1000,1,1,true);Ui::Input(v,state,Ui::Key::Confirm);Ui::Input(v,state,Ui::Key::Down);Ui::Input(v,state,Ui::Key::Down);Ui::Input(v,state,Ui::Key::Down);
     Check(Ui::Input(v,state,Ui::Key::Confirm).action==Ui::Action::None&&v.page==Ui::Page::Transfer,"another actor's card requires a transfer dialog");
     Ui::Input(v,state,Ui::Key::Cancel);
     Check(v.page==Ui::Page::Picker&&Owner(state,0)==0,"canceling transfer preserves both owners");
@@ -68,7 +69,7 @@ int main(){
     Check(locked.page==Ui::Page::Picker,"occupied Major slots remain editable at full capacity");
     Check(Ui::LayoutY(0x4cf766,520,Mode::Twin)==640&&Ui::LayoutY(0x4cf7b5,532,Mode::Constellation)==712,"Abilities panel and caption use the real ScaleY return addresses");
     Check(Ui::LayoutY(0x4cf761,520,Mode::Twin)==520&&Ui::LayoutY(0x4cf7b0,532,Mode::Constellation)==532,"instruction addresses are not mistaken for return addresses");
-    Check(Ui::PickerCard(0)==kEmpty&&Ui::PickerCard(1)==kEmpty&&Ui::PickerCard(2)==0&&Ui::PickerCard(79)==77&&Ui::PickerCard(80)==kEmpty,"top-level picker actions never alias card identities and the complete deck remains reachable");
+    Check(Ui::PickerCard(0)==kEmpty&&Ui::PickerCard(1)==kEmpty&&Ui::PickerCard(2)==kEmpty&&Ui::PickerCard(3)==0&&Ui::PickerCard(80)==77&&Ui::PickerCard(81)==78&&Ui::PickerCard(92)==89&&Ui::PickerCard(93)==kEmpty,"unequip, mode and guide never alias card identities and the complete deck remains reachable");
     Check(Ui::SlotLocked(menu,0,2)&&!Ui::SlotLocked(menu,0,0)&&!Ui::SlotLocked(menu,7,2),"lock rendering targets only an empty slot at full Major capacity");
     Check(Ui::LayoutX(0x4f4f66,38,Mode::Constellation)==32&&Ui::LayoutX(0x4f4f66,38,Mode::Twin)==38&&Ui::LayoutX(1,38,Mode::Constellation)==38,"only the compact native ability icon changes width");
     State status;AwardAll(status,0);Equip(status,status.revision,0,0,6);Equip(status,status.revision,0,1,13);

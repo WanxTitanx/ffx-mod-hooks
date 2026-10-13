@@ -34,8 +34,8 @@ void OnEdge(unsigned slot,void* actor,std::uint32_t) noexcept {
     auto event=NativeGameplayEvents::Begin({NativeGameplayEvents::Kind::Turn,slot,actor,nullptr,static_cast<std::size_t>(sequence)});
     NativeGameplayEvents::End(event,true);
     if(const auto notify=callback.load()){
-        const PhaseTurnEdgeEvent event{1,slot,reinterpret_cast<std::uintptr_t>(actor),sequence};
-        notify(event);
+        const PhaseTurnEdgeEvent turnEvent{1,slot,reinterpret_cast<std::uintptr_t>(actor),sequence};
+        notify(turnEvent);
     }
 }
 const SharedTurn::Observer observer{OnEdge};

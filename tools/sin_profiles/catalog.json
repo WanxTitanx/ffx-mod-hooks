@@ -1,0 +1,3139 @@
+{
+  "schema": 2,
+  "producer": "Jarvis-HOOK",
+  "date": "2026-10-03",
+  "description": "Explicit per-monster curation; semantic assignments are new Hook decisions, not historical runtime acceptance. Game assets stay private.",
+  "areas": [
+    {
+      "id": 310,
+      "name": "Macalania Woods",
+      "fields": [
+        310,
+        311,
+        312
+      ],
+      "maxThreat": 2
+    },
+    {
+      "id": 340,
+      "name": "Macalania Snowfield",
+      "fields": [
+        330,
+        333,
+        340
+      ],
+      "maxThreat": 2
+    },
+    {
+      "id": 350,
+      "name": "Bikanel",
+      "fields": [
+        350,
+        351,
+        352,
+        353
+      ],
+      "maxThreat": 3
+    },
+    {
+      "id": 425,
+      "name": "Calm Lands",
+      "fields": [
+        425,
+        429,
+        611,
+        612,
+        613
+      ],
+      "maxThreat": 4
+    },
+    {
+      "id": 430,
+      "name": "Cavern of the Stolen Fayth",
+      "fields": [
+        430
+      ],
+      "maxThreat": 4
+    },
+    {
+      "id": 486,
+      "name": "Mt. Gagazet",
+      "fields": [
+        486,
+        491,
+        492,
+        502
+      ],
+      "maxThreat": 6
+    },
+    {
+      "id": 515,
+      "name": "Zanarkand Dome",
+      "fields": [
+        515
+      ],
+      "maxThreat": 6
+    },
+    {
+      "id": 68,
+      "name": "Besaid",
+      "fields": [
+        68,
+        70,
+        72
+      ],
+      "maxThreat": 7,
+      "awakeningOnly": true
+    },
+    {
+      "id": 220,
+      "name": "Mushroom Rock Road",
+      "fields": [
+        220,
+        221,
+        224,
+        225,
+        227
+      ],
+      "maxThreat": 7,
+      "awakeningOnly": true
+    },
+    {
+      "id": 300,
+      "name": "Thunder Plains",
+      "fields": [
+        300,
+        303
+      ],
+      "maxThreat": 7,
+      "awakeningOnly": true
+    }
+  ],
+  "curses": [
+    {
+      "id": 9,
+      "preset": "UNI-009",
+      "threat": 3,
+      "name": "Sand Mantle",
+      "shortName": "Mantle",
+      "skills": [
+        {
+          "Operand": 24874,
+          "Name": "Sand Mantle",
+          "Target": 0
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 10,
+      "preset": "UNI-010",
+      "threat": 3,
+      "name": "Mirage",
+      "shortName": "Mirage",
+      "skills": [],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": true
+    },
+    {
+      "id": 11,
+      "preset": "UNI-011",
+      "threat": 3,
+      "name": "Sin Siphon",
+      "shortName": "Siphon",
+      "skills": [
+        {
+          "Operand": 24875,
+          "Name": "Sin Siphon",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 12,
+      "preset": "UNI-012",
+      "threat": 3,
+      "name": "Sandstorm",
+      "shortName": "Storm",
+      "skills": [
+        {
+          "Operand": 24876,
+          "Name": "Sandstorm",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 13,
+      "preset": "UNI-013A",
+      "threat": 3,
+      "name": "Dust Ward",
+      "shortName": "Dust",
+      "skills": [
+        {
+          "Operand": 24877,
+          "Name": "Dust Ward",
+          "Target": 2
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 14,
+      "preset": "UNI-014",
+      "threat": 3,
+      "name": "Silica Shards",
+      "shortName": "Shards",
+      "skills": [
+        {
+          "Operand": 24879,
+          "Name": "Silica Shards",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 15,
+      "preset": "UNI-015",
+      "threat": 3,
+      "name": "Arcane Chorus",
+      "shortName": "Arcane",
+      "skills": [
+        {
+          "Operand": 24880,
+          "Name": "Arcane Pulse",
+          "Target": 3
+        },
+        {
+          "Operand": 24881,
+          "Name": "Arcane Wave",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 16,
+      "preset": "UNI-016",
+      "threat": 3,
+      "name": "Pack March",
+      "shortName": "Pack",
+      "skills": [
+        {
+          "Operand": 24882,
+          "Name": "Flanking Bite",
+          "Target": 3
+        },
+        {
+          "Operand": 24883,
+          "Name": "Guardbreaker",
+          "Target": 5
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 17,
+      "preset": "UNI-017",
+      "threat": 3,
+      "name": "Guard Formation",
+      "shortName": "Guard",
+      "skills": [
+        {
+          "Operand": 24884,
+          "Name": "Veil",
+          "Target": 4
+        },
+        {
+          "Operand": 24885,
+          "Name": "Dragging Strike",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 18,
+      "preset": "UNI-018",
+      "threat": 4,
+      "name": "Blindside",
+      "shortName": "Blind",
+      "skills": [
+        {
+          "Operand": 24886,
+          "Name": "Shadow Thrust",
+          "Target": 3
+        },
+        {
+          "Operand": 24887,
+          "Name": "Blindside",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 19,
+      "preset": "UNI-019",
+      "threat": 4,
+      "name": "Silent Canticle",
+      "shortName": "Silence",
+      "skills": [
+        {
+          "Operand": 24888,
+          "Name": "Arcane Voice",
+          "Target": 3
+        },
+        {
+          "Operand": 24889,
+          "Name": "Cutting Silence",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 20,
+      "preset": "UNI-020",
+      "threat": 4,
+      "name": "Rhythm Break",
+      "shortName": "Rhythm",
+      "skills": [
+        {
+          "Operand": 24890,
+          "Name": "Slow",
+          "Target": 3
+        },
+        {
+          "Operand": 24891,
+          "Name": "Rhythm Impact",
+          "Target": 5
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 21,
+      "preset": "UNI-021",
+      "threat": 4,
+      "name": "Tail and Stone",
+      "shortName": "Stone",
+      "skills": [
+        {
+          "Operand": 24892,
+          "Name": "Quaking Tail",
+          "Target": 1
+        },
+        {
+          "Operand": 24893,
+          "Name": "Petrifying Gaze",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": "m186",
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 22,
+      "preset": "UNI-022",
+      "threat": 4,
+      "name": "Colossus Fist",
+      "shortName": "Colossus",
+      "skills": [
+        {
+          "Operand": 24894,
+          "Name": "Demolishing Fist",
+          "Target": 3
+        },
+        {
+          "Operand": 24895,
+          "Name": "Colossus Quake",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": "m066",
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 23,
+      "preset": "UNI-023",
+      "threat": 4,
+      "name": "Pestilent Breath",
+      "shortName": "Pestilent",
+      "skills": [
+        {
+          "Operand": 24896,
+          "Name": "Toxic Mist",
+          "Target": 1
+        },
+        {
+          "Operand": 24897,
+          "Name": "Foul Breath",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": "m064",
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 24,
+      "preset": "UNI-024",
+      "threat": 4,
+      "name": "Veil of the Lost",
+      "shortName": "Veil",
+      "skills": [
+        {
+          "Operand": 24898,
+          "Name": "Sepulchral Blessing",
+          "Target": 2
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 25,
+      "preset": "UNI-025",
+      "threat": 4,
+      "name": "Sepulchral Renewal",
+      "shortName": "Renewal",
+      "skills": [
+        {
+          "Operand": 24899,
+          "Name": "Wraith Restoration",
+          "Target": 2
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 26,
+      "preset": "UNI-026",
+      "threat": 4,
+      "name": "Faythbound Fury",
+      "shortName": "Fayth",
+      "skills": [
+        {
+          "Operand": 24900,
+          "Name": "Wraith Ascension",
+          "Target": 2
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 27,
+      "preset": "UNI-027",
+      "threat": 4,
+      "name": "Grave Pulse",
+      "shortName": "Grave",
+      "skills": [
+        {
+          "Operand": 24901,
+          "Name": "Netherburst",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 28,
+      "preset": "UNI-028",
+      "threat": 4,
+      "name": "Ruinous Miasma",
+      "shortName": "Miasma",
+      "skills": [
+        {
+          "Operand": 24902,
+          "Name": "Despairing Breath",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 29,
+      "preset": "UNI-029",
+      "threat": 4,
+      "name": "Weight of the Fayth",
+      "shortName": "Weight",
+      "skills": [
+        {
+          "Operand": 24903,
+          "Name": "Gravitic Shackles",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 30,
+      "preset": "UNI-030",
+      "threat": 4,
+      "name": "Soul Devourer",
+      "shortName": "Soul",
+      "skills": [
+        {
+          "Operand": 24904,
+          "Name": "Soul Drain",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 31,
+      "preset": "UNI-031",
+      "threat": 5,
+      "name": "Peak Bastion",
+      "shortName": "Bastion",
+      "skills": [
+        {
+          "Operand": 24905,
+          "Name": "Peak Bastion",
+          "Target": 2
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 32,
+      "preset": "UNI-032",
+      "threat": 5,
+      "name": "Mountain Rend",
+      "shortName": "Rend",
+      "skills": [
+        {
+          "Operand": 24906,
+          "Name": "Mountain Rend",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 33,
+      "preset": "UNI-033",
+      "threat": 5,
+      "name": "Gagazet Miasma",
+      "shortName": "Miasma",
+      "skills": [
+        {
+          "Operand": 24907,
+          "Name": "Gagazet Miasma",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 34,
+      "preset": "UNI-034",
+      "threat": 5,
+      "name": "Sepulchral Avalanche",
+      "shortName": "Avalanche",
+      "skills": [
+        {
+          "Operand": 24908,
+          "Name": "Sepulchral Avalanche",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 35,
+      "preset": "UNI-035",
+      "threat": 5,
+      "name": "Undertow",
+      "shortName": "Undertow",
+      "skills": [
+        {
+          "Operand": 24909,
+          "Name": "Undertow",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 36,
+      "preset": "UNI-036",
+      "threat": 5,
+      "name": "Condemnation Bell",
+      "shortName": "Bell",
+      "skills": [
+        {
+          "Operand": 24910,
+          "Name": "Condemnation Bell",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 37,
+      "preset": "UNI-037",
+      "threat": 6,
+      "name": "Frostcleave",
+      "shortName": "Cleave",
+      "skills": [
+        {
+          "Operand": 24911,
+          "Name": "Frostcleave",
+          "Target": 3
+        },
+        {
+          "Operand": 24912,
+          "Name": "Armorbreaker",
+          "Target": 5
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 38,
+      "preset": "UNI-038",
+      "threat": 6,
+      "name": "Ronso Warcry",
+      "shortName": "Warcry",
+      "skills": [
+        {
+          "Operand": 24913,
+          "Name": "Ronso Warcry",
+          "Target": 2
+        },
+        {
+          "Operand": 24914,
+          "Name": "Glacial Pulse",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 39,
+      "preset": "UNI-039",
+      "threat": 6,
+      "name": "Profane Vow",
+      "shortName": "Profane",
+      "skills": [
+        {
+          "Operand": 24915,
+          "Name": "Profane Vow",
+          "Target": 3
+        },
+        {
+          "Operand": 24916,
+          "Name": "Willbreaker",
+          "Target": 3
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": 42,
+      "damageOnly": false,
+      "replayNative": false
+    },
+    {
+      "id": 40,
+      "preset": "UNI-040",
+      "threat": 6,
+      "name": "Fallen Touch",
+      "shortName": "Fallen",
+      "skills": [],
+      "requiredMonster": null,
+      "forbiddenField": 7,
+      "damageOnly": true,
+      "replayNative": false
+    },
+    {
+      "id": 41,
+      "preset": "UNI-013B",
+      "threat": 3,
+      "name": "Hush Wave",
+      "shortName": "Hush",
+      "skills": [
+        {
+          "Operand": 24878,
+          "Name": "Hush Wave",
+          "Target": 1
+        }
+      ],
+      "requiredMonster": null,
+      "forbiddenField": null,
+      "damageOnly": false,
+      "replayNative": false
+    }
+  ],
+  "monsters": [
+    {
+      "monster": 3,
+      "area": 310,
+      "name": "Murussu",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        3,
+        4,
+        7
+      ],
+      "reason": "Reviewed forest compatibility; mcfr00/01/02 share native BTL dataOffset 658 and formationOffset 170. The separate mcfr03 boss block is excluded.",
+      "fields": [
+        310,
+        311,
+        312
+      ]
+    },
+    {
+      "monster": 26,
+      "area": 310,
+      "name": "Iguion",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reason": "Reviewed forest compatibility; mcfr00/01/02 share native BTL dataOffset 658 and formationOffset 170. The separate mcfr03 boss block is excluded.",
+      "fields": [
+        310,
+        311,
+        312
+      ]
+    },
+    {
+      "monster": 33,
+      "area": 310,
+      "name": "Wasp",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        2,
+        3,
+        6
+      ],
+      "reason": "Reviewed forest compatibility; mcfr00/01/02 share native BTL dataOffset 658 and formationOffset 170. The separate mcfr03 boss block is excluded.",
+      "fields": [
+        310,
+        311,
+        312
+      ]
+    },
+    {
+      "monster": 81,
+      "area": 310,
+      "name": "Blue Element",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "Reviewed forest compatibility; mcfr00/01/02 share native BTL dataOffset 658 and formationOffset 170. The separate mcfr03 boss block is excluded.",
+      "fields": [
+        310,
+        311,
+        312
+      ]
+    },
+    {
+      "monster": 217,
+      "area": 310,
+      "name": "Xiphos",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7
+      ],
+      "reason": "Reviewed forest compatibility; mcfr00/01/02 share native BTL dataOffset 658 and formationOffset 170. The separate mcfr03 boss block is excluded.",
+      "fields": [
+        310,
+        311,
+        312
+      ]
+    },
+    {
+      "monster": 87,
+      "area": 310,
+      "name": "Chimera",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        3,
+        4,
+        6,
+        8
+      ],
+      "reason": "Reviewed forest compatibility; mcfr00/01/02 share native BTL dataOffset 658 and formationOffset 170. The separate mcfr03 boss block is excluded.",
+      "fields": [
+        310,
+        311,
+        312
+      ]
+    },
+    {
+      "monster": 4,
+      "area": 340,
+      "name": "Mafdet",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reason": "Preserve the existing reviewed per-monster Macalania allowlist.",
+      "fields": [
+        330,
+        333,
+        340
+      ]
+    },
+    {
+      "monster": 12,
+      "area": 340,
+      "name": "Snow Wolf",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        6
+      ],
+      "reason": "Preserve the existing reviewed per-monster Macalania allowlist.",
+      "fields": [
+        330,
+        333,
+        340
+      ]
+    },
+    {
+      "monster": 19,
+      "area": 340,
+      "name": "Ice Flan",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "Preserve the existing reviewed per-monster Macalania allowlist.",
+      "fields": [
+        330,
+        333,
+        340
+      ]
+    },
+    {
+      "monster": 37,
+      "area": 340,
+      "name": "Evil Eye",
+      "role": "existing curated Macalania",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        6
+      ],
+      "reason": "Preserve the existing reviewed per-monster Macalania allowlist.",
+      "fields": [
+        330,
+        333,
+        340
+      ]
+    },
+    {
+      "monster": 13,
+      "area": 350,
+      "name": "Sand Wolf",
+      "role": "physical pack hunter",
+      "allowed": [
+        9,
+        10,
+        11
+      ],
+      "reason": "Simple native bite permits one replay; self mantle and siphon fit a pack predator.",
+      "fields": [
+        351,
+        352,
+        353
+      ],
+      "originalMonsterSha256": "02c875f51b7afa26412f8ebb5372b59e9f8f01776a2ea4f3b758b0431506a3b7",
+      "nativeCommands": [
+        16542
+      ]
+    },
+    {
+      "monster": 30,
+      "area": 350,
+      "name": "Alcyone",
+      "role": "agile flying attacker",
+      "allowed": [
+        9,
+        10,
+        12
+      ],
+      "reason": "Native flying strike permits replay; wind-driven sand control fits this desert flier.",
+      "fields": [
+        351,
+        352,
+        353
+      ],
+      "originalMonsterSha256": "7222593ad0565c25edb73d87f709c8b8762bf17a18b1107a7d484cc4b2e44bc7",
+      "nativeCommands": [
+        16536
+      ]
+    },
+    {
+      "monster": 45,
+      "area": 350,
+      "name": "Zu",
+      "role": "large staged flier",
+      "allowed": [
+        9,
+        12,
+        13
+      ],
+      "reason": "Defensive mantle, sand pressure and ally ward; exclude Mirage because its native flight/landing rotation is staged.",
+      "fields": [
+        350,
+        351,
+        352,
+        353
+      ],
+      "originalMonsterSha256": "830c8c4d262434fc48f0977be822efd06005037781cce6e1291d4bb5fa03ca43",
+      "nativeCommands": [
+        16406,
+        16409,
+        16410,
+        16555,
+        16607,
+        24854
+      ]
+    },
+    {
+      "monster": 46,
+      "area": 350,
+      "name": "Sand Worm",
+      "role": "swallow and party pressure",
+      "allowed": [
+        9,
+        11,
+        12,
+        14
+      ],
+      "reason": "Drain and area sand pressure; exclude replay of swallowing, regurgitation and terminal actions.",
+      "fields": [
+        351,
+        352,
+        353
+      ],
+      "originalMonsterSha256": "0624d6f48e8feb9877d1599e6a5e2f250943bb00d080af3cd72bf7c023531d2b",
+      "nativeCommands": [
+        16384,
+        16389,
+        16390,
+        16391,
+        16392,
+        16531
+      ]
+    },
+    {
+      "monster": 62,
+      "area": 350,
+      "name": "Mushussu",
+      "role": "status dragon",
+      "allowed": [
+        9,
+        10,
+        11,
+        41
+      ],
+      "reason": "Native physical/status dragon; one native replay or drain, with hostile Silence control rather than an ally heal.",
+      "fields": [
+        351,
+        352,
+        353
+      ],
+      "originalMonsterSha256": "d183117560f7817ff1054d4b5ded323670c2ad21c7fc728569c5e9da2bc05ecb",
+      "nativeCommands": [
+        16414,
+        16511,
+        16539,
+        24853
+      ]
+    },
+    {
+      "monster": 91,
+      "area": 350,
+      "name": "Mech Guard",
+      "role": "physical machina",
+      "allowed": [
+        9,
+        10,
+        13,
+        14
+      ],
+      "reason": "Native gun action can replay; armor/ally support and sand shrapnel, without organic drain.",
+      "fields": [
+        351,
+        352,
+        353
+      ],
+      "originalMonsterSha256": "86315d65b2bdad6106448f5fc9191f996eb1de6d0d0912fce25f59b7d11e5005",
+      "nativeCommands": [
+        16511
+      ]
+    },
+    {
+      "monster": 96,
+      "area": 350,
+      "name": "Mech Gunner",
+      "role": "ranged machina",
+      "allowed": [
+        9,
+        10,
+        13,
+        14
+      ],
+      "reason": "Native ranged action can replay; defense and area shards, without organic drain.",
+      "fields": [
+        352,
+        353
+      ],
+      "originalMonsterSha256": "98536f9c34ab39eecac88e8ef4792c7c0ac15a2c65269668cf392fc271c31b39",
+      "nativeCommands": [
+        16511
+      ]
+    },
+    {
+      "monster": 208,
+      "area": 350,
+      "name": "Cactuar",
+      "role": "fixed damage and escape",
+      "allowed": [
+        9,
+        12,
+        14
+      ],
+      "reason": "Mantle/sand pressure only; exclude Mirage to avoid duplicating fixed needles or the escape route.",
+      "fields": [
+        350,
+        351,
+        352,
+        353
+      ],
+      "originalMonsterSha256": "c5e8026ad323f2197604426027a4c49d151d021dc959db0cdd28aad38c15acfd",
+      "nativeCommands": [
+        16384,
+        16434,
+        16435,
+        24855
+      ]
+    },
+    {
+      "monster": 5,
+      "area": 425,
+      "name": "Shred",
+      "role": "armored physical",
+      "allowed": [
+        17,
+        18
+      ],
+      "reason": "Defensive ally veil and single physical pressure; no caster chorus.",
+      "fields": [
+        425,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "003208f72957cbf9d3513ae0ec41e8cf93c275101341a15f14eb647ea134a6dc",
+      "nativeCommands": [
+        16511,
+        16539
+      ]
+    },
+    {
+      "monster": 14,
+      "area": 425,
+      "name": "Skoll",
+      "role": "physical pack hunter",
+      "allowed": [
+        16,
+        18,
+        20
+      ],
+      "reason": "Pack attacks, blindside and same-target tempo punish fit its physical native action.",
+      "fields": [
+        425,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "9da872fef881b7fffc77e9af33a0caec6ef3b2b9aa3dff727818a88bba37f1a9",
+      "nativeCommands": [
+        16511,
+        16543
+      ]
+    },
+    {
+      "monster": 20,
+      "area": 425,
+      "name": "Flame Flan",
+      "role": "magic attacker",
+      "allowed": [
+        15,
+        17,
+        19
+      ],
+      "reason": "Arcane pressure, ally veil and magic Silence; exclude physical pack signature.",
+      "fields": [
+        425,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "f6457fcc69334dabec251bcb5b1e940016ea494ac84f7203d985abc1cfb5d8bd",
+      "nativeCommands": [
+        12361
+      ]
+    },
+    {
+      "monster": 34,
+      "area": 425,
+      "name": "Nebiros",
+      "role": "status flier",
+      "allowed": [
+        16,
+        18,
+        20
+      ],
+      "reason": "Single physical/status pressure and tempo control, without caster-exclusive pressure.",
+      "fields": [
+        425,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "aa4da64d395eddc4421a829ebdfc7ec2faf36283e54b6368480734e414a4312d",
+      "nativeCommands": [
+        16397
+      ]
+    },
+    {
+      "monster": 88,
+      "area": 425,
+      "name": "Chimera Brain",
+      "role": "hybrid caster",
+      "allowed": [
+        15,
+        17,
+        19
+      ],
+      "reason": "Native mixed spells and breath support arcane/defensive/silence variants.",
+      "fields": [
+        425,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "7cef1e5884700f277f9faea0334e30e33b2570e89b95d84e44b019b2cc958389",
+      "nativeCommands": [
+        12359,
+        12363,
+        16461,
+        16462,
+        16511,
+        24850,
+        24851
+      ]
+    },
+    {
+      "monster": 89,
+      "area": 425,
+      "name": "Coeurl",
+      "role": "magic and status hybrid",
+      "allowed": [
+        15,
+        16,
+        19,
+        20
+      ],
+      "reason": "Both native spell and physical/status routes; permit either hybrid pressure or same-target control.",
+      "fields": [
+        425,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "a99bace4b73ad81fe339cb51fe4e319776c1ad54b6835df08dd8f7c50a71bba4",
+      "nativeCommands": [
+        12358,
+        12359,
+        12368,
+        16463,
+        16496,
+        24849
+      ]
+    },
+    {
+      "monster": 66,
+      "area": 425,
+      "name": "Ogre",
+      "role": "exclusive heavy signature",
+      "allowed": [
+        22
+      ],
+      "reason": "UNI-022 is exclusively bound to m066; do not dilute its signature into the generic area pool.",
+      "fields": [
+        425,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "728815db6cfddc7f23d6e4345799146fe6bd8013808dc0d7acc0124b023ab416",
+      "nativeCommands": [
+        16443,
+        16482,
+        16483,
+        16511,
+        16512,
+        24852
+      ]
+    },
+    {
+      "monster": 64,
+      "area": 425,
+      "name": "Malboro",
+      "role": "exclusive breath signature",
+      "allowed": [
+        23
+      ],
+      "reason": "UNI-023 is exclusively bound to m064 with independent hostile status rolls.",
+      "fields": [
+        425,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "7ad314076dd326ac56fd7095e738629cf2b15212169db907b738aa7fd215bb35",
+      "nativeCommands": [
+        16467,
+        16468
+      ]
+    },
+    {
+      "monster": 186,
+      "area": 425,
+      "name": "Anacondaur",
+      "role": "exclusive tail and gaze",
+      "allowed": [
+        21
+      ],
+      "reason": "UNI-021 is exclusively bound to m186; native tail/stone family matches its signature.",
+      "fields": [
+        425,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "09de86bf17611c22690e6f6dba299f9bbe17aac72e74ce60caa7d0b16d5d17a9",
+      "nativeCommands": [
+        16384,
+        16441,
+        16511,
+        16553
+      ]
+    },
+    {
+      "monster": 84,
+      "area": 425,
+      "name": "Epaaj",
+      "role": "physical ambush",
+      "allowed": [
+        16,
+        18,
+        20
+      ],
+      "reason": "Physical ambush and tempo pressure; no caster chorus or exclusive mini-boss signature.",
+      "fields": [
+        429
+      ],
+      "originalMonsterSha256": "da6be229652c2c0e54c4644fc77574d6753ae94898b277de17ba6843dfd6dc51",
+      "nativeCommands": [
+        16464,
+        16469
+      ]
+    },
+    {
+      "monster": 92,
+      "area": 425,
+      "name": "Mech Scouter",
+      "role": "physical machina",
+      "allowed": [
+        17,
+        18,
+        20
+      ],
+      "reason": "Defensive formation and single physical/control attacks, without organic breath/drain.",
+      "fields": [
+        429,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "7f027c7d34b0e1cc65273731afd64b8a39bf79ef38130ff90e887c576c35b784",
+      "nativeCommands": [
+        16511
+      ]
+    },
+    {
+      "monster": 93,
+      "area": 425,
+      "name": "Mech Leader",
+      "role": "physical machina leader",
+      "allowed": [
+        16,
+        17,
+        20
+      ],
+      "reason": "Physical pack support and tempo pressure; excludes creature-specific signatures.",
+      "fields": [
+        425,
+        429,
+        611,
+        612,
+        613
+      ],
+      "originalMonsterSha256": "d6bccf53a0203c9ef8e07de3880712161c5849dcd63259d331141b2485df980a",
+      "nativeCommands": [
+        16384,
+        16511
+      ]
+    },
+    {
+      "monster": 27,
+      "area": 430,
+      "name": "Yowie",
+      "role": "agile status lizard",
+      "allowed": [
+        24,
+        26,
+        29
+      ],
+      "reason": "Defensive veil, haste support and tempo control for its agile physical/status route.",
+      "fields": [
+        430
+      ],
+      "originalMonsterSha256": "f3243b710c91099585aeed22373aa48f73ffbfcd8fcf4d119a8d161a7cacfa1a",
+      "nativeCommands": [
+        16511,
+        16545
+      ]
+    },
+    {
+      "monster": 63,
+      "area": 430,
+      "name": "Nidhogg",
+      "role": "physical status dragon",
+      "allowed": [
+        24,
+        28,
+        30
+      ],
+      "reason": "Defensive veil, hostile breath and drain fit the dragon family; exclude party healing.",
+      "fields": [
+        430
+      ],
+      "originalMonsterSha256": "364c381444209c3abe8f3b4c7ab781a3cccd35bf0e17e5dca11690d2352b62ba",
+      "nativeCommands": [
+        16414,
+        16539,
+        24859
+      ]
+    },
+    {
+      "monster": 82,
+      "area": 430,
+      "name": "Dark Element",
+      "role": "magic attacker",
+      "allowed": [
+        24,
+        27,
+        29,
+        30
+      ],
+      "reason": "Native caster gets defensive, arcane, gravity-control or drain variants.",
+      "fields": [
+        430
+      ],
+      "originalMonsterSha256": "213a9cdab29c1bf1fe30b0b6dd99c7321917a78b23527084914b0b82748b2955",
+      "nativeCommands": [
+        12348,
+        12357,
+        12358,
+        12359,
+        12360,
+        12365,
+        12368,
+        12369,
+        24871
+      ]
+    },
+    {
+      "monster": 8,
+      "area": 430,
+      "name": "Imp",
+      "role": "magic attacker",
+      "allowed": [
+        25,
+        26,
+        27,
+        29
+      ],
+      "reason": "Native caster can restore allies, accelerate them, or add arcane/tempo pressure.",
+      "fields": [
+        430
+      ],
+      "originalMonsterSha256": "394a25f8b68a9c94177f42c85f178c55348a866d3af045ad094dd8fb065db2dc",
+      "nativeCommands": [
+        12363,
+        24856
+      ]
+    },
+    {
+      "monster": 97,
+      "area": 430,
+      "name": "Mech Hunter",
+      "role": "physical machina",
+      "allowed": [
+        24,
+        26
+      ],
+      "reason": "Support variants only; exclude organic breath and HP siphon.",
+      "fields": [
+        430
+      ],
+      "originalMonsterSha256": "3ab7f5c933fa20ad08ca0df75a84ecac10052e5befd434abf869254e161f7647",
+      "nativeCommands": [
+        16511
+      ]
+    },
+    {
+      "monster": 84,
+      "area": 430,
+      "name": "Epaaj",
+      "role": "physical ambush",
+      "allowed": [
+        26,
+        29,
+        30
+      ],
+      "reason": "Haste, tempo pressure and vampiric ambush; no pure area spell burst.",
+      "fields": [
+        430
+      ],
+      "originalMonsterSha256": "da6be229652c2c0e54c4644fc77574d6753ae94898b277de17ba6843dfd6dc51",
+      "nativeCommands": [
+        16464,
+        16469
+      ]
+    },
+    {
+      "monster": 215,
+      "area": 430,
+      "name": "Thorn",
+      "role": "magic/status plant",
+      "allowed": [
+        24,
+        25,
+        28
+      ],
+      "reason": "Plant status pressure and ally restoration; no physical signature.",
+      "fields": [
+        430
+      ],
+      "originalMonsterSha256": "a9209b50069c9212af99a81a94ec62153d4513572219d77c98861ef31e965eee",
+      "nativeCommands": [
+        12357,
+        16429
+      ]
+    },
+    {
+      "monster": 50,
+      "area": 430,
+      "name": "Ghost",
+      "role": "spectral caster",
+      "allowed": [
+        24,
+        27,
+        29,
+        30
+      ],
+      "reason": "Spectral defensive/arcane/control/drain pool; no healer assignment to the spectral actor.",
+      "fields": [
+        430
+      ],
+      "originalMonsterSha256": "947c6a0f6023662043c0e6649b002612fcdc62c9be4adb825e9f1aa372e59787",
+      "nativeCommands": [
+        12357,
+        12358,
+        12359,
+        12360,
+        16460,
+        24870
+      ]
+    },
+    {
+      "monster": 56,
+      "area": 430,
+      "name": "Valaha",
+      "role": "physical breath hybrid",
+      "allowed": [
+        24,
+        26,
+        28,
+        30
+      ],
+      "reason": "Native physical/breath hybrid supports defensive, haste, breath and drain variants.",
+      "fields": [
+        430
+      ],
+      "originalMonsterSha256": "ca9ac337929bf0abe25fb6841aa3e322e3be50d353238043555ceba222714415",
+      "nativeCommands": [
+        16384,
+        16420,
+        16453,
+        16454
+      ]
+    },
+    {
+      "monster": 15,
+      "area": 486,
+      "name": "Bandersnatch",
+      "role": "physical pack hunter",
+      "allowed": [
+        31,
+        32,
+        37
+      ],
+      "reason": "Pack defense or heavy single-target physical pressure; no underwater Water signature.",
+      "fields": [
+        486,
+        491
+      ],
+      "originalMonsterSha256": "463d3941545e385f05c24f3ace89b78d98adf8a45a7bc9ac9a110478424e02cc",
+      "nativeCommands": [
+        16511,
+        16543,
+        24858
+      ]
+    },
+    {
+      "monster": 63,
+      "area": 486,
+      "name": "Nidhogg",
+      "role": "physical status dragon",
+      "allowed": [
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Defense, heavy physical and status-breath pressure; no aquatic-only Undertow.",
+      "fields": [
+        486,
+        491
+      ],
+      "originalMonsterSha256": "364c381444209c3abe8f3b4c7ab781a3cccd35bf0e17e5dca11690d2352b62ba",
+      "nativeCommands": [
+        16414,
+        16539,
+        24859
+      ]
+    },
+    {
+      "monster": 94,
+      "area": 486,
+      "name": "Machina Impaler",
+      "role": "physical machina",
+      "allowed": [
+        31,
+        32,
+        37
+      ],
+      "reason": "Defense and heavy physical sequence; exclude organic drain and aquatic pressure.",
+      "fields": [
+        486,
+        491
+      ],
+      "originalMonsterSha256": "4f37116bf4bce38aa84d83189699e64a04e343f5691f45e592140af217e740e5",
+      "nativeCommands": [
+        16425,
+        16511
+      ]
+    },
+    {
+      "monster": 194,
+      "area": 486,
+      "name": "Grenade",
+      "role": "magic and self-destruct",
+      "allowed": [
+        33,
+        34
+      ],
+      "reason": "Status/arcane pressure on surviving native actions only; require the post-action alive guard and never replay Self-Destruct.",
+      "fields": [
+        486
+      ],
+      "originalMonsterSha256": "31cd3c190c0b0f6f48ef37a403eb51044ea3d20dfdd99f771fe6654d628d7a95",
+      "nativeCommands": [
+        12357,
+        16447,
+        16448,
+        16450,
+        16451,
+        24864
+      ]
+    },
+    {
+      "monster": 8,
+      "area": 486,
+      "name": "Imp",
+      "role": "magic attacker",
+      "allowed": [
+        31,
+        33,
+        34,
+        36
+      ],
+      "reason": "Defense, status, arcane burst or death/jinx casting; exclude physical-only cleave.",
+      "fields": [
+        486
+      ],
+      "originalMonsterSha256": "394a25f8b68a9c94177f42c85f178c55348a866d3af045ad094dd8fb065db2dc",
+      "nativeCommands": [
+        12363,
+        24856
+      ]
+    },
+    {
+      "monster": 98,
+      "area": 486,
+      "name": "Mech Defender",
+      "role": "physical machina",
+      "allowed": [
+        31,
+        32,
+        37
+      ],
+      "reason": "Defensive and heavy physical pool; no organic or aquatic signatures.",
+      "fields": [
+        486,
+        491
+      ],
+      "originalMonsterSha256": "5bb2e9cd480dcdb25729332d39fcb5b2437082b8c7d5c82fe4b0676dfed4301a",
+      "nativeCommands": [
+        16511
+      ]
+    },
+    {
+      "monster": 40,
+      "area": 486,
+      "name": "Grat",
+      "role": "status plant",
+      "allowed": [
+        31,
+        33,
+        36
+      ],
+      "reason": "Defensive plant/status casting and death/jinx pressure, without physical cleave.",
+      "fields": [
+        486
+      ],
+      "originalMonsterSha256": "c69f484939e9a2374b0da931611b88ec7dd563f592914a21a477062cba5b222f",
+      "nativeCommands": [
+        16387,
+        16388,
+        24860
+      ]
+    },
+    {
+      "monster": 67,
+      "area": 486,
+      "name": "Bashura",
+      "role": "heavy physical hybrid",
+      "allowed": [
+        31,
+        32,
+        37,
+        38
+      ],
+      "reason": "Native heavy attacks and group pressure permit defense, cleave and warcry hybrid.",
+      "fields": [
+        486,
+        491,
+        502
+      ],
+      "originalMonsterSha256": "8716a3a6260d59d5ac24d8e0cd32a6e45222f835fc2ee60f90b70f65fadaa3c6",
+      "nativeCommands": [
+        16443,
+        16444,
+        16482,
+        16483,
+        16511,
+        16512,
+        24865
+      ]
+    },
+    {
+      "monster": 21,
+      "area": 486,
+      "name": "Dark Flan",
+      "role": "magic attacker",
+      "allowed": [
+        31,
+        33,
+        34,
+        36
+      ],
+      "reason": "Caster defense/status/arcane/death pressure; no physical-only cleave.",
+      "fields": [
+        491,
+        502
+      ],
+      "originalMonsterSha256": "e08471d1f3fe59969d9da639efd1205c5b6dc2986dfb18a6b40714d14edb4fc3",
+      "nativeCommands": [
+        12365,
+        12366,
+        12368,
+        12369,
+        12370,
+        16474,
+        24866
+      ]
+    },
+    {
+      "monster": 190,
+      "area": 486,
+      "name": "Mandragora",
+      "role": "physical status plant",
+      "allowed": [
+        31,
+        32,
+        33,
+        39
+      ],
+      "reason": "Native physical/status hybrid fits Profane Vow and its separate ATEL Berserk side effect.",
+      "fields": [
+        491,
+        502
+      ],
+      "originalMonsterSha256": "ce1b5803b7b16068ec390c84db2b0479a1188e2d491b56d4a1d4748d733259e6",
+      "nativeCommands": [
+        16426,
+        16427,
+        16438,
+        16495,
+        24869
+      ]
+    },
+    {
+      "monster": 57,
+      "area": 486,
+      "name": "Grendel",
+      "role": "heavy physical hybrid",
+      "allowed": [
+        31,
+        32,
+        37,
+        38
+      ],
+      "reason": "Native heavy physical and party pressure fit cleave/warcry hybrid.",
+      "fields": [
+        491,
+        502
+      ],
+      "originalMonsterSha256": "51038263fb76bbf01482051c47d53d98f177ef8f7c35e0784ec8b81ef223547d",
+      "nativeCommands": [
+        16420,
+        16453,
+        16455,
+        16511,
+        24867
+      ]
+    },
+    {
+      "monster": 38,
+      "area": 486,
+      "name": "Ahriman",
+      "role": "spectral status caster",
+      "allowed": [
+        33,
+        34,
+        36,
+        39
+      ],
+      "reason": "Native magic/status routes support curse burst and separate Profane ATEL control.",
+      "fields": [
+        491,
+        502
+      ],
+      "originalMonsterSha256": "12770209be624d6fb0834bf8ed7e308f6a3126821bbd61d5186058b405451937",
+      "nativeCommands": [
+        16395,
+        16537,
+        24861
+      ]
+    },
+    {
+      "monster": 85,
+      "area": 486,
+      "name": "Behemoth",
+      "role": "heavy physical/magic hybrid",
+      "allowed": [
+        31,
+        32,
+        34,
+        37,
+        38,
+        39
+      ],
+      "reason": "Native mixed heavy attacks and magic support the T5/T6 hybrid pool; no aquatic-only skill.",
+      "fields": [
+        491,
+        502
+      ],
+      "originalMonsterSha256": "956c82f3e5acf17eac0ed040d990c435d53f83757fadadc11e2f4403e91796fe",
+      "nativeCommands": [
+        12359,
+        16486,
+        16511,
+        24868
+      ]
+    },
+    {
+      "monster": 54,
+      "area": 486,
+      "name": "Maelspike",
+      "role": "aquatic heavy physical",
+      "allowed": [
+        31,
+        32,
+        35,
+        37
+      ],
+      "reason": "Aquatic actor permits Undertow plus defensive/heavy physical variants.",
+      "fields": [
+        492
+      ],
+      "originalMonsterSha256": "2b377b62e09025338ed3e051f0f9273b2b95d3fea99748388050dabf6b33d94a",
+      "nativeCommands": [
+        16384,
+        16431,
+        16432,
+        24862
+      ]
+    },
+    {
+      "monster": 52,
+      "area": 486,
+      "name": "Achelous",
+      "role": "aquatic status hybrid",
+      "allowed": [
+        31,
+        33,
+        35,
+        36
+      ],
+      "reason": "Aquatic status family permits water, status and magic death pressure.",
+      "fields": [
+        492
+      ],
+      "originalMonsterSha256": "78ebaf8c6683db38e53c96e53c0bfc576695858eb6880ad8e869bdde09c0e20e",
+      "nativeCommands": [
+        16417,
+        16511,
+        16554,
+        24863
+      ]
+    },
+    {
+      "monster": 71,
+      "area": 486,
+      "name": "Splasher 1",
+      "role": "aquatic attacker",
+      "allowed": [
+        31,
+        32,
+        35
+      ],
+      "reason": "Water-specific pool only on this actual underwater monster ID.",
+      "fields": [
+        492
+      ],
+      "originalMonsterSha256": "9f961db28e718b03321459a52a18a8550a9ee413e95a9794d52cb5e10be84502",
+      "nativeCommands": [
+        16393,
+        16551,
+        24857
+      ]
+    },
+    {
+      "monster": 72,
+      "area": 486,
+      "name": "Splasher 2",
+      "role": "aquatic attacker",
+      "allowed": [
+        31,
+        32,
+        35
+      ],
+      "reason": "Separate underwater model/profile; no aliasing to another Splasher ID.",
+      "fields": [
+        492
+      ],
+      "originalMonsterSha256": "d8591a8021398b861f6754b443e4088167a94a79fa3b0e807b3471bee89f109e",
+      "nativeCommands": [
+        16552
+      ]
+    },
+    {
+      "monster": 73,
+      "area": 486,
+      "name": "Splasher 3",
+      "role": "aquatic attacker",
+      "allowed": [
+        31,
+        32,
+        35
+      ],
+      "reason": "Separate underwater model/profile; no aliasing to another Splasher ID.",
+      "fields": [
+        492
+      ],
+      "originalMonsterSha256": "efbef5e56269a3e48573e43194767633d1d8776127e56f6f2b3f52925a366b54",
+      "nativeCommands": [
+        16552
+      ]
+    },
+    {
+      "monster": 198,
+      "area": 515,
+      "name": "Fallen Monk",
+      "role": "exclusive on-damage Zombie",
+      "allowed": [
+        40
+      ],
+      "reason": "UNI-040 only: compare actual party HP per native damaging call; no added command.",
+      "fields": [
+        515
+      ],
+      "originalMonsterSha256": "e484f721ce9149ebf71a59f17c602d0b847b03e93fc5818c86753574f68f61f4",
+      "nativeCommands": [
+        16402
+      ]
+    },
+    {
+      "monster": 200,
+      "area": 515,
+      "name": "Fallen Monk Flamethrower",
+      "role": "exclusive on-damage Zombie",
+      "allowed": [
+        40
+      ],
+      "reason": "UNI-040 only: independent per-target HP comparison for the native area flamethrower; no added command.",
+      "fields": [
+        515
+      ],
+      "originalMonsterSha256": "a8d8e3941c833a0c37baf298d31bc4ab7be0ce2421a85fa89db5a2e6c0bfd546",
+      "nativeCommands": [
+        16403
+      ]
+    },
+    {
+      "monster": 81,
+      "area": 340,
+      "name": "Blue Element",
+      "role": "known Macalania model in installed snow formations",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "reason": "The installed natural snow formations include this exact model. Reuse its already verified per-monster UNI allowlist and byte-identical AI profiles; do not extend it to snow fields where it is absent.",
+      "fields": [
+        330,
+        333
+      ]
+    },
+    {
+      "monster": 87,
+      "area": 340,
+      "name": "Chimera",
+      "role": "known Macalania model in installed snow formations",
+      "allowed": [
+        1,
+        3,
+        4,
+        6,
+        8
+      ],
+      "reason": "The installed natural snow formations include this exact model. Reuse its already verified per-monster UNI allowlist and byte-identical AI profiles; do not extend it to snow fields where it is absent.",
+      "fields": [
+        333
+      ]
+    },
+    {
+      "monster": 9,
+      "area": 68,
+      "name": "Dingo",
+      "role": "pack predator",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        11,
+        16,
+        18,
+        20,
+        26,
+        29,
+        30,
+        31,
+        32,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        70,
+        72
+      ]
+    },
+    {
+      "monster": 16,
+      "area": 68,
+      "name": "Water Flan",
+      "role": "elemental caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        13,
+        14,
+        15,
+        17,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        70,
+        72
+      ]
+    },
+    {
+      "monster": 28,
+      "area": 68,
+      "name": "Condor",
+      "role": "winged striker",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        10,
+        12,
+        16,
+        18,
+        20,
+        26,
+        29,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        70,
+        72
+      ]
+    },
+    {
+      "monster": 68,
+      "area": 68,
+      "name": "Piranha 1",
+      "role": "aquatic pack",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        10,
+        11,
+        16,
+        18,
+        20,
+        26,
+        30,
+        31,
+        32,
+        35,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        68
+      ]
+    },
+    {
+      "monster": 69,
+      "area": 68,
+      "name": "Piranha 2",
+      "role": "aquatic pack",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        10,
+        11,
+        16,
+        18,
+        20,
+        26,
+        30,
+        31,
+        32,
+        35,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        68
+      ]
+    },
+    {
+      "monster": 70,
+      "area": 68,
+      "name": "Piranha 3",
+      "role": "aquatic pack",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        10,
+        11,
+        16,
+        18,
+        20,
+        26,
+        30,
+        31,
+        32,
+        35,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        68
+      ]
+    },
+    {
+      "monster": 2,
+      "area": 220,
+      "name": "Bunyip",
+      "role": "armored striker",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        31,
+        32,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        224
+      ]
+    },
+    {
+      "monster": 6,
+      "area": 220,
+      "name": "Gandarewa",
+      "role": "flying caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        13,
+        15,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        221,
+        224,
+        225,
+        227
+      ]
+    },
+    {
+      "monster": 11,
+      "area": 220,
+      "name": "Garm",
+      "role": "pack predator",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        11,
+        16,
+        18,
+        20,
+        26,
+        29,
+        30,
+        31,
+        32,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        224
+      ]
+    },
+    {
+      "monster": 17,
+      "area": 220,
+      "name": "Thunder Flan",
+      "role": "elemental caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        13,
+        14,
+        15,
+        17,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        220
+      ]
+    },
+    {
+      "monster": 18,
+      "area": 220,
+      "name": "Snow Flan",
+      "role": "elemental caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        13,
+        14,
+        15,
+        17,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        224
+      ]
+    },
+    {
+      "monster": 23,
+      "area": 220,
+      "name": "Ipiria",
+      "role": "reptile",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        11,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        220
+      ]
+    },
+    {
+      "monster": 24,
+      "area": 220,
+      "name": "Raptor",
+      "role": "reptile",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        11,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        221,
+        224,
+        225,
+        227
+      ]
+    },
+    {
+      "monster": 29,
+      "area": 220,
+      "name": "Simurgh",
+      "role": "winged striker",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        10,
+        12,
+        16,
+        18,
+        20,
+        26,
+        29,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        224
+      ]
+    },
+    {
+      "monster": 32,
+      "area": 220,
+      "name": "Bite Bug",
+      "role": "winged striker",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        10,
+        12,
+        16,
+        18,
+        20,
+        26,
+        29,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        224
+      ]
+    },
+    {
+      "monster": 35,
+      "area": 220,
+      "name": "Floating Eye",
+      "role": "flying caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        13,
+        15,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        220
+      ]
+    },
+    {
+      "monster": 44,
+      "area": 220,
+      "name": "Garuda",
+      "role": "large beast",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        8,
+        11,
+        12,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        28,
+        30,
+        31,
+        32,
+        34,
+        37,
+        38
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        221,
+        225
+      ]
+    },
+    {
+      "monster": 55,
+      "area": 220,
+      "name": "Dual Horn",
+      "role": "large beast",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        8,
+        11,
+        12,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        28,
+        30,
+        31,
+        32,
+        34,
+        37,
+        38
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        220
+      ]
+    },
+    {
+      "monster": 59,
+      "area": 220,
+      "name": "Vouivre",
+      "role": "reptile",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        11,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        220
+      ]
+    },
+    {
+      "monster": 60,
+      "area": 220,
+      "name": "Lamashtu",
+      "role": "reptile",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        11,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        221,
+        224,
+        227
+      ]
+    },
+    {
+      "monster": 79,
+      "area": 220,
+      "name": "Red Element",
+      "role": "elemental caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        13,
+        14,
+        15,
+        17,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        221,
+        225,
+        227
+      ]
+    },
+    {
+      "monster": 185,
+      "area": 220,
+      "name": "Basilisk",
+      "role": "reptile",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        11,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        224
+      ]
+    },
+    {
+      "monster": 193,
+      "area": 220,
+      "name": "Bomb",
+      "role": "volatile caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        6,
+        7,
+        13,
+        14,
+        15,
+        19,
+        24,
+        25,
+        27,
+        28,
+        29,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        220
+      ]
+    },
+    {
+      "monster": 214,
+      "area": 220,
+      "name": "Funguar",
+      "role": "toxic plant",
+      "allowed": [
+        1,
+        3,
+        4,
+        7,
+        8,
+        11,
+        13,
+        15,
+        19,
+        24,
+        25,
+        27,
+        28,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        221,
+        224,
+        225,
+        227
+      ]
+    },
+    {
+      "monster": 7,
+      "area": 300,
+      "name": "Aerouge",
+      "role": "flying caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        13,
+        15,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        300,
+        303
+      ]
+    },
+    {
+      "monster": 25,
+      "area": 300,
+      "name": "Melusine",
+      "role": "reptile",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        11,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        300,
+        303
+      ]
+    },
+    {
+      "monster": 36,
+      "area": 300,
+      "name": "Buer",
+      "role": "flying caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        11,
+        12,
+        13,
+        15,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        300,
+        303
+      ]
+    },
+    {
+      "monster": 61,
+      "area": 300,
+      "name": "Kusariqqu",
+      "role": "reptile",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        10,
+        11,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        37
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        300,
+        303
+      ]
+    },
+    {
+      "monster": 80,
+      "area": 300,
+      "name": "Gold Element",
+      "role": "elemental caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        13,
+        14,
+        15,
+        17,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        300,
+        303
+      ]
+    },
+    {
+      "monster": 181,
+      "area": 300,
+      "name": "Iron Giant",
+      "role": "heavy humanoid",
+      "allowed": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        16,
+        17,
+        18,
+        20,
+        24,
+        26,
+        31,
+        32,
+        37,
+        38
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        303
+      ]
+    },
+    {
+      "monster": 209,
+      "area": 300,
+      "name": "Larva",
+      "role": "elemental caster",
+      "allowed": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        13,
+        14,
+        15,
+        17,
+        19,
+        24,
+        25,
+        27,
+        29,
+        30,
+        31,
+        33,
+        34,
+        36,
+        39,
+        41
+      ],
+      "reason": "Awakening-only full cross-region compatible SIN library for this archetype; preserve native AI body. Exclude identity-bound UNI-021/022/023/040 and non-matching aquatic, caster or large-body actions. No ordinary-area SIN before awakening.",
+      "fields": [
+        300,
+        303
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "id": 202,
+      "reason": "Magic Urn has no ordinary onTurn command route and owns puzzle conditions."
+    },
+    {
+      "id": 211,
+      "reason": "Treasure Chest has no ordinary onTurn command route."
+    },
+    {
+      "id": 255,
+      "reason": "Magic Urn target child actor, not an independent ordinary turn owner."
+    },
+    {
+      "id": 263,
+      "reason": "Fallen Monk rifle child actor; UNI-040 belongs to m198."
+    },
+    {
+      "id": 264,
+      "reason": "Fallen Monk flamethrower child actor; UNI-040 belongs to m200."
+    },
+    {
+      "id": 49,
+      "reason": "Zanarkand request restricts the new UNI to the two Fallen Monks; Defender Z retains native AI."
+    },
+    {
+      "id": 192,
+      "reason": "Zanarkand machina retains existing AI; no approved new area-specific UNI."
+    },
+    {
+      "id": 196,
+      "reason": "Zanarkand machina retains existing AI; no approved new area-specific UNI."
+    }
+  ],
+  "unavailableFields": [
+    313,
+    332,
+    345,
+    426,
+    446,
+    487,
+    493,
+    517,
+    521
+  ],
+  "sourceEditor": "https://github.com/WanxTitanx/ffx-editor-main",
+  "sourceCatalogAssemblySha256": "8c1e2a689476d8db5a586655b3a061a3f93d95ff6a8f8d8b8552ff8103fdba47",
+  "captureCascadeEvidence": "mods/Spira Reforge/docs/CAPTURE_CASCADE_ASSETS_2026-10-09.json",
+  "captureCascadeSkillPolicy": "Only awakeningOnly areas expand to the full compatible library; all pre-existing regional allowlists remain unchanged."
+}

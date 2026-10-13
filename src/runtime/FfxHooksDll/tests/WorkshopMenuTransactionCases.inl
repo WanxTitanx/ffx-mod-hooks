@@ -11,6 +11,7 @@ static bool WorkshopTestLists(EquipmentMenu::Action action,unsigned value){
     for(int i=0;i<EquipmentMenu::count;++i)if(EquipmentMenu::rows[i].action==action&&EquipmentMenu::rows[i].value==value)return true;
     return false;
 }
+static bool workshopTestMainOrigin=false;
 static bool WorkshopTestOpen(){
     EquipmentMenu::StopReady();EquipmentMenu::wantOpen=EquipmentMenu::wantClose=0;
     foreground=true;NativeMenu::padDirection=NativeMenu::padEdge=0;
@@ -24,7 +25,7 @@ static bool WorkshopTestOpen(){
     TestHost::available=true;TestHost::customizeUnlocked=true;TestHost::failReadback=false;TestHost::commits=0;TestHost::gil=1000000;
     FfxHooks::Config::LoadTextForTests("[equipment_workshop]\nrefinement_mode=2\n","C:\\private-workshop-menu.ini");
     EquipmentMenu::ownerFilter=-1;NativeMenu::sounds.clear();
-    return EquipmentMenu::Open();
+    return EquipmentMenu::Open(workshopTestMainOrigin);
 }
 static void WorkshopPrepareFusion(){
     TestHost::state.pieces[0].native[14]=1;TestHost::state.pieces[0].native[16]=98;

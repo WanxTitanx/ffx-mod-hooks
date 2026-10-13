@@ -11,6 +11,7 @@
 #include "SeymourMenuListHook.h"
 #include "SphereGridProgress8Runtime.h"
 #include "F8FlagCatalog.h"
+#include "F8ModPresentation.h"
 #include "VanguardCatalog.h"
 #include "ModFeatureCatalog.h"
 #include "MonsterRewardsRuntime.h"
@@ -48,16 +49,28 @@ enum class NativeSettingsPage { None, Keyboard, Gamepad, Controller, ControllerP
     ArenaOptions, Vanguard, VanguardDamage, VanguardMagic, VanguardStatus, VanguardFormation,
     VanguardWeapons, VanguardArmor, VanguardEquipment, VanguardMapping, Arena, VanguardMappingEdit, VanguardCommandBindings, VanguardCommandEdit, TextLanguages, AdditionalMods, FieldScout,
     RewardMultipliers,MonsterRewardList,MonsterRewardDetail,RewardRate,MonsterRewardId,
-    ElementNames,ElementNameEdit,ElementNameCapture, PhotoMode, Seymour, InterfaceLanguage };
+    ElementNames,ElementNameEdit,ElementNameCapture, PhotoMode, Seymour, InterfaceLanguage,
+    ReforgeEquipment,ReforgeCapture,ReforgeResources,ReforgeOmega };
+static bool F8NativeModGroup(NativeSettingsPage page){
+    return page==NativeSettingsPage::AdditionalMods||(page>=NativeSettingsPage::ReforgeEquipment&&page<=NativeSettingsPage::ReforgeOmega);
+}
+static FfxHooks::ModFeatures::MenuGroup F8NativeModGroupId(NativeSettingsPage page){
+    using Group=FfxHooks::ModFeatures::MenuGroup;
+    switch(page){case NativeSettingsPage::ReforgeEquipment:return Group::Equipment;
+    case NativeSettingsPage::ReforgeCapture:return Group::Capture;
+    case NativeSettingsPage::ReforgeResources:return Group::Resources;
+    case NativeSettingsPage::ReforgeOmega:return Group::Omega;default:return Group::Additional;}
+}
 static bool F8RewardPage(NativeSettingsPage page){return page>=NativeSettingsPage::RewardMultipliers&&page<=NativeSettingsPage::MonsterRewardId;}
 static int F8RewardCount(NativeSettingsPage page);
 static const char* const kF8ArenaKeys[]={"arena_plus.master","arena_plus.compose_f7","arena_plus.unlock_all",
     "arena_plus.victory_hook","arena_plus.resolver_log","arena_plus.music"};
 static const char* const kF8FieldScoutKeys[]={"field_scout.master","field_scout.heavy","field_scout.max","field_scout.ultra"};
 static bool F8NativeNestedFlag(const FfxHooks::F8FlagSpec& flag){
+    for(const auto* key:{"labs.equipment_workshop","labs.equipment_workshop_native_ui"})if(std::strcmp(key,flag.gate.canonicalKey)==0)return true;
     for(const auto* key:{"cheats.ap_100x","cheats.gil_100x","cheats.monster_rewards"})if(std::strcmp(key,flag.gate.canonicalKey)==0)return true;
     if(std::strncmp(flag.gate.canonicalKey,"vanguard.",9)==0)return true;
-    for(const auto& entry:FfxHooks::ModFeatures::Entries)if(std::strcmp(entry.gate.canonicalKey,flag.gate.canonicalKey)==0)return true;
+    for(const auto& entry:FfxHooks::ModFeatures::Entries)if(entry.additionalMenu&&std::strcmp(entry.gate.canonicalKey,flag.gate.canonicalKey)==0)return true;
     for(const auto* key:kF8FieldScoutKeys)if(std::strcmp(key,flag.gate.canonicalKey)==0)return true;
     for(const auto* key:kF8ArenaKeys)if(std::strcmp(key,flag.gate.canonicalKey)==0)return true;
     return false;
@@ -68,7 +81,13 @@ static bool F8NativeVanguardGroup(NativeSettingsPage page){
 static const FfxHooks::F8FlagSpec* F8NativeNestedSpec(NativeSettingsPage page,int row){
     if(row<0)return nullptr;
     if(page==NativeSettingsPage::ArenaOptions)return row<6?FfxHooks::FindF8Flag(kF8ArenaKeys[row]):nullptr;
-    if(page==NativeSettingsPage::AdditionalMods)return row<static_cast<int>(FfxHooks::ModFeatures::Entries.size())?FfxHooks::FindF8Flag(FfxHooks::ModFeatures::Entries[row].gate.canonicalKey):nullptr;
+    if(F8NativeModGroup(page)){
+        for(unsigned i=0;i<FfxHooks::ModFeatures::Entries.size();++i){const auto& entry=FfxHooks::ModFeatures::Entries[i];
+            if(entry.additionalMenu&&FfxHooks::ModFeatures::GroupFor(static_cast<FfxHooks::ModFeatures::Feature>(i))==F8NativeModGroupId(page)&&row--==0)
+                return FfxHooks::FindF8Flag(entry.gate.canonicalKey);
+        }
+        return nullptr;
+    }
     if(page==NativeSettingsPage::FieldScout)return row<4?FfxHooks::FindF8Flag(kF8FieldScoutKeys[row]):nullptr;
     if(!F8NativeVanguardGroup(page))return nullptr;
     const auto group=static_cast<FfxHooks::Vanguard::Group>(static_cast<int>(page)-static_cast<int>(NativeSettingsPage::VanguardDamage));
@@ -117,6 +136,11 @@ static bool F8NativeSettingsActive(){return g_nativeSettingsDepth>0;}
 static NativeSettingsPage F8NativeSettingsPage(){return g_nativeSettingsDepth?g_nativeSettingsFrames[g_nativeSettingsDepth-1].page:NativeSettingsPage::None;}
 static int F8NativeSettingsCount(NativeSettingsPage page){
     if(F8RewardPage(page))return F8RewardCount(page);
+    if(F8NativeModGroup(page)){int count=1;
+        for(unsigned i=0;i<FfxHooks::ModFeatures::Entries.size();++i)if(FfxHooks::ModFeatures::Entries[i].additionalMenu&&
+            FfxHooks::ModFeatures::GroupFor(static_cast<FfxHooks::ModFeatures::Feature>(i))==F8NativeModGroupId(page))++count;
+        return count;
+    }
     if(F8NativeVanguardGroup(page)){int rows=page==NativeSettingsPage::VanguardEquipment?2:1;
         const auto group=static_cast<FfxHooks::Vanguard::Group>(static_cast<int>(page)-static_cast<int>(NativeSettingsPage::VanguardDamage));
         for(const auto& spec:FfxHooks::Vanguard::Features){if(spec.group==group)++rows;}
@@ -126,7 +150,10 @@ static int F8NativeSettingsCount(NativeSettingsPage page){
     case NativeSettingsPage::InterfaceLanguage:return static_cast<int>(FfxHooks::UiLanguage::LocaleCount)+1;
     case NativeSettingsPage::Arena:return 2;
     case NativeSettingsPage::ArenaOptions:return 7;
-    case NativeSettingsPage::AdditionalMods:return static_cast<int>(FfxHooks::ModFeatures::Entries.size())+1;
+    case NativeSettingsPage::AdditionalMods:{
+        int count=1;for(const auto& entry:FfxHooks::ModFeatures::Entries)if(entry.additionalMenu)++count;
+        return count;
+    }
     case NativeSettingsPage::FieldScout:return 5;
     case NativeSettingsPage::Vanguard:return 9;
     case NativeSettingsPage::VanguardMapping:return static_cast<int>(FfxHooks::Vanguard::AbilityCount)+1;
@@ -229,6 +256,10 @@ static const char* F8NativeSettingsTitle(NativeSettingsPage page){
     case NativeSettingsPage::Arena:return "Arena+";
     case NativeSettingsPage::ArenaOptions:return "Arena+ settings";
     case NativeSettingsPage::AdditionalMods:return "Additional mods";
+    case NativeSettingsPage::ReforgeEquipment:return "Equipment and Aeons";
+    case NativeSettingsPage::ReforgeCapture:return "Capture and regions";
+    case NativeSettingsPage::ReforgeResources:return "Items and resources";
+    case NativeSettingsPage::ReforgeOmega:return "Omega challenges";
     case NativeSettingsPage::FieldScout:return "FieldScout";
     case NativeSettingsPage::Vanguard:return "Vanguard Combat Engine";
     case NativeSettingsPage::VanguardMapping:return "Ability ID mapping";
@@ -301,14 +332,12 @@ static void F8NativeSettingsLabel(NativeSettingsPage page,int row,char* out,size
         else F8Copy(out,capacity,"Validate and save ID");
         return;
     }
-    if(page==NativeSettingsPage::ArenaOptions||page==NativeSettingsPage::AdditionalMods||page==NativeSettingsPage::FieldScout||F8NativeVanguardGroup(page)){
+    if(page==NativeSettingsPage::ArenaOptions||F8NativeModGroup(page)||page==NativeSettingsPage::FieldScout||F8NativeVanguardGroup(page)){
         const auto* flag=F8NativeNestedSpec(page,row);
         if(!flag){F8Copy(out,capacity,"Control unavailable");return;}
         const auto runtime=GetF8RuntimeStatus(*flag);
         F8Format(out,capacity,"%s: %s | %s",flag->label,ResolveF8Flag(*flag).value?"ON":"OFF",
-            flag->activation==F8Activation::NotWired?"NOT WIRED":
-            runtime.hasAppliedValue?(runtime.appliedValue?"Running ON":"Running OFF"):
-            flag->activation==F8Activation::RestartRequired?"Restart required":F8AvailabilityName(runtime.availability));return;
+            F8Ui::ModStateText(*flag,runtime,ResolveF8Flag(*flag).value));return;
     }
     if(page==NativeSettingsPage::PhotoMode){PhotoMode::MenuLabel(row,out,capacity);return;}
     if(page==NativeSettingsPage::Seymour){
@@ -594,7 +623,7 @@ static int F8NativeSettingsAction(int obj,int row){
         strncpy_s(g_nativeSettingsNotice,"Validated mapping saved. Binary names and rows were not modified.",_TRUNCATE);
         F8NativeSettingsPop(obj);return 1;
     }
-    if(page==NativeSettingsPage::ArenaOptions||page==NativeSettingsPage::AdditionalMods||page==NativeSettingsPage::FieldScout||F8NativeVanguardGroup(page)){
+    if(page==NativeSettingsPage::ArenaOptions||F8NativeModGroup(page)||page==NativeSettingsPage::FieldScout||F8NativeVanguardGroup(page)){
         const auto* flag=F8NativeNestedSpec(page,row);if(!flag)return 3;
         const bool requested=!ResolveF8Flag(*flag).value;const auto result=SetF8FlagValue(*flag,requested);
         if(result.code==F8EditCode::RejectedNotWired||result.code==F8EditCode::RejectedUnavailable)
@@ -791,7 +820,7 @@ static void F8NativeSettingsDraw(int obj,int frame){
     else if(page==NativeSettingsPage::VanguardMappingEdit)help="Stage an ID; Save checks the current kernel. Cancel discards.";
     else if(page==NativeSettingsPage::VanguardCommandBindings)help="Explicit equipment-to-command associations; defaults Disabled.";
     else if(page==NativeSettingsPage::VanguardCommandEdit)help="One atomic binding. Partial OD fees need their independent toggle.";
-    else if(page==NativeSettingsPage::AdditionalMods||page==NativeSettingsPage::FieldScout||F8NativeVanguardGroup(page)){const auto* flag=F8NativeNestedSpec(page,selected);if(flag)help=flag->help;}
+    else if(F8NativeModGroup(page)||page==NativeSettingsPage::FieldScout||F8NativeVanguardGroup(page)){const auto* flag=F8NativeNestedSpec(page,selected);if(flag)help=flag->help;}
     else if(page==NativeSettingsPage::Keyboard)help="Choose an action, then press its keyboard shortcut.";
     else if(page==NativeSettingsPage::Gamepad)help="Use two or more buttons. Release the combo to save.";
     else if(page==NativeSettingsPage::Controller)help=pad.connected?"XInput / Steam Input controller connected.":"Connect an XInput controller or enable Steam Input.";

@@ -1,5 +1,7 @@
 #include "../shared/ExecutableProfile.h"
 #include "VanguardRuntime.h"
+#include "VanguardStatusEntry.h"
+#include "UiAbilityNameProof.h"
 #include "VanguardUiBridge.h"
 #include "EquipmentWorkshopCatalogBridge.h"
 #include "F8FlagCatalog.h"
@@ -24,6 +26,7 @@
 #include "SharedElementRuntime.h"
 #include "SharedActionRuntime.h"
 #include "SharedCombatRuntime.h"
+#include "SharedCommandAvailability.h"
 #include "RonsoCommandCosts.h"
 #include "SharedBattleRuntime.h"
 #include "VanguardActionCore.h"
@@ -41,7 +44,7 @@ bool installed=false;
 LogFn logger=nullptr;
 enum Hook : unsigned { PercentHook, FormulaHook, CriticalHook, ElementHook, CostHook, StatusHook, QuarterHook, AccuracyHook,
     AftermathHook, HpHook, FinishHook, CommitCostHook, AvailabilityHook, SelectedCostHook, CastMenuHook, CastListHook, GaugeHook,
-    SwapHook, EscapeHook, SchedulerHook, HookCount };
+    SwapHook, EscapeHook, SchedulerHook, FollowHeadHook, FollowInsertHook, FollowInputHook, HookCount };
 void* originals[HookCount]{};
 struct Span { unsigned rva; Byte bytes[16];Byte relocation=255,length=16; };
 #ifdef FFXHOOKS_TARGET_STEAM_20261001
@@ -66,6 +69,9 @@ constexpr Span spans[]={
     {::FfxHooks::ExecutableProfile::Rva<0x3ADAF0u>(),{0x55,0x8B,0xEC,0x51,0x53,0x56,0x57,0xFF,0x75,0x08,0xE8,0x31,0x65,0xFE,0xFF,0x8B}},
     {::FfxHooks::ExecutableProfile::Rva<0x38DF00u>(),{0x55,0x8B,0xEC,0x83,0x7D,0x10,0x00,0x8B,0x45,0x0C,0x74,0x10,0xC6,0x80,0xCD,0x0D}},
     {::FfxHooks::ExecutableProfile::Rva<0x391000u>(),{0x55,0x8B,0xEC,0x51,0x80,0x3D,0xE1,0xA8,0x12,0x01,0x00,0x0F,0x85,0xA7,0x01,0x00},6},
+    {0x3B0A10u,{0x33,0xC0,0x38,0x05,0xE1,0xBD,0x12,0x01,0x0F,0x9E,0xC0,0x48},4,12},
+    {0x3B0A30u,{0x55,0x8B,0xEC,0x83,0xEC,0x08,0x53,0x0F,0xBE,0x1D,0xE1,0xBD,0x12,0x01,0x89,0x5D},10},
+    {0x392A90u,{0x55,0x8B,0xEC,0x83,0xEC,0x4C,0xA1,0xD8,0x13,0xC6,0x00,0x33,0xC5,0x89,0x45,0xFC},7},
 };
 #else
 constexpr Span spans[]={
@@ -89,6 +95,9 @@ constexpr Span spans[]={
     {::FfxHooks::ExecutableProfile::Rva<0x3ADAF0u>(),{0x55,0x8B,0xEC,0x51,0x53,0x56,0x57,0xFF,0x75,0x08,0xE8,0x31,0x65,0xFE,0xFF,0x8B}},
     {::FfxHooks::ExecutableProfile::Rva<0x38DF00u>(),{0x55,0x8B,0xEC,0x83,0x7D,0x10,0,0x8B,0x45,0x0C,0x74,0x10,0xC6,0x80,0xCD,0x0D}},
     {::FfxHooks::ExecutableProfile::Rva<0x391000u>(),{0x55,0x8B,0xEC,0x51,0x80,0x3D,0xE1,0xA8,0x12,0x01,0,0x0F,0x85,0xA7,0x01,0},6},
+    {0x3B0A20u,{0x33,0xC0,0x38,0x05,0xE1,0xBD,0x12,0x01,0x0F,0x9E,0xC0,0x48},4,12},
+    {0x3B0A40u,{0x55,0x8B,0xEC,0x83,0xEC,0x08,0x53,0x0F,0xBE,0x1D,0xE1,0xBD,0x12,0x01,0x89,0x5D},10},
+    {0x392AB0u,{0x55,0x8B,0xEC,0x83,0xEC,0x4C,0xA1,0xD8,0x13,0xC6,0x00,0x33,0xC5,0x89,0x45,0xFC},7},
 };
 #endif
 static_assert(std::size(spans)==HookCount&&HookCount<=MinHookBatch::kMaximumTargets,
@@ -125,6 +134,7 @@ bool Profile(std::uintptr_t base) noexcept {
         if(!Copy(bytes,reinterpret_cast<void*>(base+span.rva),span.length)||
            (std::memcmp(bytes,expected,span.length)&&
             !(span.rva==SharedElement::kRva&&SharedElement::MatchesOwned(base,bytes,span.length))&&
+            !(span.rva==SharedCommandAvailability::Rva&&SharedCommandAvailability::MatchesOwned(base,bytes,span.length))&&
             !(span.length==16&&SharedAction::MatchesOwned(base,span.rva,bytes))&&
             !SharedCombat::MatchesOwned(base,span.rva,bytes,span.length)))return false;}
     return true;
@@ -137,6 +147,7 @@ bool Named(const std::vector<Byte>& bytes,unsigned id,unsigned effect) {
     for(;label[i]&&i<available;++i){const Byte expected=label[i]==' '?58:label[i]=='\''?65:label[i]=='-'?71:static_cast<Byte>(label[i]+15);
         if(name[i]!=expected)break;}
     if(!label[i]&&i<available&&!name[i])return true;
+    if(UiAbilityNameProof::Matches(Abilities[effect].id,name,available))return true;
     // Existing Asian authoring uses the stable default identity as numeric text.
     char numeric[16]{};std::snprintf(numeric,sizeof(numeric),"%u",Abilities[effect].id);
     const auto length=std::strlen(numeric);
@@ -163,7 +174,7 @@ bool MappingSnapshot(MappingState& out,std::vector<Byte>& bytes,const Mapping* o
         if(!AutoAbilitySlots::Vanguard(id)||id>last){out.codes[i]=MappingCode::InvalidId;continue;}
         bool duplicate=false;for(unsigned j=0;j<AbilityCount;++j)if(i!=j&&out.ids[j]==id)duplicate=true;
         if(duplicate){out.codes[i]=MappingCode::Duplicate;continue;}
-        bool payload=false;for(unsigned n=16;n<108;++n)if(data[20+id*108+n])payload=true;
+        bool payload=false;for(unsigned n=16;n<108;++n)if(!SpiraCapturePayload::Matches(id,n,data[20+id*108+n]))payload=true;
         out.codes[i]=payload?MappingCode::NativePayload:!Named(bytes,id,i)?MappingCode::IdentityMismatch:MappingCode::Valid;
     }
     return true;
@@ -323,6 +334,7 @@ const SharedTurn::Observer regenerationObserver{RegenerateMp};
 #include "VanguardActions.inl"
 const SharedAction::Legacy sharedActionCallbacks{AftermathShim,FinishShim,AfterActionObserversFinish};
 const SharedCombat::Callbacks sharedCombatOperations{MpCostShim,CriticalShim,HpShim};
+int __cdecl SharedAvailability(unsigned char owner,unsigned short command){return AvailabilityShim(owner,command);}
 bool IgnoreProtection(const void* command,const void* info,int amount) noexcept {
     // Positive Zombie damage is not healing. No Reflect, affinity, status or
     // protection flag is removed: only an already negative heal bypasses guard.
@@ -412,26 +424,34 @@ bool Start(std::uintptr_t base,bool validateOnly,LogFn log) {
     originals[CriticalHook]=reinterpret_cast<void*>(SharedCombat::OriginalCritical());
     originals[HpHook]=reinterpret_cast<void*>(SharedCombat::OriginalHp());
     if(!SharedCombat::Register(SharedCombat::vanguard,&sharedCombatOperations))return false;
+    if(!SharedCommandAvailability::Start(base))return false;
+    originals[AvailabilityHook]=reinterpret_cast<void*>(&SharedCommandAvailability::Learned);
+    if(!SharedCommandAvailability::RegisterEquipment(&SharedAvailability))return false;
     void* replacements[]={reinterpret_cast<void*>(&PercentShim),reinterpret_cast<void*>(&FormulaShim),reinterpret_cast<void*>(&CriticalShim),reinterpret_cast<void*>(&ElementShim),reinterpret_cast<void*>(&MpCostShim),reinterpret_cast<void*>(&StatusShim),reinterpret_cast<void*>(&QuarterShim),reinterpret_cast<void*>(&AccuracyShim),
         reinterpret_cast<void*>(&AftermathShim),reinterpret_cast<void*>(&HpShim),reinterpret_cast<void*>(&FinishShim),reinterpret_cast<void*>(&CommitCostShim),reinterpret_cast<void*>(&AvailabilityShim),reinterpret_cast<void*>(&SelectedCostShim),reinterpret_cast<void*>(&CastMenuShim),reinterpret_cast<void*>(&CastListShim),reinterpret_cast<void*>(&GaugeShim),
-        reinterpret_cast<void*>(&FormationSwapShim),reinterpret_cast<void*>(&FormationEscapeShim),reinterpret_cast<void*>(&FormationSchedulerShim)};
+        reinterpret_cast<void*>(&FormationSwapShim),reinterpret_cast<void*>(&FormationEscapeShim),reinterpret_cast<void*>(&FormationSchedulerShim),
+        reinterpret_cast<void*>(&FollowHeadShim),reinterpret_cast<void*>(&FollowInsertShim),reinterpret_cast<void*>(&FollowInputShim)};
+    std::array<Byte,32> originalStatus{};
+    NativeUiSupport::Copy(originalStatus.data(),reinterpret_cast<const void*>(base+VanguardStatusEntry::Rva),originalStatus.size());
     std::uintptr_t targets[HookCount]{};unsigned count=0;
     for(unsigned index=0;index<HookCount;++index){
-        if(index==ElementHook||index==AftermathHook||index==FinishHook||index==CostHook||index==CriticalHook||index==HpHook)continue;
+        if(index==ElementHook||index==AftermathHook||index==FinishHook||index==CostHook||index==CriticalHook||index==HpHook||index==AvailabilityHook)continue;
+        if(index>=FollowHeadHook&&!On(Feature::FollowUp))continue;
         const auto target=base+spans[index].rva;
         const auto status=MH_CreateHook(reinterpret_cast<void*>(target),replacements[index],&originals[index]);
         if(status!=MH_OK){char message[128]{};std::snprintf(message,sizeof(message),"Vanguard hook %u creation status %d\n",index,static_cast<int>(status));if(log)log(message);break;}
         targets[count++]=target;
     }
-    if(count!=HookCount-6u){while(count)MH_RemoveHook(reinterpret_cast<void*>(targets[--count]));return false;}
+    if(count!=HookCount-7u-(On(Feature::FollowUp)?0u:3u)){while(count)MH_RemoveHook(reinterpret_cast<void*>(targets[--count]));return false;}
     const auto result=MinHookBatch::EnableBatch(&MinHookBatch::ProcessCoordinator(),MinHookBatch::RuntimeBatchIo(),MinHookBatch::Owner::Vanguard,targets,count);
     if(result.result!=MinHookBatch::BatchResult::Applied){char message[128]{};std::snprintf(message,sizeof(message),"Vanguard batch result %u stage %u\n",static_cast<unsigned>(result.result),static_cast<unsigned>(result.primaryFailure));if(log)log(message);return false;}
+    VanguardStatusEntry::Publish(base,originalStatus);
     installed=true;running=true;RefreshUiStatus();if(logger)logger("[ffx-hooks] Vanguard: native formula and equipped-ability producers admitted\n");return true;
 #else
     return false;
 #endif
 }
-void RequestStop() noexcept {running=false;SharedCombat::Unregister(SharedCombat::vanguard,&sharedCombatOperations);SharedAction::UnregisterLegacy(&sharedActionCallbacks);SharedElement::UnregisterLegacy(&ElementShim);RonsoPool::CommandCosts::Unregister(&overdriveProvider);SharedTurn::Unregister(SharedTurn::Consumer::Vanguard,&regenerationObserver);SharedBattleRuntime::UnregisterActionObserver(&actionObserver);SharedDamage::UnregisterCombat(&sharedCombatCallbacks);UnregisterUi(&nativeUiProvider);EquipmentWorkshop::CatalogBridge::Unregister(&nativeCatalogProvider);}
+void RequestStop() noexcept {running=false;SharedCommandAvailability::UnregisterEquipment(&SharedAvailability);SharedCombat::Unregister(SharedCombat::vanguard,&sharedCombatOperations);SharedAction::UnregisterLegacy(&sharedActionCallbacks);SharedElement::UnregisterLegacy(&ElementShim);RonsoPool::CommandCosts::Unregister(&overdriveProvider);SharedTurn::Unregister(SharedTurn::Consumer::Vanguard,&regenerationObserver);SharedBattleRuntime::UnregisterActionObserver(&actionObserver);SharedDamage::UnregisterCombat(&sharedCombatCallbacks);UnregisterUi(&nativeUiProvider);EquipmentWorkshop::CatalogBridge::Unregister(&nativeCatalogProvider);}
 bool Active() noexcept {return running.load();}
 bool ReadBindings(BindingState& out) noexcept {try{return BindingsSnapshot(out);}catch(...){out={};return false;}}
 bool SaveBinding(unsigned effect,unsigned packed,std::uint64_t expectedStamp) noexcept {

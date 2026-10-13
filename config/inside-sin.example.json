@@ -1,0 +1,13 @@
+{
+  "schema": "ffx.inside-sin.v1",
+  "enabled": false,
+  "commands": [
+    {"key": "abyssal_pulse", "id": null, "gameplay_hex": null},
+    {"key": "rupture", "id": null, "gameplay_hex": null},
+    {"key": "bastion", "id": null, "gameplay_hex": null},
+    {"key": "venom_hex", "id": null, "gameplay_hex": null},
+    {"key": "shattering_blow", "id": null, "gameplay_hex": null},
+    {"key": "darkja", "id": null, "gameplay_hex": null},
+    {"key": "aegis", "id": null, "gameplay_hex": null}
+  ]
+}

@@ -5,6 +5,7 @@
 // Jarvis-HOOK: experimental shared model. No game memory, hooks or disk I/O.
 // The packed v1 bridge is little-endian, bounded and checked by both hosts.
 namespace workshop {
+struct AcquisitionCatalog;
 constexpr unsigned GearCount=200, ItemCount=112, NativeBytes=22;
 constexpr std::uint16_t Empty=0x00FF;
 enum class Op : std::uint32_t {
@@ -86,7 +87,7 @@ bool ValidPolicy(Policy);
 bool ValidCatalog(const Catalog&);
 const CatalogEntry* FindCatalogEntry(std::uint16_t ability,const Catalog*);
 bool ValidFifthWord(std::uint16_t ability);
-bool CustomizeCost(std::uint16_t ability,Policy,unsigned& item,unsigned& quantity,bool& native,const Catalog* catalog=nullptr);
+bool CustomizeCost(std::uint16_t ability,Policy,unsigned& item,unsigned& quantity,bool& native,const Catalog* catalog=nullptr,const AcquisitionCatalog* acquisition=nullptr);
 bool RefinementCost(std::uint16_t ability,unsigned nextRank,Policy,unsigned& item,unsigned& quantity,const Catalog* catalog=nullptr);
 bool SupportedRefinement(std::uint16_t ability,const Catalog* catalog=nullptr);
 bool SupportedFifth(std::uint16_t ability,const Catalog* catalog=nullptr);
@@ -94,15 +95,15 @@ unsigned FifthSphere(unsigned owner);
 std::uint32_t RefinementGil(unsigned nextTotal);
 bool NativeCustomizeUnlocked(unsigned story);
 bool NativeSlotsFilled(const Piece&);
-bool FifthCost(const Piece&,std::uint16_t,Policy,unsigned& item,unsigned& quantity,const Catalog* catalog=nullptr);
-Error CustomizeEligibility(const Piece&,unsigned slot,std::uint16_t ability,const Catalog* catalog=nullptr);
+bool FifthCost(const Piece&,std::uint16_t,Policy,unsigned& item,unsigned& quantity,const Catalog* catalog=nullptr,const AcquisitionCatalog* acquisition=nullptr);
+Error CustomizeEligibility(const Piece&,unsigned slot,std::uint16_t ability,const Catalog* catalog=nullptr,const AcquisitionCatalog* acquisition=nullptr);
 bool GenericRefinement(std::uint16_t ability,const Catalog* catalog=nullptr);
 // Mutates a private 108-byte ability view, never a global kernel row.
 void RefineAbilityRow(std::uint16_t ability,unsigned rank,std::uint8_t* row,const Catalog* catalog=nullptr);
 Error Validate(const State&);
 Error Import(const std::uint8_t* nativeRecords,const std::uint16_t* items,
              std::uint64_t seed,State& out);
-Error Preview(const State&,const Request&,Plan&,Economy economy={});
+Error Preview(const State&,const Request&,Plan&,Economy economy={},const AcquisitionCatalog* acquisition=nullptr);
 const char* Message(Error);
 }
 

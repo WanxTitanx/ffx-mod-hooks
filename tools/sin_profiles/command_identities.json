@@ -1,0 +1,246 @@
+{
+  "author": "Jarvis-HOOK",
+  "provenance": "Existing 2026-10-03 runtime command proofs preserved; current locale variants independently hashed from source assets",
+  "commands": [
+    {
+      "index": 268,
+      "size": 92,
+      "hash": "B2021F6FE2987CD4"
+    },
+    {
+      "index": 269,
+      "size": 92,
+      "hash": "0864A9F7BE9E9AF4"
+    },
+    {
+      "index": 270,
+      "size": 92,
+      "hash": "A1359803D102AB55"
+    },
+    {
+      "index": 271,
+      "size": 92,
+      "hash": "4E6944678D46744F"
+    },
+    {
+      "index": 272,
+      "size": 92,
+      "hash": "A396CA16F9ECEA47"
+    },
+    {
+      "index": 298,
+      "size": 92,
+      "hash": "7616DDA2E08D633D"
+    },
+    {
+      "index": 299,
+      "size": 92,
+      "hash": "527D5660CEB84267"
+    },
+    {
+      "index": 300,
+      "size": 92,
+      "hash": "A40035965BC20F50"
+    },
+    {
+      "index": 301,
+      "size": 92,
+      "hash": "F5D000E538C3000A"
+    },
+    {
+      "index": 302,
+      "size": 92,
+      "hash": "CAE9AB07E443B855"
+    },
+    {
+      "index": 303,
+      "size": 92,
+      "hash": "2709B4B97FB88823"
+    },
+    {
+      "index": 304,
+      "size": 92,
+      "hash": "50E6C32F80B81FA1"
+    },
+    {
+      "index": 305,
+      "size": 92,
+      "hash": "90A5337A4F65E57B"
+    },
+    {
+      "index": 306,
+      "size": 92,
+      "hash": "1BC1055E1902D6C7"
+    },
+    {
+      "index": 307,
+      "size": 92,
+      "hash": "7537827465FC39D7"
+    },
+    {
+      "index": 308,
+      "size": 92,
+      "hash": "B02F044189C751C2"
+    },
+    {
+      "index": 309,
+      "size": 92,
+      "hash": "3010E74BC789C8AF"
+    },
+    {
+      "index": 310,
+      "size": 92,
+      "hash": "6DEF24FFF0B00E09"
+    },
+    {
+      "index": 311,
+      "size": 92,
+      "hash": "C32F01AB049E7D32"
+    },
+    {
+      "index": 312,
+      "size": 92,
+      "hash": "9DA3C462EF1EC677"
+    },
+    {
+      "index": 313,
+      "size": 92,
+      "hash": "9F7C1A8DE3BC11AD"
+    },
+    {
+      "index": 314,
+      "size": 92,
+      "hash": "513D2590D7B52743"
+    },
+    {
+      "index": 315,
+      "size": 92,
+      "hash": "3DB98AAD9E885819"
+    },
+    {
+      "index": 316,
+      "size": 92,
+      "hash": "A9C379D69F0EE56C"
+    },
+    {
+      "index": 317,
+      "size": 92,
+      "hash": "AACC112B9F51CD01"
+    },
+    {
+      "index": 318,
+      "size": 92,
+      "hash": "45FB4343B0966E2C"
+    },
+    {
+      "index": 319,
+      "size": 92,
+      "hash": "76BEF01422E8315A"
+    },
+    {
+      "index": 320,
+      "size": 92,
+      "hash": "424BAF8D9B14ED09"
+    },
+    {
+      "index": 321,
+      "size": 92,
+      "hash": "3BD29F00B62CCA79"
+    },
+    {
+      "index": 322,
+      "size": 92,
+      "hash": "FD8EA8875A08A4BB"
+    },
+    {
+      "index": 323,
+      "size": 92,
+      "hash": "5917CCDBDCBF0162"
+    },
+    {
+      "index": 324,
+      "size": 92,
+      "hash": "213EF946FA3D8635"
+    },
+    {
+      "index": 325,
+      "size": 92,
+      "hash": "88FAE404E04C7517"
+    },
+    {
+      "index": 326,
+      "size": 92,
+      "hash": "3DF1EC52BF488F98"
+    },
+    {
+      "index": 327,
+      "size": 92,
+      "hash": "EFAC0535ACAA7547"
+    },
+    {
+      "index": 328,
+      "size": 92,
+      "hash": "27A8B5FBA2EBDDE1"
+    },
+    {
+      "index": 329,
+      "size": 92,
+      "hash": "40096BA8659C1229"
+    },
+    {
+      "index": 330,
+      "size": 92,
+      "hash": "12C99226696DEFAE"
+    },
+    {
+      "index": 331,
+      "size": 92,
+      "hash": "A20E6548669D5C9C"
+    },
+    {
+      "index": 332,
+      "size": 92,
+      "hash": "B3CA211706669B68"
+    },
+    {
+      "index": 333,
+      "size": 92,
+      "hash": "4224EEFF08626DEE"
+    },
+    {
+      "index": 334,
+      "size": 92,
+      "hash": "42244FB73AC56647"
+    },
+    {
+      "index": 335,
+      "size": 92,
+      "hash": "0A8742E8C93E4650"
+    },
+    {
+      "index": 336,
+      "size": 92,
+      "hash": "6EEE1E0B16675A3B"
+    },
+    {
+      "index": 337,
+      "size": 92,
+      "hash": "6D39F33B0E585DF7"
+    },
+    {
+      "index": 338,
+      "size": 92,
+      "hash": "74CF7F70B557E44B"
+    },
+    {
+      "index": 339,
+      "size": 92,
+      "hash": "5415FF528A4DC8DF"
+    },
+    {
+      "index": 340,
+      "size": 92,
+      "hash": "FA43FEB823684B5E"
+    }
+  ]
+}

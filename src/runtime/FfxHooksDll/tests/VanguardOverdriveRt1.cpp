@@ -83,7 +83,7 @@ int main(int argc,char** argv){
     std::array<unsigned char,72> action{};action[3]=1;W16(action.data()+8,0x3000+id);W16(action.data()+10,255);
     const bool started=V::Start(base,false,StartupLog);
     Check(started,"Vanguard joins the same native cost owner");
-    if(!started){for(unsigned rva:{(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<0x4953F0u>())>())>())>()),(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<(::FfxHooks::ExecutableProfile::Rva<0x4F4B20u>())>())>())>())}){
+    if(!started){for(unsigned rva:{(::FfxHooks::ExecutableProfile::Rva<0x4953F0u>()),(::FfxHooks::ExecutableProfile::Rva<0x4F4B20u>())}){
         std::printf("GAUGE_PROFILE base=%08X rva=%08X bytes=",static_cast<unsigned>(base),rva);
         for(unsigned at=0;at<16;++at)std::printf("%02X",*reinterpret_cast<unsigned char*>(base+rva+at));std::puts("");
     }return 1;}

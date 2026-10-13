@@ -35,21 +35,38 @@ static void ExtendedElementMenuCases(){
 
 static void NestedFeatureMenuCases(){
     using namespace FfxHooks;
+    for(const auto* key:{"minigames.butterflies","minigames.chocobos"}){
+        const auto* flag=FindF8Flag(key);
+        Check(flag&&std::strcmp(flag->tab,"Extras")==0&&!F8NativeNestedFlag(*flag),
+              "minigame assists remain visible directly in the Extras tab");
+        bool duplicate=false;
+        for(int row=0;row<F8NativeSettingsCount(NativeSettingsPage::AdditionalMods)-1;++row)
+            if(F8NativeNestedSpec(NativeSettingsPage::AdditionalMods,row)==flag)duplicate=true;
+        Check(!duplicate,"root minigame controls do not leave duplicate Additional mods entries");
+    }
     Config::ResetForTests();Config::LoadTextForTests("[core]\nlog_level=1\n","C:\\private-nested-flags.ini");
     Config::SetProvidersForTests({nullptr,nullptr,nullptr,WorkshopF8Persist});f8AllowWrite=true;f8Writes=0;
     F8NativeSettingsReset();const int obj=NativeMenu::Alloc();if(!obj){Check(false,"nested feature menu allocates");return;}
-    for(const auto page:{NativeSettingsPage::AdditionalMods,NativeSettingsPage::FieldScout}){
+    for(const auto page:{NativeSettingsPage::AdditionalMods,NativeSettingsPage::FieldScout,
+            NativeSettingsPage::ReforgeEquipment,NativeSettingsPage::ReforgeCapture,
+            NativeSettingsPage::ReforgeResources,NativeSettingsPage::ReforgeOmega}){
         NativeMenu::WrW(obj,NativeMenu::O_SELECTED,3);NativeMenu::WrW(obj,NativeMenu::O_TOP,1);
         const auto before=f8Writes;F8NativeSettingsPush(obj,page);
         Check(f8Writes==before,"opening a group never changes any settings");
-        const int leaves=page==NativeSettingsPage::AdditionalMods?9:4;
+        const int leaves=page==NativeSettingsPage::AdditionalMods?7:page==NativeSettingsPage::FieldScout?4:
+            page==NativeSettingsPage::ReforgeEquipment?2:page==NativeSettingsPage::ReforgeOmega?3:1;
         Check(F8NativeSettingsCount(page)==leaves+1,"each group exposes its complete set of controls and Back");
+        if(page==NativeSettingsPage::ReforgeOmega){
+            Check(F8NativeNestedSpec(NativeSettingsPage::ReforgeCapture,0)==FindF8Flag("spira.capture_cascade")&&
+                  F8NativeNestedSpec(NativeSettingsPage::ReforgeResources,0)==FindF8Flag("spira.item_mp_regen")&&
+                  F8NativeNestedSpec(page,0)==FindF8Flag("spira.omega_ultima")&&
+                  F8NativeNestedSpec(page,1)==FindF8Flag("spira.omega_t7")&&
+                  F8NativeNestedSpec(page,2)==FindF8Flag("spira.omega_last_seal"),
+                  "Capture, MP item and Omega identities remain in their requested Reforge categories");
+        }
         for(int row=0;row<leaves;++row){const auto* flag=F8NativeNestedSpec(page,row);
             Check(flag&&F8NativeNestedFlag(*flag),"nested leaf is hidden at the tab root but stays in the authority catalog");
             if(!flag)continue;const bool old=ResolveF8Flag(*flag).value;
-            if(page==NativeSettingsPage::AdditionalMods&&row==8)
-                Check(std::strcmp(flag->gate.canonicalKey,"rng.original_ps2")==0&&!old&&flag->activation==F8Activation::RestartRequired,
-                    "the ninth additional mod is the default-OFF restart-required PS2 RNG control");
             F8NativeSettingsActivate(obj,row);Check(ResolveF8Flag(*flag).value!=old,"nested control persists through the real settings handler");}
         const auto writes=f8Writes;F8NativeSettingsActivate(obj,leaves);
         Check(!F8NativeSettingsActive()&&f8Writes==writes&&NativeMenu::RdW(obj,NativeMenu::O_SELECTED)==3&&NativeMenu::RdW(obj,NativeMenu::O_TOP)==1,

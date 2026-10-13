@@ -15,7 +15,7 @@ def build():
     cards = json.loads((HERE / "cards.proposed.json").read_text())["cards"]
     definition = json.loads((HERE / "effects.v1.json").read_text())
     effects = definition["cards"]
-    assert [c["id"] for c in cards] == [c["id"] for c in effects] == list(range(78))
+    assert [c["id"] for c in cards] == [c["id"] for c in effects] == list(range(90))
     source = (ROOT / "src/runtime/FfxHooksDll/hooks/ArcanaCore.h").read_text()
     body = re.search(r"enum class EffectKind[^\{]*\{(.*?)\};", source, re.S).group(1)
     kinds = {v.strip() for v in body.split(",")} - {"None", "Count"}
@@ -42,7 +42,7 @@ def build():
     previous = definition.get("compatible_pack_hashes", [])
     stable = [{"id": c["id"], "key": c["key"], "major": c["arcana"] == "major"} for c in cards]
     if previous:
-        assert hashlib.sha256(json.dumps(stable, sort_keys=True, separators=(",", ":")).encode()).hexdigest() == definition["compatible_identity_sha256"], "Cannot migrate changed card identities or weights"
+        assert hashlib.sha256(json.dumps(stable[:definition.get("compatible_identity_card_count",len(stable))], sort_keys=True, separators=(",", ":")).encode()).hexdigest() == definition["compatible_identity_sha256"], "Cannot migrate changed card identities or weights"
     assert len(previous) == len(set(previous)) and all(re.fullmatch(r"[0-9a-f]{64}", h) for h in previous)
     assert pack_hash.hex() not in previous
     lines += ["inline constexpr unsigned char kCompatiblePackHashes[][32]={"]
@@ -62,7 +62,7 @@ def main():
         HEADER.write_text(expected)
     elif not HEADER.exists() or HEADER.read_text() != expected:
         raise SystemExit("FAIL typed Arcana catalog differs from reviewed inputs")
-    print("PASS typed Arcana catalog: 78 cards, sha256=" + hashlib.sha256(expected.encode()).hexdigest())
+    print("PASS typed Arcana catalog: 90 cards, sha256=" + hashlib.sha256(expected.encode()).hexdigest())
 
 
 if __name__ == "__main__":

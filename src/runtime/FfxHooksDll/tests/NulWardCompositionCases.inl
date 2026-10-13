@@ -1,6 +1,13 @@
 // The native producer, Nul entry, queue finish and actor clear prefix execute.
 // Formula and graphical suffixes use the existing isolated fixture endpoints.
 #include "../hooks/NulElementCommands.h"
+#include "../hooks/AeroEquipmentBridge.h"
+static bool aeroCritical=false,aeroValefor=false;
+static bool NulAeroValefor() noexcept {return aeroValefor;}
+static unsigned NulAeroSos(unsigned owner,const void* actor) noexcept {
+    return aeroCritical&&owner==1&&actor==tacticsActors+0xF90?64u:0u;
+}
+static const FfxHooks::AeroEquipmentBridge::Provider nulAeroProvider{NulAeroValefor,NulAeroSos};
 static LONG WINAPI NulCompositionCrash(EXCEPTION_POINTERS* fault){
     std::printf("NUL_NATIVE_EXCEPTION code=%08lX rva=%08lX\n",fault->ExceptionRecord->ExceptionCode,
         static_cast<unsigned long>(reinterpret_cast<std::uintptr_t>(fault->ExceptionRecord->ExceptionAddress)-coreImage));
@@ -54,6 +61,19 @@ static void NulCompositionCases(std::uintptr_t base,std::vector<unsigned char>& 
     const auto end=[&](bool complete=true){queue[2]=complete?queue[3]:0;return finish(0,0,0);};
     const auto grant=[&](unsigned id){begin(id);calculate(id);consume();end();};
     const auto hit=[&](unsigned id){begin(id);const auto value=calculate(id);consume();end();return value;};
+    Check(FfxHooks::AeroEquipmentBridge::Register(&nulAeroProvider),"private SOS provider registers");
+    E::ElementalView valefor{};const auto valeforMask=actors[8*0xF90+0x5DA];aeroValefor=true;
+    Check(E::ReadElement(8,6,valefor)&&valefor.baseBp==-10000&&valefor.effectiveBp==-10000,"Elemental scan presents existing-save Valefor Aero absorption");
+    Check(actors[8*0xF90+0x5DA]==valeforMask,"field affinity presentation never edits the actor");
+    aeroValefor=false;Check(E::ReadElement(8,6,valefor)&&valefor.baseBp==10000,"inactive compatibility preserves native scan affinity");
+    const int windBaseline=hit(86);Check(windBaseline>0,"unprotected Aero native damage baseline");
+    aeroCritical=true;
+    Check(hit(86)==0&&hit(86)==0,"SOS NulAero remains effective across successive hits while native critical condition holds");
+    aeroCritical=false;Check(hit(86)==windBaseline,"leaving SOS condition immediately removes only its protection");
+    grant(371);aeroCritical=true;Check(hit(86)==0&&hit(86)==0,"SOS supplies protection while a manual NulWind charge exists");
+    aeroCritical=false;Check(hit(86)==0&&hit(86)==windBaseline,"SOS settlement preserves one pre-existing manual NulWind charge");
+    aeroCritical=true;begin(86);Check(calculate(86)==0,"SOS can reserve a native result");end(false);
+    aeroCritical=false;Check(hit(86)==windBaseline,"cancelled SOS cannot leave a phantom private charge");
     target[0x613]=37;target[0x614]=41;target[0x60E]=3;target[0x610]=4;
     grant(320);
     Check(target[0x613]==37&&target[0x614]==41&&target[0x60E]==3&&target[0x610]==4,
@@ -90,5 +110,12 @@ static void NulCompositionCases(std::uintptr_t base,std::vector<unsigned char>& 
     grant(320);B::Reset(B::ResetReason::NativeLoad);E::TickMainThread();Check(hit(84)==150,"save-load reset retires ward ownership");
     grant(320);Check(FfxHooks::RemoveNulWardHook(Log),"ward teardown unsubscribes without removing shared owners");
     Check(hit(84)==150&&FfxHooks::SharedAction::Start(base),"stopped wards leave Elemental and shared actions operational");
+    FfxHooks::NulWardInstallOptions equipment{};equipment.aeroEquipment=true;equipment.equipmentOnly=true;
+    Check(FfxHooks::InstallNulWardHook(base,true,false,Log,&equipment).ok,"Spira can request equipment infrastructure with spell feature OFF");
+    aeroCritical=true;Check(hit(86)==0,"equipment-only mode protects Aero");
+    aeroCritical=false;grant(371);Check(hit(86)==windBaseline,"equipment-only mode cannot grant disabled NulWind spells");
+    grant(320);Check(hit(84)==150,"equipment-only mode cannot activate legacy Ward spells");
+    Check(FfxHooks::RemoveNulWardHook(Log),"equipment-only teardown retains shared native owners");
+    FfxHooks::AeroEquipmentBridge::Unregister(&nulAeroProvider);
     E::RequestStop();
 }

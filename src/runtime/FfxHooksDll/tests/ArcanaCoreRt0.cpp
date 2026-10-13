@@ -34,7 +34,7 @@ int main(){
     Check(Validate(corrupt)!=Error::None,"one card cannot have two owners");
     full=Deck(Mode::Twin);full.revision=std::numeric_limits<std::uint64_t>::max();
     Check(Equip(full,full.revision,0,0,0)==Error::RevisionExhausted,"revision overflow cannot revive stale previews");
-    Check(!FindCard(78)&&!FindCard(9999),"out of range catalog lookup is rejected");
+    Check(!FindCard(kCardCount)&&!FindCard(9999),"out of range catalog lookup is rejected");
     unsigned majors=0;
     for(unsigned id=0;id<78;++id){const auto* c=FindCard(id);Check(c&&c->id==id&&c->key&&c->name&&c->asset,"all 78 definitions have stable identity");if(c)majors+=c->major?1:0;}
     Check(majors==22,"catalog preserves 22 major arcana");
@@ -83,8 +83,8 @@ int main(){
     Check(RewardRate(300,drop,EffectKind::DropMultiplier)==300,"Double Drop cannot multiply Triple Drop again");
     State development;
     Check(AwardAll(development,0)==Error::None&&development.revision==1,"explicit development grant fills the deck in one transaction");
-    bool complete=true;for(auto owned:development.acquired)if(owned!=1)complete=false;
-    Check(complete&&Owner(development,0)==-1,"development grant owns every card without auto-equipping any");
+    bool complete=true;for(unsigned id=0;id<kCardCount;++id)if(development.acquired[id]!=(id<kStandardCardCount?1:0))complete=false;
+    Check(complete&&Owner(development,0)==-1,"development grant owns only the 78 standard cards without equipping or granting boss rewards");
     const auto granted=development;
     Check(AwardAll(development,development.revision)==Error::None&&Equal(development,granted),"development grant is idempotent");
     Check(AwardAll(development,0)==Error::Stale,"old development command is rejected");

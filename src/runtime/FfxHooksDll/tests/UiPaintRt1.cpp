@@ -111,6 +111,36 @@ static void NativeTypographyCase(){
                           "all localized digits come from the actual game atlas");
     UiOverlay::ReleaseFonts();SelectObject(dc,old);DeleteObject(bitmap);DeleteDC(dc);
 }
+static unsigned fakeDrawCalls=0;
+static bool fakeDrawWorks=true;
+static bool FakeQuad(){++fakeDrawCalls;return fakeDrawWorks;}
+static bool FinishPresent(){
+#ifdef FFXHOOKS_UI_PRESENT_RESULT_V1
+    return FfxHooks::UiOverlay::Present(FakeQuad);
+#else
+    using namespace FfxHooks;
+    if(!UiOverlay::CanPresent()||!FakeQuad()){UiOverlay::Unavailable();return false;}
+    UiOverlay::Presented();return true;
+#endif
+}
+static void NavigationCases(){
+    using namespace FfxHooks;const auto pt=UiLanguage::Locale::Portuguese;
+    Ready(pt);
+    for(unsigned i=0;i<32;++i){
+        {UiOverlay::FrameScope frame(pt);UiOverlay::Caption("previous row",.1f,.2f,.8f,.05f);}
+        UiOverlay::LastPaintedActive=true;UiOverlay::LastPaintedLocale=pt;
+        UiOverlay::LastPaintedEpoch=UiOverlay::Epoch;UiOverlay::LastPaintedRevision=UiOverlay::Revision.load();
+        {UiOverlay::FrameScope frame(pt);UiOverlay::Caption("new selected row",.1f,.2f,.8f,.05f);}
+        const auto calls=fakeDrawCalls;
+        Check(!FinishPresent()&&fakeDrawCalls==calls,"superseded caption texture is not drawn");
+        Check(UiOverlay::Displayable(pt)==pt,"fast selection changes do not revoke the admitted language");
+        Ready(pt);
+    }
+    UiOverlay::LastPaintedActive=true;UiOverlay::LastPaintedLocale=pt;
+    UiOverlay::LastPaintedEpoch=UiOverlay::Epoch;UiOverlay::LastPaintedRevision=UiOverlay::Revision.load();
+    fakeDrawWorks=false;Check(!FinishPresent()&&UiOverlay::Displayable(pt)==UiLanguage::Locale::English,
+        "actual GPU draw failure still withdraws language readiness");fakeDrawWorks=true;
+}
 int main(){
     using namespace FfxHooks;
     wchar_t archive[4096]{},previews[4096]{};
@@ -146,7 +176,7 @@ int main(){
     Check(UiOverlay::Copy(copy,GetTickCount())&&copy.count==2,"nested drawing preserves the outer snapshot");
     uiTestTick+=UiCaption::MaxAgeMs+1;
     Check(!UiOverlay::Copy(copy,GetTickCount()),"an actually expired caption frame is still rejected");
-    GdiCases();NativeTypographyCase();
+    NavigationCases();GdiCases();NativeTypographyCase();
     Check(UiCaption::ResolveOverlayAlpha(0x80787878u)==0x80787878u,"native antialias coverage stays translucent during texture upload");
     Check(UiCaption::ResolveOverlayAlpha(0x00787878u)==0xFF787878u&&UiCaption::ResolveOverlayAlpha(0)==0,
           "legacy GDI text becomes visible while untouched background remains transparent");

@@ -1,3 +1,4 @@
+#include "AeroEquipmentBridge.h"
 #include "../shared/ExecutableProfile.h"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -9,6 +10,12 @@
 #include "ArcanaElemental.h"
 #include "ElementMonsterProof.h"
 #include "ElementBattleState.h"
+#include "SpiraElementalCore.h"
+#include "SpiraElementalEquipment.h"
+#include "SpiraElementalBridge.h"
+#include "SharedTurnRuntime.h"
+#include "OmegaLowMagicCore.h"
+#include "OmegaEncounter.h"
 #include "ElementalScanView.h"
 #include "ElementScanSnapshotCache.h"
 #include "ElementMenuCatalog.h"
@@ -51,6 +58,28 @@ std::atomic<unsigned> bindingCount{0};
 using NulFunction=int(__cdecl*)(unsigned,unsigned,void*);
 NulFunction originalNul=nullptr;
 bool nulInstalled=false;
+namespace Progressive=FfxHooks::SpiraElemental;
+#if defined(FFXHOOKS_EXPERIMENTAL_ELEMENTAL_PROGRESS)
+Progressive::State progressiveState;
+std::atomic<bool> progressiveDataReady{false};
+std::uint32_t progressiveBank=0;std::uint16_t progressiveBytes=0;
+std::uint64_t progressiveDataGeneration=0;
+std::array<std::array<Byte,108>,7> progressiveRows{};
+#endif
+bool ExtendedTactics() noexcept {return options.tactics||options.progression||options.omegaRite;}
+bool ProgressiveCurrent() noexcept;
+void PrepareProgressiveData() noexcept;
+void ProgressiveActor(ActorToken,bool) noexcept;
+void ProgressiveReset() noexcept;
+void ProgressiveCancel(ActionToken) noexcept;
+void ProgressiveBegin(ActionToken,unsigned,unsigned) noexcept;
+bool ProgressiveExposure(unsigned,unsigned,const ActionToken*,bool,int&) noexcept;
+void* EnterProgressiveNative(const Bus::DamageCall&,const void*&) noexcept;
+bool CurrentProgressiveHit(const void*,const Bus::DamageCall&) noexcept;
+void ProgressiveResults(ActionToken,const SharedAction::ResultCall&,unsigned,unsigned) noexcept;
+void ProgressiveFinish(ActionToken,bool) noexcept;
+bool StartProgressiveTurns();
+void StopProgressiveTurns() noexcept;
 
 struct BankLocation {BankKind kind;unsigned global,getter;};
 constexpr BankLocation locations[]={
@@ -179,10 +208,11 @@ unsigned CardElement(unsigned kind) noexcept {
 bool Affinities(unsigned target,const void* actor,std::array<AffinityValue,ElementLimit>& values,
                 const ActionToken* action=nullptr,bool live=false,
                 Arcana::Elemental::Snapshot* cardSnapshot=nullptr,
-                Arcana::Elemental::Provider* cardSource=nullptr) noexcept {
+                Arcana::Elemental::Provider* cardSource=nullptr,bool progressive=true) noexcept {
     if(cardSnapshot)*cardSnapshot={};if(cardSource)*cardSource=nullptr;
     Byte flags[4]{};
     if(!Actor(target,actor)||!Copy(flags,static_cast<const Byte*>(actor)+0x5DA,4))return false;
+    if(target==8&&AeroEquipmentBridge::Valefor())flags[0]|=0x40;
     const NativeMasks masks{flags[3],flags[2],flags[1],flags[0]};
     bool rejected=false;const auto* profile=ProfileForActor(target,actor,&rejected);
     if(rejected)return false;
@@ -212,6 +242,7 @@ bool Affinities(unsigned target,const void* actor,std::array<AffinityValue,Eleme
             if(cardSnapshot)*cardSnapshot=card;
             if(cardSource)*cardSource=provider;
         }
+        if(progressive&&!source.locked)ProgressiveExposure(target,i,action,live,values[i].value);
     }
     return true;
 }
@@ -232,7 +263,8 @@ struct HitFrame {
     std::array<unsigned,ElementLimit> elements{};
     std::array<AffinityPart,ElementLimit> parts{};
     std::array<Byte,108> command{};
-    bool cardNative=false;
+    bool cardNative=false,progressiveNative=false;
+    unsigned nativeWidth=0;
     Arcana::Elemental::Snapshot card{};
     Arcana::Elemental::Provider cardProvider=nullptr;
     Arcana::Elemental::Snapshot cardTarget{};
@@ -246,7 +278,7 @@ void* EnterHit(const Bus::DamageCall& call,const void*& forward) noexcept {
        Bus::currentDamage->depth>frames.size()||!call.info||
        !Actor(call.user,call.userActor)||!Actor(call.target,call.targetActor))return nullptr;
     const auto* expected=admitted.ExpectedCommand(call.commandId);
-    if(!expected)return EnterCardWeapon(call,forward);
+    if(!expected)return options.progression||options.omegaRite?EnterProgressiveNative(call,forward):EnterCardWeapon(call,forward);
     if(expected->address!=call.command)return nullptr;
     std::array<Byte,108> bytes{};
     if(!Copy(bytes.data(),call.command,expected->width)||
@@ -254,7 +286,7 @@ void* EnterHit(const Bus::DamageCall& call,const void*& forward) noexcept {
     auto& frame=frames[Bus::currentDamage->depth-1];frame={};
     frame.generation=generation.load();frame.row=expected;frame.command=bytes;
     const auto& binding=pack.commands[expected->bindingIndex];
-    const auto action=options.tactics?TrackHit(call,binding):ActionToken{};
+    const auto action=ExtendedTactics()?TrackHit(call,binding):ActionToken{};
     frame.action=action;
     frame.magic=options.magicBdl&&OffensiveSpell(binding,bytes.data());
     std::uint32_t commandFlags=0;std::memcpy(&commandFlags,bytes.data()+0x1C,4);
@@ -330,12 +362,13 @@ const HitFrame* CurrentFrame(const void* command=nullptr,const void* target=null
     if(scope->listeners[slot]!=&observer||!scope->participating[slot]||
        Bus::observers[slot].load()!=&observer||(target&&scope->call.targetActor!=target))return nullptr;
     const auto* frame=static_cast<const HitFrame*>(scope->tokens[slot]);
-    if(!frame||frame->generation!=generation.load()||(!frame->row&&!frame->cardNative)||
+    if(!frame||frame->generation!=generation.load()||(!frame->row&&!frame->cardNative&&!frame->progressiveNative)||
        (command&&command!=frame->command.data()&&command!=scope->call.command))return nullptr;
     std::array<Byte,108> copy{};
     if(frame->row&&(!Copy(copy.data(),scope->call.command,frame->row->width)||
        !admitted.Command(scope->call.commandId,scope->call.command,copy.data(),frame->row->width)))return nullptr;
-    if(!CurrentCardHit(*frame,scope->call))return nullptr;
+    if(frame->progressiveNative){if(!CurrentProgressiveHit(frame,scope->call))return nullptr;}
+    else if(!CurrentCardHit(*frame,scope->call))return nullptr;
     return frame;
 }
 bool ResolveAffinity(const Byte* target,const Byte* command,unsigned,int amount,int* output) noexcept {
@@ -379,13 +412,15 @@ bool StartCore(){
 }
 
 #include "ElementalTactics.inl"
+#include "ElementalProgression.inl"
 #include "ElementalGravity.inl"
 
 void RetireNativeActor(unsigned,unsigned slot) noexcept {
     if(slot>=ActorCount||!configured.load()||!armed.load())return;
     if(ownerThread.load()!=GetCurrentThreadId()){ResetElementData(Bus::ResetReason::BattleStart);return;}
     monsterProfiles[slot]={};
-    if(options.tactics){
+    if(ExtendedTactics()){
+        ProgressiveActor(statusActors[slot].token,false);
         ReleaseNulReservations(nativeActions[slot].token);
         if(statusActors[slot].token.Valid())(void)statusState.Remove(statusActors[slot].token);
         nativeActions[slot]={};statusActors[slot]={};
@@ -468,8 +503,14 @@ bool ReadManifest(std::string& output,const std::string& selected){
 
 bool PrepareText(std::uintptr_t image,RuntimeOptions selected,std::string_view manifest,bool validateOnly,RuntimeLog log){
     if(configured.load()||terminal.load())return false;
+#if !defined(FFXHOOKS_EXPERIMENTAL_ELEMENTAL_PROGRESS)
+    if(selected.progression||selected.omegaRite){
+        if(log)log("[ffx-hooks] Progressive Touch/Ward and Omega low-MAG Rite are not available in this build; prototype requests ignored\n");
+        selected.progression=false;selected.omegaRite=false;
+    }
+#endif
     if(validateOnly){code=RuntimeCode::ValidationOnly;return false;}
-    if(!selected.core&&!selected.tactics&&!selected.gravity&&!selected.magicBdl){code=RuntimeCode::Disabled;return false;}
+    if(!selected.core&&!selected.tactics&&!selected.gravity&&!selected.magicBdl&&!selected.progression&&!selected.omegaRite){code=RuntimeCode::Disabled;return false;}
     try {
         Pack candidate;PackProblem problem{};
         const bool loaded=LoadPack(manifest,availableCapabilities,candidate,problem);
@@ -486,11 +527,12 @@ bool PrepareText(std::uintptr_t image,RuntimeOptions selected,std::string_view m
         if(!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,
                               reinterpret_cast<LPCWSTR>(&PrepareText),&pin)){code=RuntimeCode::Conflict;return false;}
         module=image;options=selected;logger=log;pack=std::move(candidate);
-        if((options.core||options.tactics||options.gravity)&&(!SharedActor::Start(module)||
+        Progressive::Bridge::imperilTouchRequested=options.progression;
+        if((options.core||ExtendedTactics()||options.gravity)&&(!SharedActor::Start(module)||
             !SharedActor::Subscribe(SharedActor::Slot::Elemental,&actorObserver))){code=RuntimeCode::Conflict;RequestStop();return false;}
-        if((options.core||options.tactics)&&!StartCore()){code=RuntimeCode::Conflict;terminal=true;return false;}
+        if((options.core||ExtendedTactics())&&!StartCore()){code=RuntimeCode::Conflict;terminal=true;return false;}
         if(options.gravity&&!StartGravity()){code=RuntimeCode::Conflict;RequestStop();return false;}
-        if(options.tactics&&!StartTactics()){code=RuntimeCode::Conflict;RequestStop();return false;}
+        if(ExtendedTactics()&&(!StartTactics()||!StartProgressiveTurns())){code=RuntimeCode::Conflict;RequestStop();return false;}
         if(!Bus::Subscribe(Bus::Slot::Elemental,&observer)){code=RuntimeCode::Conflict;return false;}
         if(!ElementalScanView::Register(&scanProvider)||!ElementMenu::Register(&menuProvider)){code=RuntimeCode::Conflict;RequestStop();return false;}
         configured=true;code=RuntimeCode::WaitingForData;return true;
@@ -498,8 +540,9 @@ bool PrepareText(std::uintptr_t image,RuntimeOptions selected,std::string_view m
 }
 bool Prepare(std::uintptr_t image,bool validateOnly,RuntimeLog log){
     const RuntimeOptions selected{ModFeatures::Enabled(ModFeatures::Feature::Core),ModFeatures::Enabled(ModFeatures::Feature::Tactics),
-        ModFeatures::Enabled(ModFeatures::Feature::Gravity),ModFeatures::Enabled(ModFeatures::Feature::MagicBdl)};
-    if(validateOnly||(!selected.core&&!selected.tactics&&!selected.gravity&&!selected.magicBdl))
+        ModFeatures::Enabled(ModFeatures::Feature::Gravity),ModFeatures::Enabled(ModFeatures::Feature::MagicBdl),
+        Config::GetBool("spira.elemental_progression",false),Config::GetBool("spira.omega_low_magic_rite",false)};
+    if(validateOnly||(!selected.core&&!selected.tactics&&!selected.gravity&&!selected.magicBdl&&!selected.progression&&!selected.omegaRite))
         return PrepareText(image,selected,{},validateOnly,log);
     try {
         const std::string selection=Config::GetString("elemental.pack","");
@@ -537,7 +580,7 @@ void TickMainThread() noexcept {
     if(!CaptureStamp(current)){ready=false;hasAttemptedStamp=false;code=RuntimeCode::WaitingForData;return;}
     const auto epoch=generation.load();
     if(hasAttemptedStamp&&attemptedGeneration==epoch&&current==attemptedStamp){
-        if(ready.load()){RefreshMonsterProfiles();if(options.tactics)SyncStatusActors();PublishScanSnapshot();}return;
+        if(ready.load()){PrepareProgressiveData();RefreshMonsterProfiles();if(ExtendedTactics())SyncStatusActors();PublishScanSnapshot();}return;
     }
     ready=false;attemptedStamp=current;attemptedGeneration=epoch;hasAttemptedStamp=true;
     try {
@@ -561,8 +604,8 @@ void TickMainThread() noexcept {
         if(!AdvanceGeneration())return;
         attemptedGeneration=generation.load();admitted=std::move(candidate);activeStamp=current;
         bindingCount=static_cast<unsigned>(admitted.Size());
-        monsterProfiles={};RefreshMonsterProfiles();
-        if(options.tactics&&!ResetStatusState()){RequestStop();return;}
+        monsterProfiles={};RefreshMonsterProfiles();PrepareProgressiveData();
+        if(ExtendedTactics()&&!ResetStatusState()){RequestStop();return;}
         ready.store(true,std::memory_order_release);code=RuntimeCode::Ready;
         scanRequested=true;PublishScanSnapshot();
         if(logger)logger("[ffx-hooks] Elemental pack admitted against loaded native banks\n");
@@ -577,7 +620,7 @@ void RequestStop() noexcept {
     ElementalScanView::Unregister(&scanProvider);
     ElementMenu::Unregister(&menuProvider);
     SharedActor::Unsubscribe(SharedActor::Slot::Elemental,&actorObserver);
-    StopTactics();
+    StopTactics();StopProgressiveTurns();
     SharedElement::UnregisterResolver(&affinityResolver);
     SharedNul::Unregister(&ResolveNul);
     Bus::Unsubscribe(Bus::Slot::Elemental,&observer);code=RuntimeCode::Stopped;
@@ -590,13 +633,14 @@ bool ReadElement(unsigned slot,unsigned element,ElementalView& output) noexcept 
     output={};if(!CurrentData()||slot>=ActorCount||element>=pack.registry.Size())return false;
     std::uint32_t base=0;if(!Read(module + (::FfxHooks::ExecutableProfile::Rva<0xD334CC>()),base)||base<0x10000||base>UINT32_MAX-ActorCount*0xF90u)return false;
     const auto* actor=reinterpret_cast<const Byte*>(std::uintptr_t(base)+slot*0xF90u);
-    if(options.tactics)SyncStatusActors();
+    if(ExtendedTactics())SyncStatusActors();
     std::array<AffinityValue,ElementLimit> values{};
     if(!Affinities(slot,actor,values,nullptr,true))return false;
     std::array<std::int32_t,ElementLimit> equipment{};if(!EquipmentDeltas(slot,actor,equipment))return false;
     output.equipmentBp=equipment[element];
     const auto* descriptor=pack.registry.At(element);const auto state=Timed(slot,element,nullptr,true);
     Byte native[4]{};if(!Copy(native,actor+0x5DA,4))return false;
+    if(slot==8&&AeroEquipmentBridge::Valefor())native[0]|=0x40;
     const NativeMasks masks{native[3],native[2],native[1],native[0]};
     output.baseBp=descriptor->nativeBit?NativeBase(descriptor->nativeBit,masks).value:10000;
     if(const auto* profile=ProfileForActor(slot,actor)){

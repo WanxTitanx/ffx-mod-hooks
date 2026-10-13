@@ -22,12 +22,14 @@ struct Observer {
     void (*afterResult)(void*,const ResultCall&,int,bool) noexcept=nullptr;
     void* (*beforeFinish)(const FinishCall&) noexcept=nullptr;
     void (*afterFinish)(void*,const FinishCall&,int,bool) noexcept=nullptr;
+    // Queue appenders run only after every consumer observed native retirement.
+    void (*afterRetirement)(void*,const FinishCall&,int,bool) noexcept=nullptr;
 };
 struct Legacy {
     ResultFunction result=nullptr;FinishFunction finish=nullptr;
     void (*afterObserversFinish)(const FinishCall&,int,bool) noexcept=nullptr;
 };
-enum class Slot : unsigned {Elemental,Aeon,NulWard,Reserved,Count};
+enum class Slot : unsigned {Elemental,Aeon,NulWard,Reserved,InsideSin,OmegaT7,OmegaLastSeal,ChallengeRewards,Count};
 inline constexpr unsigned SlotCount=static_cast<unsigned>(Slot::Count),MaximumDepth=16;
 inline std::array<std::atomic<const Observer*>,SlotCount> observers{};
 inline std::atomic<const Legacy*> legacy{nullptr};
@@ -95,6 +97,8 @@ inline int __cdecl FinishShim(unsigned owner,unsigned index,unsigned preserve){
             if(value&&tokens[i-1]&&value->afterFinish)value->afterFinish(tokens[i-1],call,result,completed);}
         // Consumers must witness native removal before a legacy adapter appends
         // new work. Their queue-count and action-retirement proofs depend on it.
+        for(unsigned i=0;i<SlotCount;++i){const auto* value=listeners[i];
+            if(value&&tokens[i]&&value->afterRetirement)value->afterRetirement(tokens[i],call,result,completed);}
         if(legacyCallbacks&&legacyCallbacks->afterObserversFinish)
             legacyCallbacks->afterObserversFinish(call,result,completed);
         --finishDepth;

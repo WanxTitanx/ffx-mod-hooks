@@ -1,0 +1,33 @@
+[
+  {
+    "producer": "Claude (Cowork) for Jarvis-HOOK review",
+    "legacy_rva": 8998772,
+    "updated_rva": 8998772,
+    "bytes": 4,
+    "width": "x86 pointer (IDXGISwapChain*)",
+    "access": "read only",
+    "reason": "renderer singleton field: both PEs pass ecx=0x00C94F00 (HIGHLOW) into the renderer device routine, which pushes lea [this+0x74] as ppSwapChain to the executable's only D3D11CreateDeviceAndSwapChain call; the unique present routine reads [this+0x74] and calls vtable slot 8 (Present) with (vsync,0)",
+    "legacy_sites": {
+      "singleton_this": "0x0062AB75",
+      "ppSwapChain_lea": "0x00595A8A",
+      "create_call": "0x00595AD0",
+      "present_routine": "0x005938F0",
+      "present_call": "0x0059390F"
+    },
+    "updated_sites": {
+      "singleton_this": "0x0062A9C5",
+      "ppSwapChain_lea": "0x005958FA",
+      "create_call": "0x00595940",
+      "present_routine": "0x00593760",
+      "present_call": "0x0059377F"
+    },
+    "present_routine_bytes": 38,
+    "present_routine_sha256": "2542bd034032a8ac25f82a71d18b7b48fb1a044262dee562dd49c62d9067aa40",
+    "legacy_sha256": "78ce34397da5e6f49b72c2aebadedaf4cd3f6720e1949d46a1b8ed67d3db5ced",
+    "updated_sha256": "0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d",
+    "confidence": "high (static, both PEs); RT2 pending",
+    "reviewer": "Jarvis-HOOK",
+    "review_date": "2026-10-13",
+    "verification": "Both exact PE identities, unique 38-byte native Present body, singleton HIGHLOW operand and D3D11 import call independently verified."
+  }
+]

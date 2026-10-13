@@ -1,5 +1,7 @@
 #pragma once
+#include "UiAbilityNameProof.h"
 #include "AutoAbilitySlots.h"
+#include "SpiraCapturePayload.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -57,8 +59,9 @@ inline bool Table(const unsigned char* bytes,std::size_t size,unsigned& last,std
     if(last>4095||width!=RowBytes||length!=(last+1)*RowBytes||length>size-20)return false;
     pool=20+length;return true;
 }
-inline bool PayloadMatches(unsigned index,const unsigned char* row,std::size_t size) noexcept {
+inline bool PayloadMatches(unsigned index,const unsigned char* row,std::size_t size,unsigned id=~0u) noexcept {
     if(index>=Count||!row||size<RowBytes)return false;
+    if(id==~0u)id=FirstId+index;
     unsigned strike=0,absorb=0,amount=0,mask=0,flags=0;
     if(index==3)flags=0x600;else if(index==7)flags=0x1000;else if(index==8)flags=0x2000;else if(index==9)absorb=1;
     else if(index>=10&&index<=13){constexpr unsigned values[]={10,20,40,60};amount=values[index-10];mask=0x300;}
@@ -69,7 +72,7 @@ inline bool PayloadMatches(unsigned index,const unsigned char* row,std::size_t s
     for(unsigned at=16;at<RowBytes;++at){
         const unsigned expected=at==0x11?strike:at==0x12?absorb:at==0x55?amount:
             at==0x56?mask&255u:at==0x57?mask>>8:at==0x64?flags&255u:at==0x65?flags>>8:0;
-        if(row[at]!=expected)return false;
+        if(!SpiraCapturePayload::Matches(id,at,row[at],expected))return false;
     }
     return true;
 }
@@ -90,8 +93,9 @@ inline bool Named(const unsigned char* bytes,std::size_t size,std::size_t pool,u
     }
     if(encoding!=NameEncoding::Latin)return false;
     const char* expected=Entries[index].label;std::size_t n=0;
-    for(;expected[n]&&n<available;++n)if(name[n]!=Glyph(expected[n]))return false;
-    return !expected[n]&&n<available&&!name[n];
+    for(;expected[n]&&n<available;++n)if(name[n]!=Glyph(expected[n]))break;
+    return (!expected[n]&&n<available&&!name[n])
+        || UiAbilityNameProof::Matches(FirstId+index,name,available);
 }
 inline bool OwnerKindMatches(unsigned index,unsigned owner,unsigned kind) noexcept {
     return index<Count&&owner<18&&kind<2&&Entries[index].kind==kind&&(Entries[index].owners&(std::uint32_t{1}<<owner))!=0;
@@ -108,7 +112,7 @@ inline Bindings Validate(const unsigned char* bytes,std::size_t size,const Mappi
         for(unsigned j=0;j<otherCount;++j)if(otherIds[j]==id)collision=true;
         if(collision){out.code=MappingCode::Collision;continue;}
         if(!Named(bytes,size,pool,id,i,encoding)){out.code=MappingCode::IdentityMismatch;continue;}
-        if(!PayloadMatches(i,bytes+20+id*RowBytes,RowBytes)){out.code=MappingCode::PayloadMismatch;continue;}
+        if(!PayloadMatches(i,bytes+20+id*RowBytes,RowBytes,id)){out.code=MappingCode::PayloadMismatch;continue;}
         out.rowVerified=true;out.word=0x8000u+id;
         out.code=Entries[i].definition!=Definition::Defined?MappingCode::DefinitionPending:
             (admittedConsumers&(std::uint32_t{1}<<i))?MappingCode::Admitted:MappingCode::ConsumerUnavailable;

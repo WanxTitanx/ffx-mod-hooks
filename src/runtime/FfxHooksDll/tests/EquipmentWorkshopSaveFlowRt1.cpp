@@ -11,6 +11,7 @@
 #include "../hooks/NativeSaveEvents.h"
 #include "../hooks/FahrenheitServices.h"
 #include "PrivatePeFixture.h"
+#include "WorkshopAcquisitionFixture.h"
 #include "WorkshopEconomyFixture.h"
 #include <cstdio>
 #include <cstring>
@@ -102,6 +103,7 @@ int main(int argc,char** argv){
     }
     HMODULE image=LoadLibraryExA(argv[1],nullptr,DONT_RESOLVE_DLL_REFERENCES),crt=LoadLibraryW(L"msvcr110.dll");
     if(!image||!crt||!PrivatePeFixture::NormalizeRelocations(image))return 2;base=reinterpret_cast<uintptr_t>(image);
+    const auto nativeRecipes=WorkshopRecipes();BindWorkshopRecipes(base,nativeRecipes);
     const auto nativeRead=GetProcAddress(crt,"fread"),nativeWrite=GetProcAddress(crt,"fwrite"),nativeCopy=GetProcAddress(crt,"memcpy");
     openFile=reinterpret_cast<OpenFn>(GetProcAddress(crt,"_wfopen"));closeFile=reinterpret_cast<CloseFn>(GetProcAddress(crt,"fclose"));
     if(!nativeRead||!nativeWrite||!nativeCopy||!openFile||!closeFile)return 2;

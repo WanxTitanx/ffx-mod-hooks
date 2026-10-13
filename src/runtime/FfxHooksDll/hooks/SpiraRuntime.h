@@ -3,7 +3,7 @@
 #include <cstdint>
 
 namespace FfxHooks::SpiraAbilities {
-struct RuntimeOptions {bool spira=false,ascension=false;};
+struct RuntimeOptions {bool spira=false,ascension=false,itemMpRegen=false;};
 using LogFn=void(*)(const char*);
 bool Prepare(std::uintptr_t image,RuntimeOptions,bool validateOnly,LogFn);
 bool Prepare(std::uintptr_t image,bool validateOnly,LogFn);
@@ -16,4 +16,7 @@ bool Ready() noexcept;
 bool HasEffect(unsigned owner,unsigned effect) noexcept;
 unsigned PartyDropMultiplier() noexcept;
 const char* RuntimeDetail() noexcept;
+#ifdef FFXHOOKS_TESTING
+std::uint64_t ValidationCountForTests() noexcept;
+#endif
 } // namespace FfxHooks::SpiraAbilities

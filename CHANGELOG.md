@@ -58,6 +58,11 @@ Esta beta atualiza o Hooks para o executável Steam suportado e melhora o suport
 
 # Changelog
 
+## v0.6.0-beta.5
+
+[Complete English and Brazilian Portuguese release notes](docs/release-notes/hooks/v0.6.0-beta.5.md).
+
+
 All notable changes to ffx-hooks are documented here. The project uses independent SemVer
 (`MAJOR.MINOR.PATCH[-pre]`) and will stay below `1.0.0` while in beta. Versioning rules:
 MINOR = new capability; PATCH = fix/reuse/polish; REVISION (4th component, doc-only) = notes

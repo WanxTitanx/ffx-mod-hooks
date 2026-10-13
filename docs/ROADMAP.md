@@ -11,6 +11,8 @@ Historical observations retain their date/artifact boundary.
 
 ## 2026-09-29 Nuls and large integration
 
+- [x] Publish [v0.6.0-beta.2](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.2) with the matching DLL/source, full runtime package, SHA-256 checksums and English/PT-BR documentation with donations.
+
 - [x] Publish and merge [PR #24](https://github.com/WanxTitanx/ffx-hooks/pull/24), with all three hosted checks passing; install/read back the combined DLL and private assets.
 
 - [x] Compose the published recovery/Seymour/Sphere Grid lane with current main, preserving native page/hook identities, recent Arcana strikes, element names, rewards, languages and VFX.
@@ -251,21 +253,23 @@ Guide and package inputs: [Arcana](../research/mod_008_arcana/README.md).
 | Difficulty: Elemental weak/resist/absorb | **Offline runtime candidate** | Included in the deployed candidate; exact native BYTE masks plus two separately keyed external elements; live acceptance pending |
 | Difficulty: Auto-statuses | **Offline runtime candidate** | Native innate words and exact native remove/apply helpers; included in deployed candidate, live acceptance pending |
 | Difficulty: Status immunities | **Offline runtime candidate** | Exact 25-byte table, minimum values preserving stronger native resistance; JSON editor only |
-| Difficulty: Per-area presets (N2) | Configuration/runtime supported | Native editor still pending |
+| Difficulty: Per-area presets (N2) | Native editor implemented, RT2 pending | Sixteen canonical field rules; atomic drafts preserve undisplayed fields |
 | Force Last Battle | Implemented, pending RT2 | Main-thread encounter route, bounded 1–9 repetitions |
 | Music lock / battle-entry override / randomizer / fade | Implemented, pending RT2 | Existing bounded playlist/expiry behavior retained |
-| Music playlist editing / track-name crosswalk | Partial | UI and complete verified name map remain pending |
-| Monster AI observer | Implemented, pending RT2 | Registration/cleanup/dispatch telemetry, zero mutation |
+| Music playlist editing / track-name crosswalk | Editor implemented; name map partial | Eight-slot/count/fade editor passes isolated tests; full verified name map and live acceptance remain pending |
+| Monster AI observer | Implemented, pending RT2 | Three-target registration/cleanup/dispatcher telemetry, zero mutation |
 | General Monster AI Swap | RE pending | Empty compatibility whitelist; the bounded S.I.N. script route does not make general swapping safe |
 
 ### F7 retained issue checklist
 
 - [ ] K-01: Add actual machine-detour scheduler RT1, then run the separately authorized
 - [x] K-02: Prove exact element and status field xrefs/widths before enabling any runtime write.
-- [ ] K-03: Add a native menu editor for per-area (N2) replacement rules.
-- [ ] K-04: Music playlist edit — add UI
+- [x] K-03: Add a native menu editor for per-area (N2) replacement rules; RT2 acceptance remains separate.
+- [x] K-04: Add eight-slot playlist/count/fade editing; RT2 acceptance remains separate.
 - [ ] K-05: Complete track name crosswalk (181 tracks)
 - [ ] K-06: Validate the observe-only lifecycle plus normal/force/death dispatch families,
+  repeated-event preservation, unchanged dispatcher arguments and generation-matched teardown
+  using the [observer RT2 slice](RT2_PROTOCOL.md#f7-monster-ai-observer-rt2-slice).
 - [ ] K-07: Revalidate Difficulty preset Apply (admission/status split, lane-fixed) and the
 
 K-02's native field/width proof and implementation are complete in the

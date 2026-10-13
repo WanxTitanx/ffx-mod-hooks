@@ -80,10 +80,23 @@ inline constexpr Card kCatalog[] = {
     {75,false,"pentacles.knight","Knight of Pentacles - Chocobo","Auto-Shell; MP +20%; Magic Counter","075-pentacles-knight.png",{{{EffectKind::AutoShell,1},{EffectKind::MpPercent,20},{EffectKind::MagicCounter,1}}}},
     {76,false,"pentacles.queen","Queen of Pentacles - Bikanel","Auto-Phoenix; White Magic healing +20%; HP +20%","076-pentacles-queen.png",{{{EffectKind::AutoPhoenix,1},{EffectKind::WhiteHealing,20},{EffectKind::HpPercent,20}}}},
     {77,false,"pentacles.king","King of Pentacles - Rin Travel Agency","Darkness/Silence/Sleep/Poison proof; matching touches 30% (Poison: 3 turns)","077-pentacles-king.png",{{{EffectKind::ProofDark,1},{EffectKind::ProofSilence,1},{EffectKind::ProofSleep,1},{EffectKind::ProofPoison,1},{EffectKind::TouchDark,30},{EffectKind::TouchSilence,30},{EffectKind::TouchSleep,30},{EffectKind::TouchPoison,30}}}},
+    {78,true,"weapon.omega_weapon","Omega Weapon","Break HP/Damage Limit; outgoing HP damage +30%; additional Overdrive damage +60%; incoming HP damage -10%; Auto-Haste; Piercing; survive one lethal HP hit per battle and recover 25% HP; Darkstrike; Dark Ward","omega-weapon.png",{{{EffectKind::BreakDamage,1},{EffectKind::BreakHp,1},{EffectKind::OutgoingDamage,30},{EffectKind::OverdriveDamage,60},{EffectKind::IncomingDamage,-10},{EffectKind::AutoHaste,1},{EffectKind::Piercing,1},{EffectKind::SurviveOnce,1},{EffectKind::SurviveHeal,25},{EffectKind::StrikeShadow,1},{EffectKind::WardShadow,1}}}},
+    {79,true,"weapon.ultima_weapon","Ultima Weapon","Break HP/Damage Limit; outgoing HP damage +25%; Magic +30%; max MP +50%; Half MP; restore 3% MP per turn; White Magic healing +38%; Holystrike; Holy Ward","ultima-weapon.png",{{{EffectKind::BreakDamage,1},{EffectKind::BreakHp,1},{EffectKind::OutgoingDamage,25},{EffectKind::MagicPercent,30},{EffectKind::MpPercent,50},{EffectKind::HalfMp,1},{EffectKind::MpPerTurn,3},{EffectKind::WhiteHealing,38},{EffectKind::StrikeHoly,1},{EffectKind::WardHoly,1}}}},
+    {80,true,"dark_aeon.valefor","Dark Valefor","Max HP +10%","dark-valefor.png",{{{EffectKind::HpPercent,10}}}},
+    {81,true,"dark_aeon.ifrit","Dark Ifrit","Max HP +10%","dark-ifrit.png",{{{EffectKind::HpPercent,10}}}},
+    {82,true,"dark_aeon.ixion","Dark Ixion","Max HP +10%","dark-ixion.png",{{{EffectKind::HpPercent,10}}}},
+    {83,true,"dark_aeon.shiva","Dark Shiva","Max HP +10%","dark-shiva.png",{{{EffectKind::HpPercent,10}}}},
+    {84,true,"dark_aeon.bahamut","Dark Bahamut","Max HP +10%","dark-bahamut.png",{{{EffectKind::HpPercent,10}}}},
+    {85,true,"dark_aeon.anima","Dark Anima","Max HP +10%","dark-anima.png",{{{EffectKind::HpPercent,10}}}},
+    {86,true,"dark_aeon.yojimbo","Dark Yojimbo","Max HP +10%","dark-yojimbo.png",{{{EffectKind::HpPercent,10}}}},
+    {87,true,"dark_aeon.cindy","Dark Cindy","Max HP +10%","dark-cindy.png",{{{EffectKind::HpPercent,10}}}},
+    {88,true,"dark_aeon.sandy","Dark Sandy","Max HP +10%","dark-sandy.png",{{{EffectKind::HpPercent,10}}}},
+    {89,true,"dark_aeon.mindy","Dark Mindy","Max HP +10%","dark-mindy.png",{{{EffectKind::HpPercent,10}}}},
 };
 static_assert(sizeof(kCatalog)/sizeof(kCatalog[0])==kCardCount);
-inline constexpr unsigned char kPackHash[32]={0x9f,0xfa,0xa6,0x8f,0xd9,0x69,0xde,0x95,0x98,0x68,0x4e,0x81,0x3e,0x57,0x0a,0xfd,0x5c,0x8e,0xf3,0x0e,0x70,0x25,0x22,0xf4,0x77,0xd4,0xe4,0xcf,0x78,0xec,0x6c,0xa7};
+inline constexpr unsigned char kPackHash[32]={0x6d,0xcc,0x41,0x8e,0xe1,0x60,0xed,0xfd,0x5b,0x56,0xbe,0xca,0x95,0x86,0x33,0x76,0xb5,0x29,0xcc,0xb3,0x7b,0xec,0x66,0xcc,0x8f,0x87,0xa9,0x87,0x68,0x98,0xa2,0x07};
 inline constexpr unsigned char kCompatiblePackHashes[][32]={
+    {0x9f,0xfa,0xa6,0x8f,0xd9,0x69,0xde,0x95,0x98,0x68,0x4e,0x81,0x3e,0x57,0x0a,0xfd,0x5c,0x8e,0xf3,0x0e,0x70,0x25,0x22,0xf4,0x77,0xd4,0xe4,0xcf,0x78,0xec,0x6c,0xa7},
     {0x53,0xb3,0xc6,0x92,0xd7,0x8b,0x84,0x6e,0x0d,0x25,0x56,0xd2,0x27,0x17,0xc0,0x03,0x9f,0x01,0xf4,0xd5,0x51,0xfb,0xcb,0x3a,0x56,0x41,0x27,0x24,0xda,0x4e,0x16,0x3e},
     {0xb3,0x1a,0xd5,0x8a,0x8c,0x3e,0xe8,0xe8,0x98,0x9c,0x3d,0xea,0x34,0x87,0xb4,0x18,0xf1,0x1b,0x3a,0x30,0x06,0x97,0x4b,0xb9,0x02,0xa8,0xe3,0x13,0x4c,0x48,0x9e,0x75},
     {0xc9,0xa3,0xb6,0x34,0x9b,0x27,0x4d,0x21,0x37,0xe2,0xb3,0x17,0xee,0xd2,0x44,0x59,0x0e,0x19,0x20,0x75,0x28,0x49,0xfb,0xc7,0x2c,0xe1,0x6a,0x1b,0xac,0x51,0xce,0x37},

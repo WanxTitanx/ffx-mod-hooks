@@ -25,7 +25,7 @@ inline std::uint16_t ScaledReward(std::uint16_t base,unsigned threat){
 }
 inline bool RewardView(const std::array<std::uint8_t,kLootSize>& original,unsigned threat,
     std::array<std::uint8_t,kLootSize>* out){
-    if(!out || threat<1 || threat>6)return false;
+    if(!out || threat<1 || threat>10)return false;
     *out=original;
     for(std::size_t offset=0;offset<6;offset+=2){
         const auto value=ScaledReward(static_cast<std::uint16_t>(original[offset]|(original[offset+1]<<8)),threat);
@@ -33,22 +33,27 @@ inline bool RewardView(const std::array<std::uint8_t,kLootSize>& original,unsign
     }
     return true;
 }
-inline bool NameView(const std::array<std::uint8_t,kNameSize>& original,unsigned curse,unsigned threat,
+inline bool NamedView(const std::array<std::uint8_t,kNameSize>& original,const char* shortName,unsigned threat,
     std::array<std::uint8_t,kNameSize>* out){
     // Same recovered byte atlas used by NativeMenuShell. Preserve the original
     // encoded name, including localized glyphs; never truncate a control sequence.
     static constexpr char atlas[]="0123456789 !\"#$%&'()*+,-./:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz";
-    const auto& definition=SinSpread::Curse(curse);
-    if(!out || !definition.id || threat<1 || threat>6)return false;
+    if(!out || !shortName || !*shortName || threat<1 || threat>10)return false;
     std::size_t length=0;while(length<original.size() && original[length]){
         if(original[length]<0x30u)return false; // Opaque control payloads may contain zero bytes.
         ++length;
     }
-    char suffix[24]{};const int count=std::snprintf(suffix,sizeof(suffix)," [%s T%u]",definition.shortName,threat);
-    if(!length || length==original.size() || count<=0 || length+static_cast<std::size_t>(count)>=original.size())return false;
+    char suffix[24]{};const int count=std::snprintf(suffix,sizeof(suffix)," [%s T%u]",shortName,threat);
+    if(!length || length==original.size() || count<=0 || static_cast<std::size_t>(count)>=sizeof(suffix) ||
+       length+static_cast<std::size_t>(count)>=original.size())return false;
     *out=original;
     for(int n=0;n<count;++n){const char* glyph=std::strchr(atlas,suffix[n]);if(!glyph)return false;
         (*out)[length++]=static_cast<std::uint8_t>(0x30+(glyph-atlas));}
     (*out)[length]=0;return true;
+}
+inline bool NameView(const std::array<std::uint8_t,kNameSize>& original,unsigned curse,unsigned threat,
+    std::array<std::uint8_t,kNameSize>* out){
+    const auto& definition=SinSpread::Curse(curse);
+    return definition.id&&NamedView(original,definition.shortName,threat,out);
 }
 } // namespace FfxHooks::SinMetadata

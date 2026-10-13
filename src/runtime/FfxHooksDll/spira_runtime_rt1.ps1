@@ -28,8 +28,12 @@ try{
  # A failing reward consumer must not silently skip the paid-cap regression.
  & $exe $fixture (Join-Path $repo 'sin-fixtures\a_ability.bin') (Join-Path $obj ('private-'+[guid]::NewGuid().ToString('N')))
  $runtimeExit=$LASTEXITCODE
+ & $exe $fixture (Join-Path $repo 'sin-fixtures\a_ability.bin') (Join-Path $obj ('mp-items-'+[guid]::NewGuid().ToString('N'))) 'item-mp'
+ $mpItemsExit=$LASTEXITCODE
  & $exe $fixture (Join-Path $repo 'sin-fixtures\a_ability.bin') (Join-Path $obj ('paid-'+[guid]::NewGuid().ToString('N'))) (Join-Path $repo 'native-fixtures\ffx_000')
  $paidExit=$LASTEXITCODE
- Write-Output ('SPIRA_MODE_RESULTS runtime={0} paid_caps={1}' -f $runtimeExit,$paidExit)
- if($runtimeExit -ne 0 -or $paidExit -ne 0){throw ('Spira regressions failed: runtime={0}; paid_caps={1}' -f $runtimeExit,$paidExit)}
+ & $exe $fixture (Join-Path $repo 'sin-fixtures\a_ability.bin') (Join-Path $obj ('aero-'+[guid]::NewGuid().ToString('N'))) 'aero'
+ $aeroExit=$LASTEXITCODE
+ Write-Output ('SPIRA_MODE_RESULTS runtime={0} paid_caps={1} mp_items={2}' -f $runtimeExit,$paidExit,$mpItemsExit)
+ if($runtimeExit -ne 0 -or $paidExit -ne 0 -or $mpItemsExit -ne 0 -or $aeroExit -ne 0){throw ('Spira regressions failed: runtime={0}; paid_caps={1}; mp_items={2}; aero={3}' -f $runtimeExit,$paidExit,$mpItemsExit,$aeroExit)}
 }finally{Pop-Location}

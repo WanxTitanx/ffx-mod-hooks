@@ -66,10 +66,10 @@ $sinStart = $dllmain.IndexOf('// -- S.I.N. RAM submenu state --')
 $sinEnd = if ($sinStart -ge 0) { $dllmain.IndexOf('static const char* kArenaPlusDarkNames', $sinStart) } else { -1 }
 if ($sinStart -lt 0 -or $sinEnd -le $sinStart) { throw 'S.I.N. menu source not found' }
 $sin = $dllmain.Substring($sinStart, $sinEnd - $sinStart)
-foreach ($token in @('SIN_RAM_ROW_ENABLED','SIN_RAM_ROW_DISTRIBUTION','SIN_RAM_ROW_SEED','SIN_RAM_ROW_SHUFFLE','SIN_RAM_ROW_AREA','SIN_RAM_ROW_SAVE','SIN_RAM_ROW_GUIDE','SIN_RAM_ROW_BACK','SIN_RAM_ROW_COUNT         8')) {
+foreach ($token in @('SIN_RAM_ROW_ENABLED','SIN_RAM_ROW_DISTRIBUTION','SIN_RAM_ROW_SEED','SIN_RAM_ROW_SHUFFLE','SIN_RAM_ROW_AREA','SIN_RAM_ROW_SAVE','SIN_RAM_ROW_GUIDE','SIN_RAM_ROW_OMEGA','SIN_RAM_ROW_BACK','SIN_RAM_ROW_COUNT        10')) {
     if (-not $sin.Contains($token)) { throw "S.I.N. seeded control missing $token" }
 }
-foreach ($label in @('S.I.N. - Curses of Sin','Seeded encounters in Macalania','Cursed monsters:','HP, AP, Gil: +10% per Threat.','Stats: +5% per Threat, then +Threat.','After Difficulty. Model growth: preview.')) {
+foreach ($label in @('S.I.N. - Curses of Sin','Regional curses and Omega''s Seventh Seal','Cursed monsters:','HP, AP, Gil: +10% per Threat.','Stats: +5% per Threat, then +Threat.','Omega rules')) {
     if (-not $sin.Contains($label)) { throw "S.I.N. player-facing label missing $label" }
 }
 if ($sin.Contains('SIN_RAM_ROW_THREAT') -or $sin.Contains('F7_DifficultyApplyNow()')) {

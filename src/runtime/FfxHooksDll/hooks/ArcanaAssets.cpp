@@ -1,5 +1,6 @@
 #include "ArcanaAssets.h"
 #include "ArcanaCore.h"
+#include "ArcanaImageRouting.h"
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -14,6 +15,7 @@
 #include <wrl/client.h>
 #include <process.h>
 #include <atomic>
+#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <mutex>
@@ -24,25 +26,25 @@ namespace FfxHooks::Arcana::Assets {
 namespace {
 std::atomic<bool> everStarted{false};
 std::atomic<unsigned> renderOwner{0};
-struct Pixels {unsigned id=80,width=0,height=0;std::vector<unsigned char> bytes;};
+struct Pixels {unsigned id=kImageResourceCount,width=0,height=0;std::vector<unsigned char> bytes;};
 struct Shaders {std::vector<unsigned char> vertex,pixel;};
 struct Shared {
-    std::atomic<bool> enabled{false},attempted{false},forceHidden{false};
-    std::mutex mutex;std::filesystem::path root;HANDLE wake=nullptr;
-    NativeUi::Images frame;int selected=-1;std::uint64_t newest=0,publishedAt=0;bool closed=false;
+    std::atomic<bool> enabled{false},attempted{false},ready{false};
+    std::atomic<unsigned> hidden{0};std::atomic<FieldVisibility> fieldVisible{nullptr};
+    std::mutex mutex;std::filesystem::path root;HANDLE wake=nullptr,initialized=nullptr;
+    ImageRouting::Router routing;int selected=-1;
     std::array<std::shared_ptr<const Pixels>,3> pixels{};
     std::shared_ptr<const Shaders> shaders;void(*log)(const char*)=nullptr;
 };
 // Retained, bounded process-lifetime state: stop must not wait in DLL detach.
 Shared& Data(){static Shared* state=new Shared;return *state;}
 bool Valid(const NativeUi::Images& frame){
-    if(!frame.count)return true;
-    if(!frame.generation||frame.count>frame.quads.size())return false;
-    for(unsigned i=0;i<frame.count;++i){const auto& q=frame.quads[i];
-        if(q.resource>=80||!std::isfinite(q.x)||!std::isfinite(q.y)||!std::isfinite(q.width)||!std::isfinite(q.height)||
-           q.x<0||q.y<0||q.width<=0||q.height<=0||q.x+q.width>1.001f||q.y+q.height>1.001f)return false;
-    }
-    return true;
+    return ImageRouting::Valid(frame);
+}
+void SelectImage(Shared& data,const NativeUi::Images& frame){
+    int selected=-1;
+    for(unsigned i=0;i<frame.count;++i)if(frame.quads[i].resource<kCardCount)selected=static_cast<int>(frame.quads[i].resource);
+    if(data.selected!=selected){data.selected=selected;if(data.wake)SetEvent(data.wake);}
 }
 std::shared_ptr<const Shaders> Compile(){
     constexpr char source[]=
@@ -64,7 +66,7 @@ std::shared_ptr<const Shaders> Compile(){
 std::shared_ptr<const Pixels> Decode(IWICImagingFactory* factory,unsigned id){
     auto& data=Data();std::filesystem::path path;
     if(id<kCardCount)path=data.root/L"cards"/FindCard(id)->asset;
-    else path=data.root/L"shared"/(id==78?L"tarot-icon-v1.png":L"card-back-v1.png");
+    else path=data.root/L"shared"/(id==kTarotIconResource?L"tarot-icon-v1.png":L"card-back-v1.png");
     std::error_code error;const auto bytes=std::filesystem::file_size(path,error);
     if(error||bytes==0||bytes>8*1024*1024)return {};
     ComPtr<IWICBitmapDecoder> decoder;ComPtr<IWICBitmapFrameDecode> frame;ComPtr<IWICFormatConverter> convert;
@@ -82,14 +84,17 @@ std::shared_ptr<const Pixels> Decode(IWICImagingFactory* factory,unsigned id){
 }
 unsigned __stdcall Worker(void*){
     auto& data=Data();const HRESULT initialized=CoInitializeEx(nullptr,COINIT_MULTITHREADED);
-    if(FAILED(initialized))return 0;
+    if(FAILED(initialized)){SetEvent(data.initialized);return 0;}
     try {
         ComPtr<IWICImagingFactory> factory;
         if(SUCCEEDED(CoCreateInstance(CLSID_WICImagingFactory,nullptr,CLSCTX_INPROC_SERVER,IID_PPV_ARGS(&factory)))){
-            auto shaders=Compile();auto icon=Decode(factory.Get(),78);auto back=Decode(factory.Get(),79);
-            {std::lock_guard<std::mutex> lock(data.mutex);data.shaders=std::move(shaders);data.pixels[1]=std::move(icon);data.pixels[2]=std::move(back);}
+            auto shaders=Compile();auto icon=Decode(factory.Get(),kTarotIconResource);auto back=Decode(factory.Get(),kCardBackResource);
+            {std::lock_guard<std::mutex> lock(data.mutex);data.shaders=std::move(shaders);data.pixels[1]=std::move(icon);data.pixels[2]=std::move(back);
+                data.ready=data.shaders&&data.pixels[1]&&data.pixels[2];}
+            if(!data.ready.load()&&data.log)data.log("[ffx-hooks] Arcana art: required icon, card back or shaders unavailable; acquisition cannot start\n");
+            SetEvent(data.initialized);
             int last=-2;
-            while(data.enabled.load()){
+            while(data.enabled.load()&&data.ready.load()){
                 int requested=-1;{std::lock_guard<std::mutex> lock(data.mutex);requested=data.selected;}
                 if(requested>=0&&requested!=last){
                     auto pixels=Decode(factory.Get(),static_cast<unsigned>(requested));
@@ -99,11 +104,12 @@ unsigned __stdcall Worker(void*){
                 WaitForSingleObject(data.wake,250);
             }
         }
-    }catch(...){if(data.log)data.log("[ffx-hooks] Arcana art worker failed; native text remains available\n");}
+    }catch(...){if(data.log)data.log("[ffx-hooks] Arcana art worker failed; startup admission is unavailable\n");}
+    data.ready=false;SetEvent(data.initialized);
     {std::lock_guard<std::mutex> lock(data.mutex);data.pixels={};data.shaders.reset();}
     CoUninitialize();return 0;
 }
-struct GpuImage {unsigned id=80;std::shared_ptr<const Pixels> source;ComPtr<ID3D11ShaderResourceView> view;};
+struct GpuImage {unsigned id=kImageResourceCount;std::shared_ptr<const Pixels> source;ComPtr<ID3D11ShaderResourceView> view;};
 struct Gpu {
     bool ready=false;
     ComPtr<ID3D11Device> device;ComPtr<ID3DDeviceContextState> state;
@@ -163,25 +169,38 @@ bool Start(const std::filesystem::path& root,void(*log)(const char*)){
     HMODULE pin=nullptr;
     if(!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_PIN,reinterpret_cast<LPCWSTR>(&Start),&pin))return false;
     data.root=root;data.log=log;data.wake=CreateEventW(nullptr,FALSE,FALSE,nullptr);if(!data.wake)return false;
+    data.initialized=CreateEventW(nullptr,TRUE,FALSE,nullptr);if(!data.initialized)return false;
     data.enabled=true;const auto thread=_beginthreadex(nullptr,0,Worker,nullptr,0,nullptr);
     if(!thread){data.enabled=false;return false;}
     CloseHandle(reinterpret_cast<HANDLE>(thread));return true;
 }
-void Publish(const NativeUi::Images& frame) noexcept {
+bool WaitReady(unsigned milliseconds) noexcept {
+    // Startup worker only. DllMain and rendering use non-blocking state reads.
+    if(!everStarted.load())return false;
+    auto& data=Data();
+    return data.enabled.load()&&data.initialized&&
+        WaitForSingleObject(data.initialized,(std::min)(milliseconds,5000u))==WAIT_OBJECT_0&&
+        data.enabled.load()&&data.ready.load();
+}
+void PublishChannel(ImageRouting::Source source,const NativeUi::Images& frame) noexcept {
     if(!everStarted.load())return;
     auto& data=Data();if(!data.enabled.load())return;
     try {
-        if(!frame.count)data.forceHidden=true;
+        const unsigned bit=1u<<static_cast<unsigned>(source);
+        if(!frame.count)data.hidden.fetch_or(bit);
         std::unique_lock<std::mutex> lock(data.mutex,std::try_to_lock);
         if(!lock.owns_lock())return;
-        if(!Valid(frame)){data.frame={};data.selected=-1;return;}
-        if(frame.count&&(frame.generation<data.newest||((data.closed||data.forceHidden.load())&&frame.generation<=data.newest)))return;
-        if(frame.count){data.newest=frame.generation;data.closed=false;data.forceHidden=false;}else data.closed=true;
-        data.frame=frame;data.publishedAt=GetTickCount64();data.selected=-1;
-        for(unsigned i=0;i<frame.count;++i)if(frame.quads[i].resource<kCardCount)data.selected=static_cast<int>(frame.quads[i].resource);
+        const auto now=GetTickCount64();
+        const bool accepted=data.routing.Publish(source,frame,now,(data.hidden.load()&bit)!=0);
+        if(accepted&&frame.count)data.hidden.fetch_and(~bit);
+        SelectImage(data,data.routing.Select(now,data.hidden.load(),true));
         SetEvent(data.wake);
     }catch(...){}
 }
+void Publish(const NativeUi::Images& frame) noexcept {PublishChannel(ImageRouting::Source::Menu,frame);}
+void PublishMessage(const NativeUi::Images& frame) noexcept {PublishChannel(ImageRouting::Source::Message,frame);}
+void PublishWorld(const NativeUi::Images& frame) noexcept {PublishChannel(ImageRouting::Source::World,frame);}
+void SetFieldVisibility(FieldVisibility predicate) noexcept {Data().fieldVisible=predicate;}
 void Stop() noexcept {if(!everStarted.load())return;auto& data=Data();data.enabled=false;if(data.wake)SetEvent(data.wake);}
 bool Decoded(unsigned resource) noexcept {
     if(!everStarted.load())return false;
@@ -198,8 +217,13 @@ bool Render(ID3D11Device* device,ID3D11DeviceContext* context,ID3D11RenderTarget
     if(!device||!context||!target||!width||!height)return false;
     try {
         NativeUi::Images frame;std::array<std::shared_ptr<const Pixels>,3> pixels;std::shared_ptr<const Shaders> shaders;
-        {std::lock_guard<std::mutex> lock(data.mutex);if(GetTickCount64()-data.publishedAt>500)return false;frame=data.frame;pixels=data.pixels;shaders=data.shaders;}
-        if(data.forceHidden.load()||!frame.count||!Valid(frame)||!shaders)return false;
+        ImageRouting::Source source=ImageRouting::Source::Count;
+        const auto fieldPredicate=data.fieldVisible.load();
+        constexpr bool fieldVisible=true;
+        {std::lock_guard<std::mutex> lock(data.mutex);const auto now=GetTickCount64();const auto hidden=data.hidden.load();source=data.routing.SelectedSource(now,hidden,fieldVisible);frame=data.routing.Select(now,hidden,fieldVisible);SelectImage(data,frame);pixels=data.pixels;shaders=data.shaders;}
+        if(!frame.count||!Valid(frame)||!shaders||source==ImageRouting::Source::Count||
+           (data.hidden.load()&(1u<<static_cast<unsigned>(source))))return false;
+        if(source!=ImageRouting::Source::Menu&&fieldPredicate&&!fieldPredicate(frame))return false;
         ComPtr<ID3D11DeviceContext1> modern;if(FAILED(context->QueryInterface(IID_PPV_ARGS(&modern)))||!Initialize(gpu,device,*shaders))return false;
         for(unsigned i=0;i<pixels.size();++i)Upload(gpu,i,pixels[i]);
         RestoreState restore;restore.context=modern.Get();modern->SwapDeviceContextState(gpu.state.Get(),&restore.previous);

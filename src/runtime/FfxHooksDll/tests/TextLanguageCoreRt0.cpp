@@ -52,6 +52,8 @@ int main(int argc,char** argv){
         Check(m.locale=="pt-BR"&&m.displayName=="Português (Brasil)"&&m.baseLocale==1,"virtual locale keeps its own identity");
         Check(Resolve(m,"../../../FFX_Data/ffx_ps2/ffx/master/new_uspc/battle/kernel/menu_txt.bin",1,true)!=nullptr,"verified stream prefix matches");
         Check(Resolve(m,"\\FFX_Data\\ffx_ps2\\ffx\\master\\new_uspc\\battle\\kernel\\menu_txt.bin",1,true)!=nullptr,"slash and ASCII case normalization");
+        Check(Resolve(m,"../../../ffx_ps2/ffx/master/new_uspc/battle/kernel/menu_txt.bin",1,true)!=nullptr,
+              "actual native kernel requests omit the manifest-only FFX_Data namespace");
         Check(!Resolve(m,m.resources[0].request,0,true),"a Japanese native session retains original routing");
         Check(!Resolve(m,m.resources[0].request,1,false),"writes never enter the text pack");
         Check(!Resolve(m,"/FFX_Data/Sound/Voice/JP/voice.fsb",1,true),"voice path stays native");
@@ -59,6 +61,14 @@ int main(int argc,char** argv){
         std::vector<std::uint8_t> encoded;
         Check(EncodeLiteral(m.fonts[0],"Português (Brasil): ações, órgãos!",100,encoded,error),"real PT-BR glyph codes encode");
         Check(std::find(encoded.begin(),encoded.end(),0xc1)!=encoded.end()&&std::find(encoded.begin(),encoded.end(),0xf0)!=encoded.end()&&std::find(encoded.begin(),encoded.end(),0xf1)!=encoded.end(),"circumflex and tilde glyph codes survive");
+        std::string decoded="unchanged";
+        Check(DecodeLiteral(m.fonts[0],encoded.data(),encoded.size(),decoded)&&decoded==u8"Português (Brasil): ações, órgãos!","plain native names round-trip through the published Portuguese font");
+        const std::string previous=decoded;const std::uint8_t controls[]={1,2,3,4,0};
+        for(auto control:controls)Check(!DecodeLiteral(m.fonts[0],&control,1,decoded)&&decoded==previous,"control streams cannot become Workshop names");
+        const std::uint8_t missing=0xFF;
+        Check(!DecodeLiteral(Font{},&missing,1,decoded)&&decoded==previous,"unknown glyph does not manufacture a localized name");
+        std::vector<std::uint8_t> variant;
+        Check(EncodeLiteral(m.fonts[0],"Break Limits",100,variant,error)&&DecodeLiteral(m.fonts[0],variant.data(),variant.size(),decoded)&&decoded=="Break Limits","modified ability identity is preserved instead of a vanilla ID-based name");
         const auto before=encoded;
         Check(!EncodeLiteral(m.fonts[0],"emoji 😀",100,encoded,error)&&encoded==before,"missing glyph rejects without destroying output");
         Check(!EncodeLiteral(m.fonts[0],"abc",2,encoded,error)&&encoded==before,"overflow never truncates a string");
@@ -112,6 +122,14 @@ int main(int argc,char** argv){
     std::string canonical="preserved";
     Check(!CanonicalRequest("../../../../FFX_Data/secret",canonical)&&canonical=="preserved","unverified prefix rejected atomically");
     Check(!CanonicalRequest("/FFX_Data/../Sound/Voice/JP/x",canonical),"virtual traversal rejected");
+    Check(NativeSourceRequest("/FFX_Data/ffx_ps2/ffx/master/new_uspc/battle/kernel/menu_txt.bin",canonical)&&
+          canonical=="ffx_ps2/ffx/master/new_uspc/battle/kernel/menu_txt.bin","kernel source uses the exact archive member without the package namespace");
+    Check(NativeSourceRequest("../../../ffx_data/gamedata/ps3data/menu_us/base_ftc/d3d11/font_0_0.dds.phyre",canonical)&&
+          canonical=="ffx_data/gamedata/ps3data/menu_us/base_ftc/d3d11/font_0_0.dds.phyre","graphics retain their actual ffx_data directory");
+    Check(NativeSourceRequest("../../../ffx_ps2/ffx/master/uspc/menu/base.ftc",canonical)&&
+          canonical=="ffx_ps2/ffx/master/uspc/menu/base.ftc","native Western metrics resolve without a second virtual root");
+    canonical="preserved";
+    Check(!NativeSourceRequest("/FFX_Data/ffx_ps2/../secret",canonical)&&canonical=="preserved","source conversion cannot bypass traversal rejection");
     auto v2=Replace(Replace(Valid,"\"schema_version\":1","\"schema_version\":2"),"\"hook_api\":1","\"hook_api\":2");
     v2=Replace(v2,"\"texture_text\":\"unavailable\"","\"subtitles\":\"unavailable\",\"texture_text\":\"unavailable\"");
     Manifest version2;
@@ -159,6 +177,35 @@ int main(int argc,char** argv){
     Check(!ParseManifest(Replace(v3,"\"subtitles\":\"unavailable\"","\"subtitles\":\"complete\""),version2,error),
           "API 3 validates subtitle coverage as strictly as API 2");
     if(argc==2){std::ifstream f(argv[1],std::ios::binary);std::string data((std::istreambuf_iterator<char>(f)),{});Manifest external;Check(ParseManifest(data,external,error),"Python-generated manifest interoperability");if(!error.empty())std::cerr<<error<<'\n';}
+    {
+        // FFX_Kernel_LoadFileToTable keeps the 16-byte-rounded size of four tables in 16 bits.
+        const std::string kernel="/ffx_data/ffx_ps2/ffx/master/new_uspc/battle/kernel/";
+        for(const char* leaf:{"command.bin","a_ability.bin","item.bin"}){
+            Check(NativeKernelLimit(kernel+leaf,false)==0xFFF0u,"16-bit kernel tables stop at 0xFFF0 bytes");
+            Check(NativeKernelLimit(kernel+leaf,true)==0x25800u,"an extended loader only keeps the staging buffer bound");
+        }
+        Check(NativeKernelLimit(kernel+"ply_rom.bin",false)==0xFFF0u&&NativeKernelLimit(kernel+"ply_rom.bin",true)==0xFFF0u,
+              "ply_rom keeps its native 16-bit path even with the adapter");
+        Check(sizeof(ExtendedKernelTables)/sizeof(ExtendedKernelTables[0])==3&&ExtendedKernelTables[0].kind==0&&
+              ExtendedKernelTables[1].kind==2&&ExtendedKernelTables[2].kind==3,"the adapter owns loader cases 0, 2 and 3");
+        {
+            const auto fresh=PlanKernelBank(false,0,0x10010u),first=PlanKernelBank(false,0,0);
+            Check(fresh.allocate&&!fresh.retainOld&&first.allocate,"the first load allocates the 32-bit extent, even when empty as natively");
+            const auto reuse=PlanKernelBank(true,0x10010u,0x10010u),smaller=PlanKernelBank(true,0x10010u,0x200u);
+            Check(!reuse.allocate&&!reuse.retainOld&&!smaller.allocate,"a reload that fits reuses the adapter bank like the native loader");
+            const auto grow=PlanKernelBank(true,0x10010u,0x10020u);
+            Check(grow.allocate&&grow.retainOld,"a larger reload gets a fresh bank and never frees the cached one");
+            const auto unknown=PlanKernelBank(true,0,0x100u);
+            Check(unknown.allocate&&unknown.retainOld,"a bank allocated before the adapter is never written past an unknown extent");
+            const auto empty=PlanKernelBank(true,0x100u,0),missing=PlanKernelBank(true,0,0);
+            Check(!empty.allocate&&!missing.allocate,"a missing table copies nothing and keeps the existing bank, as natively");
+        }
+        for(const char* leaf:{"monmagic1.bin","monmagic2.bin"})
+            Check(NativeKernelLimit(kernel+leaf,false)==0x25800u,"32-bit tables are bounded by the staging buffer");
+        Check(NativeKernelLimit(kernel+"btl_txt.bin",false)==0,"other kernel text has no loader bound");
+        Check(NativeKernelLimit("/ffx_data/gamedata/ps3data/menu_us/d3d11/battle.dds.phyre",false)==0,"textures have no kernel bound");
+        Check(NativeKernelLimit("/ffx_data/ffx_ps2/ffx/master/new_uspc/menu/command.bin",false)==0,"only the battle kernel folder is bounded");
+    }
     std::cout<<"TextLanguageCore RT0: "<<checks<<" checks, "<<failures<<" failures\n";
     return failures?1:0;
 }

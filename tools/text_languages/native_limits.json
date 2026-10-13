@@ -1,0 +1,83 @@
+{
+ "author": "Jarvis-HOOK",
+ "note": "FFX_Kernel_LoadFileToTable keeps command/ply_rom/a_ability/item sizes (rounded up to 16 bytes) in 16 bits, so these payloads must stay <= 65,520 bytes; monmagic1/2 pass through a 0x25800 buffer. When a translated table would exceed its limit, these reviewed slots keep the native text; if that is not enough the whole table stays native.",
+ "keep_native": {
+  "/ffx_data/ffx_ps2/ffx/master/new_uspc/battle/kernel/command.bin": {
+   "reason": "Developer placeholder descriptions (Wakka personal skill 1-16) of Attack Reels sub-commands, plus the help line of the single-battle Open lock command (row 303).",
+   "slots": [
+    [
+     239,
+     2
+    ],
+    [
+     240,
+     2
+    ],
+    [
+     241,
+     2
+    ],
+    [
+     242,
+     2
+    ],
+    [
+     243,
+     2
+    ],
+    [
+     244,
+     2
+    ],
+    [
+     245,
+     2
+    ],
+    [
+     246,
+     2
+    ],
+    [
+     247,
+     2
+    ],
+    [
+     248,
+     2
+    ],
+    [
+     249,
+     2
+    ],
+    [
+     250,
+     2
+    ],
+    [
+     251,
+     2
+    ],
+    [
+     252,
+     2
+    ],
+    [
+     253,
+     2
+    ],
+    [
+     254,
+     2
+    ],
+    [
+     302,
+     2
+    ],
+    [
+     303,
+     2
+    ]
+   ]
+  }
+ }
+}

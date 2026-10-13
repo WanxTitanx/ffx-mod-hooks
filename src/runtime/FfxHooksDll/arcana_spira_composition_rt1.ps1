@@ -12,7 +12,7 @@ $mh=Join-Path $here 'third_party\minhook'
 $c=@('hook.c','buffer.c','trampoline.c','hde\hde32.c') | ForEach-Object {'"'+(Join-Path "$mh\src" $_)+'"'}
 $compileC='call "{0}" x86 >nul && cl /nologo /TC /O2 /MT /W3 /I"{1}\include" /c {2}' -f $vcvars,$mh,($c -join ' ')
 $files=@('tests\ArcanaRuntimeRt1.cpp','hooks\EquipmentWorkshopRuntime.cpp','hooks\EquipmentWorkshopStore.cpp',
- 'hooks\VanguardRuntime.cpp','hooks\F8FlagCatalog.cpp','hooks\ArcanaCore.cpp','hooks\ArcanaAcquisition.cpp','hooks\ArcanaStore.cpp','hooks\ArcanaNativeEffects.cpp','hooks\ArcanaRuntime.cpp','hooks\ArcanaCombatCore.cpp','hooks\ArcanaCombat.cpp',
+ 'hooks\VanguardRuntime.cpp','hooks\F8FlagCatalog.cpp','hooks\ArcanaCore.cpp','hooks\ArcanaPresentation.cpp','hooks\ArcanaAcquisition.cpp','hooks\ArcanaWorldCore.cpp','hooks\ArcanaStore.cpp','hooks\ArcanaNativeEffects.cpp','hooks\ArcanaRuntime.cpp','hooks\ArcanaCombatCore.cpp','hooks\ArcanaCombat.cpp',
  'hooks\SharedBattleRuntime.cpp','hooks\RonsoPoolCore.cpp','hooks\RonsoPoolStore.cpp','hooks\RonsoPoolSave.cpp',
  'hooks\RonsoPoolRuntime.cpp','hooks\NovaSuperDamageHook.cpp','hooks\F8RuntimeCore.cpp','hooks\MinHookBatchCoordinator.cpp','shared\Config.cpp')
 if(Test-Path (Join-Path $here 'hooks\SpiraRuntime.cpp')){$files+='hooks\SpiraRuntime.cpp'}

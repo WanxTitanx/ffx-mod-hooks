@@ -11,7 +11,11 @@ inline constexpr ThreatColors ThreatPalette(unsigned threat) noexcept {
         {0x70603A25u,0x60442A1Du,0x80F3A066u}, // T4: orange
         {0x705C2930u,0x60421F25u,0x80EE7D86u}, // T5: red
         {0x70562B4Fu,0x6040203Bu,0x80DF8BCEu}, // T6: magenta
+        {0x70603D4Fu,0x60462B39u,0xFFFFAACDu}, // T7: awakened rose
+        {0x70604634u,0x60463225u,0xFFFFBA86u}, // T8: awakened amber
+        {0x705A4D36u,0x60423827u,0xFFFFD991u}, // T9: awakened gold
+        {0x70605058u,0x60463840u,0xFFFFE8F1u}, // T10: pale rose
     };
-    return tiers[threat<7?threat:0];
+    return tiers[threat<11?threat:0];
 }
 }

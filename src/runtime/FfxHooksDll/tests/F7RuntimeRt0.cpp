@@ -2823,10 +2823,27 @@ void TestDifficultyIndependentAdmission() {
         "static bool DifficultyPopulateAdmitted(void*)");
     Expect(shim.find("|| !F7_IsEnabled() ||") == std::string::npos &&
                shim.find("const bool f7Master") != std::string::npos &&
-               shim.find("(f7Master || sinWanted) &&") != std::string::npos &&
+               shim.find("(f7Master || sinWanted || regional) &&") != std::string::npos &&
+               shim.find("InsideSin::Settings::Requested()&&InsideSin::EligibleField(") != std::string::npos &&
+               shim.find("sinPublication.ticket.callerRva == SinNatural::kCallerRva") != std::string::npos &&
                source.find("DifficultyUpdateCurrentActorsLocked(configSnapshot") != std::string::npos,
            "the initializer shim must drop the broad-master early-out while S.I.N. "
-           "publication requires F7 or explicitly enabled valid S.I.N.");
+           "publication requires F7, valid S.I.N. or the explicitly enabled bounded Inside Sin consumer");
+
+    const std::string naturalPublisher = SourceBetween(
+        source, "bool F7_SinObserveNaturalEncounter(", "static void DifficultyArmBattleGeneration()");
+    Expect(naturalPublisher.find("!SinNatural::Admitted(evidence)") != std::string::npos &&
+               naturalPublisher.find("g_explicitCaptureSuppression.Active()") != std::string::npos &&
+               naturalPublisher.find("OmegaUltima::Settings::Requested()||OmegaT7::Settings::Requested()") != std::string::npos &&
+               naturalPublisher.find("OmegaUltima::EligibleFormation(evidence.field,evidence.formation)") != std::string::npos &&
+               naturalPublisher.find("if(committed)OmegaUltima::Bridge::Natural(evidence,request,CascadeNaturalRequestCurrent)") != std::string::npos,
+           "Omega selection inherits only a committed native walking request in an explicitly enabled exact region");
+    const std::string omegaComposition = SourceBetween(
+        source, "static bool RunSharedBattleInsideCustomMix(void*", "static int __cdecl InitScene_Shim()");
+    Expect(omegaComposition.find("ClassifyInitSceneCaller(call->returnRva)==SharedBattleRuntime::InitSceneCaller::BattleState") != std::string::npos &&
+               omegaComposition.find("OmegaUltima::Bridge::Battle(g_base,raw,RunSharedBattleInsideCustomMixOriginal,out)") != std::string::npos &&
+               omegaComposition.find("CaptureCascade::Bridge::Battle(g_base,context,omega,result)") != std::string::npos,
+           "Omega composes inside the existing resource seam only for battle initialization, not bootstrap or menus");
 
     const std::string resolver = SourceBetween(
         source, "ResolveEncounter_Shim(uint32_t a1, int* a2, int* a3, int* a4) {",
@@ -2977,10 +2994,16 @@ void TestDifficultyIndependentAdmission() {
            "retry must reject a foreign or recursive frame before taking the actor ownership lock");
     std::string dllmain;
     Expect(ReadWholeSource(RuntimeSourcePath("dllmain.cpp"), &dllmain), "frame producer source readable");
+    const auto populationStart=source.find("static void DifficultyPopulateService(void*)");
+    const auto populationEnd=source.find("static int DifficultyPopulateOriginalAndLeave",populationStart);
+    const auto population=populationStart!=std::string::npos&&populationEnd!=std::string::npos?
+        source.substr(populationStart,populationEnd-populationStart):std::string{};
     Expect(dllmain.find("FfxHooks::F7_DifficultyFrameTick()") == std::string::npos &&
         source.find("return RunPopulatePostOriginal(io)")!=std::string::npos &&
-        source.find("static void DifficultyPopulateService(void*) {DifficultyRetryTick();}")!=std::string::npos,
-        "native population completion services Difficulty directly; Present is not a battle producer");
+        population.find("OmegaLastSeal::Bridge::Populated();")<population.find("DifficultyRetryTick();") &&
+        population.find("DifficultyRetryTick();")<population.find("OmegaT7::Bridge::Populated();") &&
+        population.find("OmegaT7::Bridge::Populated();")!=std::string::npos,
+        "native population reserves Echoes before Difficulty and T7 services; Present is not a battle producer");
     const size_t acquired = retryBody.find("} runtimeScope;");
     Expect(CountSourceToken(retryBody, "CanServiceDifficultyRetry(") == 2 &&
                retryBody.find("CanServiceDifficultyRetry(", acquired) < retryBody.find("DifficultyReadSceneInitState(&sceneState)"),

@@ -1,0 +1,2 @@
+# Keep the bounded context entrypoint within the same byte budget on Windows.
+docs/ai/CURRENT_STATE.md text eol=lf

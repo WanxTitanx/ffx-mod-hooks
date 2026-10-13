@@ -94,7 +94,7 @@ try {
         'hooks\F8RuntimeCore.cpp','hooks\MinHookBatchCoordinator.cpp','shared\Config.cpp','tests\TextLanguageNativeRt1.cpp')
     $nativeExe = Compile 'TextLanguageNativeRt1' $native (@('/DFFXHOOKS_HAVE_POLYHOOK') + $vendorObjects)
     if ($private) {
-        foreach ($mode in @('active','concurrent','early','stop','stop-validated','stop-reading','stop-committed','bad-font','late','cooperative','cooperative-conflict','cooperative-stop')) {
+    foreach ($mode in @('active','concurrent','early','boot-order','atlas-first','concurrent-early','stop-before-font','early-stop-reading','early-invalid-source','bad-font-after-resource','stop','stop-validated','stop-reading','stop-committed','bad-font','late','cooperative','cooperative-early','cooperative-stop-before-font','cooperative-conflict','cooperative-stop','kernel-tables','kernel-tables-off','kernel-tables-late','cooperative-kernel-tables','kernel-stop-reading','cooperative-kernel-stop-reading','kernel-budget','cooperative-kernel-budget')) {
             Execute ('Native-'+$mode) $nativeExe @($ExecutablePath,$PackageDirectory,$ReferenceDirectory,$mode)
         }
     } else { Write-Host 'NATIVE_PRIVATE_FIXTURE=NOT_SUPPLIED; native adapter compiled only.' }

@@ -5,6 +5,7 @@
 #include "../hooks/NativeSaveEvents.h"
 #include "../hooks/RonsoPoolSave.h"
 #include "PrivatePeFixture.h"
+#include "WorkshopAcquisitionFixture.h"
 #include "WorkshopFieldFixture.h"
 #include "WorkshopEconomyFixture.h"
 #include "../hooks/EquipmentWorkshopSettings.h"
@@ -45,6 +46,7 @@ int main(int argc,char** argv){
     if(!module)return 2;const auto base=reinterpret_cast<std::uintptr_t>(module);
     nativeFixtureBase=base;
     Check(PrivatePeFixture::NormalizeRelocations(module),"private image uses runtime HIGHLOW relocation semantics on Windows and Wine");
+    const auto nativeRecipes=WorkshopRecipes();BindWorkshopRecipes(base,nativeRecipes);
     if(failures)return 2;
     const std::wstring root(argv[3],argv[3]+std::strlen(argv[3]));
     SaveImage image{};std::ifstream f(argv[2],std::ios::binary);

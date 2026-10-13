@@ -130,11 +130,14 @@ int main(int argc,char** argv){
     E::RuntimeOptions options{};options.magicBdl=!core&&!gravity;options.core=core;options.tactics=tactics;options.gravity=gravity;
     unsigned char original[16]{};std::memcpy(original,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38E680>()),16);
     Check(!E::PrepareText(base,{},json,false,Log)&&!B::Required(),"OFF publishes no shared producer request");
+#ifndef FFXHOOKS_EXPERIMENTAL_ELEMENTAL_PROGRESS
+    Check(!E::PrepareText(base,{false,false,false,false,true,true},json,false,Log)&&!B::Required(),"unfinished progression and Rite requests publish no runtime producer in normal builds");
+#endif
     Check(!E::PrepareText(base,options,json,true,Log)&&!B::Required(),"validate-only cannot arm the feature");
     Check(!std::memcmp(original,reinterpret_cast<void*>(base+::FfxHooks::ExecutableProfile::Rva<0x38E680>()),16),"OFF and validate-only preserve native bytes");
 #ifdef FFXHOOKS_NUL_COMPOSITION
     FfxHooks::NulWardInstallOptions nulOptions{};nulOptions.nativeSlots=true;
-    nulOptions.allElements=true;
+    nulOptions.allElements=true;nulOptions.aeroEquipment=true;
     if(nulFirst)Check(FfxHooks::InstallNulWardHook(base,true,false,Log,&nulOptions).ok,"NulWard can prepare before Elemental");
 #endif
     if(!std::strcmp(argv[3],"off")){

@@ -38,8 +38,8 @@ def main():
         if sha(data) != row["sha256"]:
             raise SystemExit("Shared asset drift: " + str(path))
         files["mods/arcana/shared/" + path.name] = data
-    if len(files) != 80:
-        raise SystemExit("Expected 78 selected cards plus icon and back")
+    if len(files) != 92:
+        raise SystemExit("Expected 90 selected cards plus icon and back")
     if args.dll:
         data = args.dll.read_bytes()
         if data[:2] != b"MZ":
@@ -54,16 +54,16 @@ def main():
         files["third-party-licenses/" + name + ".txt"] = (HERE / "distribution-licenses" / (name + ".txt")).read_bytes()
     files["README-Arcana.txt"] = (
         "Jarvis-HOOK / MOD-008 - Spira: Arcana of the Fayth\n"
-        "Standalone FFX Hooks module. Spira Reforge and its data packs are not required.\n"
+        "Tarot is included in Spira Reforged. Legacy Arcana activation remains compatible.\n"
         "Private validation candidate. RT2 gameplay/visual acceptance is pending.\n"
-        "Both settings are OFF by default. Enable Arcana and restart for native Main Menu > Equip > Tarot.\n"
-        "Use Development > Arcana: full deck for the explicit instant-deck grant. Turning it off keeps earned cards.\n"
+        "Defaults remain OFF. Enable Spira Reforged (or legacy Arcana) and restart for Main Menu > Equip > Tarot.\n"
+        "Development full-deck grants only the 78 standard cards. All 12 boss rewards require their actual victories.\n"
         "Normal acquisition uses temple, sidequest and challenge milestones; locked cards show their requirement.\n"
         "With FFX closed, place ffx-hooks.dll and the mods folder inside the game's modules folder.\n"
         "Merge the example settings into the game's _isolated/ffx-hooks.ini; preserve existing settings.\n"
         "The normal FFX Hooks module loader is required. All Arcana runtime art and card definitions are included.\n"
         "Selected art belongs in mods/arcana beside the DLL. This script does not install or launch the game.\n"
-        "Keep the .arcana.v1/.arcana.pending.v1/.arcana.previous.v1 extension files with their matching native save.\n"
+        "Keep all .arcana.v1/.v2/.v3 companion files with their matching native save; migration retains old records.\n"
     ).encode()
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip())

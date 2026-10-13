@@ -1,4 +1,4 @@
-# Instalação do FFX Hooks v0.6.0-beta.4
+# Instalação do FFX Hooks v0.6.0-beta.5
 
 Não há novo complemento Fahrenheit. O [guia da beta.3](FAHRENHEIT_V2.md) é histórico; seu provider/bridge não está certificado para o executável atualizado.
 
@@ -9,27 +9,27 @@ DLL de Windows e os mesmos caminhos relativos à pasta do jogo.
 
 ## Download e conteúdo
 
-Baixe `ffx-hooks-release-v0.6.0-beta.4.zip` e `ffx-hooks-v0.6.0-beta.4.sha256` na
-[release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.4).
-O arquivo `ffx-hooks-source-v0.6.0-beta.4.tar.gz` contém o código-fonte da mesma tag.
+Baixe `ffx-hooks-release-v0.6.0-beta.5.zip` e `ffx-hooks-v0.6.0-beta.5.sha256` na
+[release](https://github.com/WanxTitanx/ffx-mod-hooks/releases/tag/v0.6.0-beta.5).
+O arquivo `ffx-hooks-source-v0.6.0-beta.5.tar.gz` contém o código-fonte da mesma tag.
 Compare os hashes dos downloads com o arquivo SHA-256. O ZIP inclui também
 `SOURCE.md`, `release-manifest.json` e `CHECKSUMS.sha256` para conferir seu conteúdo.
 
-Tamanho e hash exatos da DLL estão nos [insumos da release](releases/v0.6.0-beta.4-inputs.json). O recurso PE permanece em 0.2.0.0. O FFX.exe suportado tem 10.687.744 bytes e SHA-256 `0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d`. Executáveis anteriores exigem sua versão correspondente do Hooks.
+Tamanho e hash exatos da DLL estão nos [insumos da release](releases/v0.6.0-beta.5-inputs.json). O recurso PE permanece em 0.2.0.0. O FFX.exe suportado tem 10.687.744 bytes e SHA-256 `0537b2a1047f3266e73495cd4e35f63f0777f4231d417699f979954686da686d`. Executáveis anteriores exigem sua versão correspondente do Hooks.
 
 ## Instale com o jogo fechado
 
 1. Feche o FFX e localize a pasta com `FFX.exe` e `dinput8.dll`.
 2. Faça backup da DLL anterior, das configurações e dos saves com seus sidecars.
 3. Copie `ffx-hooks.dll` do ZIP para `<jogo>/modules/`.
-4. Copie `mods/` do ZIP para `<jogo>/modules/`. As 78 cartas ficam em
+4. Copie `mods/` do ZIP para `<jogo>/modules/`. As 90 cartas ficam em
    `modules/mods/arcana/cards/`; ícone e verso ficam em `shared/`.
 5. Preserve o INI atual. Mescle apenas as opções desejadas de
    `examples/ffx-hooks.ini.example` no INI ativo, normalmente
    `<jogo>/_isolated/ffx-hooks.ini`. Os exemplos deixam as opções desligadas.
    Não instale diretórios de flags de laboratório do código-fonte.
 6. Reinicie o jogo após habilitar uma opção que exige reinício. F8 abre o painel.
-   Extras tem Additional mods e Vanguard; Dev tem FieldScout; Cheats tem
+   Reforge reúne as opções de Spira Reforged; Extras mantém os demais mods adicionais e Vanguard; Dev tem FieldScout; Cheats tem
    AP/Gil Multipliers. Configurado, instalado e efetivo são estados diferentes.
 
 Os multiplicadores individuais usam `monster-rewards-v1.tsv` **ao lado do INI
@@ -55,6 +55,10 @@ neste ZIP: o suporte de runtime não substitui esses produtos de authoring.
 Siga os contratos de dependências, identidade e hashes no código-fonte. Fixtures
 nativas de teste podem exigir seu próprio executável/save/kernel; não são
 redistribuídas. O fonte da DLL é completo para compilação sem esses fixtures.
+
+A Oficina abre apenas pelo menu nativo, abaixo de Ajuda. Suas configurações ficam dentro dela; F10 e a antiga entrada do F8 foram retirados. Para exibir a Oficina com o sistema de alterações desligado, mescle `[equipment_workshop] native_menu=1` e reinicie.
+
+As doze cartas de chefes exigem suas vitórias reais; a opção de desenvolvimento que libera o baralho inteiro concede apenas as 78 cartas originais.
 
 ## Verificação, atualização e rollback
 
@@ -93,3 +97,7 @@ dos arquivos locais do jogo: assets proprietários não são redistribuídos nes
 ZIP. Use a [receita no código-fonte completo](../tools/nul_elements/README.md)
 com seu banco compatível e o efeito Holy doador. O fonte contém receitas, testes
 e instruções de rollback. Validação visual e de gameplay ao vivo continua pendente.
+
+## PT-BR / Launcher
+
+O Launcher 1.0.13 fixa a identidade anterior do Hooks para ativar o PT-BR. Ele precisa de uma atualização compatível para reconhecer esta DLL; não burle a verificação nem substitua o feed assinado. A API4 do Hooks e o runtime de tradução separado continuam disponíveis pela configuração manual documentada.

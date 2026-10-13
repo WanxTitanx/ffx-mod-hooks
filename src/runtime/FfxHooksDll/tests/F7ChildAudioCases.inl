@@ -32,6 +32,12 @@ enum {SIN_RAM_ROW_ENABLED,SIN_RAM_ROW_DISTRIBUTION,SIN_RAM_ROW_SEED,SIN_RAM_ROW_
 static bool SinSeedForTests(const char*,std::uint32_t* value){*value=42;return validSeed;}
 static void ArenaMixRenameAbort(){g_arenaRenameConfirm=g_arenaRenameCancel=0;}
 static void SinCurse_BuildLabels(){}static void SinRam_ClearSaveFeedback(){}
+namespace FfxHooks::OmegaT7::Runtime {
+struct PreviewSnapshot {unsigned count=2;};
+bool Preview(PreviewSnapshot&) noexcept {return true;}
+}
+#include "SinPreviewCountAudio.inc"
+#include "SinNextAreaAudio.inc"
 #include "SinInputAudio.inc"
 static void ChildAudioCases(){
     const auto arenaReset=[&](ArenaPlusMenuKind kind){
