@@ -52,6 +52,13 @@
       "command": "python3 tools/recovery/music_startup_tests.py",
       "result": "PASS_SIMULATED",
       "log_sha256": "7d8d79404b59b4174211e04fa244d0dd980d4a96ef9328c559a9784c97978055"
+    },
+    {
+      "name": "public-arcana-portable",
+      "command": "python3 research/mod_008_arcana/run_checks.py --output <isolated-output>",
+      "result": "PASS",
+      "suites": 18,
+      "log_sha256": "6ecde88c2aef2c8817cfdf6105a59b670eb3ec79215cb02dcf11c2a9b06847bd"
     }
   ],
   "windows": {
@@ -71,7 +78,23 @@
       "windows-validation.log": "618bcf0ee1af5eea7eb7847152aa797bf973232db448d5037af2d59f56812063",
       "windows-resume.log": "fbffad6661743a34a5c7b97e4cb51b0eb61a2e292522bc9e9e960f8a7fe3b641"
     },
-    "profile_correction": "The earlier helper called the default build Legacy in its message. The current script defaults to Steam; this receipt claims the Steam candidate only, not a new legacy-executable release."
+    "profile_correction": "The earlier helper called the default build Legacy in its message. The current script defaults to Steam; this receipt claims the Steam candidate only, not a new legacy-executable release.",
+    "build_and_test_input_count": 1128,
+    "build_and_test_manifest_sha256": "758444bfd0bc3550f37d4c3f5984eec4d5b3d8b29a9ba711c80d904dca8abbdd",
+    "fresh_native_steam_suite": {
+      "command": "CL=/DFFXHOOKS_TARGET_STEAM_20261001; text_languages_rt1.ps1",
+      "result": "PASS",
+      "workshop_checks": 30406,
+      "log_sha256": "46b7f9a01bf64b28adbbfd14f758bf6c020d05b4e635995758b905c6a72f6d70",
+      "scope": "Isolated native/RT0 suite; private runtime fixture not supplied, native adapter compiled only; no game/deploy",
+      "initial_attempt": "PowerShell script policy stopped execution before tests; retried with process-local ExecutionPolicy Bypass, no persistent policy change"
+    },
+    "candidate_loader_smoke": {
+      "result": "PASS",
+      "dll_sha256": "fbf9818b6a8153b6d3d966b8347f11679bd53e5969684e513b23a24c9d2a4ffa",
+      "log_sha256": "551bb2b391197489dea8b839bc5c66c313ce7b389c59293d05d92b9aedd0c746",
+      "scope": "x86 loader/worker, validation-only, mapped private PE without entry point; three checked native byte ranges unchanged"
+    }
   },
   "distribution": {
     "translation_pack_included": false,
@@ -81,8 +104,12 @@
     "source_secret_pattern_hits": 0
   },
   "independent_review": {
-    "status": "PENDING",
-    "scope": "Frozen source, candidate, public delta, package and notes"
+    "status": "RUNTIME_AND_PACKAGE_REVIEWED; FINAL_DELTA_RECEIPT_REQUIRED_BEFORE_PUBLICATION",
+    "reviewed_commit": "256b8df21ea6900e967eba1bd0a6f3768f00f11f",
+    "base_report_sha256": "c0b20f1e91bdb6201bf2f55b184efb5d9f1edd9cc3aa64e746fd1b113c8a3208",
+    "finding": "P2: retain explicit Steam CL define for text-language CI suite",
+    "resolution": "Restored the exact beta.4 workflow selection; ran the affected native suite with the Steam define; passed",
+    "final_receipt": "See the release metadata asset for the final independent delta review"
   },
   "limitations": [
     "RT0 and isolated RT1 are not live RT2 or Production acceptance",
@@ -91,5 +118,30 @@
     "Broader PT-BR terminology, item-name collisions and ESC/Flash screens remain incomplete",
     "Experimental elemental progression adapter stays inert in normal builds",
     "Hosted Actions previously failed before running jobs; no hosted CI PASS is claimed"
-  ]
+  ],
+  "package_negative_checks": [
+    {
+      "name": "wrong-dll",
+      "exit": 2,
+      "message": "DLL does not match",
+      "output_created": false
+    },
+    {
+      "name": "dirty-source",
+      "exit": 2,
+      "message": "Commit the complete reviewed source",
+      "output_created": false
+    },
+    {
+      "name": "translation-prohibited",
+      "exit": 2,
+      "message": "must not distribute a game translation pack",
+      "output_created": false
+    }
+  ],
+  "source_archive_readback": {
+    "files": 1711,
+    "result": "BYTE_IDENTICAL_TO_REVIEWED_COMMIT",
+    "reviewed_commit": "256b8df21ea6900e967eba1bd0a6f3768f00f11f"
+  }
 }
